@@ -2,7 +2,7 @@
    :language: python
 
 ########################################
-OpenAPI/Swagger tester
+OpenAPI/Swagger specification tester
 ########################################
 
-This package provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation.
+Provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation.
