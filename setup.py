@@ -25,6 +25,7 @@ setup(
     keywords=['openapi', 'swagger', 'api', 'test', 'testing', 'drf_yasg'],
     platforms='OS Independent',
     classifiers=[
+        'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
         'Framework :: Django',
         'Framework :: Pytest',
