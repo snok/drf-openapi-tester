@@ -1,4 +1,4 @@
-"""drf_yasg_demo URL Configuration
+"""demo_project URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.0/topics/http/urls/
@@ -14,15 +14,18 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include
+from django.urls import path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from . import views
+from .api.views.cars import GoodCars, BadCars
 
 api_urlpatterns = [
-    path('api/', include('api.urls')),
+    path('api/v1/cars/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
+    path('api/v1/cars/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
 ]
 schema_view = get_schema_view(
     openapi.Info(
@@ -33,14 +36,12 @@ schema_view = get_schema_view(
     ),
     url='http://localhost:8080',
     patterns=api_urlpatterns,
-    public=True,
+    public=False,
     permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('api.urls')),  # Our app
     path('', views.index),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-]
+] + api_urlpatterns

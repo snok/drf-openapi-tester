@@ -1,6 +1,6 @@
 from rest_framework.test import APITestCase
 from .api.swagger.responses import get_cars_200_response
-from openapi_tester.openapi_tester import openapi_tester
+from openapi_tester.wrapper import openapi_tester
 
 
 class TestEndpoints(APITestCase):

@@ -1,5 +1,5 @@
 """
-ASGI config for drf_yasg_demo project.
+ASGI config for demo_project project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'drf_yasg_demo.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'demo_project.settings')
 
 application = get_asgi_application()
