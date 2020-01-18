@@ -36,15 +36,13 @@ class Test:
 
         t = OpenAPITester()
 
-        class MockedResponse:
-            def json(self):
-                return [
-                    {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
-                    {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
-                    {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
-                ]
+        e = [
+            {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
+            {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
+            {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
+        ]
 
-        t.swagger_documentation(response=MockedResponse(), method='get', path='/api/v1/cars/correct/')
+        t.swagger_documentation(response=e, method='get', path='/api/v1/cars/correct/')
 
 
 # todo allow running all class function from command line, not just test

@@ -13,8 +13,6 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.contrib import admin
-from django.urls import include
 from django.urls import path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -22,10 +20,13 @@ from rest_framework import permissions
 
 from . import views
 from .api.views.cars import GoodCars, BadCars
+from .api.views.trucks import GoodTrucks, BadTrucks
 
 api_urlpatterns = [
     path('api/v1/cars/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
     path('api/v1/cars/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
+    path('api/v1/trucks/correct/', GoodTrucks.as_view(), name='correctly_documented_trucks'),
+    path('api/v1/trucks/incorrect/', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
 ]
 schema_view = get_schema_view(
     openapi.Info(

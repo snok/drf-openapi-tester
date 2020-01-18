@@ -2,19 +2,19 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_schema
+from ..swagger.auto_schemas import get_trucks_auto_schema, get_other_trucks_auto_schema
 
 
-class GoodCars(APIView):
+class GoodTrucks(APIView):
     @staticmethod
-    @get_cars_auto_schema()
+    @get_trucks_auto_schema()
     def get(request: Request) -> Response:
-        cars = [
+        trucks = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
             {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ]
-        return Response(cars, 200)
+        return Response(trucks, 200)
 
     @staticmethod
     def put(request: Request) -> Response:
@@ -29,16 +29,16 @@ class GoodCars(APIView):
         pass
 
 
-class BadCars(APIView):
+class BadTrucks(APIView):
     @staticmethod
-    @get_other_cars_auto_schema()
+    @get_other_trucks_auto_schema()
     def get(request: Request) -> Response:
-        cars = [
+        trucks = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height',},
             {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
             {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
         ]
-        return Response(cars, 200)
+        return Response(trucks, 200)
 
     @staticmethod
     def put(request: Request) -> Response:
