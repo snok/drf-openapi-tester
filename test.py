@@ -37,9 +37,7 @@ class Test:
         t = OpenAPITester()
 
         e = [
-            {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
-            {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
-            {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
+            {'nam_e': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
         ]
 
         t.swagger_documentation(response=e, method='get', path='/api/v1/cars/correct/')

@@ -12,6 +12,8 @@ from requests.exceptions import ConnectionError
 from rest_framework.test import APITestCase, APIClient
 
 from openapi_tester import oat_settings
+from .exceptions import SpecificationError
+from .utils import snake_case, camel_case
 
 
 class SwaggerBase(APITestCase):
@@ -97,7 +99,7 @@ class OpenAPITester(SwaggerBase):
 
         return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
 
-    def swagger_documentation(self, response: dict, method: str, path: str) -> None:
+    def swagger_documentation(self, response: json, method: str, path: str) -> None:
         """
         Verifies that a swagger schema matches an API response.
 
@@ -136,20 +138,29 @@ class OpenAPITester(SwaggerBase):
         if len(schema_keys) != len(response_keys):
             # If there are more keys returned than documented
             if len(set(response_keys) - set(schema_keys)):
-                missing_keys = ', '.join(list(set(response_keys) - set(schema_keys)))
-                raise ValueError(f'The following keys are missing from the documentation: {missing_keys}')
+                missing_keys = ', '.join([f'{key}' for key in list(set(response_keys) - set(schema_keys))])
+                raise SpecificationError(
+                    f'The following properties seem to be missing from ' f'you OpenAPI/Swagger documentation: {missing_keys}'
+                )
             # If there are fewer keys returned than documented
             else:
-                missing_keys = ', '.join(list(set(swagger_schema_keys) - set(response_dict_keys)))
-                raise ValueError(f'The following keys are missing from the response body: {missing_keys}')
+                missing_keys = ', '.join([f'{key}' for key in list(set(swagger_schema_keys) - set(response_dict_keys))])
+                raise SpecificationError(f'The following properties seem to be missing from your response body' f': {missing_keys}')
 
         # Check that all the key values match
-        for schema_key, response_key in zip(response_keys, schema_keys):
-            self.assertIn(schema_key, response_key)  # schema keys should be in the response
-            self.assertIn(response_key, schema_key)  # and the response keys should also all be in the schema
+        for schema_key, response_key in zip(schema_keys, response_keys):
+
+            # schema keys should be in the response
+            if schema_key not in response_keys:
+                raise SpecificationError(f'Schema key `{schema_key}` was not found in the API response')
+
+            # and the response keys should also all be in the schema
+            elif response_key not in schema_keys:
+                raise SpecificationError(f'Response key `{response_key}` is missing from your API documentation')
 
             # Run our case function (checks for camelCase or snake_case, or skips check when the CASE param is None)
             self.case_function(schema_key)
+            self.case_function(response_key)
 
             # If the current object has nested items, want to check these recursively
             nested_schema = schema[schema_key]
@@ -158,7 +169,7 @@ class OpenAPITester(SwaggerBase):
             if 'items' in nested_schema:
                 for key, value in nested_schema.items():
                     # A schema definition includes overhead that we're not interested in comparing to the response.
-                    # Here, we're only iterested in the sub-items of the list, not the name or description.
+                    # Here, we're only interested in the sub-items of the list, not the name or description.
                     if key == 'items':
                         self._list(nested_schema, nested_response)  # Item is a tuple: (key, value)
 
@@ -189,47 +200,36 @@ class OpenAPITester(SwaggerBase):
 
                 elif 'items' in value:
                     self._list(value, response[0])
-                else:
-                    print('/!/!/!/!/!/!/!/!/!')
 
     @staticmethod
-    def _is_camel_case(key: str) -> bool:
-        # TODO: Replace with regex
-        # This is just a placeholder
-        first_letter = True
-        for letter in key:
-            uppercase = letter == letter.upper()
+    def _is_camel_case(key: str) -> None:
+        """
+        Asserts that a value is camelCased.
 
-            # First letter should be lower-case
-            if first_letter and uppercase:
-                return False
-            if first_letter and not uppercase:
-                first_letter = False
-
-            # No underscores
-            if letter == '_':
-                return False
-        return True
+        :param key: str
+        :return: None
+        :raises: SpecificationError
+        """
+        if camel_case(key) != key:
+            raise SpecificationError(f'The property `{key}` is not properly camelCased')
 
     @staticmethod
-    def _is_snake_case(key: str) -> bool:
-        # TODO: Replace with regex
-        # This is just a placeholder
-        first_letter = True
-        for letter in key:
-            uppercase = letter == letter.upper()
+    def _is_snake_case(key: str) -> None:
+        """
+        Asserts that a value is snake_cased.
 
-            # First letter should be lower-case
-            if first_letter and uppercase:
-                return False
-            if first_letter and not uppercase:
-                first_letter = False
-
-            # No underscores
-            if letter == '_':
-                return False
-        return True
+        :param key: str
+        :return: None
+        :raises: SpecificationError
+        """
+        if snake_case(key) != key:
+            raise SpecificationError(f'The property `{key}` is not properly snake_cased')
 
     @staticmethod
-    def _skip() -> bool:
-        return False
+    def _skip() -> None:
+        """
+        Skips case assertion.
+
+        :return: None
+        """
+        pass
