@@ -11,8 +11,8 @@ class GoodCars(APIView):
     def get(request: Request) -> Response:
         cars = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
-            {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not very wide', 'length': '2 meters'},
-            {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
+            {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
+            {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ]
         return Response(cars, 200)
 
