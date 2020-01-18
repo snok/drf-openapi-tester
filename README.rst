@@ -17,15 +17,18 @@ Installation
 
 Install using pip:
 
+.. code:: python
+
     pip install openapi-tester
 
-Add 'openapi_tester' to your INSTALLED_APPS setting:
+Add 'openapi_tester' to your INSTALLED_APPS setting in ``settings.py``:
 
-    INSTALLED_APPS = [
-        ...
-        'openapi_tester'
+.. code:: python
 
-    ]
+   INSTALLED_APPS = [
+      ...
+      'drf_yasg',
+   ]
 
 Example
 #######
@@ -35,6 +38,8 @@ The OpenAPI tester should primarily be used to supplement your existing API test
 The easiest way to implement it would be in a test where you're successfully retrieving a valid response from an endpoint.
 
 An example might look like this:
+
+.. code:: python
 
     from django.contrib.auth.models import User
     from django.urls import reverse
@@ -56,7 +61,6 @@ An example might look like this:
                 {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium', 'width': 'Very wide', 'length': '2 meters'},
                 {'name': 'Volvo', 'color': 'Red', 'height': 'Medium', 'width': 'Not wide', 'length': '2 meters'},
                 {'name': 'Tesla', 'color': 'black', 'height': 'Medium', 'width': 'Wide', 'length': '2 meters'},
-
             ]
 
             response = self.client.get(self.path + '/correct'/, headers={'Content-Type': 'application/json'})
