@@ -5,6 +5,19 @@
 OpenAPI Specification Tester
 ############################
 
+.. image:: https://img.shields.io/pypi/v/openapi-tester.svg
+    :target: https://pypi.org/project/openapi-tester/
+
+.. image:: https://img.shields.io/pypi/pyversions/openapi-tester.svg
+    :target: https://pypi.org/project/openapi-tester/
+
+.. image:: https://codecov.io/gh/sondrelg/openapi-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/sondrelg/openapi-tester
+
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://django-guid.readthedocs.io/en/latest/?badge=latest
+
+
 This package provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation against actual API responses.
 
 Package is currently under development, and only supports the testing of swagger documentation implemented in Django using drf_yasg_. The ambition for release 1.0.0 is to expand the current features to support testing any openapi specification, and to cut the dependence on Django tooling.
@@ -49,8 +62,9 @@ The app currently requires two parameters.
 
 - None: Doesn't check the documentation case standard.
 
+|
 
-**Example**
+**Configuration example**
 
 .. code:: python
 
@@ -60,8 +74,8 @@ The app currently requires two parameters.
     }
 
 
-Example
-#######
+Implementation
+##############
 
 The OpenAPI tester should primarily be used to supplement your existing API tests.
 
