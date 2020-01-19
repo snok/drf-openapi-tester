@@ -18,7 +18,7 @@ def camel_case(string: str) -> str:
     :param string: str
     :return: str
     """
-    string = re.sub(r'^[\-_\.]', '', str(string))
+    string = re.sub(r'^[\-_.]', '', str(string))
     if not string:
         return string
     return string[0].lower() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), string[1:])
