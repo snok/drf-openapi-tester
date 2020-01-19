@@ -13,6 +13,7 @@ from rest_framework.test import APITestCase, APIClient
 
 from openapi_tester import oat_settings
 from .exceptions import SpecificationError
+from .initialize import oat_settings
 from .utils import snake_case, camel_case
 
 
