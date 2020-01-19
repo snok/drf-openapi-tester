@@ -27,7 +27,7 @@ for project_setting, value in project_settings.items():
     if project_setting in oat_settings:
         oat_settings[project_setting] = value
     else:
-        raise ImproperlyConfigured(f'{project_setting} is not a valid setting for the openapi-tester module')
+        raise ImproperlyConfigured(f'`{project_setting}` is not a valid setting for the openapi-tester module')
 
 # Make sure path is specified
 if oat_settings['PATH'] is None:
@@ -50,5 +50,6 @@ else:
 if not oat_settings['CASE'] in supported_cases and oat_settings['CASE'] is not None:
     raise ImproperlyConfigured(
         f'This package currently doesn\'t support a case called {oat_settings["CASE"]}.'
-        f'Specify `SNAKECASE`, `CAMELCASE`, or specify None for skip case validation.'
+        f' Set case to `SNAKECASE` for snake_case, '
+        f'`CAMELCASE` for camelCase, or None to skip case validation.'
     )
