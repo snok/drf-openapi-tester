@@ -1,4 +1,4 @@
-# from openapi_tester.openapi_tester import openapi_tester
+# from openapi_tester import openapi_tester
 #
 #
 # def test_import_errors():

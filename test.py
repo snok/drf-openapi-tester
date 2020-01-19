@@ -1,6 +1,4 @@
 # test script
-import os
-import sys
 
 import django
 from django.conf import settings
@@ -31,8 +29,7 @@ class Test:
 
         :return: whatever the specified CS class function returns
         """
-        from openapi_tester import oat_settings
-        from openapi_tester.tester import OpenAPITester, SwaggerBase
+        from openapi_tester.tester import OpenAPITester
 
         t = OpenAPITester()
 

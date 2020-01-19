@@ -1,2 +1,0 @@
-openapi-spec-validator==0.2.8
-prance==0.17.0
