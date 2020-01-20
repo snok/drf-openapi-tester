@@ -1,6 +1,6 @@
 import os.path
 
-from django.core.exceptions import ImproperlyConfigured
+from .exceptions import ImproperlyConfigured
 
 
 class Settings(object):
@@ -35,7 +35,7 @@ class Settings(object):
 
     def _validate_settings(self) -> None:
         """
-        Validates self.path and self.case.
+        Validates self.path and self.case after values have been populated from settings.
         """
         # Make sure path is specified
         if self.path is None:
@@ -43,7 +43,7 @@ class Settings(object):
 
         # If it is specified, make sure it's correctly specified
         if not isinstance(self.path, str):
-            raise ImproperlyConfigured('The path to your swagger specification (file or url) needs to be a string')
+            raise ImproperlyConfigured('`path` needs to be a string')
 
         if 'http://' in self.path or 'https://' in self.path:
             pass  # We'll have to try and fetch the schema before we know if the url is correct

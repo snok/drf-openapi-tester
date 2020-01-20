@@ -2,7 +2,7 @@ import json
 
 import yaml
 from django.contrib.auth.models import User
-from django.core.exceptions import ImproperlyConfigured
+from openapi_tester.exceptions import ImproperlyConfigured
 from requests.exceptions import ConnectionError
 from rest_framework.test import APITestCase, APIClient
 

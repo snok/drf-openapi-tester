@@ -1,6 +1,6 @@
 import pytest
 from django.conf import settings as django_settings
-from django.core.exceptions import ImproperlyConfigured
+from openapi_tester.exceptions import ImproperlyConfigured
 
 from openapi_tester.initialize import Settings
 
@@ -23,6 +23,25 @@ def test_valid_paths(monkeypatch):
     ]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'path': path, 'case': None})
         Settings()
+
+
+def test_missing_settings(monkeypatch):
+    monkeypatch.delattr(django_settings, 'OPENAPI_TESTER')
+    with pytest.raises(ImproperlyConfigured, match='Please specify OPENAPI_TESTER in your settings.py'):
+        Settings()
+
+
+def test_missing_path(monkeypatch):
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'case': None})
+    with pytest.raises(ImproperlyConfigured, match='`path` is a required setting for the openapi-tester module'):
+        Settings()
+
+
+def test_bad_path(monkeypatch):
+    for item in [2, -2, 2.2, [], (1,), {}]:
+        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'case': None, 'path': 2})
+        with pytest.raises(ImproperlyConfigured, match='`path` needs to be a string'):
+            Settings()
 
 
 def test_invalid_setting(monkeypatch):
