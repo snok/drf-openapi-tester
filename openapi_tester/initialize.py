@@ -1,55 +1,63 @@
-"""
-This file is run on initialization, and will verify that the Django settings are correctly specified.
-"""
-import logging
 import os.path
 
-from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-logger = logging.getLogger('cs-api')
 
-oat_settings = {
-    'PATH': None,
-    'CASE': 'CAMELCASE',  # Default value
-}
+class Settings(object):
+    def __init__(self) -> None:
+        """
+        Loads and validates the settings.
+        """
+        self.path = None
+        self.case = 'camel case'
+        self._load_django_settings()
+        self._validate_settings()
 
-supported_cases = ['CAMELCASE', 'SNAKECASE']
+    def _load_django_settings(self) -> None:
+        """
+        Assigns self.path and self.case values from the users Django settings.
+        """
+        from django.conf import settings
 
-# Check that the settings are defined
-if not hasattr(settings, 'OPENAPI_TESTER_SETTINGS'):
-    raise ImproperlyConfigured('Please specify OPENAPI_TESTER_SETTINGS in your settings.py')
+        # Check that the settings are defined
+        if not hasattr(settings, 'OPENAPI_TESTER_SETTINGS'):
+            raise ImproperlyConfigured('Please specify OPENAPI_TESTER_SETTINGS in your settings.py')
 
-project_settings = settings.OPENAPI_TESTER_SETTINGS
+        _settings = settings.OPENAPI_TESTER_SETTINGS
 
-# Check that we've only got the settings we want
-for project_setting, value in project_settings.items():
-    if project_setting in oat_settings:
-        oat_settings[project_setting] = value
-    else:
-        raise ImproperlyConfigured(f'`{project_setting}` is not a valid setting for the openapi-tester module')
+        for setting, value in _settings.items():
+            if hasattr(self, setting):
+                setattr(self, setting, value)
+            else:
+                raise ImproperlyConfigured(f'`{setting}` is not a valid setting for the openapi-tester module')
 
-# Make sure path is specified
-if oat_settings['PATH'] is None:
-    raise ImproperlyConfigured(f'PATH is a required setting for the openapi-tester module')
+    def _validate_settings(self) -> None:
+        """
+        Validates self.path and self.case.
+        """
+        # Make sure path is specified
+        if self.path is None:
+            raise ImproperlyConfigured(f'`path` is a required setting for the openapi-tester module')
 
-# If it is specified, make sure it's correctly specified
-if not isinstance(oat_settings['PATH'], str):
-    raise ImproperlyConfigured('The path to your swagger specification (file or url) needs to be a string')
+        # If it is specified, make sure it's correctly specified
+        if not isinstance(self.path, str):
+            raise ImproperlyConfigured('The path to your swagger specification (file or url) needs to be a string')
 
-if 'http://' in oat_settings['PATH'] or 'https://' in oat_settings['PATH']:
-    pass  # We'll have to try and fetch the schema before we know if the address is right or wrong
-else:
-    if not os.path.isfile(oat_settings['PATH']):
-        raise ImproperlyConfigured(
-            'The path specified does not point to a valid file. '
-            'Make sure to point to the specification file or add a scheme to your url '
-            '(e.g., `http://`).'
-        )
+        if 'http://' in self.path or 'https://' in self.path:
+            pass  # We'll have to try and fetch the schema before we know if the url is correct
+        else:
+            if not os.path.isfile(self.path):
+                raise ImproperlyConfigured(
+                    'The path specified does not point to a valid file. '
+                    'Make sure to point to the specification file or add a scheme to your url '
+                    '(e.g., `http://`).'
+                )
 
-if not oat_settings['CASE'] in supported_cases and oat_settings['CASE'] is not None:
-    raise ImproperlyConfigured(
-        f'This package currently doesn\'t support a case called {oat_settings["CASE"]}.'
-        f' Set case to `SNAKECASE` for snake_case, '
-        f'`CAMELCASE` for camelCase, or None to skip case validation.'
-    )
+        supported_cases = ['camel case', 'snake case', None]
+
+        if self.case not in supported_cases:
+            raise ImproperlyConfigured(
+                f'This package currently doesn\'t support a case called {self.case}.'
+                f' Set case to `snake case` for snake_case, '
+                f'`camel case` for camelCase, or None to skip case validation completely.'
+            )
