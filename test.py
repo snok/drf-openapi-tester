@@ -17,7 +17,7 @@ class Test:
             SECRET_KEY='test-key',
             INSTALLED_APPS=('django.contrib.auth', 'django.contrib.contenttypes', 'openapi_tester'),
             DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': 'db.sqlite3',}},
-            OPENAPI_TESTER_SETTINGS={'PATH': 'http://127.0.0.1:8080/swagger/?format=openapi', 'CASE': 'CAMELCASE'},
+            OPENAPI_TESTER={'path': 'http://127.0.0.1:8080/swagger/?format=openapi', 'case': 'camel case'},
         )
         django.setup()
 

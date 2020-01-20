@@ -114,4 +114,4 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-OPENAPI_TESTER_SETTINGS = {'PATH': 'http://127.0.0.1:8080/swagger/?format=openapi', 'CASE': 'CAMELCASE'}
+OPENAPI_TESTER = {'path': 'http://127.0.0.1:8080/swagger/?format=openapi', 'case': 'camel case'}

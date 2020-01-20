@@ -68,7 +68,7 @@ The app currently requires two parameters.
 
 .. code:: python
 
-    OPENAPI_TESTER_SETTINGS = {
+    OPENAPI_TESTER = {
         'path': '127.0.0.1:8080/swagger/?format=openapi',
         'case': 'camel case'
     }

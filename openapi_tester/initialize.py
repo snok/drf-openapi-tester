@@ -22,10 +22,10 @@ class Settings(object):
         from django.conf import settings
 
         # Check that the settings are defined
-        if not hasattr(settings, 'OPENAPI_TESTER_SETTINGS'):
-            raise ImproperlyConfigured('Please specify OPENAPI_TESTER_SETTINGS in your settings.py')
+        if not hasattr(settings, 'OPENAPI_TESTER'):
+            raise ImproperlyConfigured('Please specify OPENAPI_TESTER in your settings.py')
 
-        _settings = settings.OPENAPI_TESTER_SETTINGS
+        _settings = settings.OPENAPI_TESTER
 
         for setting, value in _settings.items():
             if hasattr(self, setting):
@@ -50,7 +50,7 @@ class Settings(object):
         else:
             if not os.path.isfile(self.path):
                 raise ImproperlyConfigured(
-                    'The path specified does not point to a valid file. '
+                    f'The path "{self.path}" does not point to a valid file. '
                     'Make sure to point to the specification file or add a scheme to your url '
                     '(e.g., `http://`).'
                 )
