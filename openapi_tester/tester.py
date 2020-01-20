@@ -11,13 +11,12 @@ from requests import Response
 from requests.exceptions import ConnectionError
 from rest_framework.test import APITestCase, APIClient
 
-from openapi_tester import oat_settings
 from .exceptions import SpecificationError
-from .initialize import oat_settings
+from .initialize import Settings
 from .utils import snake_case, camel_case
 
 
-class SwaggerBase(APITestCase):
+class SwaggerBase(APITestCase, Settings):
     client = APIClient()
 
     def _authenticate(self) -> None:
@@ -31,10 +30,10 @@ class SwaggerBase(APITestCase):
         """
         Fetches the hosted OpenAPI specification using the DRF APIClient.
         """
-        if 'http://' in oat_settings['PATH'] or 'https://' in oat_settings['PATH']:
+        if self.url:
             try:
                 self._authenticate()
-                response = self.client.get(oat_settings['PATH'], format='json')
+                response = self.client.get(self.path, format='json')
             except ConnectionError as e:
                 raise ConnectionError(
                     '\n\nNot able to connect to the specified openapi url. '
@@ -50,55 +49,25 @@ class SwaggerBase(APITestCase):
 
         else:
             try:
-                with open(oat_settings['PATH'], 'r') as f:
+                with open(self.path, 'r') as f:
                     content = f.read()
             except Exception as e:
                 raise ImproperlyConfigured(
-                    '\n\nCould not read the openapi specification. Please make sure the path setting is correct.' f'\n\nError: {e}'
+                    '\n\nCould not read the openapi specification. Please make sure the path setting is correct.\n\nError: {e}'
                 )
-            if '.json' in oat_settings['PATH'].lower():
+            if '.json' in self.path:
                 self.complete_schema = json.loads(content)
-            elif '.yaml' in oat_settings['PATH'].lower():
+            elif '.yaml' in self.path:
                 self.complete_schema = yaml.load(content, Loader=yaml.FullLoader)
             else:
                 raise ImproperlyConfigured('The specified file path does not seem to point to a JSON or YAML file.')
 
 
-class OpenAPITester(SwaggerBase):
+class OpenAPITester(SwaggerBase, Settings):
     """
     This class verifies that your OpenAPI schema definition matches the response of your API endpoint.
     It inspects a schema recursively, and verifies that the schema matches the structure of the response at each level.
     """
-
-    @staticmethod
-    def _get_endpoint_200_response(schema: dict, method: str, path: str) -> dict:
-        """
-        Returns the part of the schema we want to test for any single test.
-
-        :param spec: OpenAPI specification
-        :return: dict
-        """
-        methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-        if method.casefold() not in methods:
-            raise ValueError(f'Invalid value for `method`. Needs to be one of: {", ".join([i.upper() for i in methods])}.')
-        try:
-            resolved_path = resolve(path)
-        except Resolver404:
-            raise ValueError(f'Could not resolve path `{path}`')
-
-        endpoints = [key for key in schema['paths']]
-        matched_endpoints = [endpoint for endpoint in endpoints if endpoint in resolved_path.route]
-
-        if len(matched_endpoints) == 0:
-            raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
-        elif len(matched_endpoints) == 1:
-            matched_endpoint = matched_endpoints[0]
-        else:
-            # We probably shouldn't ever let this happen
-            # TODO: Try to make it happen in testing, and work out a better way to do this
-            raise ValueError('Matched the resolved urls to too many endpoints.')
-
-        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
 
     def swagger_documentation(self, response: json, method: str, path: str) -> None:
         """
@@ -108,13 +77,10 @@ class OpenAPITester(SwaggerBase):
         :param method: HTTP method
         :param path: Path of the endpoint being tested
         :return: None
-        :raises: TODO
         """
-        # Replicate the dict/list logic using the schema. Specify a method and a path (use resolve) in test.py and
-        #
         self.fetch_specification()
-        self.case_function = {'CAMELCASE': self._is_camel_case, 'SNAKECASE': self._is_snake_case, None: self._skip}[oat_settings['CASE']]
-        schema = self._get_endpoint_200_response(self.complete_schema, method, path)
+        self.case_function = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[self.case]
+        schema = self._get_endpoints_200_response_from_spec(self.complete_schema, method, path)
 
         if hasattr(schema, 'properties'):
             self._dict(schema, response)
@@ -234,3 +200,33 @@ class OpenAPITester(SwaggerBase):
         :return: None
         """
         pass
+
+    @staticmethod
+    def _get_endpoints_200_response_from_spec(schema: dict, method: str, path: str) -> dict:
+        """
+        Returns the part of the schema we want to test for any single test.
+
+        :param spec: OpenAPI specification
+        :return: dict
+        """
+        methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
+        if method.casefold() not in methods:
+            raise ValueError(f'Invalid value for `method`. Needs to be one of: {", ".join([i.upper() for i in methods])}.')
+        try:
+            resolved_path = resolve(path)
+        except Resolver404:
+            raise ValueError(f'Could not resolve path `{path}`')
+
+        endpoints = [key for key in schema['paths']]
+        matched_endpoints = [endpoint for endpoint in endpoints if endpoint in resolved_path.route]
+
+        if len(matched_endpoints) == 0:
+            raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
+        elif len(matched_endpoints) == 1:
+            matched_endpoint = matched_endpoints[0]
+        else:
+            # We probably shouldn't ever let this happen
+            # TODO: Try to make it happen in testing, and work out a better way to do this
+            raise ValueError('Matched the resolved urls to too many endpoints.')
+
+        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']

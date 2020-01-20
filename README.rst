@@ -50,13 +50,13 @@ The app currently requires two parameters.
 
 **Path**: The path to your OpenAPI specification. Can be an url, or the path to your document.
 
-**Case**: The case standard you wish to enforce for your documentation. Can be 'camelcase', 'snakecase', or None.
+**Case**: The case standard you wish to enforce for your documentation. Can be 'camel case', 'snake case', or None.
 
-- `camelcase`__: Checks that your documentation is camelCased (default).
+- `camel case`__: Checks that your documentation is camelCased (default).
 
 .. __: https://en.wikipedia.org/wiki/Camel_case
 
-- `snakecase`__: Checks that your documentation is snake_cased.
+- `snake case`__: Checks that your documentation is snake_cased.
 
 .. __: https://en.wikipedia.org/wiki/Camel_case
 
@@ -69,8 +69,8 @@ The app currently requires two parameters.
 .. code:: python
 
     OPENAPI_TESTER_SETTINGS = {
-        'PATH': '127.0.0.1:8080/swagger/?format=openapi',
-        'CASE': 'camelcase'
+        'path': '127.0.0.1:8080/swagger/?format=openapi',
+        'case': 'camel case'
     }
 
 
