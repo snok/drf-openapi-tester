@@ -1,18 +1,14 @@
-# flake8: noqa TODO: Remove
 import json
 
 import yaml
 from django.contrib.auth.models import User
 from django.core.exceptions import ImproperlyConfigured
-from django.urls import resolve
-from django.urls.exceptions import Resolver404
-from drf_yasg.openapi import Schema
-from requests import Response
 from requests.exceptions import ConnectionError
 from rest_framework.test import APITestCase, APIClient
 
 from .exceptions import SpecificationError
 from .initialize import Settings
+from .utils import parse_endpoint
 from .utils import snake_case, camel_case
 
 
@@ -53,7 +49,7 @@ class SwaggerBase(APITestCase, Settings):
                     content = f.read()
             except Exception as e:
                 raise ImproperlyConfigured(
-                    '\n\nCould not read the openapi specification. Please make sure the path setting is correct.\n\nError: {e}'
+                    f'\n\nCould not read the openapi specification. ' f'Please make sure the path setting is correct.\n\nError: {e}'
                 )
             if '.json' in self.path:
                 self.complete_schema = json.loads(content)
@@ -80,7 +76,7 @@ class OpenAPITester(SwaggerBase, Settings):
         """
         self.fetch_specification()
         self.case_function = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[self.case]
-        schema = self._get_endpoints_200_response_from_spec(self.complete_schema, method, path)
+        schema = parse_endpoint(self.complete_schema, method, path)
 
         if hasattr(schema, 'properties'):
             self._dict(schema, response)
@@ -96,8 +92,6 @@ class OpenAPITester(SwaggerBase, Settings):
         :param response: dict
         :return: None
         """
-        print('\n\n-------- dict -------\n', schema, '\n\n', response, '\n-------- /dict -------')  # TODO: remove
-
         schema_keys = schema.keys()
         response_keys = response.keys()
 
@@ -111,7 +105,7 @@ class OpenAPITester(SwaggerBase, Settings):
                 )
             # If there are fewer keys returned than documented
             else:
-                missing_keys = ', '.join([f'{key}' for key in list(set(swagger_schema_keys) - set(response_dict_keys))])
+                missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
                 raise SpecificationError(f'The following properties seem to be missing from your response body' f': {missing_keys}')
 
         # Check that all the key values match
@@ -134,7 +128,7 @@ class OpenAPITester(SwaggerBase, Settings):
             nested_response = response[schema_key]
 
             if 'items' in nested_schema:
-                for key, value in nested_schema.items():
+                for key, _ in nested_schema.items():
                     # A schema definition includes overhead that we're not interested in comparing to the response.
                     # Here, we're only interested in the sub-items of the list, not the name or description.
                     if key == 'items':
@@ -151,8 +145,6 @@ class OpenAPITester(SwaggerBase, Settings):
         :param response: dict.
         :return: None.
         """
-        print('\n\n-------- list -------\n', schema, '\n\n', response, '\n-------- /list -------')  # TODO: remove
-
         # For lists, we handle each item individually
         for key, value in schema.items():
             # We're only interested in the sub-items of an array list, not the name or description.
@@ -160,7 +152,7 @@ class OpenAPITester(SwaggerBase, Settings):
 
                 # drf_yasg makes it very hard to put multiple objects in a list, in documentation
                 # so it's mostly safe to just look at the first item (in ref. to response[0])
-                # TODO: make sure this applies to openapi specs
+                # TODO: make sure this actually *does* apply to openapi specs
 
                 if 'properties' in value:
                     self._dict(value['properties'], response[0])
@@ -200,33 +192,3 @@ class OpenAPITester(SwaggerBase, Settings):
         :return: None
         """
         pass
-
-    @staticmethod
-    def _get_endpoints_200_response_from_spec(schema: dict, method: str, path: str) -> dict:
-        """
-        Returns the part of the schema we want to test for any single test.
-
-        :param spec: OpenAPI specification
-        :return: dict
-        """
-        methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-        if method.casefold() not in methods:
-            raise ValueError(f'Invalid value for `method`. Needs to be one of: {", ".join([i.upper() for i in methods])}.')
-        try:
-            resolved_path = resolve(path)
-        except Resolver404:
-            raise ValueError(f'Could not resolve path `{path}`')
-
-        endpoints = [key for key in schema['paths']]
-        matched_endpoints = [endpoint for endpoint in endpoints if endpoint in resolved_path.route]
-
-        if len(matched_endpoints) == 0:
-            raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
-        elif len(matched_endpoints) == 1:
-            matched_endpoint = matched_endpoints[0]
-        else:
-            # We probably shouldn't ever let this happen
-            # TODO: Try to make it happen in testing, and work out a better way to do this
-            raise ValueError('Matched the resolved urls to too many endpoints.')
-
-        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
