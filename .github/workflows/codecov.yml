@@ -22,6 +22,7 @@ jobs:
       - name: Test with pytest
         run: |
           pytest --cov=openapi_tester --verbose --color=yes  --assert=plain --cov-report=xml
+          coverage report
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
