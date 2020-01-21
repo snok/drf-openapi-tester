@@ -15,7 +15,7 @@ OpenAPI Specification Tester
     :target: https://codecov.io/gh/sondrelg/openapi-tester
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://django-guid.readthedocs.io/en/latest/?badge=latest
+    :target: https://pypi.org/project/openapi-tester/
 
 
 This package provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation against actual API responses.
@@ -88,7 +88,7 @@ An example might look like this:
     from django.contrib.auth.models import User
     from rest_framework.test import APITestCase
 
-    from openapi_tester import validate_specification
+    from openapi_tester import test_schema
 
 
     class TestMyAPI(APITestCase):
@@ -113,6 +113,6 @@ An example might look like this:
             self.assertEqual(response.json(), expected_response)
 
             # Test Swagger documentation
-            validate_specification(response, 'GET', self.path + '/correct/')
+            test_schema(response, 'GET', self.path + '/correct/')
 
 See the demo project and tests folder for more examples.

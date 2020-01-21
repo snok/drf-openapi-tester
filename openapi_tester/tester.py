@@ -1,71 +1,19 @@
 import json
 
-import yaml
-from django.contrib.auth.models import User
-from openapi_tester.exceptions import ImproperlyConfigured
-from requests.exceptions import ConnectionError
-from rest_framework.test import APITestCase, APIClient
-
+from .client import SpecificationFetcher
 from .exceptions import SpecificationError
-from .initialize import Settings
+from .settings import Settings
 from .utils import parse_endpoint
 from .utils import snake_case, camel_case
 
 
-class SwaggerBase(APITestCase, Settings):
-    client = APIClient()
-
-    def _authenticate(self) -> None:
-        """
-        Get valid user and attach credentials to client
-        """
-        user, _ = User.objects.update_or_create(username='testuser')
-        self.client.force_authenticate(user=user)
-
-    def fetch_specification(self) -> None:
-        """
-        Fetches the hosted OpenAPI specification using the DRF APIClient.
-        """
-        if self.url:
-            try:
-                self._authenticate()
-                response = self.client.get(self.path, format='json')
-            except ConnectionError as e:
-                raise ConnectionError(
-                    '\n\nNot able to connect to the specified openapi url. '
-                    f'Please make sure the specified path is correct.\n\nError: {e}'
-                )
-            if 400 <= response.status_code <= 600:
-                raise ImproperlyConfigured(
-                    '\n\nCould not fetch the openapi specification. Please make sure your documentation is '
-                    f'set to public.\n\nAPI response code: {response.status_code}\nAPI response: {response.text}'
-                )
-
-            self.complete_schema = response.json()
-
-        else:
-            try:
-                with open(self.path, 'r') as f:
-                    content = f.read()
-            except Exception as e:
-                raise ImproperlyConfigured(
-                    f'\n\nCould not read the openapi specification. ' f'Please make sure the path setting is correct.\n\nError: {e}'
-                )
-            if '.json' in self.path:
-                self.complete_schema = json.loads(content)
-            elif '.yaml' in self.path:
-                self.complete_schema = yaml.load(content, Loader=yaml.FullLoader)
-            else:
-                raise ImproperlyConfigured('The specified file path does not seem to point to a JSON or YAML file.')
-
-
-class OpenAPITester(SwaggerBase, Settings):
+class OpenAPITester(Settings):
     """
     This class verifies that your OpenAPI schema definition matches the response of your API endpoint.
     It inspects a schema recursively, and verifies that the schema matches the structure of the response at each level.
     """
 
-    def swagger_documentation(self, response: json, method: str, path: str) -> None:
+    def test(self, response: json, method: str, path: str) -> None:
         """
         Verifies that a swagger schema matches an API response.
 
@@ -74,13 +22,22 @@ class OpenAPITester(SwaggerBase, Settings):
         :param path: Path of the endpoint being tested
         :return: None
         """
-        self.fetch_specification()
-        self.case_function = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[self.case]
-        schema = parse_endpoint(self.complete_schema, method, path)
+        if not isinstance(response, dict) and not isinstance(response, list):
+            raise ValueError(f'Response object is {type(response)}, not list or dict. Don\'t forget to pass response.json()')
 
+        # Fetch schema
+        s = SpecificationFetcher()
+        complete_schema = s.fetch_specification(self.path, self.url)
+
+        # Set case check function
+        self.case_function = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[self.case]
+
+        # Fetch sub-schema
+        schema = parse_endpoint(complete_schema, method, path)
+
+        # Test schema
         if hasattr(schema, 'properties'):
             self._dict(schema, response)
-
         elif hasattr(schema, 'items'):
             self._list(schema, response)
 
