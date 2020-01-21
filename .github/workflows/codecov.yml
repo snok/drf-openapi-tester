@@ -23,12 +23,14 @@ jobs:
       - name: Test with pytest
         run: |
           pytest --cov=openapi_tester --verbose --color=yes  --assert=plain --cov-report=xml
+
           coverage report
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage.xml
+          file: ./coverage.xml
           flags: unittests
           name: codecov-umbrella
+          yml: ./codecov.yml
           fail_ci_if_error: true
