@@ -5,4 +5,4 @@ from .tester import OpenAPITester
 
 logger = logging.getLogger('openapi-tester')
 
-test_schema = OpenAPITester().test
+validate_schema = OpenAPITester().validate_schema

@@ -13,7 +13,7 @@ class OpenAPITester(Settings):
     It inspects a schema recursively, and verifies that the schema matches the structure of the response at each level.
     """
 
-    def test(self, response: json, method: str, path: str) -> None:
+    def validate_schema(self, response: json, method: str, path: str) -> None:
         """
         Verifies that a swagger schema matches an API response.
 
