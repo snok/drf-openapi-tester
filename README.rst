@@ -40,7 +40,7 @@ Add 'openapi_tester' to your INSTALLED_APPS setting in ``settings.py``:
 
    INSTALLED_APPS = [
       ...
-      'drf_yasg',
+      'openapi_tester',
    ]
 
 Configuration
