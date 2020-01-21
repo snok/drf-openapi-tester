@@ -464,12 +464,12 @@ def test_valid_parse():
 
 def test_invalid_method():
     for method in ['patch', 'options', 'head']:
-        with pytest.raises(KeyError, match=f'Schema has not method called `{method}`'):
+        with pytest.raises(KeyError, match=f'The OpenAPI schema has no method called `{method}`'):
             parse_endpoint(schema, method, '/api/v1/cars/correct/')
 
     for method in ['test', '', None]:
         with pytest.raises(
-            ValueError, match='Invalid value for `method`. ' 'Needs to be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
+            ValueError, match='Invalid value for `method`. Needs to be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
         ):
             parse_endpoint(schema, method, '/api/v1/cars/correct/')
 
