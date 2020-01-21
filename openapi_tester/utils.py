@@ -38,7 +38,7 @@ def parse_endpoint(schema: dict, method: str, path: str) -> dict:
     """
     # Validate method
     methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-    if method.lower() not in methods:
+    if not isinstance(method, str) or method.lower() not in methods:
         raise ValueError(f'Invalid value for `method`. Needs to be one of: {", ".join([i.upper() for i in methods])}.')
 
     # Resolve path/url
@@ -54,9 +54,10 @@ def parse_endpoint(schema: dict, method: str, path: str) -> dict:
     elif len(matching_endpoints) == 1:
         matched_endpoint = matching_endpoints[0]
     else:
-        # We probably shouldn't ever let this happen
-        # TODO: Try to make it happen in testing, and work out a better way to do this
-        raise ValueError('Matched the resolved urls to too many endpoints.')
+        raise ValueError('Matched the resolved urls to too many endpoints')
 
     # Return the 200 response schema of that endpoint
-    return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
+    if method.lower() in schema['paths'][matched_endpoint]:
+        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
+    else:
+        raise KeyError(f'The OpenAPI schema has no method called `{method}`')
