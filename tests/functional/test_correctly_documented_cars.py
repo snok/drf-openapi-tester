@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 
-from openapi_tester import test_schema
+from openapi_tester import validate_schema
 from .utils import APITestBase
 
 
@@ -22,4 +22,4 @@ class TestCorrectlyDocumentedCars(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        test_schema(response.json(), 'GET', self.path + '/correct/')
+        validate_schema(response.json(), 'GET', self.path + '/correct/')
