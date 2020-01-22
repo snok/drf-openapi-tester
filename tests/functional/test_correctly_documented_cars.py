@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 
 from openapi_tester import validate_schema
 from .utils import APITestBase
@@ -6,6 +5,8 @@ from .utils import APITestBase
 
 class TestCorrectlyDocumentedCars(APITestBase):
     def setUp(self) -> None:
+        from django.contrib.auth.models import User
+
         user, _ = User.objects.update_or_create(username='test_user')
         self.client.force_authenticate(user=user)
         self.path = '/api/v1/cars'
