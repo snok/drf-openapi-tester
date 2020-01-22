@@ -39,7 +39,7 @@ class SpecificationFetcher(APISimpleTestCase):
             if 400 <= response.status_code <= 600:
                 raise ImproperlyConfigured(
                     '\n\nCould not fetch the OpenAPI specification. Please make sure your documentation is '
-                    f'set to public.\n\nAPI response code: {response.status_code}\nAPI response: {response.text}'
+                    f'set to public and that the path specified is correct.\n\nAPI response code: {response.status_code}'
                 )
 
             return response.json()

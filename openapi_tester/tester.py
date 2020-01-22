@@ -1,8 +1,6 @@
-import json
-
 from .client import SpecificationFetcher
-from .exceptions import SpecificationError
 from .config import Settings
+from .exceptions import SpecificationError
 from .utils import parse_endpoint
 from .utils import snake_case, camel_case
 
@@ -13,7 +11,12 @@ class OpenAPITester(Settings):
     It inspects a schema recursively, and verifies that the schema matches the structure of the response at each level.
     """
 
-    def validate_schema(self, response: json, method: str, path: str) -> None:
+    def __init__(self) -> None:
+        super().__init__()
+        self.case_functions = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}
+        self.case_function = None
+
+    def validate_schema(self, response: dict or list, method: str, endpoint_url: str) -> None:
         """
         Verifies that a swagger schema matches an API response.
 
@@ -25,15 +28,15 @@ class OpenAPITester(Settings):
         if not isinstance(response, dict) and not isinstance(response, list):
             raise ValueError(f'Response object is {type(response)}, not list or dict. Don\'t forget to pass response.json()')
 
+        self.case_function = self.case_functions[self.case]
+
         # Fetch schema
         s = SpecificationFetcher()
-        complete_schema = s.fetch_specification(self.path, self.url)
 
-        # Set case check function
-        self.case_function = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[self.case]
+        complete_schema = s.fetch_specification(self.path, 'http://' in self.path or 'https://' in self.path)
 
         # Fetch sub-schema
-        schema = parse_endpoint(complete_schema, method, path)
+        schema = parse_endpoint(complete_schema, method, endpoint_url)
 
         # Test schema
         if hasattr(schema, 'properties'):

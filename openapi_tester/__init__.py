@@ -1,8 +1,6 @@
 __version__ = '0.0.3'
+__author__ = 'Sondre Lillebø Gundersen'
 
-import logging
 from .tester import OpenAPITester
-
-logger = logging.getLogger('openapi-tester')
 
 validate_schema = OpenAPITester().validate_schema

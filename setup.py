@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-from openapi_tester import __version__
+from openapi_tester import __version__, __author__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -16,12 +16,12 @@ setup(
     include_package_data=True,
     long_description=readme + '\n\n' + changelog,
     license='BSD',
-    author='Sondre Lillebø Gundersen',
+    author=__author__,
     author_email='sondrelg@live.no',
     url='https://github.com/sondrelg/openapi-tester',
     download_url='https://pypi.python.org/pypi/openapi-tester',
     packages=find_packages(exclude=['']),
-    install_requires=[''],
+    install_requires=['djangorestframework', 'requests', 'PyYAML', 'django'],
     keywords=['openapi', 'swagger', 'api', 'test', 'testing', 'drf_yasg'],
     platforms='OS Independent',
     classifiers=[

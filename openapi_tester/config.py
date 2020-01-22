@@ -12,7 +12,6 @@ class Settings(object):
         self.case = 'camel case'
         self._load_django_settings()
         self._validate_settings()
-        self.url = 'http://' in self.path or 'https://' in self.path
         self.path = self.path.lower()
 
     def _load_django_settings(self) -> None:
