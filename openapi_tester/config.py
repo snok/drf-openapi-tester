@@ -1,5 +1,7 @@
 import os.path
 
+from django.conf import settings
+
 from .exceptions import ImproperlyConfigured
 
 
@@ -18,8 +20,6 @@ class Settings(object):
         """
         Assigns self.path and self.case values from the users Django settings.
         """
-        from django.conf import settings
-
         # Check that the settings are defined
         if not hasattr(settings, 'OPENAPI_TESTER'):
             raise ImproperlyConfigured('Please specify OPENAPI_TESTER in your settings.py')

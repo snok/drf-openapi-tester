@@ -41,9 +41,7 @@ class SpecificationFetcher(APISimpleTestCase):
                     '\n\nCould not fetch the OpenAPI specification. Please make sure your documentation is '
                     f'set to public and that the path specified is correct.\n\nAPI response code: {response.status_code}'
                 )
-
             return response.json()
-
         else:
             try:
                 with open(path, 'r') as f:

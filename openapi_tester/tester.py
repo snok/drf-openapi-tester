@@ -1,20 +1,17 @@
-from .client import SpecificationFetcher
-from .config import Settings
 from .exceptions import SpecificationError
 from .utils import parse_endpoint
 from .utils import snake_case, camel_case
 
 
-class OpenAPITester(Settings):
+class OpenAPITester:
     """
     This class verifies that your OpenAPI schema definition matches the response of your API endpoint.
     It inspects a schema recursively, and verifies that the schema matches the structure of the response at each level.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
-        self.case_functions = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}
-        self.case_function = None
+    def __init__(self, path: str, case: str) -> None:
+        self.path = path
+        self.case_func = {'camel case': self._is_camel_case, 'snake case': self._is_snake_case, None: self._skip}[case]
 
     def validate_schema(self, response: dict or list, method: str, endpoint_url: str) -> None:
         """
@@ -22,15 +19,15 @@ class OpenAPITester(Settings):
 
         :param response: dict, unpacked response object (response.json())
         :param method: HTTP method
-        :param path: Path of the endpoint being tested
+        :param endpoint_url: Path of the endpoint being tested
         :return: None
         """
         if not isinstance(response, dict) and not isinstance(response, list):
-            raise ValueError(f'Response object is {type(response)}, not list or dict. Don\'t forget to pass response.json()')
-
-        self.case_function = self.case_functions[self.case]
+            raise ValueError(f'Response object is {type(response)}, ' f'not list or dict. Don\'t forget to pass response.json()')
 
         # Fetch schema
+        from .client import SpecificationFetcher
+
         s = SpecificationFetcher()
 
         complete_schema = s.fetch_specification(self.path, 'http://' in self.path or 'https://' in self.path)
@@ -80,8 +77,8 @@ class OpenAPITester(Settings):
                 raise SpecificationError(f'Response key `{response_key}` is missing from your API documentation')
 
             # Run our case function (checks for camelCase or snake_case, or skips check when the CASE param is None)
-            self.case_function(schema_key)
-            self.case_function(response_key)
+            self.case_func(schema_key)
+            self.case_func(response_key)
 
             # If the current object has nested items, want to check these recursively
             nested_schema = schema[schema_key]
