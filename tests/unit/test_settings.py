@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings as django_settings
 from openapi_tester.exceptions import ImproperlyConfigured
 
-from openapi_tester.settings import Settings
+from openapi_tester.config import Settings
 
 
 def test_valid_settings():

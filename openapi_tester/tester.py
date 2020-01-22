@@ -2,7 +2,7 @@ import json
 
 from .client import SpecificationFetcher
 from .exceptions import SpecificationError
-from .settings import Settings
+from .config import Settings
 from .utils import parse_endpoint
 from .utils import snake_case, camel_case
 
