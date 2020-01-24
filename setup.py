@@ -1,7 +1,6 @@
-__version__ = '0.0.3'
-__author__ = 'Sondre Lillebø Gundersen'
-
 from setuptools import setup, find_packages
+
+from openapi_tester import __author__, __version__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()

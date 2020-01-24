@@ -1,5 +1,4 @@
-from .tester import OpenAPITester
-from .config import Settings
+__version__ = '0.0.3'
+__author__ = 'Sondre Lillebø Gundersen'
 
-settings = Settings()
-validate_schema = OpenAPITester(settings.path, settings.case).validate_schema
+from openapi_tester.tester import validate_schema  # noqa: F401
