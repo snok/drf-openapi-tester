@@ -14,11 +14,12 @@ def authenticated_client() -> APIClient:
     """
     Get valid user and attach credentials to client
     """
+    from rest_framework.test import APIClient
     from django.contrib.auth.models import User
 
     logger.debug('Authenticating API client.')
     user, _ = User.objects.update_or_create(username='test_user')
-    client = APIClient()
+    client: APIClient = APIClient()
     client.force_authenticate(user=user)
     return client
 
