@@ -1,3 +1,4 @@
+from .client import fetch_specification
 from .exceptions import SpecificationError
 from .utils import parse_endpoint
 from .utils import snake_case, camel_case
@@ -26,11 +27,7 @@ class OpenAPITester:
             raise ValueError(f'Response object is {type(response)}, ' f'not list or dict. Don\'t forget to pass response.json()')
 
         # Fetch schema
-        from .client import SpecificationFetcher
-
-        s = SpecificationFetcher()
-
-        complete_schema = s.fetch_specification(self.path, 'http://' in self.path or 'https://' in self.path)
+        complete_schema = fetch_specification(self.path, 'http://' in self.path or 'https://' in self.path)
 
         # Fetch sub-schema
         schema = parse_endpoint(complete_schema, method, endpoint_url)
