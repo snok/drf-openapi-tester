@@ -6,12 +6,12 @@ from .case import case_check
 from .client import fetch_specification
 from .exceptions import SpecificationError
 from .settings import load_settings
-from .utils import parse_endpoint
+from .parse import parse_endpoint
 
 logger = logging.getLogger('openapi-tester')
 
 
-def validate_schema(response: dict or list, method: str, endpoint_url: str) -> None:
+def validate_schema(response: Union[dict, list], method: str, endpoint_url: str) -> None:
     """
     This function verifies that your OpenAPI schema definition matches the response of your API endpoint.
     It inspects your schema recursively, and verifies that the schema matches the structure of the response,
@@ -30,10 +30,10 @@ def validate_schema(response: dict or list, method: str, endpoint_url: str) -> N
         raise ValueError(f'Response object is {type(response)}, not a dict. Hint: make sure you are passing response.json()')
 
     # Fetch schema
-    complete_schema = fetch_specification(path, is_url='http://' in path or 'https://' in path)
+    complete_schema = fetch_specification(path=path, is_url='http://' in path or 'https://' in path)
 
-    # Fetch sub-schema
-    schema = parse_endpoint(complete_schema, method, endpoint_url)
+    # Get the part of the schema relating to the endpoints success-response
+    schema = parse_endpoint(schema=complete_schema, method=method, endpoint_url=endpoint_url)
 
     # Test schema
     if hasattr(schema, 'properties'):

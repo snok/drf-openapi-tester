@@ -24,8 +24,6 @@ def test_valid_paths(monkeypatch):
         f.write('{}')
     with open(django_settings.BASE_DIR + '/openapitestertest.yml', 'w+') as f:
         f.write('{}')
-    with open(django_settings.BASE_DIR + '/openapitestertest.txt', 'w+') as f:
-        f.write('{}')
     for path in [
         'http://127.0.0.1:8080/swagger/?format=openapi',
         'https://127.0.0.1:8080/swagger/?format=openapi',

@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_tester.utils import parse_endpoint
+from openapi_tester.parse import parse_endpoint
 
 schema = {
     'swagger': '2.0',
@@ -468,9 +468,8 @@ def test_invalid_method():
             parse_endpoint(schema, method, '/api/v1/cars/correct/')
 
     for method in ['test', '', None]:
-        with pytest.raises(
-            ValueError, match='Invalid value for `method`. Needs to be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
-        ):
+        expected = f'Method `{method}` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
+        with pytest.raises(ValueError, match=expected):
             parse_endpoint(schema, method, '/api/v1/cars/correct/')
 
 

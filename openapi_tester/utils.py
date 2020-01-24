@@ -1,9 +1,6 @@
 import logging
 import re
 
-from django.urls import resolve
-from django.urls.exceptions import Resolver404
-
 logger = logging.getLogger('openapi-tester')
 
 
@@ -28,39 +25,3 @@ def camel_case(string: str) -> str:
     if not string:
         return string
     return string[0].lower() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), string[1:])
-
-
-def parse_endpoint(schema: dict, method: str, path: str) -> dict:
-    """
-    Returns the section of an OpenAPI schema we want to test, i.e., the 200 response.
-
-    :param schema: OpenAPI specification, dict
-    :param method: HTTP method, str
-    :param path: An endpoints' resolvable URL, str
-    :return: dict
-    """
-    # Validate method
-    methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-    if not isinstance(method, str) or method.lower() not in methods:
-        raise ValueError(f'Invalid value for `method`. Needs to be one of: {", ".join([i.upper() for i in methods])}.')
-
-    # Resolve path/url
-    try:
-        resolved_path = resolve(path)
-    except Resolver404:
-        raise ValueError(f'Could not resolve path `{path}`')
-
-    # Match the path to an OpenAPI endpoint
-    matching_endpoints = [endpoint for endpoint in [key for key in schema['paths']] if endpoint in resolved_path.route]
-    if len(matching_endpoints) == 0:
-        raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
-    elif len(matching_endpoints) == 1:
-        matched_endpoint = matching_endpoints[0]
-    else:
-        raise ValueError('Matched the resolved urls to too many endpoints')
-
-    # Return the 200 response schema of that endpoint
-    if method.lower() in schema['paths'][matched_endpoint]:
-        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
-    else:
-        raise KeyError(f'The OpenAPI schema has no method called `{method}`')
