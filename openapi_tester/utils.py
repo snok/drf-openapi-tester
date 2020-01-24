@@ -1,7 +1,10 @@
+import logging
 import re
 
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
+
+logger = logging.getLogger('openapi-tester')
 
 
 def snake_case(string: str) -> str:

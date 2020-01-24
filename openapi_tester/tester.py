@@ -1,11 +1,14 @@
+import logging
 from typing import Callable
 from typing import Union
 
-from .case_check import test_case
+from .case import case_check
 from .client import fetch_specification
 from .exceptions import SpecificationError
 from .settings import load_settings
 from .utils import parse_endpoint
+
+logger = logging.getLogger('openapi-tester')
 
 
 def validate_schema(response: dict or list, method: str, endpoint_url: str) -> None:
@@ -21,10 +24,10 @@ def validate_schema(response: dict or list, method: str, endpoint_url: str) -> N
     """
     # Load settings
     path, case = load_settings()
-    case_func = test_case(case)
+    case_func = case_check(case)
 
     if not isinstance(response, dict) and not isinstance(response, list):
-        raise ValueError(f'Response object is {type(response)}, ' f'not list or dict. Don\'t forget to pass response.json()')
+        raise ValueError(f'Response object is {type(response)}, not a dict. Hint: make sure you are passing response.json()')
 
     # Fetch schema
     complete_schema = fetch_specification(path, is_url='http://' in path or 'https://' in path)

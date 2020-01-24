@@ -1,10 +1,13 @@
-from typing import Union, Callable
+import logging
+from typing import Union, Callable, Any
 
 from .exceptions import SpecificationError
 from .utils import snake_case, camel_case
 
+logger = logging.getLogger('openapi-tester')
 
-def test_case(case: Union[str, None]) -> Callable:
+
+def case_check(case: Union[str, None]) -> Callable:
     """
     Returns the appropriate case check based on the `case` input parameter.
 
@@ -22,7 +25,9 @@ def is_camel_case(key: str) -> None:
     :return: None
     :raises: SpecificationError
     """
+    logger.debug('Verifying that %s is properly camel cased.', key)
     if camel_case(key) != key:
+        logger.error('%s is not camel cased correctly.', key)
         raise SpecificationError(f'The property `{key}` is not properly camelCased')
 
 
@@ -34,14 +39,17 @@ def is_snake_case(key: str) -> None:
     :return: None
     :raises: SpecificationError
     """
+    logger.debug('Verifying that %s is properly snake cased.', key)
     if snake_case(key) != key:
+        logger.error('%s is not snake cased correctly.', key)
         raise SpecificationError(f'The property `{key}` is not properly snake_cased')
 
 
-def skip() -> None:
+def skip(*args: Any) -> None:
     """
     Skips case assertion.
 
     :return: None
     """
+    logger.debug('Skipping case check.')
     pass
