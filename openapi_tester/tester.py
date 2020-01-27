@@ -1,12 +1,11 @@
 import logging
-from typing import Callable
-from typing import Union
+from typing import Callable, Union
 
 from .case import case_check
 from .client import fetch_specification
 from .exceptions import SpecificationError
-from .settings import load_settings
 from .parse import parse_endpoint
+from .settings import load_settings
 
 logger = logging.getLogger('openapi-tester')
 

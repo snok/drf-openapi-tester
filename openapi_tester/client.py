@@ -3,16 +3,17 @@ import logging
 
 import yaml
 from requests.exceptions import ConnectionError
-from rest_framework.test import APIClient
 
 from openapi_tester.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('openapi-tester')
 
 
-def authenticated_client() -> APIClient:
+def authenticated_client():  # noqa: TYP201
     """
     Get valid user and attach credentials to client
+
+    :return: APIClient
     """
     from rest_framework.test import APIClient
     from django.contrib.auth.models import User
