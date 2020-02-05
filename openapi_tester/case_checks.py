@@ -15,7 +15,13 @@ def case_check(case: Union[str, None]) -> Callable:
     :param case: str
     :return: function
     """
-    return {'camel case': is_camel_case, 'snake case': is_snake_case, None: skip}[case]
+    return {
+        'camel case': is_camel_case,
+        'snake case': is_snake_case,
+        'kebab case': is_kebab_case,
+        'pascal case': is_pascal_case,
+        None: skip,
+    }[case]
 
 
 def is_camel_case(key: str) -> None:
@@ -44,6 +50,34 @@ def is_snake_case(key: str) -> None:
     if rscase.snake_case(key) != key:
         logger.error('%s is not snake cased correctly.', key)
         raise SpecificationError(f'The property `{key}` is not properly snake_cased')
+
+
+def is_kebab_case(key: str) -> None:
+    """
+    Asserts that a value is kebab-cased.
+
+    :param key: str
+    :return: None
+    :raises: SpecificationError
+    """
+    logger.debug('Verifying that %s is properly kebab cased.', key)
+    if rscase.kebab_case(key) != key:
+        logger.error('%s is not kebab cased correctly.', key)
+        raise SpecificationError(f'The property `{key}` is not properly kebab-cased')
+
+
+def is_pascal_case(key: str) -> None:
+    """
+    Asserts that a value is PascalCased.
+
+    :param key: str
+    :return: None
+    :raises: SpecificationError
+    """
+    logger.debug('Verifying that %s is properly pascal cased.', key)
+    if rscase.pascal_case(key) != key:
+        logger.error('%s is not pascal cased correctly.', key)
+        raise SpecificationError(f'The property `{key}` is not properly PascalCased')
 
 
 def skip(*args: Any) -> None:
