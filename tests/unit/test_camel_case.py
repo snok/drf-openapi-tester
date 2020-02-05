@@ -2,7 +2,7 @@ import pytest
 
 from openapi_tester.case import is_camel_case
 from openapi_tester.exceptions import SpecificationError
-from openapi_tester.utils import camel_case
+from rscase import rscase
 
 test_data = [
     {'input': 'snake_case', 'expected': 'snakeCase'},
@@ -16,7 +16,7 @@ test_data = [
 
 def test_camel_case():
     for item in test_data:
-        assert camel_case(item['input']) == item['expected']
+        assert rscase.camel_case(item['input']) == item['expected']
 
 
 def test_is_camel_case():

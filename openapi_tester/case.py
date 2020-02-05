@@ -1,8 +1,9 @@
 import logging
 from typing import Union, Callable, Any
 
+from rscase import rscase
+
 from .exceptions import SpecificationError
-from .utils import snake_case, camel_case
 
 logger = logging.getLogger('openapi-tester')
 
@@ -26,7 +27,7 @@ def is_camel_case(key: str) -> None:
     :raises: SpecificationError
     """
     logger.debug('Verifying that %s is properly camel cased.', key)
-    if camel_case(key) != key:
+    if rscase.camel_case(key) != key:
         logger.error('%s is not camel cased correctly.', key)
         raise SpecificationError(f'The property `{key}` is not properly camelCased')
 
@@ -40,7 +41,7 @@ def is_snake_case(key: str) -> None:
     :raises: SpecificationError
     """
     logger.debug('Verifying that %s is properly snake cased.', key)
-    if snake_case(key) != key:
+    if rscase.snake_case(key) != key:
         logger.error('%s is not snake cased correctly.', key)
         raise SpecificationError(f'The property `{key}` is not properly snake_cased')
 
