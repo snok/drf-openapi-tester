@@ -1,6 +1,6 @@
 import logging
 import os.path
-from typing import Tuple
+from typing import Tuple, Union
 
 from django.conf import settings
 
@@ -9,7 +9,7 @@ from .exceptions import ImproperlyConfigured
 logger = logging.getLogger('openapi-tester')
 
 
-def load_settings() -> Tuple[str, str]:
+def load_settings() -> Tuple[str, Union[str, None], Union[str, None]]:
     """
     Loads and validates Django settings.
 
@@ -45,12 +45,12 @@ def _load_django_settings(config: dict) -> dict:
     return config
 
 
-def _validate_settings(config: dict) -> Tuple[str, str]:
+def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, None]]:
     """
     Validates path and case values.
 
     :param config: dict
-    :return: tuple of strings (path, case)
+    :return: tuple of strings (schema, case, path)
     """
     logger.debug('Validating settings.')
 
@@ -98,4 +98,4 @@ def _validate_settings(config: dict) -> Tuple[str, str]:
                 f'Make sure to include the file extension if it is missing from your PATH setting.'
             )
 
-    return config['path'].lower(), config['case'].lower() if config['case'] else None
+    return config['SCHEMA'].lower(), config['CASE'].lower() if config['CASE'] else None, config['PATH'].lower()
