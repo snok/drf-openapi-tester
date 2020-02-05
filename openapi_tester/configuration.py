@@ -15,13 +15,13 @@ def load_settings() -> Tuple[str, str]:
 
     :return: tuple of strings (path, case)
     """
-    config = {'path': None, 'case': 'camel case'}  # Defaults
+    config = {'SCHEMA': 'dynamic', 'CASE': 'camel case', 'PATH': None}  # Defaults
     return _validate_settings(_load_django_settings(config))
 
 
 def _load_django_settings(config: dict) -> dict:
     """
-    Assigns Django setting values to path and case.
+    Assigns Django setting values to schema, case, and path.
 
     :param config: dict
     :return: dict
@@ -54,42 +54,48 @@ def _validate_settings(config: dict) -> Tuple[str, str]:
     """
     logger.debug('Validating settings.')
 
-    # Make sure path is specified
-    if config['path'] is None:
-        logger.error('Required parameter, `path`, not specified in the OPENAPI_TESTER settings.')
-        raise ImproperlyConfigured(f'`path` is a required setting for the openapi-tester module')
+    # Make sure schema is correctly specified - default is "dynamic", so a None value would mean it was set as None
+    if not config['SCHEMA'] or not isinstance(config['SCHEMA'], str) or config['SCHEMA'] not in ['dynamic', 'static']:
+        logger.error('Required parameter, `SCHEMA`, was mis-specified in the OPENAPI_TESTER settings.')
+        raise ImproperlyConfigured(
+            f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module. '
+            f'Please update your OPENAPI_TESTER settings.'
+        )
 
-    # If it is specified, make sure it's correctly specified
-    if not isinstance(config['path'], str):
-        logger.error('Parameter `path` set as an illegal value.')
-        raise ImproperlyConfigured('`path` needs to be a string')
+    # Make sure case is correctly specified - default is "camel case"
+    accepted_cases = ['camel case', 'snake case', 'kebab case', 'pascal case', None]
+    if config['CASE'] is None:
+        pass
+    elif not isinstance(config['CASE'], str) or config['CASE'] not in accepted_cases:
+        logger.error('Required parameter, `CASE`, was mis-specified in the OPENAPI_TESTER settings.')
+        raise ImproperlyConfigured(
+            f'The openapi-tester package currently doesn\'t support a case called {config["CASE"]}.'
+            f' Set case to `snake case` for snake_case, '
+            f'`camel case` for camelCase, '
+            f'`pascal case` for PascalCase,'
+            f'`kebab case` for kebab-case, or None to skip case validation completely.'
+        )
 
-    if 'http://' in config['path'] or 'https://' in config['path']:
-        logger.debug('Parameter `path` seems to point to an URL.')
-        pass  # We'll have to try and fetch the schema before we know if the url is correct
+    if config['SCHEMA'] == 'static' and config['PATH'] is None:
+        logger.error('Required parameter, `PATH`, not specified in the OPENAPI_TESTER settings.')
+        raise ImproperlyConfigured(
+            f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your OPENAPI_TESTER settings.'
+        )
     else:
-        logger.debug('Parameter `path` seems to point to a local file.')
+        if not isinstance(config['PATH'], str):
+            logger.error('Parameter `PATH` set as an illegal value.')
+            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
+
         if not os.path.isfile(config['path']):
             logger.error('Path %s does not resolve as a valid file.', config['path'])
             raise ImproperlyConfigured(
-                f'The path "{config["path"]}" does not point to a valid file. '
-                'Make sure to point to the specification file or add a scheme to your url '
-                '(e.g., `http://`).'
+                f'The path "{config["path"]}" does not point to a valid file. ' 'Make sure to point to the specification file.'
             )
         elif '.yaml' not in config['path'] and '.yml' not in config['path'] and '.json' not in config['path']:
             logger.error('Path does not include a file type, e.g., `.json` or `.yml`.')
             raise ImproperlyConfigured(
-                f'The path "{config["path"]}" must point to a yaml or json file. ' f'Make sure to include the file type if it is missing.'
+                f'The path "{config["path"]}" must point to a yaml or json file. '
+                f'Make sure to include the file extension if it is missing from your PATH setting.'
             )
-
-    supported_cases = ['camel case', 'snake case', None]
-
-    if config['case'] not in supported_cases:
-        logger.error('Parameter `case` is invalid.')
-        raise ImproperlyConfigured(
-            f'This package currently doesn\'t support a case called {config["case"]}.'
-            f' Set case to `snake case` for snake_case, '
-            f'`camel case` for camelCase, or None to skip case validation completely.'
-        )
 
     return config['path'].lower(), config['case'].lower() if config['case'] else None
