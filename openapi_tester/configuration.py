@@ -79,7 +79,7 @@ def _validate_settings(config: dict) -> Tuple[str, str]:
         elif '.yaml' not in config['path'] and '.yml' not in config['path'] and '.json' not in config['path']:
             logger.error('Path does not include a file type, e.g., `.json` or `.yml`.')
             raise ImproperlyConfigured(
-                f'The path "{config["path"]}" must point to a yaml or json file. Make sure to include the file type if it is missing.'
+                f'The path "{config["path"]}" must point to a yaml or json file. ' f'Make sure to include the file type if it is missing.'
             )
 
     supported_cases = ['camel case', 'snake case', None]
