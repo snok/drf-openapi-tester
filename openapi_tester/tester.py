@@ -5,10 +5,10 @@ from requests import Response
 
 from .case_checks import case_check
 from .configuration import load_settings
-from .drf_yasg.get_schema import fetch_generated_schema
-from .drf_yasg.parse import parse_endpoint
+from .dynamic.get_schema import fetch_generated_schema
 from .exceptions import SpecificationError
-from .static_file.get_schema import fetch_from_dir
+from .static.get_schema import fetch_from_dir
+from .static.parse import parse_endpoint
 
 logger = logging.getLogger('openapi-tester')
 
@@ -31,7 +31,7 @@ def validate_schema(response: Response, method: str, endpoint_url: str) -> None:
     try:
         data = response.json()
     except Exception as e:
-        raise ValueError(f'Unable to unpack response object. Hint: make sure you are passing response, not response.json(). Error: {e}')
+        raise ValueError(f'Unable to unpack response object. Hint: make sure you are passing response, not response.json(). ' f'Error: {e}')
 
     try:
         status_code = response.status_code

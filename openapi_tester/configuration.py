@@ -81,21 +81,21 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
         raise ImproperlyConfigured(
             f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your OPENAPI_TESTER settings.'
         )
-    else:
+    elif config['SCHEMA'] == 'static':
         if not isinstance(config['PATH'], str):
             logger.error('Parameter `PATH` set as an illegal value.')
             raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
 
-        if not os.path.isfile(config['path']):
+        if not os.path.isfile(config['PATH']):
             logger.error('Path %s does not resolve as a valid file.', config['path'])
             raise ImproperlyConfigured(
                 f'The path "{config["path"]}" does not point to a valid file. ' 'Make sure to point to the specification file.'
             )
-        elif '.yaml' not in config['path'] and '.yml' not in config['path'] and '.json' not in config['path']:
+        elif '.yaml' not in config['PATH'] and '.yml' not in config['PATH'] and '.json' not in config['PATH']:
             logger.error('Path does not include a file type, e.g., `.json` or `.yml`.')
             raise ImproperlyConfigured(
                 f'The path "{config["path"]}" must point to a yaml or json file. '
                 f'Make sure to include the file extension if it is missing from your PATH setting.'
             )
 
-    return config['SCHEMA'].lower(), config['CASE'].lower() if config['CASE'] else None, config['PATH'].lower()
+    return config['SCHEMA'].lower(), config['CASE'].lower() if config['CASE'] else None, config['PATH'].lower() if config['PATH'] else None

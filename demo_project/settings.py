@@ -114,7 +114,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-OPENAPI_TESTER = {'path': 'http://127.0.0.1:8080/swagger/?format=openapi', 'case': 'camel case'}
+OPENAPI_TESTER = {'SCHEMA': 'dynamic', 'CASE': 'camel case'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
