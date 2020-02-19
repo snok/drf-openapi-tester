@@ -5,11 +5,14 @@ logger = logging.getLogger('openapi_tester')
 
 def fetch_generated_schema(url: str, status_code: str, method: str) -> dict:
     """
-    Fetches OpenAPI specification from URL.
+    Fetches dynamically generated schema.
 
-    :param url: str
+    :param url: API endpoint URL, str
+    :param status_code: Response status code, str
+    :param method: HTTP method, str
     :return: dict
     """
+    logger.debug('Returning generate dyanmic schema')
     from drf_yasg.openapi import Info
     from drf_yasg.generators import OpenAPISchemaGenerator
 

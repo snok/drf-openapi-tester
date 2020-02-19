@@ -1,3 +1,7 @@
+############################
+OpenAPI Specification Tester
+############################
+
 .. image:: https://img.shields.io/pypi/v/openapi-tester.svg
     :target: https://pypi.org/project/openapi-tester/
 
@@ -9,12 +13,11 @@
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://pypi.org/project/openapi-tester/
+.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
+    :target: https://github.com/pre-commit/pre-commit
+
 .. role:: python(code)
    :language: python
-
-############################
-OpenAPI Specification Tester
-############################
 
 This package provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation against actual API responses.
 
