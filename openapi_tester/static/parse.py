@@ -3,7 +3,7 @@ import logging
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:

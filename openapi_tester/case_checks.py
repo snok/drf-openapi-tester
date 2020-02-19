@@ -4,7 +4,7 @@ from typing import Union, Callable, Any
 
 from .exceptions import SpecificationError
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def case_check(case: Union[str, None]) -> Callable:
@@ -34,7 +34,7 @@ def is_camel_case(key: str) -> None:
     logger.debug('Verifying that `%s` is properly camel cased', key)
     if len(key) == 0:
         return
-    if len(key) == 1 and key.isalpha() is False or (key.isalpha() is True and key != key.casefold()):
+    if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('%s is not camel cased', key)
         raise SpecificationError(f'The property `{key}` is not properly camelCased')
     else:
@@ -55,7 +55,7 @@ def is_snake_case(key: str) -> None:
     logger.debug('Verifying that `%s` is properly snake cased', key)
     if len(key) == 0:
         return
-    if len(key) == 1 and key.isalpha() is False or (key.isalpha() is True and key != key.casefold()):
+    if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('%s is not snake cased', key)
         raise SpecificationError(f'The property `{key}` is not properly snake_cased')
     snake_cased_key = (
@@ -77,7 +77,7 @@ def is_kebab_case(key: str) -> None:
     logger.debug('Verifying that `%s` is properly kebab cased', key)
     if len(key) == 0:
         return
-    if len(key) == 1 and key.isalpha() is False or (key.isalpha() is True and key != key.casefold()):
+    if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('%s is not kebab cased', key)
         raise SpecificationError(f'The property `{key}` is not properly kebab-cased')
     kebab_cased_key = (
@@ -99,7 +99,7 @@ def is_pascal_case(key: str) -> None:
     logger.debug('Verifying that `%s` is properly pascal cased', key)
     if len(key) == 0:
         return
-    if len(key) == 1 and key.isalpha() is False or (key.isalpha() is True and key != key.upper()):
+    if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.upper())):
         logger.error('%s is not pascal cased', key)
         raise SpecificationError(f'The property `{key}` is not properly PascalCased')
     pascal_cased_key = key[0].upper() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), key[1:])

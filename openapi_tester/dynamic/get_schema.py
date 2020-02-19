@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def fetch_generated_schema(url: str, status_code: str, method: str) -> dict:

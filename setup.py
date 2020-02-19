@@ -1,6 +1,8 @@
+__version__ = '0.0.4'
+__author__ = 'Sondre Lillebø Gundersen'
+
 from setuptools import setup, find_packages
 
-from openapi_tester import __author__, __version__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -21,7 +23,7 @@ setup(
     url='https://github.com/sondrelg/openapi-tester',
     download_url='https://pypi.python.org/pypi/openapi-tester',
     packages=find_packages(exclude=['']),
-    install_requires=['djangorestframework', 'requests', 'PyYAML', 'django', 'rscase==1.0.1'],
+    install_requires=['djangorestframework', 'requests', 'PyYAML', 'django'],
     keywords=['openapi', 'swagger', 'api', 'test', 'testing', 'drf_yasg'],
     platforms='OS Independent',
     classifiers=[

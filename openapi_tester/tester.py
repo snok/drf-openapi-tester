@@ -3,14 +3,14 @@ from typing import Callable, Union
 
 from requests import Response
 
-from .case_checks import case_check
-from .configuration import load_settings
-from .dynamic.get_schema import fetch_generated_schema
-from .exceptions import SpecificationError
-from .static.get_schema import fetch_from_dir
-from .static.parse import parse_endpoint
+from openapi_tester.case_checks import case_check
+from openapi_tester.configuration import load_settings
+from openapi_tester.dynamic.get_schema import fetch_generated_schema
+from openapi_tester.exceptions import SpecificationError
+from openapi_tester.static.get_schema import fetch_from_dir
+from openapi_tester.static.parse import parse_endpoint
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def validate_schema(response: Response, method: str, endpoint_url: str) -> None:

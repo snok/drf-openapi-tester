@@ -5,7 +5,7 @@ import yaml
 
 from openapi_tester.exceptions import ImproperlyConfigured
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def fetch_from_dir(path: str) -> dict:

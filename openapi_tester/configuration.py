@@ -6,7 +6,7 @@ from django.conf import settings
 
 from .exceptions import ImproperlyConfigured
 
-logger = logging.getLogger('openapi-tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def load_settings() -> Tuple[str, Union[str, None], Union[str, None]]:
