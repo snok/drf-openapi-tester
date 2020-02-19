@@ -1,4 +1,3 @@
 django
 djangorestframework
 PyYAML
-rscase==1.0.1
