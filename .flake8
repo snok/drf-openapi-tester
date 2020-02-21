@@ -38,11 +38,9 @@ exclude =
     .git,
     .idea,
     __pycache__,
-    tests/*,
     demo_project/*,
     venv,
     manage.py,
-    test.py
 
 
 max-complexity = 15
