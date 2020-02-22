@@ -31,7 +31,7 @@ def _load_django_settings(config: dict) -> dict:
     # Check that the settings are defined
     if not hasattr(settings, 'OPENAPI_TESTER'):
         logger.error('OPENAPI_TESTER not found in the projects Django settings.')
-        raise ImproperlyConfigured('Please specify OPENAPI_TESTER in your settings.py')
+        raise ImproperlyConfigured('Please specify OPENAPI_TESTER settings in your settings.py')
 
     _settings = settings.OPENAPI_TESTER
 
@@ -87,14 +87,14 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
             raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
 
         if not os.path.isfile(config['PATH']):
-            logger.error('Path %s does not resolve as a valid file.', config['path'])
+            logger.error('Path %s does not resolve as a valid file.', config['PATH'])
             raise ImproperlyConfigured(
-                f'The path "{config["path"]}" does not point to a valid file. ' 'Make sure to point to the specification file.'
+                f'The path "{config["PATH"]}" does not point to a valid file. Make sure to point to the specification file.'
             )
         elif '.yaml' not in config['PATH'] and '.yml' not in config['PATH'] and '.json' not in config['PATH']:
             logger.error('Path does not include a file type, e.g., `.json` or `.yml`.')
             raise ImproperlyConfigured(
-                f'The path "{config["path"]}" must point to a yaml or json file. '
+                f'The path "{config["PATH"]}" must point to a yaml or json file. '
                 f'Make sure to include the file extension if it is missing from your PATH setting.'
             )
 

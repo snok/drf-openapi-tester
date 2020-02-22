@@ -3,66 +3,79 @@ import os
 import pytest
 from django.conf import settings as django_settings
 
-from openapi_tester.exceptions import ImproperlyConfigured
 from openapi_tester.configuration import load_settings
+from openapi_tester.exceptions import ImproperlyConfigured
 
-# TODO: Expand test suite to cover new settings (schema)
 
-
-def test_valid_settings():
+def test_valid_settings() -> None:
+    """
+    Assert that the default settings in the demo project pass without errors.
+    """
     load_settings()
 
 
-def test_valid_cases(monkeypatch):
+def test_valid_cases(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Assert that valid cases always pass without errors.
+    """
     for case in ['snake case', 'camel case', 'pascal case', 'kebab case', None]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'dynamic', 'CASE': case})
         load_settings()
 
 
-def test_valid_paths(monkeypatch):
-    with open(django_settings.BASE_DIR + '/openapitestertest.json', 'w+') as f:
-        f.write('{}')
-    with open(django_settings.BASE_DIR + '/openapitestertest.yaml', 'w+') as f:
-        f.write('{}')
-    with open(django_settings.BASE_DIR + '/openapitestertest.yml', 'w+') as f:
-        f.write('{}')
-    for path in [
-        f'{django_settings.BASE_DIR + "test.json"}',
-        f'{django_settings.BASE_DIR + "test.yaml"}',
-        f'{django_settings.BASE_DIR + "test.yml"}',
-    ]:
-        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'static', 'PATH': path, 'CASE': None})
-        load_settings()
-    os.remove(django_settings.BASE_DIR + '/openapitestertest.json')
-    os.remove(django_settings.BASE_DIR + '/openapitestertest.yaml')
-    os.remove(django_settings.BASE_DIR + '/openapitestertest.yml')
-
-
-def test_missing_settings(monkeypatch):
+def test_missing_settings(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that an error is raised when no OPENAPI_TESTER dict is specified.
+    -> empty dict is fine, because all values have defaults.
+    """
     monkeypatch.delattr(django_settings, 'OPENAPI_TESTER')
-    with pytest.raises(ImproperlyConfigured, match='Please specify OPENAPI_TESTER in your settings.py'):
+    with pytest.raises(ImproperlyConfigured, match='Please specify OPENAPI_TESTER settings in your settings.py'):
         load_settings()
 
 
-def test_missing_path(monkeypatch):
-    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'CASE': None})
+def test_empty_settings(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that no error is raised when empty OPENAPI_TESTER dict is specified.
+    """
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {})
     load_settings()
 
 
-def test_bad_path(monkeypatch):
+def test_missing_path(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Test that a path is required when the schema type is `static`
+    """
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'static'})
+    with pytest.raises(
+        ImproperlyConfigured,
+        match='`PATH` is a required setting for the openapi-tester module. ' 'Please update your OPENAPI_TESTER settings.',
+    ):
+        load_settings()
+
+
+def test_bad_path(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that an incorrect path type raises an exception.
+    """
     for item in [2, -2, 2.2, [], (1,), {}]:
-        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'static', 'CASE': None, 'PATH': 2})
+        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'static', 'CASE': None, 'PATH': item})
         with pytest.raises(ImproperlyConfigured, match='`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.'):
             load_settings()
 
 
-def test_invalid_setting(monkeypatch):
+def test_invalid_setting(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that an incorrect settings dict raises an exception.
+    """
     monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'test': 'test'})
     with pytest.raises(ImproperlyConfigured, match='`test` is not a valid setting for the openapi-tester module'):
         load_settings()
 
 
-def test_invalid_cases(monkeypatch):
+def test_invalid_cases(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that an incorrect CASE setting raises as exception.
+    """
     for case in ['snakecase', 'camel', '', 1, -22, {}]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'dynamic', 'CASE': case})
         with pytest.raises(
@@ -78,8 +91,36 @@ def test_invalid_cases(monkeypatch):
             load_settings()
 
 
-def test_invalid_paths(monkeypatch):
-    for path in ['', None, 1, '.', 'www.google.com', f'{django_settings.BASE_DIR + "/README.rst"}']:
-        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'path': path, 'case': None})
+def test_invalid_paths(monkeypatch, caplog) -> None:  # noqa: TYP001
+    """
+    Asserts that a string PATH setting, that doesn't point to a real file raises as exception.
+    """
+    for path in ['', '.', 'www.google.com']:
+        monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'PATH': path, 'SCHEMA': 'static'})
         with pytest.raises(ImproperlyConfigured):
             load_settings()
+            assert f'Path {path} does not resolve as a valid file.' in caplog.messages
+
+
+def test_invalid_file_type(monkeypatch, caplog) -> None:  # noqa: TYP001
+    """
+    Asserts that a string PATH setting that points to a real file, but of the wrong file type raises as exception.
+    """
+    path = os.path.abspath(os.path.join(django_settings.BASE_DIR, '..', '..', 'README.rst'))
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'PATH': path, 'SCHEMA': 'static'})
+    with pytest.raises(ImproperlyConfigured):
+        load_settings()
+        assert f'Path does not include a file type, e.g., `.json` or `.yml`' in caplog.messages
+
+
+def test_bad_schema(monkeypatch) -> None:  # noqa: TYP001
+    """
+    Asserts that an incorrect SCHEMA setting raises as exception.
+    """
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': None})
+    with pytest.raises(
+        ImproperlyConfigured,
+        match='`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module. '
+        'Please update your OPENAPI_TESTER settings.',
+    ):
+        load_settings()

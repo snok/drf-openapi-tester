@@ -8,62 +8,68 @@ OpenAPI Specification Tester
 .. image:: https://img.shields.io/pypi/pyversions/openapi-tester.svg
     :target: https://pypi.org/project/openapi-tester/
 
+.. image:: https://img.shields.io/pypi/djversions/openapi-tester.svg
+    :target: https://pypi.python.org/pypi/openapi-tester
+
 .. image:: https://codecov.io/gh/sondrelg/openapi-tester/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/sondrelg/openapi-tester
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://pypi.org/project/openapi-tester/
+
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
 
 .. role:: python(code)
    :language: python
 
-This package provides a simple test-utility to test the integrity of your OpenAPI/Swagger documentation against actual API responses.
+This package provides a simple test utility for testing the integrity of your OpenAPI/Swagger documentation.
 
-Package is currently under development, and only supports testing of swagger documentation implemented in Django using drf_yasg_. The ambition for release 1.0.0 is to expand the current features to support testing any openapi specification, and to cut the dependence on Django tooling.
+The test utility has two main functions. First, the documentation is tested by ensuring that it matches the content of actual API responses, and secondly the package ensures that all documentation adheres to the case-type specified as standard, .e.g, camel case.
+
+The package is currently under development, and only supports testing of swagger documentation implemented in Django using drf_yasg_. The ambition for release 1.0.0 is to expand the current features to support testing any openapi specification, and to cut the dependence on Django tooling.
 
 .. _Drf_yasg: https://github.com/axnsan12/drf-yasg
 
-
+************
 Installation
-############
+************
 
 Install using pip:
 
-.. code:: python
+.. code:: bash
 
     pip install openapi-tester
-
-Add 'openapi_tester' to your INSTALLED_APPS setting in ``settings.py``:
-
-.. code:: python
-
-   INSTALLED_APPS = [
-      ...
-      'openapi_tester',
-   ]
 
 Configuration
 #############
 
-The app currently requires the following parameters:
+Package settings are added in your ``settings.py``:
+
+.. code-block:: python
+
+    OPENAPI_TESTER = {
+        'SCHEMA': 'dynamic',
+        'CASE': 'camel case'
+    }
+
+**Parameters**
 
 * :code:`SCHEMA`
-        The type of schema you are operating with. Can be either :code:`dynamic` or :code:`static`.
+        The type of schema you are using. Can either be :code:`dynamic` or :code:`static`.
 
     Default: `dynamic`
 
 * :code:`CASE`
         The case standard you wish to enforce for your documentation. Needs to be one of the following:
-            * :code:`camel case`,
-            * :code:`snake case`,
-            * :code:`pascal case`,
-            * :code:`kebab-case`, or
+            * :code:`camel case`
+            * :code:`snake case`
+            * :code:`pascal case`
+            * :code:`kebab case`
             * :code:`None`
 
         Every key in your tested endpoint's schema will be verified as compliant or non-compliant according to the
-        selected case, unless you specify :code:`None` to skip the check.
+        selected case, unless you specify :code:`None` to skip this feature.
 
     Default: :code:`camel case`
 
@@ -74,9 +80,9 @@ The app currently requires the following parameters:
 
 |
 
-**Configuration example**
+**Examples**
 
-Using, e.g., drf_yasg_ for dynamic schema generation:
+Using drf_yasg_ for dynamic schema generation, your configuration might look like this:
 
 .. _Drf_yasg: https://github.com/axnsan12/drf-yasg
 
@@ -87,7 +93,7 @@ Using, e.g., drf_yasg_ for dynamic schema generation:
         'CASE': 'camel case'
     }
 
-Using, e.g., DRF_ for static schema generation:
+While using, e.g., DRF_ for static schema generation, you would need to add the path to your generated schema:
 
 .. _DRF: https://www.django-rest-framework.org/api-guide/schemas/
 
@@ -99,11 +105,11 @@ Using, e.g., DRF_ for static schema generation:
         'PATH': './swagger/schema.json'
     }
 
-
+**************
 Implementation
-##############
+**************
 
-The OpenAPI tester is best used to supplement your existing API tests.
+The OpenAPI tester is best used for supplementing your existing API tests.
 
 The easiest way to implement it, is by testing your schema after retrieving a valid response from an endpoint.
 
@@ -141,4 +147,4 @@ An example might look like this:
             # Test Swagger documentation
             test_schema(response, 'GET', self.path + '/correct/')
 
-See the demo project and tests folder for more examples.
+See the demo projects and tests folder for more examples.
