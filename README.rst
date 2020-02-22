@@ -41,8 +41,9 @@ Install using pip:
 
     pip install openapi-tester
 
+*************
 Configuration
-#############
+*************
 
 Package settings are added in your ``settings.py``:
 
@@ -53,7 +54,9 @@ Package settings are added in your ``settings.py``:
         'CASE': 'camel case'
     }
 
-**Parameters**
+**********
+Parameters
+**********
 
 * :code:`SCHEMA`
         The type of schema you are using. Can either be :code:`dynamic` or :code:`static`.
@@ -80,7 +83,9 @@ Package settings are added in your ``settings.py``:
 
 |
 
-**Examples**
+********
+Examples
+********
 
 Using drf_yasg_ for dynamic schema generation, your configuration might look like this:
 
