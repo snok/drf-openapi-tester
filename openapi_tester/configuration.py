@@ -1,5 +1,4 @@
 import logging
-import os.path
 from typing import Tuple, Union
 
 from django.conf import settings
@@ -36,8 +35,8 @@ def _load_django_settings(config: dict) -> dict:
     _settings = settings.OPENAPI_TESTER
 
     for setting, value in _settings.items():
-        if setting in config:
-            config[setting] = value
+        if setting.upper() in config:
+            config[setting.upper()] = value
         else:
             logger.error('Excess setting, `%s`, found in OPENAPI_TESTER settings.', setting)
             raise ImproperlyConfigured(f'`{setting}` is not a valid setting for the openapi-tester module')
@@ -55,7 +54,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
     logger.debug('Validating settings.')
 
     # Make sure schema is correctly specified - default is "dynamic", so a None value would mean it was set as None
-    if not config['SCHEMA'] or not isinstance(config['SCHEMA'], str) or config['SCHEMA'] not in ['dynamic', 'static']:
+    if not config['SCHEMA'] or not isinstance(config['SCHEMA'], str) or config['SCHEMA'].lower() not in ['dynamic', 'static']:
         logger.error('Required parameter, `SCHEMA`, was mis-specified in the OPENAPI_TESTER settings.')
         raise ImproperlyConfigured(
             f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module. '
@@ -86,16 +85,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
             logger.error('Parameter `PATH` set as an illegal value.')
             raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
 
-        if not os.path.isfile(config['PATH']):
-            logger.error('Path %s does not resolve as a valid file.', config['PATH'])
-            raise ImproperlyConfigured(
-                f'The path "{config["PATH"]}" does not point to a valid file. Make sure to point to the specification file.'
-            )
-        elif '.yaml' not in config['PATH'] and '.yml' not in config['PATH'] and '.json' not in config['PATH']:
-            logger.error('Path does not include a file type, e.g., `.json` or `.yml`.')
-            raise ImproperlyConfigured(
-                f'The path "{config["PATH"]}" must point to a yaml or json file. '
-                f'Make sure to include the file extension if it is missing from your PATH setting.'
-            )
+        from openapi_tester.static.get_schema import fetch_from_dir
 
+        fetch_from_dir(config['PATH'])
     return config['SCHEMA'].lower(), config['CASE'].lower() if config['CASE'] else None, config['PATH'].lower() if config['PATH'] else None

@@ -13,7 +13,7 @@ def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) 
     :param method: HTTP method, str
     :return: dict
     """
-    logger.debug('Returning generated dynamic schema')
+    logger.debug('Fetching generated dynamic schema')
     from drf_yasg.openapi import Info
     from drf_yasg.generators import OpenAPISchemaGenerator
 

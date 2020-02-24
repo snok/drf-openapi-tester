@@ -32,10 +32,12 @@ def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:
         logger.debug('Resolving path.')
         resolved_path = resolve(endpoint_url)
     except Resolver404:
-        logger.error('URL `%s` is invalid. Hint: remember to use both leading and ending forward slashes.', endpoint_url)
+        logger.error(f'URL `%s` is invalid. Hint: remember to use both leading and ending forward slashes.', endpoint_url)
         raise ValueError(f'Could not resolve path `{endpoint_url}`')
 
     # Match the path to an OpenAPI endpoint
+    resolved_path.route = ('/' + resolved_path.route + '/').replace('//', '/')  # The schema has leading slashes, but resolved urls dont
+
     matching_endpoints = [endpoint for endpoint in [key for key in schema['paths']] if endpoint in resolved_path.route]
     if len(matching_endpoints) == 0:
         raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
@@ -47,7 +49,7 @@ def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:
 
     # Return the 200 response schema of that endpoint
     if method.lower() in schema['paths'][matched_endpoint]:
-        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['schema']
+        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['content']['application/json']['schema']
     else:
         logger.error('Schema section for %s does not exist.', method)
         raise KeyError(f'The OpenAPI schema has no method called `{method}`')

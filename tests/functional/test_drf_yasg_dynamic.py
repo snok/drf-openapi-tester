@@ -36,7 +36,7 @@ test_data = [
 ]
 
 
-def test_get_cars_200(client) -> None:  # noqa: TYP001
+def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
     """
     Asserts that the validate_schema function validates correct schemas successfully.
     """
