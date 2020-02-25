@@ -1,4 +1,4 @@
-from openapi_tester.case import skip
+from openapi_tester.case_checks import skip
 
 
 def test_skip():

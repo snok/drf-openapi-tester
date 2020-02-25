@@ -19,6 +19,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
         run: |
+          python -m pip install -e .
           python -m pip install --upgrade pip
           pip install -r tests/requirements-test-base.txt
           pip install -r requirements.txt
@@ -31,4 +32,5 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          pytest --verbose --color=yes  --assert=plain
+          pytest --cov=openapi_tester --verbose --color=yes  --assert=plain
+          coverage report

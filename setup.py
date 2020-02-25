@@ -1,6 +1,8 @@
+__version__ = '0.0.5'
+__author__ = 'Sondre Lillebø Gundersen'
+
 from setuptools import setup, find_packages
 
-from openapi_tester import __author__, __version__
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -27,8 +29,10 @@ setup(
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Web Environment',
-        'Framework :: Django',
         'Framework :: Pytest',
+        'Framework :: Django',
+        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',

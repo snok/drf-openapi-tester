@@ -1,28 +1,38 @@
 import pytest
 
-from openapi_tester.case import is_snake_case
+from openapi_tester.case_checks import is_snake_case
 from openapi_tester.exceptions import SpecificationError
-from openapi_tester.utils import snake_case
 
-test_data = [
-    {'input': 'snake_case', 'expected': 'snake_case'},
-    {'input': 'PascalCase', 'expected': 'pascal_case'},
-    {'input': 'camelCase', 'expected': 'camel_case'},
-    {'input': '', 'expected': ''},
-    {'input': 'lower', 'expected': 'lower'},
-    {'input': 'UPPER', 'expected': 'upper'},
+snake_case_test_data = [
+    {'incorrect': 'camelCase', 'correct': 'camel_case'},
+    {'incorrect': 'PascalCase', 'correct': 'pascal_case'},
+    {'incorrect': 'kebab-case', 'correct': 'kebab_case'},
+    {'incorrect': 'l ower', 'correct': 'lower'},
+    {'incorrect': 'UPPER', 'correct': 'u_p_p_e_r'},
 ]
 
 
-def test_snake_case():
-    for item in test_data:
-        assert snake_case(item['input']) == item['expected']
+def test_snake_cased_words():
+    """
+    Verifies that our snake case verification function actually works as expected.
+    """
+    for item in snake_case_test_data:
+        is_snake_case(item['correct'])
+        with pytest.raises(SpecificationError):
+            is_snake_case(item['incorrect'])
 
 
-def test_is_camel_case():
-    for item in test_data:
-        if item['input'] != item['expected']:
-            with pytest.raises(SpecificationError):
-                is_snake_case(item['input'])
-        else:
-            is_snake_case(item['input'])
+def test_less_than_two_chars():
+    """
+    When the length of an input is less than 2, our regex logic breaks down,
+    :return:
+    """
+    is_snake_case('')
+    with pytest.raises(SpecificationError):
+        is_snake_case(' ')
+        is_snake_case('-')
+        is_snake_case('_')
+        is_snake_case(None)
+        is_snake_case('%')
+        is_snake_case('R')
+    is_snake_case('s')

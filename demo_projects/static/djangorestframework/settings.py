@@ -52,7 +52,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'demo_project.urls'
+ROOT_URLCONF = 'demo_projects.static.djangorestframework.settings'
 
 TEMPLATES = [
     {
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'demo_project.wsgi.application'
+WSGI_APPLICATION = 'demo_projects.static.djangorestframework.wsgi.application'
 
 
 # Database
@@ -111,10 +111,10 @@ STATIC_URL = '/static/'
 
 SWAGGER_SETTINGS = {
     'DEFAULT_MODEL_RENDERING': 'example',
-    'DEFAULT_INFO': 'demo_project.urls.swagger_info',
+    'DEFAULT_INFO': 'demo_projects.static.djangorestframework.urls.swagger_info',
 }
 
-OPENAPI_TESTER = {'path': 'http://127.0.0.1:8080/swagger/?format=openapi', 'case': 'camel case'}
+OPENAPI_TESTER = {'SCHEMA': 'dynamic', 'CASE': 'camel case'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
