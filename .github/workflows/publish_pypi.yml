@@ -1,9 +1,8 @@
 name: publish package to test-pypi and pypi
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [published]
 
 jobs:
   build-and-publish:
@@ -22,12 +21,6 @@ jobs:
       - name: Build
         run: |
           python setup.py sdist bdist_wheel
-      - name: publish package to test-pypi
-        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && contains(github.ref, '-rc')
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.test_pypi_password }}
-          repository_url: https://test.pypi.org/legacy/
       - name: publish package to pypi
         if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && !contains(github.ref, '-rc')
         uses: pypa/gh-action-pypi-publish@master
