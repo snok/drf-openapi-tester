@@ -41,11 +41,8 @@ def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:
     matching_endpoints = [endpoint for endpoint in [key for key in schema['paths']] if endpoint in resolved_path.route]
     if len(matching_endpoints) == 0:
         raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
-    elif len(matching_endpoints) == 1:
-        matched_endpoint = matching_endpoints[0]
     else:
-        logger.error('URL matched multiple endpoints.')
-        raise ValueError('Matched the resolved urls to too many endpoints')
+        matched_endpoint = matching_endpoints[0]
 
     # Return the 200 response schema of that endpoint
     if method.lower() in schema['paths'][matched_endpoint]:
