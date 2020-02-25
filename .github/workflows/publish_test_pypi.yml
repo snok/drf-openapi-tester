@@ -23,7 +23,6 @@ jobs:
         run: |
           python setup.py sdist bdist_wheel
       - name: publish package to test-pypi
-        if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && contains(github.ref, '-rc')
         uses: pypa/gh-action-pypi-publish@master
         with:
           password: ${{ secrets.test_pypi_password }}
