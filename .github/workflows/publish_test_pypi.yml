@@ -25,5 +25,5 @@ jobs:
       - name: publish package to test-pypi
         uses: pypa/gh-action-pypi-publish@master
         with:
-          password: ${{ secrets.test_pypi_password }}
+          password: ${{ secrets.TEST_PYPI_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
