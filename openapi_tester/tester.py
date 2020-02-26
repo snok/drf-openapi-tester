@@ -33,18 +33,13 @@ def validate_schema(response: Response, method: str, endpoint_url: str) -> None:
     except Exception as e:
         raise ValueError(f'Unable to unpack response object. Hint: make sure you are passing response, not response.json(). ' f'Error: {e}')
 
-    try:
-        status_code = response.status_code
-    except Exception as e:
-        raise ValueError(f'Unable to infer status code from the response object. Error: {e}')
-
     # Fetch schema
     if schema == 'static':
         complete_schema = fetch_from_dir(path=path)
         # Get the part of the schema relating to the endpoints success-response
         schema = parse_endpoint(schema=complete_schema, method=method, endpoint_url=endpoint_url)
     else:
-        schema = fetch_generated_schema(url=endpoint_url, status_code=status_code, method=method)
+        schema = fetch_generated_schema(url=endpoint_url, method=method)
 
     # Test schema
     if 'properties' in schema:
@@ -130,17 +125,18 @@ def _list(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
     if not isinstance(data, list):
         raise SpecificationError(f"The response is {type(data)} when it should be <class 'list'>")
 
+    if not data:
+        raise SpecificationError('Schema contains a list element that is not found in the response')
+
     # For lists, we handle each item individually
-    for key, value in schema.items():
-        # We're only interested in the sub-items of an array list, not the name or description.
-        if key == 'items':
+    # We're only interested in the sub-items of an array list, not the name or description.
+    item = schema['items']
 
-            # drf_yasg makes it very hard to put multiple objects in a list, in documentation
-            # so it's mostly safe to just look at the first item (in ref. to response[0])
-            # TODO: make sure this actually *does* apply to openapi specs
+    if 'properties' in item and item['properties']:
+        [_dict(schema=item['properties'], data=data[i], case_func=case_func) for i in range(len(data))]
 
-            if 'properties' in value:
-                _dict(schema=value['properties'], data=data[0], case_func=case_func)
+    elif 'items' in item and item['items']:
+        [_list(schema=item, data=data[i], case_func=case_func) for i in range(len(data))]
 
-            elif 'items' in value:
-                _list(schema=value, data=data[0], case_func=case_func)
+    elif len(data) > 1 and data[0]:
+        raise SpecificationError('Response contains a list element that is not found in the schema')

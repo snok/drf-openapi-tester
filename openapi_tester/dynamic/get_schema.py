@@ -1,7 +1,6 @@
 import logging
 from collections import OrderedDict
 from json import dumps, loads
-from typing import Union
 
 logger = logging.getLogger('openapi_tester')
 
@@ -13,12 +12,11 @@ def ordered_dict_to_dict(d: OrderedDict) -> dict:
     return loads(dumps(d))
 
 
-def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) -> dict:
+def fetch_generated_schema(url: str, method: str) -> dict:
     """
     Fetches dynamically generated schema.
 
     :param url: API endpoint URL, str
-    :param status_code: Response status code, str
     :param method: HTTP method, str
     :return: dict
     """
@@ -40,9 +38,9 @@ def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) 
             f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
         )
     try:
-        return schema[f'{status_code}']['schema']
+        return schema['200']['schema']
     except KeyError:
         raise KeyError(
-            f'No schema found for response code {status_code}. Documented responses include '
-            f'{", ".join([code for code in schema.keys()])}.'
+            f'No schema found for response code 200. Documented responses include '
+            f'{", ".join([code for code in schema.keys() if code != "200"])}.'
         )

@@ -13,8 +13,39 @@ paths:
           content:
             application/json:
               schema:
+                title: 'Success'
                 type: array
-                items: {}
+                items: {
+                  title: 'Success',
+                  type: 'object',
+                  properties: {
+                    name: {
+                      description: 'A swedish car?',
+                      type: 'string',
+                      example: 'Saab',
+                    },
+                    color:{
+                      description: 'The color of the car.',
+                      type: 'string',
+                      example: 'Yellow',
+                    },
+                    height:{
+                      description: 'How tall the car is.',
+                      type: 'string',
+                      example: 'Medium height',
+                    },
+                    width:{
+                      description: 'How wide the car is.',
+                      type: 'string',
+                      example: 'Very wide',
+                    },
+                    length:{
+                      description: 'How long the car is.',
+                      type: 'string',
+                      example: '2 meters',
+                    },
+                  }
+                }
           description: ''
     post:
       operationId: CreateGoodCars
@@ -93,8 +124,39 @@ paths:
           content:
             application/json:
               schema:
+                title: 'Success'
                 type: array
-                items: {}
+                items: {
+                  title: 'Success',
+                  type: 'object',
+                  properties: {
+                    name: {
+                      description: 'A swedish truck?',
+                      type: 'string',
+                      example: 'Saab',
+                    },
+                    color:{
+                      description: 'The color of the truck.',
+                      type: 'string',
+                      example: 'Yellow',
+                    },
+                    height:{
+                      description: 'How tall the truck is.',
+                      type: 'string',
+                      example: 'Medium height',
+                    },
+                    width:{
+                      description: 'How wide the truck is.',
+                      type: 'string',
+                      example: 'Very wide',
+                    },
+                    length:{
+                      description: 'How long the truck is.',
+                      type: 'string',
+                      example: '2 meters',
+                    },
+                  }
+                }
           description: ''
     post:
       operationId: CreateGoodTrucks

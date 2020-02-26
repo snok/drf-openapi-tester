@@ -10,7 +10,7 @@ def test_successful_yml_fetch() -> None:
     """
     Tests that a file is fetched successfully.
     """
-    content = fetch_from_dir(settings.BASE_DIR + '/drf_yasg/openapi-schema.yml')
+    content = fetch_from_dir(settings.BASE_DIR + '/demo_project/openapi-schema.yml')
     assert 'openapi' in content
 
 
@@ -18,7 +18,7 @@ def test_successful_json_fetch() -> None:
     """
     Tests that a file is fetched successfully.
     """
-    content = fetch_from_dir(settings.BASE_DIR + '/drf_yasg/openapi-schema.json')
+    content = fetch_from_dir(settings.BASE_DIR + '/demo_project/openapi-schema.json')
     assert 'title' in content
 
 
@@ -53,4 +53,12 @@ def test_unreadable_file(monkeypatch, caplog) -> None:
     with pytest.raises(
         ImproperlyConfigured, match='Could not read the openapi specification. Please make sure the path setting is correct.\n\nError: test'
     ):
-        fetch_from_dir(settings.BASE_DIR + '/drf_yasg/openapi-schema.yml')
+        fetch_from_dir(settings.BASE_DIR + '/demo_project/openapi-schema.yml')
+
+
+def test_bad_filetype() -> None:
+    """
+    Asserts that an appropriate exception is raised when a function tries to pass a non yml/json schema.
+    """
+    with pytest.raises(ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'):
+        fetch_from_dir(settings.BASE_DIR + '/demo_project/settings.py')

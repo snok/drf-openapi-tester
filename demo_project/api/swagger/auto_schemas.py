@@ -1,6 +1,6 @@
 from drf_yasg.utils import swagger_auto_schema
 
-from .responses import generic_error_response, get_cars_200_response, get_trucks_200_response
+from demo_project.api.swagger.responses import generic_error_response, get_cars_200_response, get_trucks_200_response
 
 
 def get_cars_auto_schema():
