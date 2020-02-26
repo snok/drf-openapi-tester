@@ -1,15 +1,22 @@
 import logging
-from typing import Union
+from collections import OrderedDict
+from json import dumps, loads
 
 logger = logging.getLogger('openapi_tester')
 
 
-def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) -> dict:
+def ordered_dict_to_dict(d: OrderedDict) -> dict:
+    """
+    Converts a nested OrderedDict to dict.
+    """
+    return loads(dumps(d))
+
+
+def fetch_generated_schema(url: str, method: str) -> dict:
     """
     Fetches dynamically generated schema.
 
     :param url: API endpoint URL, str
-    :param status_code: Response status code, str
     :param method: HTTP method, str
     :return: dict
     """
@@ -17,7 +24,8 @@ def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) 
     from drf_yasg.openapi import Info
     from drf_yasg.generators import OpenAPISchemaGenerator
 
-    schema = OpenAPISchemaGenerator(info=Info(title='', default_version='')).get_schema()['paths']
+    schema = OpenAPISchemaGenerator(info=Info(title='', default_version='')).get_schema()
+    schema = ordered_dict_to_dict(schema.as_odict())['paths']
     try:
         schema = schema[url]
     except KeyError:
@@ -30,9 +38,9 @@ def fetch_generated_schema(url: str, status_code: Union[str, int], method: str) 
             f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
         )
     try:
-        return schema[f'{status_code}']
+        return schema['200']['schema']
     except KeyError:
         raise KeyError(
-            f'No schema found for response code {status_code}. Documented responses include '
-            f'{", ".join([code for code in schema.keys()])}.'
+            f'No schema found for response code 200. Documented responses include '
+            f'{", ".join([code for code in schema.keys() if code != "200"])}.'
         )
