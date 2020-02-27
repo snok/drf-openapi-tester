@@ -2,6 +2,8 @@ import logging
 from collections import OrderedDict
 from json import dumps, loads
 
+from openapi_tester.exceptions import SpecificationError
+
 logger = logging.getLogger('openapi_tester')
 
 
@@ -38,7 +40,14 @@ def fetch_generated_schema(url: str, method: str) -> dict:
             f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
         )
     try:
-        return schema['200']['schema']
+        if '200' in schema and '201' not in schema:
+            return schema['200']['schema']
+        elif '201' in schema and '200' not in schema:
+            return schema['201']['schema']
+        elif '201' in schema and '200' in schema:
+            raise SpecificationError('Both 200 and 201 are documented, but they should be mutually exclusive')
+        else:
+            raise SpecificationError('200 and 201 response codes are undocumented in the schema.')
     except KeyError:
         raise KeyError(
             f'No schema found for response code 200. Documented responses include '
