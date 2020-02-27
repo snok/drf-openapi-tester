@@ -43,7 +43,7 @@ def validate_schema(response: Response, method: str, endpoint_url: str) -> None:
 
     # Test schema
     if 'properties' in schema:
-        _dict(schema=schema, data=data, case_func=case_func)
+        _dict(schema=schema['properties'], data=data, case_func=case_func)
 
     elif 'items' in schema:
         _list(schema=schema, data=data, case_func=case_func)
@@ -108,7 +108,7 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
                     _list(schema=nested_schema, data=nested_data, case_func=case_func)  # Item is a tuple: (key, value)
 
         elif 'properties' in nested_schema:
-            _dict(schema=nested_schema, data=nested_data, case_func=case_func)
+            _dict(schema=nested_schema['properties'], data=nested_data, case_func=case_func)
 
 
 def _list(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
