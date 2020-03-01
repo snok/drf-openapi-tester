@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_tester import validate_schema
+from openapi_tester import validate_response
 from openapi_tester.exceptions import OpenAPISchemaError
 
 good_test_data = [
@@ -43,7 +43,7 @@ bad_test_data = [
 
 def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
     """
-    Asserts that the validate_schema function validates correct schemas successfully.
+    Asserts that the validate_response function validates correct schemas successfully.
     """
     for item in good_test_data:
         response = client.get('/api/v1' + item['url'])
@@ -51,12 +51,12 @@ def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        validate_schema(response, 'GET', item['url'])
+        validate_response(response, 'GET', item['url'])
 
 
 def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
     """
-    Asserts that the validate_schema function validates incorrect schemas successfully.
+    Asserts that the validate_response function validates incorrect schemas successfully.
     """
     for item in bad_test_data:
         response = client.get('/api/v1' + item['url'])
@@ -65,4 +65,4 @@ def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
 
         # Test Swagger documentation
         with pytest.raises(OpenAPISchemaError, match='The following properties seem to be missing from your response body:'):
-            validate_schema(response, 'GET', item['url'])
+            validate_response(response, 'GET', item['url'])

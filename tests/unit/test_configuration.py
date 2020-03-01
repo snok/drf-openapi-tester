@@ -80,13 +80,7 @@ def test_invalid_cases(monkeypatch) -> None:  # noqa: TYP001
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': 'dynamic', 'CASE': case})
         with pytest.raises(
             ImproperlyConfigured,
-            match=(
-                f'The openapi-tester package currently doesn\'t support a case called {case}.'
-                f' Set case to `snake case` for snake_case, '
-                f'`camel case` for camelCase, '
-                f'`pascal case` for PascalCase,'
-                f'`kebab case` for kebab-case, or None to skip case validation completely.'
-            ),
+            match=f'The openapi-tester package currently doesn\'t support a case called {case}.'
         ):
             load_settings()
 
@@ -120,7 +114,6 @@ def test_bad_schema(monkeypatch) -> None:  # noqa: TYP001
     monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'SCHEMA': None})
     with pytest.raises(
         ImproperlyConfigured,
-        match='`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module. '
-        'Please update your OPENAPI_TESTER settings.',
+        match=f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module, not None',
     ):
         load_settings()

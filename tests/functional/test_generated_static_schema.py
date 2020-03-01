@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_tester import validate_schema
+from openapi_tester import validate_response
 from openapi_tester.exceptions import OpenAPISchemaError
 
 good_test_data = [
@@ -44,7 +44,7 @@ bad_test_data = [
 
 def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
     """
-    Asserts that the validate_schema function validates correct schemas successfully.
+    Asserts that the validate_response function validates correct schemas successfully.
     """
     from django.conf import settings as openapi_settings
 
@@ -59,12 +59,12 @@ def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        validate_schema(response, 'GET', '/api/v1' + item['url'])
+        validate_response(response, 'GET', '/api/v1' + item['url'])
 
 
 def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # noqa: TYP001
     """
-    Asserts that the validate_schema function validates incorrect schemas successfully.
+    Asserts that the validate_response function validates incorrect schemas successfully.
     """
     from django.conf import settings as openapi_settings
 
@@ -79,5 +79,5 @@ def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # no
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(OpenAPISchemaError, match='Response contains a list element that is not found in the schema'):
-            validate_schema(response, 'GET', '/api/v1' + item['url'])
+        with pytest.raises(OpenAPISchemaError, match='Response list contains values'):
+            validate_response(response, 'GET', '/api/v1' + item['url'])

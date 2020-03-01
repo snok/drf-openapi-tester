@@ -2,14 +2,17 @@ import pytest
 
 from openapi_tester.case_checks import is_camel_case
 from openapi_tester.exceptions import OpenAPISchemaError
-from openapi_tester.tester import _dict
+from openapi_tester.validate_response import _dict
 
 schema = {
-    'name': {'description': 'A swedish car?', 'type': 'string', 'example': 'Saab'},
-    'color': {'description': 'The color of the car.', 'type': 'string', 'example': 'Yellow'},
-    'height': {'description': 'How tall the car is.', 'type': 'string', 'example': 'Medium height'},
-    'width': {'description': 'How wide the car is.', 'type': 'string', 'example': 'Very wide'},
-    'length': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
+    'type': 'object',
+    'properties': {
+        'name': {'description': 'A swedish car?', 'type': 'string', 'example': 'Saab'},
+        'color': {'description': 'The color of the car.', 'type': 'string', 'example': 'Yellow'},
+        'height': {'description': 'How tall the car is.', 'type': 'string', 'example': 'Medium height'},
+        'width': {'description': 'How wide the car is.', 'type': 'string', 'example': 'Very wide'},
+        'length': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
+    }
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
@@ -35,6 +38,7 @@ def test_unmatched_lengths() -> None:
     """
     data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
     with pytest.raises(
-        OpenAPISchemaError, match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`'
+            OpenAPISchemaError,
+            match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`'
     ):
         _dict(schema=schema, data=data, case_func=is_camel_case)

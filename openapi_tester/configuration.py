@@ -52,10 +52,10 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
     # The default schema value is "dynamic", so a `None` would only be set if it was overwritten by the project settings
     schema_is_none = not config['SCHEMA'] or not isinstance(config['SCHEMA'], str)
     if schema_is_none or config['SCHEMA'].lower() not in ['dynamic', 'static']:
-        logger.error('SCHEMA setting is mis-specified. Needs to be "dynamic" or "static", not %s', config['SCHEMA'].lower())
+        logger.error('SCHEMA setting is mis-specified. Needs to be "dynamic" or "static", not %s', config['SCHEMA'])
         raise ImproperlyConfigured(
             f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module, '
-            f'not {config["SCHEMA"].lower()}. Please update your OPENAPI_TESTER settings.'
+            f'not {config["SCHEMA"]}. Please update your OPENAPI_TESTER settings.'
         )
 
     # Make sure the case setting is correctly specified
@@ -63,7 +63,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
     accepted_cases = ['camel case', 'snake case', 'kebab case', 'pascal case']
     if config['CASE'] is None:
         pass
-    elif not isinstance(config['CASE'], str) and config['CASE'] not in accepted_cases:
+    elif not isinstance(config['CASE'], str) or config['CASE'] not in accepted_cases:
         logger.error('CASE setting is mis-specified.')
         raise ImproperlyConfigured(
             f'The openapi-tester package currently doesn\'t support a case called {config["CASE"]}.'

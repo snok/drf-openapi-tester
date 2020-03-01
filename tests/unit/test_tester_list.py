@@ -2,7 +2,7 @@ import pytest
 
 from openapi_tester.case_checks import is_camel_case
 from openapi_tester.exceptions import OpenAPISchemaError
-from openapi_tester.tester import _list
+from openapi_tester.validate_response import _list
 
 schema = {
     'title': 'Success',
@@ -43,7 +43,6 @@ def test_bad_data_type() -> None:
 
 def test_empty_response_data_list() -> None:
     """
-    Asserts that the appropriate exception is raised when the response data is missing.
+    Asserts that the no exception is raised when the response data is missing - this has valid cases.
     """
-    with pytest.raises(OpenAPISchemaError, match='Schema contains a list element that is not found in the response'):
-        _list(schema=schema, data=[], case_func=is_camel_case)
+    _list(schema=schema, data=[], case_func=is_camel_case)

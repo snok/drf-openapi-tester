@@ -5,7 +5,7 @@ from openapi_tester.static.parse import parse_endpoint
 
 def test_identical_parsing(client, monkeypatch) -> None:  # noqa: TYP001
     """
-    Asserts that the validate_schema function validates correct schemas successfully.
+    Asserts that the validate_response function validates correct schemas successfully.
     """
     from django.conf import settings as openapi_settings
 
