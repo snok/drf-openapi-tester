@@ -31,7 +31,8 @@ def validate_schema(response: Response, method: str, endpoint_url: str) -> None:
         data = response.json()
     except Exception as e:
         logger.exception('Unable to open response object')
-        raise ValueError(f'Unable to unpack response object. ' f'Make sure you are passing response, and not response.json(). Error: {e}')
+        raise ValueError(
+            f'Unable to unpack response object. ' f'Make sure you are passing response, and not response.json(). Error: {e}')
 
     # Fetch schema
     if schema == 'static':
@@ -81,10 +82,12 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
         logger.debug('The number of schema dict elements does not match the number of response dict elements')
         if len(set(response_keys)) > len(set(schema_keys)):
             missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
-            raise OpenAPISchemaError(f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}')
+            raise OpenAPISchemaError(
+                f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}')
         else:
             missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
-            raise OpenAPISchemaError(f'The following properties seem to be missing from your response body' f': {missing_keys}')
+            raise OpenAPISchemaError(
+                f'The following properties seem to be missing from your response body' f': {missing_keys}')
 
     for schema_key, response_key in zip(schema_keys, response_keys):
 
@@ -130,18 +133,38 @@ def _list(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
     if not isinstance(data, list):
         raise OpenAPISchemaError(f"The response is {type(data)} when it should be <class 'list'>")
 
-    # For lists, we handle each item individually
-    # We're only interested in the sub-items of an array list, not the name or description.
+    # A schema array can only hold one item, e.g., {"type": "array", "items": {"type": "object", "properties": {...}}}
+    # At the same time we want to test each of the response objects, as they *should* match the schema.
     item = schema['items']
 
-    if 'properties' in item and item['properties']:
-        [_dict(schema=item, data=data[i], case_func=case_func) for i in range(len(data))]
+    for index in range(len(data)):
 
-    elif 'items' in item and item['items']:
-        [_list(schema=item, data=data[i], case_func=case_func) for i in range(len(data))]
+        # If the schema says all listed items are to be dictionaries and the dictionaries should have values...
+        if item['type'] == 'object' and item['properties']:
+            # ... then check those values
+            _dict(schema=item, data=data[index], case_func=case_func)
 
-    elif len(data) > 1 and data[0]:
-        raise OpenAPISchemaError('Response contains a list element that is not found in the schema')
+        # If the schema says all listed items are to be dicts, and the response has values but the schema is empty
+        elif (item['type'] == 'object' and not item['properties']) and data[index]:
+            # ... then raise an error
+            raise OpenAPISchemaError(f'Response dict contains value `{data[index]}` '
+                                     f'where schema suggests there should be an empty dict.')
+
+        # If the schema says all listed items are to be arrays and the lists should have values
+        elif item['type'] == 'array' and item['items']:
+            # ... then check those values
+            _list(schema=item, data=data[index], case_func=case_func)
+
+        # If the schema says all listed items are to be arrays, and the response has values but the schema is empty
+        elif (item['type'] == 'array' and not item['items']) and data[index]:
+            raise OpenAPISchemaError(f'Response list contains value `{data[index]}` '
+                                     f'where schema suggests there should be an empty list.')
+
+        elif item['type'] == 'string' or item['type'] == 'boolean' or item['type'] == 'integer':
+            _item(schema=item, data=data)
+
+        else:
+            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
 
 
 def _item(schema: dict, data: Any) -> None:
@@ -153,16 +176,20 @@ def _item(schema: dict, data: Any) -> None:
     :return:
     """
     if schema['type'] == 'boolean':
-        if not isinstance(data, bool) and not (isinstance(data, str) and (data.lower() == 'true' or data.lower() == 'false')):
-            raise OpenAPISchemaError(f"The example value `{schema['example']}` does not match the specified data type <type 'bool'>.")
+        if not isinstance(data, bool) and not (
+                isinstance(data, str) and (data.lower() == 'true' or data.lower() == 'false')):
+            raise OpenAPISchemaError(
+                f"The example value `{schema['example']}` does not match the specified data type <type 'bool'>.")
 
     elif schema['type'] == 'string':
         if not isinstance(data, str):
-            raise OpenAPISchemaError(f"The example value `{schema['example']}` does not match the specified data type <type 'str>'.")
+            raise OpenAPISchemaError(
+                f"The example value `{schema['example']}` does not match the specified data type <type 'str>'.")
 
     elif schema['type'] == 'integer':
         if not isinstance(data, int):
-            raise OpenAPISchemaError(f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
+            raise OpenAPISchemaError(
+                f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
 
     else:
         raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
