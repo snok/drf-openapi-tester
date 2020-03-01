@@ -23,7 +23,7 @@ setup(
     url='https://github.com/sondrelg/openapi-tester',
     download_url='https://pypi.python.org/pypi/openapi-tester',
     packages=find_packages(exclude=['']),
-    install_requires=['djangorestframework', 'requests', 'PyYAML', 'django'],
+    install_requires=['djangorestframework', 'PyYAML', 'django'],
     keywords=['openapi', 'swagger', 'api', 'test', 'testing', 'drf_yasg'],
     platforms='OS Independent',
     classifiers=[

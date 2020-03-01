@@ -1,6 +1,6 @@
-class SpecificationError(Exception):
+class OpenAPISchemaError(Exception):
     """
-    Custom exception to clarify where the exception is being raised from.
+    Custom exception raised when package tests fail.
     """
 
     pass

@@ -1,7 +1,7 @@
 import pytest
 
 from openapi_tester.case_checks import is_kebab_case
-from openapi_tester.exceptions import SpecificationError
+from openapi_tester.exceptions import OpenAPISchemaError
 
 kebab_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snake-case'},
@@ -18,7 +18,7 @@ def test_kebab_cased_words():
     """
     for item in kebab_case_test_data:
         is_kebab_case(item['correct'])
-        with pytest.raises(SpecificationError):
+        with pytest.raises(OpenAPISchemaError):
             is_kebab_case(item['incorrect'])
 
 
@@ -28,7 +28,7 @@ def test_less_than_two_chars():
     :return:
     """
     is_kebab_case('')
-    with pytest.raises(SpecificationError):
+    with pytest.raises(OpenAPISchemaError):
         is_kebab_case(' ')
         is_kebab_case('-')
         is_kebab_case('_')

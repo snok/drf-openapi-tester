@@ -1,7 +1,7 @@
 import pytest
 
 from openapi_tester import validate_schema
-from openapi_tester.exceptions import SpecificationError
+from openapi_tester.exceptions import OpenAPISchemaError
 
 good_test_data = [
     {
@@ -79,5 +79,5 @@ def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # no
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(SpecificationError, match='Response contains a list element that is not found in the schema'):
+        with pytest.raises(OpenAPISchemaError, match='Response contains a list element that is not found in the schema'):
             validate_schema(response, 'GET', '/api/v1' + item['url'])

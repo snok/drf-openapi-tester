@@ -1,6 +1,7 @@
 import logging
 from typing import Tuple, Union
 
+from django.apps import apps
 from django.conf import settings
 
 from .exceptions import ImproperlyConfigured
@@ -8,37 +9,28 @@ from .exceptions import ImproperlyConfigured
 logger = logging.getLogger('openapi_tester')
 
 
-def load_settings() -> Tuple[str, Union[str, None], Union[str, None]]:
-    """
-    Loads and validates Django settings.
-
-    :return: tuple of strings (path, case)
-    """
-    config = {'SCHEMA': 'dynamic', 'CASE': 'camel case', 'PATH': None}  # Defaults
-    return _validate_settings(_load_django_settings(config))
-
-
 def _load_django_settings(config: dict) -> dict:
     """
     Assigns Django setting values to schema, case, and path.
 
-    :param config: dict
-    :return: dict
+    :param config: default config values
+    :return: config with overwritten values from settings.py
     """
     logger.debug('Collecting settings.')
 
-    # Check that the settings are defined
+    # Check that the OPENAPI_TESTER object is defined in settings.py
     if not hasattr(settings, 'OPENAPI_TESTER'):
         logger.error('OPENAPI_TESTER not found in the projects Django settings.')
         raise ImproperlyConfigured('Please specify OPENAPI_TESTER settings in your settings.py')
+    else:
+        _settings = settings.OPENAPI_TESTER
 
-    _settings = settings.OPENAPI_TESTER
-
+    # Assign the specified values to the config-dict - overwrite existing values
     for setting, value in _settings.items():
         if setting.upper() in config:
             config[setting.upper()] = value
         else:
-            logger.error('Excess setting, `%s`, found in OPENAPI_TESTER settings.', setting)
+            logger.error('Found an excess key in the OPENAPI_TESTER settings: `%s`.', setting)
             raise ImproperlyConfigured(f'`{setting}` is not a valid setting for the openapi-tester module')
 
     return config
@@ -46,46 +38,73 @@ def _load_django_settings(config: dict) -> dict:
 
 def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, None]]:
     """
-    Validates path and case values.
+    Validates settings.
 
-    :param config: dict
-    :return: tuple of strings (schema, case, path)
+    :param config: package settings, dict
+    :return: Tuple of 3 strings/optional strings
+            - schema setting ("dynamic" or "static"),
+            - case setting (e.g., "camel case"),
+            - and path (file path if schema setting is static, else None)
     """
     logger.debug('Validating settings.')
 
-    # Make sure schema is correctly specified - default is "dynamic", so a None value would mean it was set as None
-    if not config['SCHEMA'] or not isinstance(config['SCHEMA'], str) or config['SCHEMA'].lower() not in ['dynamic', 'static']:
-        logger.error('Required parameter, `SCHEMA`, was mis-specified in the OPENAPI_TESTER settings.')
+    # Make sure schema is correctly specified
+    # The default schema value is "dynamic", so a `None` would only be set if it was overwritten by the project settings
+    schema_is_none = not config['SCHEMA'] or not isinstance(config['SCHEMA'], str)
+    if schema_is_none or config['SCHEMA'].lower() not in ['dynamic', 'static']:
+        logger.error('SCHEMA setting is mis-specified. Needs to be "dynamic" or "static", not %s', config['SCHEMA'].lower())
         raise ImproperlyConfigured(
-            f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module. '
-            f'Please update your OPENAPI_TESTER settings.'
+            f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module, '
+            f'not {config["SCHEMA"].lower()}. Please update your OPENAPI_TESTER settings.'
         )
 
-    # Make sure case is correctly specified - default is "camel case"
-    accepted_cases = ['camel case', 'snake case', 'kebab case', 'pascal case', None]
+    # Make sure the case setting is correctly specified
+    # The default case value "camel case"
+    accepted_cases = ['camel case', 'snake case', 'kebab case', 'pascal case']
     if config['CASE'] is None:
         pass
-    elif not isinstance(config['CASE'], str) or config['CASE'] not in accepted_cases:
-        logger.error('Required parameter, `CASE`, was mis-specified in the OPENAPI_TESTER settings.')
+    elif not isinstance(config['CASE'], str) and config['CASE'] not in accepted_cases:
+        logger.error('CASE setting is mis-specified.')
         raise ImproperlyConfigured(
             f'The openapi-tester package currently doesn\'t support a case called {config["CASE"]}.'
             f' Set case to `snake case` for snake_case, '
             f'`camel case` for camelCase, '
             f'`pascal case` for PascalCase,'
-            f'`kebab case` for kebab-case, or None to skip case validation completely.'
+            f'`kebab case` for kebab-case, '
+            f'or to `None` to skip case validation completely.'
         )
 
-    if config['SCHEMA'] == 'static' and config['PATH'] is None:
-        logger.error('Required parameter, `PATH`, not specified in the OPENAPI_TESTER settings.')
-        raise ImproperlyConfigured(
-            f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your OPENAPI_TESTER settings.'
-        )
-    elif config['SCHEMA'] == 'static':
-        if not isinstance(config['PATH'], str):
-            logger.error('Parameter `PATH` set as an illegal value.')
+    # Make sure the path to an openapi schema is specified if the SCHEMA is set to `static`
+    if config['SCHEMA'] == 'static':
+        if config['PATH'] is None:
+            logger.error('PATH setting is not specified.')
+            raise ImproperlyConfigured(
+                f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your OPENAPI_TESTER settings.'
+            )
+        elif not isinstance(config['PATH'], str):
+            logger.error('PATH setting is not a string.')
             raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
+        else:
+            from openapi_tester.static.get_schema import fetch_from_dir
 
-        from openapi_tester.static.get_schema import fetch_from_dir
+            fetch_from_dir(config['PATH'])
 
-        fetch_from_dir(config['PATH'])
-    return config['SCHEMA'].lower(), config['CASE'].lower() if config['CASE'] else None, config['PATH'].lower() if config['PATH'] else None
+    # Make sure drf-yasg is installed for dynamic schemas
+    elif config['SCHEMA'] == 'dynamic':
+        if 'drf_yasg' not in apps.app_configs.keys():
+            raise ImproperlyConfigured('`drf_yasg` is missing from INSTALLED_APPS. ' 'The package is required for testing dynamic schemas.')
+    return (
+        config['SCHEMA'].lower(),
+        config['CASE'].lower() if config['CASE'] else None,
+        config['PATH'].lower() if config['PATH'] else None,
+    )
+
+
+def load_settings() -> Tuple[str, Union[str, None], Union[str, None]]:
+    """
+    Loads and validates Django settings.
+
+    :return: tuple of optional strings: (schema setting, case setting, path)
+    """
+    defaults = {'SCHEMA': 'dynamic', 'CASE': 'camel case', 'PATH': None}
+    return _validate_settings(_load_django_settings(defaults))

@@ -1,7 +1,7 @@
 import pytest
 
 from openapi_tester.case_checks import is_camel_case
-from openapi_tester.exceptions import SpecificationError
+from openapi_tester.exceptions import OpenAPISchemaError
 from openapi_tester.tester import _list
 
 schema = {
@@ -37,7 +37,7 @@ def test_bad_data_type() -> None:
     """
     Asserts that the appropriate exception is raised for a bad response data type.
     """
-    with pytest.raises(SpecificationError, match="The response is <class 'dict'> when it should be <class 'list'>"):
+    with pytest.raises(OpenAPISchemaError, match="The response is <class 'dict'> when it should be <class 'list'>"):
         _list(schema=schema, data={'test': data}, case_func=is_camel_case)
 
 
@@ -45,5 +45,5 @@ def test_empty_response_data_list() -> None:
     """
     Asserts that the appropriate exception is raised when the response data is missing.
     """
-    with pytest.raises(SpecificationError, match='Schema contains a list element that is not found in the response'):
+    with pytest.raises(OpenAPISchemaError, match='Schema contains a list element that is not found in the response'):
         _list(schema=schema, data=[], case_func=is_camel_case)

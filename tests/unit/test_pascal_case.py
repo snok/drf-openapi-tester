@@ -1,7 +1,7 @@
 import pytest
 
 from openapi_tester.case_checks import is_pascal_case
-from openapi_tester.exceptions import SpecificationError
+from openapi_tester.exceptions import OpenAPISchemaError
 
 pascal_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'SnakeCase'},
@@ -18,7 +18,7 @@ def test_pascal_cased_words():
     """
     for item in pascal_case_test_data:
         is_pascal_case(item['correct'])
-        with pytest.raises(SpecificationError):
+        with pytest.raises(OpenAPISchemaError):
             is_pascal_case(item['incorrect'])
 
 
@@ -28,7 +28,7 @@ def test_less_than_two_chars():
     :return:
     """
     is_pascal_case('')
-    with pytest.raises(SpecificationError):
+    with pytest.raises(OpenAPISchemaError):
         is_pascal_case(' ')
         is_pascal_case('-')
         is_pascal_case('_')
