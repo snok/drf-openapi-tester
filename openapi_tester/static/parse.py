@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
@@ -6,13 +7,14 @@ from django.urls.exceptions import Resolver404
 logger = logging.getLogger('openapi_tester')
 
 
-def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:
+def parse_endpoint(schema: dict, method: str, endpoint_url: str, status_code: Union[int, str]) -> dict:
     """
     Returns the section of an OpenAPI schema we want to test, i.e., the 200 response.
 
     :param schema: OpenAPI specification, dict
     :param method: HTTP method, str
     :param endpoint_url: An endpoints' resolvable URL, str
+    :param status_code: HTTP response code
     :return: dict
     """
     logger.debug(
@@ -46,7 +48,7 @@ def parse_endpoint(schema: dict, method: str, endpoint_url: str) -> dict:
 
     # Return the 200 response schema of that endpoint
     if method.lower() in schema['paths'][matched_endpoint]:
-        return schema['paths'][matched_endpoint][method.casefold()]['responses']['200']['content']['application/json']['schema']
+        return schema['paths'][matched_endpoint][method.casefold()]['responses'][f'{status_code}']['content']['application/json']['schema']
     else:
         logger.error('Schema section for %s does not exist.', method)
         raise KeyError(f'The OpenAPI schema has no method called `{method}`')
