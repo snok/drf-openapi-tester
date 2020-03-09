@@ -1,8 +1,8 @@
 import logging
 from typing import Callable, Union, Any
 
-
 from requests import Response
+
 from django_swagger_tester.case_checks import case_check
 from django_swagger_tester.configuration import load_settings
 from django_swagger_tester.dynamic.get_schema import fetch_generated_schema
@@ -16,18 +16,18 @@ logger = logging.getLogger('django_swagger_tester')
 def validate_response(response: Response, method: str, endpoint_url: str) -> None:
     """
     This function verifies that your OpenAPI schema definition matches the response of your API endpoint.
-    It inspects your schema recursively, and verifies that the schema matches the structure of the response, at every level.
+    It inspects your schema recursively, and verifies that the schema matches the structure of the response.
 
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param endpoint_url: Relative path of the endpoint being tested
-    :param status_code: HTTP response code
     :return: None
     """
     # Load settings
     schema, case, path = load_settings()
     case_func = case_check(case)
 
+    # Load response contents
     try:
         data = response.json()
     except Exception as e:
@@ -105,8 +105,7 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
         elif response_key not in schema_keys:
             raise OpenAPISchemaError(f'Response key `{response_key}` is missing from your API documentation')
 
-        # Check what further check is needed for the values contained in the dict
-
+        # Check what further check are needed for the values contained in the dict
         schema_value = schema['properties'][schema_key]
         response_value = data[schema_key]
 

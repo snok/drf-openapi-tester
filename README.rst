@@ -2,16 +2,16 @@
 Django Swagger Tester
 ############################
 
-.. image:: https://img.shields.io/pypi/v/openapi-tester.svg
+.. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
     :target: https://pypi.org/project/django-swagger-tester/
 
-.. image:: https://img.shields.io/pypi/pyversions/openapi-tester.svg
+.. image:: https://img.shields.io/pypi/pyversions/django-swagger-tester.svg
     :target: https://pypi.org/project/django-swagger-tester/
 
-.. image:: https://img.shields.io/pypi/djversions/openapi-tester.svg
+.. image:: https://img.shields.io/pypi/djversions/django-swagger-tester.svg
     :target: https://pypi.python.org/pypi/django-swagger-tester
 
-.. image:: https://codecov.io/gh/sondrelg/openapi-tester/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/sondrelg/django-swagger-tester
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
@@ -39,7 +39,7 @@ Install using pip:
 
 .. code:: bash
 
-    pip install openapi-tester
+    pip install django-swagger-tester
 
 *************
 Configuration
