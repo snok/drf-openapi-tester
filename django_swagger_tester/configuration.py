@@ -3,8 +3,7 @@ from typing import Tuple, Union
 
 from django.apps import apps
 from django.conf import settings
-
-from .exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -79,7 +78,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
         if config['PATH'] is None:
             logger.error('PATH setting is not specified.')
             raise ImproperlyConfigured(
-                f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your SWAGGER_TESTER settings.'
+                f'`PATH` is a required setting for the django-swagger-tester module. Please update your SWAGGER_TESTER settings.'
             )
         elif not isinstance(config['PATH'], str):
             logger.error('PATH setting is not a string.')
@@ -92,7 +91,8 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
     # Make sure drf-yasg is installed for dynamic schemas
     elif config['SCHEMA'] == 'dynamic':
         if 'drf_yasg' not in apps.app_configs.keys():
-            raise ImproperlyConfigured('`drf_yasg` is missing from INSTALLED_APPS. ' 'The package is required for testing dynamic schemas.')
+            raise ImproperlyConfigured(
+                '`drf_yasg` is missing from INSTALLED_APPS. ' 'The package is required for testing dynamic schemas.')
     return (
         config['SCHEMA'].lower(),
         config['CASE'].lower() if config['CASE'] else None,

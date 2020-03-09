@@ -2,7 +2,6 @@
 import pytest
 from django.conf import settings
 
-from django_swagger_tester.exceptions import ImproperlyConfigured
 from django_swagger_tester.static.get_schema import fetch_from_dir
 from django_swagger_tester.static.parse import parse_endpoint
 
@@ -42,7 +41,8 @@ def test_successful_parse_documented_endpoints() -> None:
                     'properties': {
                         'name': {'description': 'A swedish truck?', 'type': 'string', 'example': 'Saab'},
                         'color': {'description': 'The color of the truck.', 'type': 'string', 'example': 'Yellow'},
-                        'height': {'description': 'How tall the truck is.', 'type': 'string', 'example': 'Medium height'},
+                        'height': {'description': 'How tall the truck is.', 'type': 'string',
+                                   'example': 'Medium height'},
                         'width': {'description': 'How wide the truck is.', 'type': 'string', 'example': 'Very wide'},
                         'length': {'description': 'How long the truck is.', 'type': 'string', 'example': '2 meters'},
                     },
@@ -71,7 +71,8 @@ def test_bad_method() -> None:
     """
     Asserts that a bad method raises the appropriate exception.
     """
-    with pytest.raises(ValueError, match='Method `GETS` is invalid. ' 'Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
+    with pytest.raises(ValueError,
+                       match='Method `GETS` is invalid. ' 'Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
         schema_section = parse_endpoint('', 'GETS', '', status_code=200)
 
 
@@ -89,7 +90,8 @@ def test_no_matching_routes() -> None:
     """
     schema = fetch_from_dir(settings.BASE_DIR + '/demo_project/openapi-schema.yml')
     del schema['paths']['/api/v1/trucks/correct/']
-    with pytest.raises(ValueError, match='Could not match the resolved url to a documented endpoint in the OpenAPI specification'):
+    with pytest.raises(ValueError,
+                       match='Could not match the resolved url to a documented endpoint in the OpenAPI specification'):
         schema_section = parse_endpoint(schema, 'GET', '/api/v1/trucks/correct/', status_code=200)
 
 

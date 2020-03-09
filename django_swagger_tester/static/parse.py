@@ -9,7 +9,7 @@ logger = logging.getLogger('django_swagger_tester')
 
 def parse_endpoint(schema: dict, method: str, endpoint_url: str, status_code: Union[int, str]) -> dict:
     """
-    Returns the section of an OpenAPI schema we want to test, i.e., the 200 response.
+    Returns the section of an OpenAPI schema we're interested in testing.
 
     :param schema: OpenAPI specification, dict
     :param method: HTTP method, str
@@ -38,15 +38,18 @@ def parse_endpoint(schema: dict, method: str, endpoint_url: str, status_code: Un
         raise ValueError(f'Could not resolve path `{endpoint_url}`')
 
     # Match the path to an OpenAPI endpoint
-    resolved_path.route = ('/' + resolved_path.route + '/').replace('//', '/')  # The schema has leading slashes, but resolved urls dont
+    resolved_path.route = (
+        '/' + resolved_path.route + '/'  # The schema has leading slashes, but resolved urls dont
+    ).replace('//', '/')
 
+    # Create a list of endpoints in the schema, matching our resolved path
     matching_endpoints = [endpoint for endpoint in [key for key in schema['paths']] if endpoint in resolved_path.route]
     if len(matching_endpoints) == 0:
         raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
     else:
         matched_endpoint = matching_endpoints[0]
 
-    # Return the 200 response schema of that endpoint
+    # Return the appropriate section
     if method.lower() in schema['paths'][matched_endpoint]:
         return schema['paths'][matched_endpoint][method.casefold()]['responses'][f'{status_code}']['content']['application/json']['schema']
     else:
