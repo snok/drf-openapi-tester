@@ -45,7 +45,7 @@ Install using pip:
 Configuration
 *************
 
-Package settings are added in your ``settings.py``:
+Add package settings to your ``settings.py``:
 
 .. code-block:: python
 
@@ -125,7 +125,7 @@ An example might look like this:
     from django.contrib.auth.models import User
     from rest_framework.test import APITestCase
 
-    from django_swagger_tester import test_schema
+    from django_swagger_tester import validate_response
 
 
     class TestMyAPI(APITestCase):
@@ -150,6 +150,6 @@ An example might look like this:
             self.assertEqual(response.json(), expected_response)
 
             # Test Swagger documentation
-            test_schema(response, 'GET', self.path + '/correct/')
+            validate_response(response, 'GET', self.path + '/correct/')
 
 See the demo projects and tests folder for more examples.
