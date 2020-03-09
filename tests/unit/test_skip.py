@@ -1,4 +1,4 @@
-from openapi_tester.case_checks import skip
+from django_swagger_tester.case_checks import skip
 
 
 def test_skip():

@@ -1,9 +1,9 @@
 import logging
 from json import dumps, loads
 
-from openapi_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import OpenAPISchemaError
 
-logger = logging.getLogger('openapi_tester')
+logger = logging.getLogger('django_swagger_tester')
 
 
 def fetch_generated_schema(url: str, method: str) -> dict:

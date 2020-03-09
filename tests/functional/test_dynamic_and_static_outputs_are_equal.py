@@ -1,6 +1,6 @@
-from openapi_tester.dynamic.get_schema import fetch_generated_schema
-from openapi_tester.static.get_schema import fetch_from_dir
-from openapi_tester.static.parse import parse_endpoint
+from django_swagger_tester.dynamic.get_schema import fetch_generated_schema
+from django_swagger_tester.static.get_schema import fetch_from_dir
+from django_swagger_tester.static.parse import parse_endpoint
 
 
 def test_identical_parsing(client, monkeypatch) -> None:  # noqa: TYP001

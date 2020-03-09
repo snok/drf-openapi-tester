@@ -6,7 +6,7 @@ from django.conf import settings
 
 from .exceptions import ImproperlyConfigured
 
-logger = logging.getLogger('openapi_tester')
+logger = logging.getLogger('django_swagger_tester')
 
 
 def _load_django_settings(config: dict) -> dict:
@@ -18,19 +18,19 @@ def _load_django_settings(config: dict) -> dict:
     """
     logger.debug('Collecting settings.')
 
-    # Check that the OPENAPI_TESTER object is defined in settings.py
-    if not hasattr(settings, 'OPENAPI_TESTER'):
-        logger.error('OPENAPI_TESTER not found in the projects Django settings.')
-        raise ImproperlyConfigured('Please specify OPENAPI_TESTER settings in your settings.py')
+    # Check that the SWAGGER_TESTER object is defined in settings.py
+    if not hasattr(settings, 'SWAGGER_TESTER'):
+        logger.error('SWAGGER_TESTER not found in the projects Django settings.')
+        raise ImproperlyConfigured('Please specify SWAGGER_TESTER settings in your settings.py')
     else:
-        _settings = settings.OPENAPI_TESTER
+        _settings = settings.SWAGGER_TESTER
 
     # Assign the specified values to the config-dict - overwrite existing values
     for setting, value in _settings.items():
         if setting.upper() in config:
             config[setting.upper()] = value
         else:
-            logger.error('Found an excess key in the OPENAPI_TESTER settings: `%s`.', setting)
+            logger.error('Found an excess key in the SWAGGER_TESTER settings: `%s`.', setting)
             raise ImproperlyConfigured(f'`{setting}` is not a valid setting for the openapi-tester module')
 
     return config
@@ -55,7 +55,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
         logger.error('SCHEMA setting is mis-specified. Needs to be "dynamic" or "static", not %s', config['SCHEMA'])
         raise ImproperlyConfigured(
             f'`SCHEMA` needs to be set to `dynamic` or `static` in the openapi-tester module, '
-            f'not {config["SCHEMA"]}. Please update your OPENAPI_TESTER settings.'
+            f'not {config["SCHEMA"]}. Please update your SWAGGER_TESTER settings.'
         )
 
     # Make sure the case setting is correctly specified
@@ -79,13 +79,13 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
         if config['PATH'] is None:
             logger.error('PATH setting is not specified.')
             raise ImproperlyConfigured(
-                f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your OPENAPI_TESTER settings.'
+                f'`PATH` is a required setting for the openapi-tester module. ' f'Please update your SWAGGER_TESTER settings.'
             )
         elif not isinstance(config['PATH'], str):
             logger.error('PATH setting is not a string.')
-            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
+            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your SWAGGER_TESTER settings.')
         else:
-            from openapi_tester.static.get_schema import fetch_from_dir
+            from django_swagger_tester.static.get_schema import fetch_from_dir
 
             fetch_from_dir(config['PATH'])
 

@@ -1,7 +1,7 @@
 import pytest
 
-from openapi_tester import validate_response
-from openapi_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester import validate_response
+from django_swagger_tester.exceptions import OpenAPISchemaError
 
 good_test_data = [
     {

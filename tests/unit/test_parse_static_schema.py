@@ -2,9 +2,9 @@
 import pytest
 from django.conf import settings
 
-from openapi_tester.exceptions import ImproperlyConfigured
-from openapi_tester.static.get_schema import fetch_from_dir
-from openapi_tester.static.parse import parse_endpoint
+from django_swagger_tester.exceptions import ImproperlyConfigured
+from django_swagger_tester.static.get_schema import fetch_from_dir
+from django_swagger_tester.static.parse import parse_endpoint
 
 
 def test_successful_parse_documented_endpoints() -> None:

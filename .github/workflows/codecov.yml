@@ -22,7 +22,7 @@ jobs:
           pip install -r requirements/requirements-test-base.txt
       - name: Test with pytest
         run: |
-          pytest --cov=openapi_tester --verbose --color=yes  --assert=plain --cov-report=xml
+          pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain --cov-report=xml
           coverage report
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

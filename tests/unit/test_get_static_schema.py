@@ -2,8 +2,8 @@
 import pytest
 from django.conf import settings
 
-from openapi_tester.exceptions import ImproperlyConfigured
-from openapi_tester.static.get_schema import fetch_from_dir
+from django_swagger_tester.exceptions import ImproperlyConfigured
+from django_swagger_tester.static.get_schema import fetch_from_dir
 
 
 def test_successful_yml_fetch() -> None:
@@ -45,10 +45,10 @@ def test_unreadable_file(monkeypatch, caplog) -> None:
         def exception(self, *args):
             import logging
 
-            logger = logging.getLogger('openapi_tester')
+            logger = logging.getLogger('django_swagger_tester')
             logger.exception('test')
 
-    monkeypatch.setattr('openapi_tester.static.get_schema.logger', MockedLogger)
+    monkeypatch.setattr('django_swagger_tester.static.get_schema.logger', MockedLogger)
 
     with pytest.raises(
         ImproperlyConfigured, match='Could not read the openapi specification. Please make sure the path setting is correct.\n\nError: test'

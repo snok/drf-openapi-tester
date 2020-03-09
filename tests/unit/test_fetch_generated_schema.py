@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_tester.dynamic.get_schema import fetch_generated_schema
+from django_swagger_tester.dynamic.get_schema import fetch_generated_schema
 
 
 def test_dynamic_drf_yasg() -> None:

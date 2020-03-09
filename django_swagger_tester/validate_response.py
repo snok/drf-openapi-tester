@@ -3,14 +3,14 @@ from typing import Callable, Union, Any
 
 
 from requests import Response
-from openapi_tester.case_checks import case_check
-from openapi_tester.configuration import load_settings
-from openapi_tester.dynamic.get_schema import fetch_generated_schema
-from openapi_tester.exceptions import OpenAPISchemaError
-from openapi_tester.static.get_schema import fetch_from_dir
-from openapi_tester.static.parse import parse_endpoint
+from django_swagger_tester.case_checks import case_check
+from django_swagger_tester.configuration import load_settings
+from django_swagger_tester.dynamic.get_schema import fetch_generated_schema
+from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.static.get_schema import fetch_from_dir
+from django_swagger_tester.static.parse import parse_endpoint
 
-logger = logging.getLogger('openapi_tester')
+logger = logging.getLogger('django_swagger_tester')
 
 
 def validate_response(response: Response, method: str, endpoint_url: str) -> None:

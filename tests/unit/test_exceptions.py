@@ -1,5 +1,5 @@
 import pytest
-from openapi_tester.exceptions import OpenAPISchemaError, ImproperlyConfigured
+from django_swagger_tester.exceptions import OpenAPISchemaError, ImproperlyConfigured
 
 
 def test_specification_error():

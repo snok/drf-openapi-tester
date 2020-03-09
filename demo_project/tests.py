@@ -1,4 +1,4 @@
-from openapi_tester import validate_response
+from django_swagger_tester import validate_response
 from tests.functional.utils import APITestBase
 
 

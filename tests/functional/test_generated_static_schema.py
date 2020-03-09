@@ -1,7 +1,7 @@
 import pytest
 
-from openapi_tester import validate_response
-from openapi_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester import validate_response
+from django_swagger_tester.exceptions import OpenAPISchemaError
 
 good_test_data = [
     {
@@ -50,7 +50,7 @@ def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
 
     monkeypatch.setattr(
         openapi_settings,
-        'OPENAPI_TESTER',
+        'SWAGGER_TESTER',
         {'SCHEMA': 'static', 'CASE': 'camel case', 'path': openapi_settings.BASE_DIR + '/demo_project/openapi-schema.yml'},
     )
     for item in good_test_data:
@@ -70,7 +70,7 @@ def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # no
 
     monkeypatch.setattr(
         openapi_settings,
-        'OPENAPI_TESTER',
+        'SWAGGER_TESTER',
         {'SCHEMA': 'static', 'CASE': 'camel case', 'PATH': openapi_settings.BASE_DIR + '/demo_project/openapi-schema.yml'},
     )
     for item in bad_test_data:

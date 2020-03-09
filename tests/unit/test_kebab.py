@@ -1,7 +1,7 @@
 import pytest
 
-from openapi_tester.case_checks import is_kebab_case
-from openapi_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.case_checks import is_kebab_case
+from django_swagger_tester.exceptions import OpenAPISchemaError
 
 kebab_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snake-case'},

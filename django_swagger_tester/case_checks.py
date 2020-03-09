@@ -4,7 +4,7 @@ from typing import Union, Callable, Any
 
 from .exceptions import OpenAPISchemaError
 
-logger = logging.getLogger('openapi_tester')
+logger = logging.getLogger('django_swagger_tester')
 
 
 def case_check(case: Union[str, None]) -> Callable:

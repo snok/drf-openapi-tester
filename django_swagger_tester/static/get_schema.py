@@ -3,9 +3,9 @@ import logging
 import os.path
 import yaml
 
-from openapi_tester.exceptions import ImproperlyConfigured
+from django_swagger_tester.exceptions import ImproperlyConfigured
 
-logger = logging.getLogger('openapi_tester')
+logger = logging.getLogger('django_swagger_tester')
 
 
 def fetch_from_dir(path: str) -> dict:

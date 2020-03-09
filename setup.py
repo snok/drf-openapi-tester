@@ -1,4 +1,4 @@
-__version__ = '0.0.8'
+__version__ = '0.1.0'
 __author__ = 'Sondre Lillebø Gundersen'
 
 from setuptools import setup, find_packages
@@ -11,10 +11,10 @@ with open('CHANGELOG.rst') as changelog_file:
     changelog = changelog_file.read()
 
 setup(
-    name='openapi-tester',
+    name='django-swagger-tester',
     version=__version__,
     description='Test utility for asserting that your API outputs actually match your OpenAPI/Swagger specification.',
-    py_modules=['openapi_tester'],
+    py_modules=['django_swagger_tester'],
     include_package_data=True,
     long_description=readme + '\n\n' + changelog,
     license='BSD',
