@@ -3,8 +3,7 @@ from typing import Tuple, Union
 
 from django.apps import apps
 from django.conf import settings
-
-from .exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('django_swagger_tester')
 

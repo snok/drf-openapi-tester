@@ -4,7 +4,7 @@ import pytest
 from django.conf import settings as django_settings
 
 from django_swagger_tester.configuration import load_settings
-from django_swagger_tester.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 
 def test_valid_settings() -> None:
@@ -48,7 +48,7 @@ def test_missing_path(monkeypatch) -> None:  # noqa: TYP001
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'SCHEMA': 'static'})
     with pytest.raises(
         ImproperlyConfigured,
-        match='`PATH` is a required setting for the openapi-tester module. ' 'Please update your SWAGGER_TESTER settings.',
+        match='`PATH` is a required setting for the django-swagger-tester module. ' 'Please update your SWAGGER_TESTER settings.',
     ):
         load_settings()
 

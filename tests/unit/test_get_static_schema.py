@@ -2,7 +2,7 @@
 import pytest
 from django.conf import settings
 
-from django_swagger_tester.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 from django_swagger_tester.static.get_schema import fetch_from_dir
 
 

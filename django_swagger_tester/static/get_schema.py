@@ -3,8 +3,7 @@ import logging
 import os.path
 
 import yaml
-
-from django_swagger_tester.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -17,15 +16,13 @@ def fetch_from_dir(path: str) -> dict:
     :return: dict
     :raises: ImproperlyConfigured
     """
-    logger.debug('Fetching static schema')
-
     if not os.path.isfile(path):
         logger.error('Path `%s` does not resolve as a valid file.', path)
         raise ImproperlyConfigured(
             f'The path `{path}` does not point to a valid file. Make sure to point to the specification file.')
 
     try:
-        logger.debug('Fetching OpenAPI schema from %s', path)
+        logger.debug('Fetching static OpenAPI schema from %s', path)
         with open(path, 'r') as f:
             content = f.read()
     except Exception as e:
