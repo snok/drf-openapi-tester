@@ -13,7 +13,7 @@ def test_identical_parsing(client, monkeypatch) -> None:  # noqa: TYP001
         method = 'GET'
 
         full_static_content = fetch_from_dir(openapi_settings.BASE_DIR + '/demo_project/openapi-schema.yml')
-        static_content = parse_endpoint(schema=full_static_content, method=method, endpoint_url='/api/v1' + endpoint_url)
-        dynamic_content = fetch_generated_schema(url=endpoint_url, method=method)
+        static_content = parse_endpoint(schema=full_static_content, method=method, endpoint_url='/api/v1' + endpoint_url, status_code=200)
+        dynamic_content = fetch_generated_schema(url=endpoint_url, method=method, status_code=200)
 
         assert dynamic_content == static_content

@@ -1,5 +1,5 @@
 ############################
-OpenAPI Specification Tester
+Django Swagger Tester
 ############################
 
 .. image:: https://img.shields.io/pypi/v/openapi-tester.svg
