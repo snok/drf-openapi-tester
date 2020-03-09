@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'drf_yasg',
-    'openapi_tester',
 ]
 
 MIDDLEWARE = [
@@ -114,7 +113,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-OPENAPI_TESTER = {'SCHEMA': 'dynamic', 'CASE': 'camel case'}
+SWAGGER_TESTER = {'SCHEMA': 'dynamic', 'CASE': 'camel case'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),

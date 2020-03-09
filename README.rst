@@ -1,21 +1,21 @@
 ############################
-OpenAPI Specification Tester
+Django Swagger Tester
 ############################
 
 .. image:: https://img.shields.io/pypi/v/openapi-tester.svg
-    :target: https://pypi.org/project/openapi-tester/
+    :target: https://pypi.org/project/django-swagger-tester/
 
 .. image:: https://img.shields.io/pypi/pyversions/openapi-tester.svg
-    :target: https://pypi.org/project/openapi-tester/
+    :target: https://pypi.org/project/django-swagger-tester/
 
 .. image:: https://img.shields.io/pypi/djversions/openapi-tester.svg
-    :target: https://pypi.python.org/pypi/openapi-tester
+    :target: https://pypi.python.org/pypi/django-swagger-tester
 
 .. image:: https://codecov.io/gh/sondrelg/openapi-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/sondrelg/openapi-tester
+    :target: https://codecov.io/gh/sondrelg/django-swagger-tester
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://pypi.org/project/openapi-tester/
+    :target: https://pypi.org/project/django-swagger-tester/
 
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
@@ -27,7 +27,7 @@ This package provides a simple test utility for testing the integrity of your Op
 
 The test utility has two main functions. First, the documentation is tested by ensuring that it matches the content of actual API responses, and secondly the package ensures that all documentation adheres to the case-type specified as standard, .e.g, camel case.
 
-The package is currently under development, and only supports testing of swagger documentation implemented in Django using drf_yasg_. The ambition for release 1.0.0 is to expand the current features to support testing any openapi specification, and to cut the dependence on Django tooling.
+The package is currently under development.
 
 .. _Drf_yasg: https://github.com/axnsan12/drf-yasg
 
@@ -45,11 +45,11 @@ Install using pip:
 Configuration
 *************
 
-Package settings are added in your ``settings.py``:
+Add package settings to your ``settings.py``:
 
 .. code-block:: python
 
-    OPENAPI_TESTER = {
+    SWAGGER_TESTER = {
         'SCHEMA': 'dynamic',
         'CASE': 'camel case'
     }
@@ -93,7 +93,7 @@ Using drf_yasg_ for dynamic schema generation, your configuration might look lik
 
 .. code:: python
 
-    OPENAPI_TESTER = {
+    SWAGGER_TESTER = {
         'SCHEMA': 'dynamic',
         'CASE': 'camel case'
     }
@@ -104,7 +104,7 @@ While using, e.g., DRF_ for static schema generation, you would need to add the 
 
 .. code:: python
 
-    OPENAPI_TESTER = {
+    SWAGGER_TESTER = {
         'SCHEMA': 'dynamic',
         'CASE': 'camel case'
         'PATH': './swagger/schema.json'
@@ -125,7 +125,7 @@ An example might look like this:
     from django.contrib.auth.models import User
     from rest_framework.test import APITestCase
 
-    from openapi_tester import test_schema
+    from django_swagger_tester import validate_response
 
 
     class TestMyAPI(APITestCase):
@@ -150,6 +150,6 @@ An example might look like this:
             self.assertEqual(response.json(), expected_response)
 
             # Test Swagger documentation
-            test_schema(response, 'GET', self.path + '/correct/')
+            validate_response(response, 'GET', self.path + '/correct/')
 
 See the demo projects and tests folder for more examples.

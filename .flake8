@@ -39,6 +39,7 @@ exclude =
     .idea,
     __pycache__,
     demo_project/*,
+    tests/*,
     venv,
     manage.py,
 

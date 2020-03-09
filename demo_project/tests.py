@@ -1,4 +1,4 @@
-from openapi_tester import validate_schema
+from django_swagger_tester import validate_response
 from tests.functional.utils import APITestBase
 
 
@@ -22,7 +22,7 @@ class TestCorrectlyDocumentedCars(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_schema(response.json(), 'GET', self.path + '/correct/')
+        validate_response(response.json(), 'GET', self.path + '/correct/')
 
 
 class TestCorrectlyDocumentedTrucks(APITestBase):
@@ -45,4 +45,4 @@ class TestCorrectlyDocumentedTrucks(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_schema(response.json(), 'GET', self.path + '/correct/')
+        validate_response(response.json(), 'GET', self.path + '/correct/')
