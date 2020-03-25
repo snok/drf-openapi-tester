@@ -114,7 +114,12 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
             _dict(schema=schema_value, data=response_value, case_func=case_func)
         elif schema_value['type'] == 'array':
             _list(schema=schema_value, data=response_value, case_func=case_func)
-        elif schema_value['type'] == 'string' or schema_value['type'] == 'boolean' or schema_value['type'] == 'integer' or schema_value['type'] == 'number':
+        elif (
+                schema_value['type'] == 'string'
+                or schema_value['type'] == 'boolean'
+                or schema_value['type'] == 'integer'
+                or schema_value['type'] == 'number'
+        ):
             _item(schema=schema_value, data=response_value)
         else:
             raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
