@@ -110,7 +110,7 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
         response_value = data[schema_key]
 
         if schema_value['type'] == 'object':
-            logger.debug('Calling _dict from _dict. Response: %s, Schema', response_value, schema_value)
+            logger.debug('Calling _dict from _dict. Response: %s, Schema: %s', response_value, schema_value)
             _dict(schema=schema_value, data=response_value, case_func=case_func)
         elif schema_value['type'] == 'array':
             _list(schema=schema_value, data=response_value, case_func=case_func)

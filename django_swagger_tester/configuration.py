@@ -96,7 +96,7 @@ def _validate_settings(config: dict) -> Tuple[str, Union[str, None], Union[str, 
     return (
         config['SCHEMA'].lower(),
         config['CASE'].lower() if config['CASE'] else None,
-        config['PATH'].lower() if config['PATH'] else None,
+        config['PATH'] if config['PATH'] else None,
     )
 
 
