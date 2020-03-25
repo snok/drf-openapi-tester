@@ -4,7 +4,7 @@ Contributing to Django Swagger Tester
 This package is open to contributions. To contribute, please follow these steps:
 
 1. Fork the upstream django-swagger-tester repository into a personal account.
-2. Install development requirements from ``requirements-dev.txt``.
+2. Install development requirements from ``requirements/requirements-dev.txt``.
 3. Install pre-commit (linting) by running ``pre-commit install``.
 4. Create a new branch for you changes
 5. Push the topic branch to your personal fork.

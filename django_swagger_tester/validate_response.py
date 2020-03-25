@@ -51,7 +51,7 @@ def validate_response(response: Response, method: str, endpoint_url: str) -> Non
         _dict(schema=schema, data=data, case_func=case_func)
     elif schema['type'] == 'array':
         _list(schema=schema, data=data, case_func=case_func)
-    elif schema['type'] == 'string' or schema['type'] == 'boolean' or schema['type'] == 'integer':
+    elif schema['type'] == 'string' or schema['type'] == 'boolean' or schema['type'] == 'integer' or schema['type'] == 'number':
         _item(schema=schema, data=data)
     else:
         raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
@@ -114,7 +114,7 @@ def _dict(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
             _dict(schema=schema_value, data=response_value, case_func=case_func)
         elif schema_value['type'] == 'array':
             _list(schema=schema_value, data=response_value, case_func=case_func)
-        elif schema_value['type'] == 'string' or schema_value['type'] == 'boolean' or schema_value['type'] == 'integer':
+        elif schema_value['type'] == 'string' or schema_value['type'] == 'boolean' or schema_value['type'] == 'integer' or schema_value['type'] == 'number':
             _item(schema=schema_value, data=response_value)
         else:
             raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
@@ -161,7 +161,7 @@ def _list(schema: dict, data: Union[list, dict], case_func: Callable) -> None:
         elif (item['type'] == 'array' and not item['items']) and data[index]:
             raise OpenAPISchemaError(f'Response list contains value `{data[index]}` '
                                      f'where schema suggests there should be an empty list.')
-        elif item['type'] == 'string' or item['type'] == 'boolean' or item['type'] == 'integer':
+        elif item['type'] == 'string' or item['type'] == 'boolean' or item['type'] == 'integer' or item['type'] == 'number':
             _item(schema=item, data=data)
         else:
             raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
@@ -184,7 +184,7 @@ def _item(schema: dict, data: Any) -> None:
         if not isinstance(data, str):
             raise OpenAPISchemaError(
                 f"The example value `{schema['example']}` does not match the specified data type <type 'str>'.")
-    elif schema['type'] == 'integer':
+    elif schema['type'] == 'integer' or schema['type'] == 'number':
         if not isinstance(data, int):
             raise OpenAPISchemaError(
                 f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")

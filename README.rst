@@ -150,6 +150,6 @@ An example might look like this:
             self.assertEqual(response.json(), expected_response)
 
             # Test Swagger documentation
-            validate_response(response, 'GET', self.path + '/correct/')
+            validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
 
 See the demo projects and tests folder for more examples.
