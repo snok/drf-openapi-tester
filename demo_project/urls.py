@@ -21,12 +21,14 @@ from rest_framework import permissions
 from . import views
 from .api.views.cars import GoodCars, BadCars
 from .api.views.trucks import GoodTrucks, BadTrucks
+from .api.views.vehicles import Vehicles
 
 api_urlpatterns = [
     path('api/v1/cars/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
     path('api/v1/cars/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
     path('api/v1/trucks/correct/', GoodTrucks.as_view(), name='correctly_documented_trucks'),
     path('api/v1/trucks/incorrect/', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
+    path('api/v1/vehicles/', Vehicles.as_view(), name='incorrectly_documented_trucks'),
 ]
 schema_view = get_schema_view(
     openapi.Info(
