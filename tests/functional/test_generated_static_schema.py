@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester import validate_response
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 good_test_data = [
     {
@@ -79,5 +79,5 @@ def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # no
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(OpenAPISchemaError, match='Response list contains values'):
+        with pytest.raises(SwaggerDocumentationError, match='Response list contains values'):
             validate_response(response, 'GET', '/api/v1' + item['url'])

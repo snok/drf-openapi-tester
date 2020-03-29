@@ -1,4 +1,4 @@
-class OpenAPISchemaError(Exception):
+class SwaggerDocumentationError(Exception):
     """
     Custom exception raised when package tests fail.
     """

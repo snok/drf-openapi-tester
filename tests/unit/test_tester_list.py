@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester.case_checks import is_camel_case
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.validate_response import _list
 
 schema = {
@@ -37,7 +37,7 @@ def test_bad_data_type() -> None:
     """
     Asserts that the appropriate exception is raised for a bad response data type.
     """
-    with pytest.raises(OpenAPISchemaError, match="The response is <class 'dict'> when it should be <class 'list'>"):
+    with pytest.raises(SwaggerDocumentationError, match="The response is <class 'dict'> when it should be <class 'list'>"):
         _list(schema=schema, data={'test': data}, case_func=is_camel_case)
 
 

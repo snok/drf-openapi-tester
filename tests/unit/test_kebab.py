@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester.case_checks import is_kebab_case
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 kebab_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snake-case'},
@@ -18,7 +18,7 @@ def test_kebab_cased_words():
     """
     for item in kebab_case_test_data:
         is_kebab_case(item['correct'])
-        with pytest.raises(OpenAPISchemaError):
+        with pytest.raises(SwaggerDocumentationError):
             is_kebab_case(item['incorrect'])
 
 
@@ -28,7 +28,7 @@ def test_less_than_two_chars():
     :return:
     """
     is_kebab_case('')
-    with pytest.raises(OpenAPISchemaError):
+    with pytest.raises(SwaggerDocumentationError):
         is_kebab_case(' ')
         is_kebab_case('-')
         is_kebab_case('_')
