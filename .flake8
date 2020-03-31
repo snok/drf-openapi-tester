@@ -34,6 +34,9 @@ ignore=
     # this issue can't be fixed without using noqa notation
     D400
 
+    # Line break before binary operator. W504 will be hit when this is excluded.
+    W503
+
 exclude =
     .git,
     .idea,

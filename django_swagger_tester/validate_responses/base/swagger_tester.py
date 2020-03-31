@@ -10,12 +10,12 @@ logger = logging.getLogger('django_swagger_tester')
 
 class SwaggerTester(object):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.case_func = None
         self.schema = None
         self._validation()
 
-    def _validation(self):
+    def _validation(self) -> None:
         """
         Loads Django settings.
 
@@ -24,8 +24,6 @@ class SwaggerTester(object):
         """
         settings = load_settings()
         self.case_func = case_check(settings['CASE'])
-
-
 
     def _dict(self, schema: dict, data: Union[list, dict]) -> None:
         """
@@ -76,13 +74,13 @@ class SwaggerTester(object):
             response_value = data[schema_key]
 
             if schema_value['type'] == 'object':
-                logger.debug('Calling _dict from _dict. Response: %s, Schema', response_value, schema_value)
+                logger.debug('Calling _dict from _dict. Response: %s, Schema: %s', response_value, schema_value)
                 self._dict(schema=schema_value, data=response_value)
             elif schema_value['type'] == 'array':
-                logger.debug('Calling _list from _dict. Response: %s, Schema', response_value, schema_value)
+                logger.debug('Calling _list from _dict. Response: %s, Schema: %s', response_value, schema_value)
                 self._list(schema=schema_value, data=response_value)
-            elif schema_value['type'] == 'string' or schema_value['type'] == 'boolean' or schema_value['type'] == 'integer':
-                logger.debug('Calling _item from _dict. Response: %s, Schema', response_value, schema_value)
+            elif schema_value['type'] in ['string', 'boolean', 'integer', 'number']:
+                logger.debug('Calling _item from _dict. Response: %s, Schema: %s', response_value, schema_value)
                 self._item(schema=schema_value, data=response_value)
 
             # This part of the code should be unreachable. However, if we do have a gap in our logic,
@@ -135,7 +133,7 @@ class SwaggerTester(object):
                                                 f'where schema suggests there should be an empty list.')
 
             # List item --> item
-            elif item['type'] == 'string' or item['type'] == 'boolean' or item['type'] == 'integer':
+            elif item['type'] in ['string', 'boolean', 'integer', 'number']:
                 # If the schema says all listed items are individual items, check that the item is represented in the response
                 self._item(schema=item, data=data)
 
@@ -161,7 +159,7 @@ class SwaggerTester(object):
             if not isinstance(data, str):
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <type 'str>'.")
-        elif schema['type'] == 'integer':
+        elif schema['type'] in ['integer', 'number']:
             if not isinstance(data, int):
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
