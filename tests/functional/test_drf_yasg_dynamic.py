@@ -46,7 +46,7 @@ def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
     Asserts that the validate_response function validates correct schemas successfully.
     """
     response = client.get('/api/v1/cars/correct/')
-    validate_response(response=response, method='GET', endpoint_url='api/v1/cars/correct/')
+    validate_response(response=response, method='GET', endpoint_url='/v1/cars/correct/')
 
     # for item in good_test_data:
     #     response = client.get('/api/v1' + item['url'])

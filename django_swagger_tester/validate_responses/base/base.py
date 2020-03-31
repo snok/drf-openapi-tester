@@ -54,16 +54,20 @@ class SwaggerTestBase(SwaggerTester):
         """
         try:
             logger.debug('Resolving path.')
-            if endpoint_path[0] != '/' or endpoint_path[-1] != '/':
-                endpoint_path = f'/{endpoint_path}/'.replace('//', '/')
-            self.resolved_url = resolve(endpoint_path)
+            if endpoint_path[0] != '/':
+                endpoint_path = '/' + endpoint_path
+            try:
+                self.resolved_url = resolve(endpoint_path)
+            except Resolver404:
+                self.resolved_url = resolve(endpoint_path + '/')
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
             list_of_urls = list_project_urls()
             closest_matches = ''.join([f'\n- /{i}' for i in difflib.get_close_matches(endpoint_path, list_of_urls)])
             if closest_matches:
-                raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean to resolve one of these?{closest_matches}\n\n'
-                                 f'If your path contains path parameters, make sure to pass a value, rather than the parameter pattern')
+                raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
+                                 f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
+                                 f'value, and not the parameter pattern.')
             else:
                 raise ValueError(f'Could not resolve path `{endpoint_path}`')
 

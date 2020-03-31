@@ -157,11 +157,11 @@ class SwaggerTester(object):
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <type 'bool'>.")
         elif schema['type'] == 'string':
-            if not isinstance(data, str):
+            if not isinstance(data, str) and data is not None:
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <type 'str>'.")
         elif schema['type'] in ['integer', 'number']:
-            if not isinstance(data, int):
+            if not isinstance(data, int) and data is not None:
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
         else:
