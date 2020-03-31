@@ -8,7 +8,7 @@ from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_sch
 class GoodCars(APIView):
     @staticmethod
     @get_cars_auto_schema()
-    def get(request: Request) -> Response:
+    def get(request: Request, vehicle_type) -> Response:
         cars = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},

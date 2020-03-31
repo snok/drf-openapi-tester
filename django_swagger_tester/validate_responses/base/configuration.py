@@ -50,3 +50,6 @@ def load_settings() -> dict:
         )
 
     return defaults
+
+
+load_settings()

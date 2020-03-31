@@ -82,10 +82,10 @@ class SwaggerTester(object):
             elif schema_value['type'] in ['string', 'boolean', 'integer', 'number']:
                 logger.debug('Calling _item from _dict. Response: %s, Schema: %s', response_value, schema_value)
                 self._item(schema=schema_value, data=response_value)
-
-            # This part of the code should be unreachable. However, if we do have a gap in our logic,
-            # we should raise an error to highlight the error.
-            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')
+            else:
+                # This part of the code should be unreachable. However, if we do have a gap in our logic,
+                # we should raise an error to highlight the error.
+                raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
     def _list(self, schema: dict, data: Union[list, dict]) -> None:
         """
@@ -137,9 +137,10 @@ class SwaggerTester(object):
                 # If the schema says all listed items are individual items, check that the item is represented in the response
                 self._item(schema=item, data=data)
 
-            # This part of the code should be unreachable. However, if we do have a gap in our logic,
-            # we should raise an error to highlight the error.
-            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')
+            else:
+                # This part of the code should be unreachable. However, if we do have a gap in our logic,
+                # we should raise an error to highlight the error.
+                raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
     @staticmethod
     def _item(schema: dict, data: Any) -> None:
@@ -163,7 +164,7 @@ class SwaggerTester(object):
             if not isinstance(data, int):
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
-
-        # This part of the code should be unreachable. However, if we do have a gap in our logic,
-        # we should raise an error to highlight the error.
-        raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')
+        else:
+            # This part of the code should be unreachable. However, if we do have a gap in our logic,
+            # we should raise an error to highlight the error.
+            raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')

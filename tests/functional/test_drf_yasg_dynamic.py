@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester import validate_response
+from django_swagger_tester.validate_responses.drf_yasg import validate_response
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 good_test_data = [
@@ -45,13 +45,16 @@ def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
-    for item in good_test_data:
-        response = client.get('/api/v1' + item['url'])
-        assert response.status_code == 200
-        assert response.json() == item['expected_response']
+    response = client.get('/api/v1/cars/correct/')
+    validate_response(response=response, method='GET', endpoint_url='api/v1/cars/correct/')
 
+    # for item in good_test_data:
+    #     response = client.get('/api/v1' + item['url'])
+    #     assert response.status_code == 200
+    #     assert response.json() == item['expected_response']
+    #
         # Test Swagger documentation
-        validate_response(response, 'GET', item['url'])
+        # print(item['url'])
 
 
 def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001

@@ -54,6 +54,8 @@ class SwaggerTestBase(SwaggerTester):
         """
         try:
             logger.debug('Resolving path.')
+            if endpoint_path[0] != '/' or endpoint_path[-1] != '/':
+                endpoint_path = f'/{endpoint_path}/'.replace('//', '/')
             self.resolved_url = resolve(endpoint_path)
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)

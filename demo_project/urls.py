@@ -13,19 +13,31 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
+from django.urls import path, register_converter
+from django.urls.converters import StringConverter
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from . import views
-from .api.views.cars import GoodCars, BadCars
-from .api.views.trucks import GoodTrucks, BadTrucks
+from .api.views.cars import BadCars, GoodCars
+from .api.views.trucks import BadTrucks, GoodTrucks
 from .api.views.vehicles import Vehicles
 
+
+class IsValidVehicleType(StringConverter):
+
+    def to_python(self, value: str) -> str:
+        if value == 'cars':
+            return value
+        raise ValueError
+
+
+register_converter(IsValidVehicleType, 'vehicle_type')
+
 api_urlpatterns = [
-    path('api/v1/cars/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
-    path('api/v1/cars/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
+    path('api/v1/<vehicle_type:vehicle_type>/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
+    path('api/v1/<vehicle_type:vehicle_type>/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
     path('api/v1/trucks/correct/', GoodTrucks.as_view(), name='correctly_documented_trucks'),
     path('api/v1/trucks/incorrect/', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
     path('api/v1/vehicles/', Vehicles.as_view(), name='incorrectly_documented_trucks'),
@@ -44,7 +56,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('', views.index),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-] + api_urlpatterns
+                  path('', views.index),
+                  path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+                  path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+              ] + api_urlpatterns
