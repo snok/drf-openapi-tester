@@ -1,1 +1,0 @@
-from django_swagger_tester.validate_response.drf_yasg.base import validate_response

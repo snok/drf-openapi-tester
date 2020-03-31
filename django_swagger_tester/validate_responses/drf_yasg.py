@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_response.base import SwaggerTestBase
+from django_swagger_tester.validate_responses.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -16,6 +16,12 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
     def validation(self) -> None:
         """
         Holds validation and setup logic to run when Django starts.
+
+        For drf_yasg-generated schemas we need to verify that:
+
+        1. The package is installed
+        2. Json is installed, for parsing the schema
+        3. drf_yasg is in the projects installed_apps
         """
         try:
             import drf_yasg
@@ -45,16 +51,17 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         schema = OpenAPISchemaGenerator(info=Info(title='', default_version='')).get_schema()
         schema = loads(dumps(schema.as_odict()['paths']))  # Converts OrderedDict to dict
 
+        # Index by route
         try:
+            # For future reference: not sure about this implementation - we should look to change it for something
+            # 100% reliable.
             closest_match = difflib.get_close_matches(self.resolved_url.route, schema.keys(), 1)
-            # Test this section thoroughly
-            print(closest_match)
-            print(difflib.get_close_matches(self.resolved_url.route, schema.keys()))
             schema = schema[closest_match[0]]
         except KeyError:
             raise SwaggerDocumentationError(
                 f'No path found for url `{self.resolved_url.route}`. Valid urls include {", ".join([key for key in schema.keys()])}')
 
+        # Index by method and responses
         try:
             schema = schema[self.method.lower()]['responses']
         except KeyError:
@@ -63,6 +70,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
                 f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
             )
 
+        # Index by status and schema
         try:
             schema = schema[f'{self.status_code}']['schema']
         except KeyError:
@@ -75,5 +83,14 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
 
 
 def validate_response(response: Response, method: str, endpoint_url: str):
+    """
+    This function verifies that an OpenAPI schema definition matches the an API response.
+    It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
+
+    :param response: HTTP response
+    :param method: HTTP method ('get', 'put', 'post', ...)
+    :param endpoint_url: Relative path of the endpoint being tested
+    :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+    """
     tester_class = DrfYasgSwaggerTester()
-    tester_class.validate_response(response=response, method=method, endpoint_url=endpoint_url)
+    tester_class._validate_response(response=response, method=method, endpoint_url=endpoint_url)

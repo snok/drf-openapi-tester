@@ -8,7 +8,7 @@ from django.core.exceptions import ImproperlyConfigured
 from django.urls import get_script_prefix
 from rest_framework.response import Response
 
-from django_swagger_tester.validate_response.base import SwaggerTestBase
+from django_swagger_tester.validate_responses.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 

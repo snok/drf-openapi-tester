@@ -1,1 +1,0 @@
-from django_swagger_tester.validate_response.base.base import SwaggerTestBase

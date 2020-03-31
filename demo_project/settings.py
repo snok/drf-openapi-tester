@@ -113,7 +113,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-SWAGGER_TESTER = {'SCHEMA': 'dynamic', 'CASE': 'camel case'}
+SWAGGER_TESTER = {'CASE': 'camel case'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),

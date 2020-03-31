@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Union, Callable, Any
+from typing import Any, Callable, Union
 
 from .exceptions import SwaggerDocumentationError
 

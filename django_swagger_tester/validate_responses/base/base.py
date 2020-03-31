@@ -1,10 +1,12 @@
+import difflib
 import logging
 
 from django.urls import Resolver404, resolve
 from requests import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_response.base.swagger_tester import SwaggerTester
+from django_swagger_tester.utils import list_project_urls
+from django_swagger_tester.validate_responses.base.swagger_tester import SwaggerTester
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -33,7 +35,7 @@ class SwaggerTestBase(SwaggerTester):
         """
         pass
 
-    # ^ Methods above this line should be extended. Methods below can be extended.
+    # ^ Methods above this line *should* be extended. Methods below *can* be extended.
 
     def _unpack_response(self, response) -> None:
         """
@@ -46,16 +48,21 @@ class SwaggerTestBase(SwaggerTester):
             logger.exception('Unable to open response object')
             raise ValueError(f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}')
 
-    def _resolve_url(self, endpoint_path):
+    def _resolve_path(self, endpoint_path):
         """
-        Validation method for an endpoint URL.
+        Resolves a Django path.
         """
         try:
             logger.debug('Resolving path.')
             self.resolved_url = resolve(endpoint_path)
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
-            raise ValueError(f'Could not resolve path `{endpoint_path}`')
+            list_of_urls = list_project_urls()
+            closest_matches = ''.join([f'\n- /{i}' for i in difflib.get_close_matches(endpoint_path, list_of_urls)])
+            if closest_matches:
+                raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean to resolve one of these?{closest_matches}')
+            else:
+                raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
     def _validate_method(self, method):
         methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
@@ -64,18 +71,18 @@ class SwaggerTestBase(SwaggerTester):
             raise ValueError(f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.')
         self.method = method.upper()
 
-    def validate_response(self, response: Response, method: str, endpoint_url: str) -> None:
+    def _validate_response(self, response: Response, method: str, endpoint_url: str) -> None:
         """
-        This function verifies that an OpenAPI schema definition matches the response of an API endpoint.
-
-        It inspects your schema recursively, and verifies that the schema matches the structure of the response at every level.
+        This function verifies that an OpenAPI schema definition matches the an API response.
+        It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
 
         :param response: HTTP response
         :param method: HTTP method ('get', 'put', 'post', ...)
         :param endpoint_url: Relative path of the endpoint being tested
+        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
         """
         self._unpack_response(response)
-        self._resolve_url(endpoint_url)
+        self._resolve_path(endpoint_url)
         self._validate_method(method)
         self.load_schema()
         if not self.schema:
@@ -83,7 +90,7 @@ class SwaggerTestBase(SwaggerTester):
         if self.schema['type'] == 'object':
             self._dict(schema=self.schema, data=self.data)
         elif self.schema['type'] == 'array':
-            self._list(schema=self.schema, data=self.data, case_func=self.case_func)
+            self._list(schema=self.schema, data=self.data)
         elif self.schema['type'] == 'string' or self.schema['type'] == 'boolean' or self.schema['type'] == 'integer':
             self._item(schema=self.schema, data=self.data)
         else:

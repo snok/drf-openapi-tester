@@ -1,9 +1,9 @@
 import logging
-from typing import Any, Callable, Union
+from typing import Any, Union
 
 from django_swagger_tester.case_checks import case_check
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_response.base.configuration import load_settings
+from django_swagger_tester.validate_responses.base.configuration import load_settings
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -19,11 +19,13 @@ class SwaggerTester(object):
         """
         Loads Django settings.
 
-        Currently, the case-check preference is the only base setting required.
-        This might be extended in the future.
+        This method should hold base-setting validation.
+        Currently the `CASE` setting is the only required setting, but this might be extended in the future.
         """
         settings = load_settings()
         self.case_func = case_check(settings['CASE'])
+
+
 
     def _dict(self, schema: dict, data: Union[list, dict]) -> None:
         """
@@ -34,18 +36,15 @@ class SwaggerTester(object):
         :return: None
         """
         logger.debug('Verifying that response dict layer matches schema layer')
-        # Check that the response data is the right type and unpack dict keys
+
         if not isinstance(data, dict):
-            if isinstance(data, list) and len(data) == 0:
-                # If a list of objects is documented, but no objects are included in the response, that doesnt make the
-                # documentation incorrect.
-                return
-            else:
-                raise SwaggerDocumentationError(f"The response is {type(data)} where it should be <class 'dict'>")
+            raise SwaggerDocumentationError(
+                f"The response is {type(data)} where it should be <class 'dict'>.\n\nResponse: {data}\n\nSchema: {schema}")
+
         schema_keys = schema['properties'].keys()
         response_keys = data.keys()
 
-        # Verify that the length of both dicts match - A length mismatch will always indicate an error
+        # Verify that both dicts have the same amount of keys --> a length mismatch will always indicate an error
         if len(schema_keys) != len(response_keys):
             logger.debug('The number of schema dict elements does not match the number of response dict elements')
             if len(set(response_keys)) > len(set(schema_keys)):
@@ -72,7 +71,7 @@ class SwaggerTester(object):
             elif response_key not in schema_keys:
                 raise SwaggerDocumentationError(f'Response key `{response_key}` is missing from your API documentation')
 
-            # Check what further check are needed for the values contained in the dict
+            # Pass nested elements for nested checks
             schema_value = schema['properties'][schema_key]
             response_value = data[schema_key]
 
@@ -80,11 +79,15 @@ class SwaggerTester(object):
                 logger.debug('Calling _dict from _dict. Response: %s, Schema', response_value, schema_value)
                 self._dict(schema=schema_value, data=response_value)
             elif schema_value['type'] == 'array':
+                logger.debug('Calling _list from _dict. Response: %s, Schema', response_value, schema_value)
                 self._list(schema=schema_value, data=response_value)
             elif schema_value['type'] == 'string' or schema_value['type'] == 'boolean' or schema_value['type'] == 'integer':
+                logger.debug('Calling _item from _dict. Response: %s, Schema', response_value, schema_value)
                 self._item(schema=schema_value, data=response_value)
-            else:
-                raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
+
+            # This part of the code should be unreachable. However, if we do have a gap in our logic,
+            # we should raise an error to highlight the error.
+            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')
 
     def _list(self, schema: dict, data: Union[list, dict]) -> None:
         """
@@ -96,7 +99,8 @@ class SwaggerTester(object):
         """
         logger.debug('Verifying that response list layer matches schema layer')
         if not isinstance(data, list):
-            raise SwaggerDocumentationError(f"The response is {type(data)} when it should be <class 'list'>")
+            raise SwaggerDocumentationError(f"The response is {type(data)} when it should be <class 'list'>."
+                                            f'\n\nResponse: {data}\n\nSchema: {schema}')
 
         # A schema array can only hold one item, e.g., {"type": "array", "items": {"type": "object", "properties": {...}}}
         # At the same time we want to test each of the response objects, as they *should* match the schema.
@@ -109,27 +113,35 @@ class SwaggerTester(object):
             item = schema['items']
 
         for index in range(len(data)):
-            # If the schema says all listed items are to be dictionaries and the dictionaries should have values...
+
+            # List item --> dict
             if item['type'] == 'object' and item['properties']:
-                # ... then check those values
                 self._dict(schema=item, data=data[index])
-            # If the schema says all listed items are to be dicts, and the response has values but the schema is empty
+
+            # List item --> empty dict  &&  response not empty
             elif (item['type'] == 'object' and not item['properties']) and data[index]:
-                # ... then raise an error
                 raise SwaggerDocumentationError(f'Response dict contains value `{data[index]}` '
                                                 f'where schema suggests there should be an empty dict.')
-            # If the schema says all listed items are to be arrays and the lists should have values
+
+            # List item --> list
             elif item['type'] == 'array' and item['items']:
-                # ... then check those values
                 self._list(schema=item, data=data[index])
-            # If the schema says all listed items are to be arrays, and the response has values but the schema is empty
+
+            # List item --> empty list  &&  response not empty
             elif (item['type'] == 'array' and not item['items']) and data[index]:
+                # If the schema says all listed items are to be arrays, and the response has values but the schema is empty
+                # ... then raise an error
                 raise SwaggerDocumentationError(f'Response list contains value `{data[index]}` '
                                                 f'where schema suggests there should be an empty list.')
+
+            # List item --> item
             elif item['type'] == 'string' or item['type'] == 'boolean' or item['type'] == 'integer':
+                # If the schema says all listed items are individual items, check that the item is represented in the response
                 self._item(schema=item, data=data)
-            else:
-                raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
+
+            # This part of the code should be unreachable. However, if we do have a gap in our logic,
+            # we should raise an error to highlight the error.
+            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')
 
     @staticmethod
     def _item(schema: dict, data: Any) -> None:
@@ -153,5 +165,7 @@ class SwaggerTester(object):
             if not isinstance(data, int):
                 raise SwaggerDocumentationError(
                     f"The example value `{schema['example']}` does not match the specified data type <class 'int'>.")
-        else:
-            raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}')  # TODO: Remove after testing
+
+        # This part of the code should be unreachable. However, if we do have a gap in our logic,
+        # we should raise an error to highlight the error.
+        raise Exception(f'Unexpected error.\nSchema: {schema}\n Response: {data}\nThis shouldn\'t happen.')

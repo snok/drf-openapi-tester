@@ -2,7 +2,7 @@ import pytest
 
 from django_swagger_tester.case_checks import is_camel_case
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_response import _dict
+from django_swagger_tester.validate_responses import _dict
 
 schema = {
     'type': 'object',

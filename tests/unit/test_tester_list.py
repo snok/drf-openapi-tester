@@ -1,8 +1,7 @@
 import pytest
 
-from django_swagger_tester.case_checks import is_camel_case
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_response import _list
+from django_swagger_tester.validate_responses.base.swagger_tester import SwaggerTester
 
 schema = {
     'title': 'Success',
@@ -25,12 +24,14 @@ data = [
     {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
 ]
 
+tester = SwaggerTester()
+
 
 def test_valid_list() -> None:
     """
     Asserts that valid data passes successfully.
     """
-    _list(schema=schema, data=data, case_func=is_camel_case)
+    tester._list(schema=schema, data=data)
 
 
 def test_bad_data_type() -> None:
@@ -38,11 +39,11 @@ def test_bad_data_type() -> None:
     Asserts that the appropriate exception is raised for a bad response data type.
     """
     with pytest.raises(SwaggerDocumentationError, match="The response is <class 'dict'> when it should be <class 'list'>"):
-        _list(schema=schema, data={'test': data}, case_func=is_camel_case)
+        tester._list(schema=schema, data={'test': data})
 
 
 def test_empty_response_data_list() -> None:
     """
     Asserts that the no exception is raised when the response data is missing - this has valid cases.
     """
-    _list(schema=schema, data=[], case_func=is_camel_case)
+    tester._list(schema=schema, data=[])
