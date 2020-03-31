@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_responses.base import SwaggerTestBase
+from django_swagger_tester.validate_responses.base.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -24,11 +24,11 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         3. drf_yasg is in the projects installed_apps
         """
         try:
-            import drf_yasg
+            import drf_yasg  # noqa: F401
         except ModuleNotFoundError:
             raise ImproperlyConfigured('Missing the package `drf_yasg`. Run `pip install drf_yasg` to install it.')
         try:
-            import json
+            import json  # noqa: F401
         except ModuleNotFoundError:
             raise ImproperlyConfigured('Missing the package `json`. Run `pip install json` to install it.')
 
@@ -82,7 +82,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         self.schema = schema
 
 
-def validate_response(response: Response, method: str, endpoint_url: str):
+def validate_response(response: Response, method: str, endpoint_url: str) -> None:
     """
     This function verifies that an OpenAPI schema definition matches the an API response.
     It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.

@@ -10,16 +10,16 @@ def list_project_urls() -> List[str]:
     """
     urlconf = __import__(settings.ROOT_URLCONF, {}, {}, [''])
 
-    def list_urls(lis, acc=None):
+    def list_urls(urls, acc=None):  # noqa: TYP201, TYP001
         if acc is None:
             acc = []
-        if not lis:
+        if not urls:
             return
-        l = lis[0]
-        if isinstance(l, URLPattern):
-            yield acc + [str(l.pattern)]
-        elif isinstance(l, URLResolver):
-            yield from list_urls(l.url_patterns, acc + [str(l.pattern)])
-        yield from list_urls(lis[1:], acc)
+        url = urls[0]
+        if isinstance(url, URLPattern):
+            yield acc + [str(url.pattern)]
+        elif isinstance(url, URLResolver):
+            yield from list_urls(url.url_patterns, acc + [str(url.pattern)])
+        yield from list_urls(urls[1:], acc)
 
     return [''.join(p) for p in list_urls(urlconf.urlpatterns)]

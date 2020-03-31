@@ -37,7 +37,7 @@ class SwaggerTestBase(SwaggerTester):
 
     # ^ Methods above this line *should* be extended. Methods below *can* be extended.
 
-    def _unpack_response(self, response) -> None:
+    def _unpack_response(self, response: Response) -> None:
         """
         Unpacks response as dict.
         """
@@ -48,7 +48,7 @@ class SwaggerTestBase(SwaggerTester):
             logger.exception('Unable to open response object')
             raise ValueError(f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}')
 
-    def _resolve_path(self, endpoint_path):
+    def _resolve_path(self, endpoint_path: str) -> None:
         """
         Resolves a Django path.
         """
@@ -64,7 +64,10 @@ class SwaggerTestBase(SwaggerTester):
             else:
                 raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
-    def _validate_method(self, method):
+    def _validate_method(self, method: str) -> None:
+        """
+        Validates the specified HTTP method.
+        """
         methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
         if not isinstance(method, str) or method.lower() not in methods:
             logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))

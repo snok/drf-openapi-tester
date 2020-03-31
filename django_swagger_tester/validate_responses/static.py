@@ -8,14 +8,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.urls import get_script_prefix
 from rest_framework.response import Response
 
-from django_swagger_tester.validate_responses.base import SwaggerTestBase
+from django_swagger_tester.validate_responses.base.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 
 
 class StaticSchemaSwaggerTester(SwaggerTestBase):
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.path = None
         super().__init__()
 
@@ -24,11 +24,11 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         Holds validation and setup logic to run when Django starts.
         """
         try:
-            import json
+            import json  # noqa: F401
         except ModuleNotFoundError:
             raise ImproperlyConfigured('Missing the package `json`. Run `pip install json` to install it.')
         try:
-            import yaml
+            import yaml  # noqa: F401
         except ModuleNotFoundError:
             raise ImproperlyConfigured('Missing the package `yaml`. Run `pip install yaml` to install it.')
 
@@ -101,6 +101,15 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
             raise KeyError(f'The OpenAPI schema has no method called `{self.method}`')
 
 
-def validate_response(response: Response, method: str, endpoint_url: str):
+def validate_response(response: Response, method: str, endpoint_url: str) -> None:
+    """
+    This function verifies that an OpenAPI schema definition matches the an API response.
+    It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
+
+    :param response: HTTP response
+    :param method: HTTP method ('get', 'put', 'post', ...)
+    :param endpoint_url: Relative path of the endpoint being tested
+    :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+    """
     tester_class = StaticSchemaSwaggerTester()
-    tester_class.validate_response(response=response, method=method, endpoint_url=endpoint_url)
+    tester_class._validate_response(response=response, method=method, endpoint_url=endpoint_url)
