@@ -82,7 +82,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         self.schema = schema
 
 
-def validate_response(response: Response, method: str, endpoint_url: str) -> None:
+def validate_response(response: Response, method: str, endpoint_url: str, **kwargs) -> None:
     """
     This function verifies that an OpenAPI schema definition matches the an API response.
     It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
@@ -93,4 +93,4 @@ def validate_response(response: Response, method: str, endpoint_url: str) -> Non
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
     """
     tester_class = DrfYasgSwaggerTester()
-    tester_class._validate_response(response=response, method=method, endpoint_url=endpoint_url)
+    tester_class._validate_response(response=response, method=method, endpoint_url=endpoint_url, **kwargs)
