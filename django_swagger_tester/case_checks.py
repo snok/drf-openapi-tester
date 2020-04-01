@@ -15,7 +15,7 @@ def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
     :return: callable function
     """
     logger.debug('Returning `%s` case function', case)
-    return {    # type: ignore
+    return {  # type: ignore
         'camel case': is_camel_case,
         'snake case': is_snake_case,
         'kebab case': is_kebab_case,
