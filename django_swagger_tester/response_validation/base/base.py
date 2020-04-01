@@ -5,8 +5,8 @@ from django.urls import Resolver404, resolve
 from requests import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.utils import list_project_urls
 from django_swagger_tester.response_validation.base.swagger_tester import SwaggerTester
+from django_swagger_tester.utils import list_project_urls
 
 logger = logging.getLogger('django_swagger_tester')
 
