@@ -7,7 +7,7 @@ from .exceptions import SwaggerDocumentationError
 logger = logging.getLogger('django_swagger_tester')
 
 
-def case_check(case: Union[str, None]) -> Callable:
+def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
     """
     Returns the appropriate case check based on the `case` input parameter.
 
@@ -15,7 +15,7 @@ def case_check(case: Union[str, None]) -> Callable:
     :return: callable function
     """
     logger.debug('Returning `%s` case function', case)
-    return {
+    return {    # type: ignore
         'camel case': is_camel_case,
         'snake case': is_snake_case,
         'kebab case': is_kebab_case,

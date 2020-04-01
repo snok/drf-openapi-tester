@@ -10,7 +10,6 @@ yml_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.yml'
 json_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.json'
 
 
-
 def test_successful_yml_fetch(monkeypatch) -> None:
     """
     Tests that a file is fetched successfully.

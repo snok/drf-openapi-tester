@@ -14,10 +14,6 @@ logger = logging.getLogger('django_swagger_tester')
 
 class StaticSchemaSwaggerTester(SwaggerTestBase):
 
-    def __init__(self) -> None:
-        self.path = None
-        super().__init__()
-
     def validation(self) -> None:
         """
         Holds validation and setup logic to run when Django starts.
