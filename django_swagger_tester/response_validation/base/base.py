@@ -6,7 +6,7 @@ from requests import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.utils import list_project_urls
-from django_swagger_tester.validate_responses.base.swagger_tester import SwaggerTester
+from django_swagger_tester.response_validation.base.swagger_tester import SwaggerTester
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -15,6 +15,10 @@ class SwaggerTestBase(SwaggerTester):
     """
     Swagger tester base class.
     """
+
+    def __init__(self) -> None:
+        self.validation()
+        super().__init__()
 
     def validation(self) -> None:
         """
@@ -55,11 +59,16 @@ class SwaggerTestBase(SwaggerTester):
         try:
             logger.debug('Resolving path.')
             if endpoint_path[0] != '/':
+                logger.debug('Adding leading `/` to provided path')
                 endpoint_path = '/' + endpoint_path
             try:
-                self.resolved_url = resolve(endpoint_path)
+                resolve(endpoint_path)
+                self.resolved_url = endpoint_path
+                logger.debug('Resolved %s successfully', endpoint_path)
             except Resolver404:
-                self.resolved_url = resolve(endpoint_path + '/')
+                resolve(endpoint_path + '/')
+                self.resolved_url = endpoint_path + '/'
+                logger.warning('Endpoint path is missing a trailing slash (`/`)', endpoint_path)
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
             list_of_urls = list_project_urls()
@@ -94,14 +103,14 @@ class SwaggerTestBase(SwaggerTester):
         self._unpack_response(response)
         self._resolve_path(endpoint_url)
         self._validate_method(method)
-        self.load_schema()
+        self.load_schema()  # <-- this method is extended from the base class; self.schema is defined here
         if not self.schema:
             raise SwaggerDocumentationError('The OpenAPI schema is undefined. Schema is not testable.')
         if self.schema['type'] == 'object':
-            self._dict(schema=self.schema, data=self.data)
+            self._dict(schema=self.schema, data=self.data, parent='root')
         elif self.schema['type'] == 'array':
-            self._list(schema=self.schema, data=self.data)
-        elif self.schema['type'] == 'string' or self.schema['type'] == 'boolean' or self.schema['type'] == 'integer':
-            self._item(schema=self.schema, data=self.data)
+            self._list(schema=self.schema, data=self.data, parent='root')
+        elif self.schema['type'] in self._item_types():
+            self._item(schema=self.schema, data=self.data, parent='root')
         else:
-            raise Exception(f'Unexpected error.\nSchema: {self.schema}\n Response: {self.data}')
+            raise Exception(f'Unexpected error.\nSchema: {self.schema}\nResponse: {self.data}\n\nThis shouldn\'t happen.')

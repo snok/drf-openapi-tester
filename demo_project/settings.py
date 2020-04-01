@@ -124,3 +124,25 @@ REST_FRAMEWORK = {
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),
 }
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'simple': {
+            'format': '%(levelname)s -- %(message)s'
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django_swagger_tester': {
+            'handlers': ['console'],
+            'level': 'DEBUG'  # <-- Set to DEBUG to show log messages from django_swagger_tester
+        }
+    }
+}

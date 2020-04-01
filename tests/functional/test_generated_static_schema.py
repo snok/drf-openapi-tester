@@ -1,7 +1,8 @@
 import pytest
+from django.conf import settings as django_settings
 
-from django_swagger_tester import validate_response
 from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.response_validation.static_schema import validate_response
 
 good_test_data = [
     {
@@ -40,44 +41,35 @@ bad_test_data = [
         ],
     },
 ]
+yml_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.yml'
 
 
 def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
-    from django.conf import settings as openapi_settings
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
 
-    monkeypatch.setattr(
-        openapi_settings,
-        'SWAGGER_TESTER',
-        {'SCHEMA': 'static', 'CASE': 'camel case', 'path': openapi_settings.BASE_DIR + '/demo_project/openapi-schema.yml'},
-    )
     for item in good_test_data:
         response = client.get('/api/v1' + item['url'])
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        validate_response(response, 'GET', '/api/v1' + item['url'])
+        validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])
 
 
 def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates incorrect schemas successfully.
     """
-    from django.conf import settings as openapi_settings
-
-    monkeypatch.setattr(
-        openapi_settings,
-        'SWAGGER_TESTER',
-        {'SCHEMA': 'static', 'CASE': 'camel case', 'PATH': openapi_settings.BASE_DIR + '/demo_project/openapi-schema.yml'},
-    )
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     for item in bad_test_data:
         response = client.get('/api/v1' + item['url'])
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(SwaggerDocumentationError, match='Response list contains values'):
-            validate_response(response, 'GET', '/api/v1' + item['url'])
+        with pytest.raises(SwaggerDocumentationError, match='OpenAPI schema documentation suggests an empty list, '
+                                                            'but the response contains list items'):
+            validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])

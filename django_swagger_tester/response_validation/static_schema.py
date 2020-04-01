@@ -5,10 +5,9 @@ import os
 import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.urls import get_script_prefix
 from rest_framework.response import Response
 
-from django_swagger_tester.validate_responses.base.base import SwaggerTestBase
+from django_swagger_tester.response_validation.base.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -24,13 +23,10 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         Holds validation and setup logic to run when Django starts.
         """
         try:
-            import json  # noqa: F401
-        except ModuleNotFoundError:
-            raise ImproperlyConfigured('Missing the package `json`. Run `pip install json` to install it.')
-        try:
             import yaml  # noqa: F401
         except ModuleNotFoundError:
-            raise ImproperlyConfigured('Missing the package `yaml`. Run `pip install yaml` to install it.')
+            raise ImproperlyConfigured('The package `PyYAML` is required for parsing yaml files. '
+                                       'Please run `pip install PyYAML` to install it.')
 
         _settings = settings.SWAGGER_TESTER
 
@@ -45,7 +41,7 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
 
         self.path = _settings['PATH']
 
-    def load_schema_file(self) -> dict:
+    def _load_schema_file(self) -> dict:
         """
         Fetches OpenAPI schema json or yaml contents from a static local file.
 
@@ -65,7 +61,7 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         except Exception as e:
             logger.exception('Exception raised when fetching OpenAPI schema from %s. Error: %s', self.path, e)
             raise ImproperlyConfigured(
-                f'Could not read the openapi specification. Please make sure the path setting is correct.\n\nError: {e}')
+                f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}')
 
         if '.json' in self.path:
             return json.loads(content)
@@ -80,13 +76,13 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
 
         :return: The section of the schema relevant for testing, dict
         """
-        complete_schema = self.load_schema_file()
-        # TODO: Test this thoroughly
-        url = get_script_prefix() + self.resolved_url.route
-        logger.debug('Collecting %s %s section of the OpenAPI schema.', self.method, url)
+        logger.debug('Fetching static schema')
+
+        # Fetch schema as dict
+        complete_schema = self._load_schema_file()
 
         # Create a list of endpoints in the schema, matching our resolved path
-        matching_endpoints = [endpoint for endpoint in [key for key in complete_schema['paths']] if endpoint in url]
+        matching_endpoints = [endpoint for endpoint in [key for key in complete_schema['paths']] if endpoint in self.resolved_url]
         if len(matching_endpoints) == 0:
             raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
         else:
@@ -98,7 +94,7 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
                 'application/json']['schema']
         else:
             logger.error('Schema section for %s does not exist.', self.method)
-            raise KeyError(f'The OpenAPI schema has no method called `{self.method}`')
+            raise KeyError(f'The OpenAPI schema has no documented HTTP method called `{self.method}`')
 
 
 def validate_response(response: Response, method: str, endpoint_url: str) -> None:

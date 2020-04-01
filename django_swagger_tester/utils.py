@@ -1,7 +1,7 @@
 from typing import List
 
 from django.conf import settings
-from django.urls import URLPattern, URLResolver
+from django.urls import URLPattern
 
 
 def list_project_urls() -> List[str]:
@@ -18,8 +18,8 @@ def list_project_urls() -> List[str]:
         url = urls[0]
         if isinstance(url, URLPattern):
             yield acc + [str(url.pattern)]
-        elif isinstance(url, URLResolver):
-            yield from list_urls(url.url_patterns, acc + [str(url.pattern)])
+        # elif isinstance(url, URLResolver):
+        #     yield from list_urls(url.url_patterns, acc + [str(url.pattern)])
         yield from list_urls(urls[1:], acc)
 
-    return [''.join(p) for p in list_urls(urlconf.urlpatterns)]
+    return [''.join(p) for p in list_urls(urlconf.urlpatterns) if ''.join(p)]

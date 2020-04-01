@@ -6,11 +6,12 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validate_responses.base.base import SwaggerTestBase
+from django_swagger_tester.response_validation.base.base import SwaggerTestBase
 
 logger = logging.getLogger('django_swagger_tester')
 
 
+# noinspection PyMethodMayBeStatic
 class DrfYasgSwaggerTester(SwaggerTestBase):
 
     def validation(self) -> None:
@@ -26,15 +27,12 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         try:
             import drf_yasg  # noqa: F401
         except ModuleNotFoundError:
-            raise ImproperlyConfigured('Missing the package `drf_yasg`. Run `pip install drf_yasg` to install it.')
-        try:
-            import json  # noqa: F401
-        except ModuleNotFoundError:
-            raise ImproperlyConfigured('Missing the package `json`. Run `pip install json` to install it.')
+            raise ImproperlyConfigured('The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.')
 
         if 'drf_yasg' not in apps.app_configs.keys():
             raise ImproperlyConfigured(
-                '`drf_yasg` is missing from INSTALLED_APPS. The package is required for testing dynamic schemas.')
+                'The package `drf_yasg` is missing from INSTALLED_APPS. Please add it in your '
+                '`settings.py`, as it is required for this implementation')
 
     def load_schema(self) -> None:
         """
@@ -53,13 +51,15 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
 
         # Index by route
         try:
-            # For future reference: not sure about this implementation - we should look to change it for something
-            # 100% reliable.
-            closest_match = difflib.get_close_matches(self.resolved_url.route, schema.keys(), 1)
+            # For future reference: not sure about this implementation - we should look to change it for something 100% reliable.
+            # What we're doing here, is letting difflib match our resolved route, to the schema, using probabilities.
+            closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
             schema = schema[closest_match[0]]
         except KeyError:
             raise SwaggerDocumentationError(
-                f'No path found for url `{self.resolved_url.route}`. Valid urls include {", ".join([key for key in schema.keys()])}')
+                f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{closest_match[0]}` '
+                f'based on the resolved url `/{self.resolved_url}`, but the key does not exist in the schema.'
+                f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema.keys()])}')
 
         # Index by method and responses
         try:
@@ -75,7 +75,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
             schema = schema[f'{self.status_code}']['schema']
         except KeyError:
             raise SwaggerDocumentationError(
-                f'No schema found for response code {self.status_code}. Documented responses include '
+                f'No schema found for response code `{self.status_code}`. Documented responses include '
                 f'{", ".join([code for code in schema.keys()])}.'
             )
 

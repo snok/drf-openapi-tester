@@ -1,5 +1,28 @@
-from django_swagger_tester import validate_response
-from tests.functional.utils import APITestBase
+from django.contrib.auth.models import User
+from requests.models import Response
+from rest_framework.test import APITestCase
+
+from django_swagger_tester.response_validation.drf_yasg import validate_response
+
+
+class APITestBase(APITestCase):
+    def _authenticate(self) -> None:
+        """
+        Get valid user and attach credentials to client
+        """
+        user, _ = User.objects.update_or_create(username='testuser')
+        self.client.force_authenticate(user=user)
+
+    def get(self, path: str, params: str = None) -> Response:
+        """
+        GETs an endpoint.
+        :param path: path of the endpoint
+        :param params: optional path parameters
+        :return: response
+        """
+        self._authenticate()
+        response = self.client.get(path, headers={'Content-Type': 'application/json'})
+        return response
 
 
 class TestCorrectlyDocumentedCars(APITestBase):
@@ -16,13 +39,13 @@ class TestCorrectlyDocumentedCars(APITestBase):
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
             {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ]
-        response = self.get('correctly_documented_cars')
+        response = self.get(self.path + '/correct/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response.json(), 'GET', self.path + '/correct/')
+        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
 
 
 class TestCorrectlyDocumentedTrucks(APITestBase):
@@ -39,10 +62,10 @@ class TestCorrectlyDocumentedTrucks(APITestBase):
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
             {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ]
-        response = self.get('correctly_documented_trucks')
+        response = self.get(self.path + '/correct/')
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response.json(), 'GET', self.path + '/correct/')
+        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
