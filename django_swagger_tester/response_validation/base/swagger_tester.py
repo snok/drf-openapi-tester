@@ -14,7 +14,7 @@ class SwaggerTester(object):
     def __init__(self) -> None:
         self.case_func = case_check(settings.CASE)
         self.schema = None
-        self.ignore_case: List[str] = []
+        self.ignored_keys: List[str] = []
 
     def _dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
@@ -48,10 +48,14 @@ class SwaggerTester(object):
         for schema_key, response_key in zip(schema_keys, response_keys):
 
             # Check the keys for case inconsistencies
-            if schema_key not in self.ignore_case:
+            if schema_key not in self.ignored_keys:
                 self.case_func(schema_key)
-            if response_key not in self.ignore_case:
+            else:
+                logger.debug('Skipping case check for key `%s`', schema_key)
+            if response_key not in self.ignored_keys:
                 self.case_func(response_key)
+            else:
+                logger.debug('Skipping case check for key `%s`', response_key)
 
             # Check that each element in the schema exists in the response, and vice versa
             if schema_key not in response_keys:

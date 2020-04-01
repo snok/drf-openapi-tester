@@ -90,12 +90,14 @@ class SwaggerTestBase(SwaggerTester):
             raise ValueError(f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.')
         self.method = method.upper()
 
-    def _set_ignored_cases(self, **kwargs) -> None:
+    def _set_ignored_keys(self, **kwargs) -> None:
         """
-        Lets users pass `ignore_case=["List", "OF", "improperly cased", "kEYS"]`.
+        Lets users pass a list of string that will not be checked by case-check.
+
+        For example, validate_response(..., ignore_case=["List", "OF", "improperly cased", "kEYS"]).
         """
         if 'ignore_case' in kwargs:
-            self.ignore_case = kwargs['ignore_case']
+            self.ignored_keys = kwargs['ignore_case']
 
     def _validate_response(self, response: Response, method: str, endpoint_url: str, **kwargs) -> None:
         """
@@ -110,7 +112,7 @@ class SwaggerTestBase(SwaggerTester):
         self._unpack_response(response)
         self._resolve_path(endpoint_url)
         self._validate_method(method)
-        self._set_ignored_cases(**kwargs)
+        self._set_ignored_keys(**kwargs)
         self.load_schema()  # <-- this method is extended from the base class; self.schema is defined here
         if not self.schema:
             raise SwaggerDocumentationError('The OpenAPI schema is undefined. Schema is not testable.')

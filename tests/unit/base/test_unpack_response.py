@@ -7,6 +7,8 @@ base = SwaggerTestBase()
 
 class MockResponse:
 
+    status_code = 200
+
     @staticmethod
     def json():
         return {'test': 'test'}
