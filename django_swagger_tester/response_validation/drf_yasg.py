@@ -1,5 +1,6 @@
 import difflib
 import logging
+import re
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -51,10 +52,27 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
 
         # Index by route
         try:
+            dynamic_urls = re.findall(r'\/<\w+:\w+>\/', self.resolved_url)
+            if not dynamic_urls:
+                closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
+                schema = schema[closest_match[0]]
+            else:
+                for dynamic_url in dynamic_urls:
+                    logger.debug('Converting self.resolved url: %s', self.resolved_url)
+                    logger.debug('Dynamic url: %s', dynamic_url)
+                    keyword = dynamic_url[dynamic_url.index('<') + 1: dynamic_url.index(':')]
+                    self.resolved_url = self.resolved_url.replace(
+                        f'<{keyword}:{keyword}>',
+                        f'{{{keyword}}}'
+                    )
+                    logger.debug('Converted self.resolved_url to %s', self.resolved_url)
+                    closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
+                    logger.debug('Indexing schema by closest match: %s', closest_match)
+                    schema = schema[closest_match[0]]
             # For future reference: not sure about this implementation - we should look to change it for something 100% reliable.
             # What we're doing here, is letting difflib match our resolved route, to the schema, using probabilities.
-            closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
-            schema = schema[closest_match[0]]
+
+            logger.debug('Closest match: %s', closest_match)
         except KeyError:
             raise SwaggerDocumentationError(
                 f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{closest_match[0]}` '

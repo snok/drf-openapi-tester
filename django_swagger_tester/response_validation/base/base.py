@@ -62,12 +62,13 @@ class SwaggerTestBase(SwaggerTester):
                 logger.debug('Adding leading `/` to provided path')
                 endpoint_path = '/' + endpoint_path
             try:
-                resolve(endpoint_path)
-                self.resolved_url = endpoint_path
+                self.resolved_url = '/' + resolve(endpoint_path).route
+                self.endpoint_path = endpoint_path
                 logger.debug('Resolved %s successfully', endpoint_path)
+                logger.debug('Resolved route: %s', self.resolved_url)
             except Resolver404:
-                resolve(endpoint_path + '/')
-                self.resolved_url = endpoint_path + '/'
+                self.resolved_url = '/' + resolve(endpoint_path + '/').route
+                self.endpoint_path = endpoint_path
                 logger.warning('Endpoint path is missing a trailing slash (`/`)', endpoint_path)
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
