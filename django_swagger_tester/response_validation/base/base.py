@@ -6,7 +6,7 @@ from requests import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.response_validation.base.swagger_tester import SwaggerTester
-from django_swagger_tester.utils import list_project_urls
+from django_swagger_tester.utils import get_paths
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -72,8 +72,8 @@ class SwaggerTestBase(SwaggerTester):
                 logger.warning('Endpoint path is missing a trailing slash (`/`)', endpoint_path)
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
-            list_of_urls = list_project_urls()
-            closest_matches = ''.join([f'\n- /{i}' for i in difflib.get_close_matches(endpoint_path, list_of_urls)])
+            paths = get_paths()
+            closest_matches = ''.join([f'\n- /{i}' for i in difflib.get_close_matches(endpoint_path, paths)])
             if closest_matches:
                 raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
                                  f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '

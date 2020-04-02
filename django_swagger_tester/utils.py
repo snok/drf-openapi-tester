@@ -1,25 +1,30 @@
+import logging
+import re
 from typing import List
 
-from django.conf import settings
-from django.urls import URLPattern
+from rest_framework.schemas.generators import EndpointEnumerator
+
+logger = logging.getLogger('django_swagger_tester')
 
 
-def list_project_urls() -> List[str]:
+def get_paths() -> List[str]:
     """
-    Returns a list of the Django projects URLs.
+    Returns a list of endpoint paths.
     """
-    urlconf = __import__(settings.ROOT_URLCONF, {}, {}, [''])
+    return list(set(endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()))  # noqa: C401
 
-    def list_urls(urls, acc=None):  # noqa: TYP201, TYP001
-        if acc is None:
-            acc = []
-        if not urls:
-            return
-        url = urls[0]
-        if isinstance(url, URLPattern):
-            yield acc + [str(url.pattern)]
-        # elif isinstance(url, URLResolver):
-        #     yield from list_urls(url.url_patterns, acc + [str(url.pattern)])
-        yield from list_urls(urls[1:], acc)
 
-    return [''.join(p) for p in list_urls(urlconf.urlpatterns) if ''.join(p)]
+def convert_resolved_url(resolved_url: str) -> str:
+    """
+    Converts an url from /api/v1/<vehicle_type:vehicle_type>/ to /api/v1/{vehicle_type}/
+    """
+    dynamic_urls = re.findall(r'\/<\w+:\w+>\/', resolved_url)
+    if not dynamic_urls:
+        return resolved_url
+    else:
+        url = resolved_url
+        for dynamic_url in dynamic_urls:
+            keyword = dynamic_url[dynamic_url.index('<') + 1: dynamic_url.index(':')]
+            url = url.replace(f'<{keyword}:{keyword}>', f'{{{keyword}}}')
+        logger.debug('Converted resolved url from `%s` to `%s`', resolved_url, url)
+        return url

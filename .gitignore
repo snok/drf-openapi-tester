@@ -6,7 +6,7 @@ __pycache__/
 NOTES.md
 # C extensions
 *.so
-
+dumps/
 # Distribution / packaging
 .Python
 build/

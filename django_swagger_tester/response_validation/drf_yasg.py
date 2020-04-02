@@ -1,6 +1,5 @@
-import difflib
 import logging
-import re
+from json import dumps, loads
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -8,12 +7,19 @@ from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.response_validation.base.base import SwaggerTestBase
+from django_swagger_tester.utils import convert_resolved_url, get_paths
 
 logger = logging.getLogger('django_swagger_tester')
 
 
 # noinspection PyMethodMayBeStatic
 class DrfYasgSwaggerTester(SwaggerTestBase):
+
+    def __init__(self) -> None:
+        super().__init__()
+        from drf_yasg.openapi import Info
+        from drf_yasg.generators import OpenAPISchemaGenerator
+        self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
     def validation(self) -> None:
         """
@@ -42,41 +48,24 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         :return: The section of the schema relevant for testing, dict
         """
         logger.debug('Fetching generated dynamic schema')
-        from drf_yasg.openapi import Info
-        from drf_yasg.generators import OpenAPISchemaGenerator
-        from json import loads, dumps
 
         # Fetch schema and convert to dict
-        schema = OpenAPISchemaGenerator(info=Info(title='', default_version='')).get_schema()
-        schema = loads(dumps(schema.as_odict()['paths']))  # Converts OrderedDict to dict
+        complete_odict_schema = self.schema_generator.get_schema()
+        complete_schema = loads(dumps(complete_odict_schema.as_odict()['paths']))  # Converts OrderedDict to dict
+
+        # drf_yasg finds a common denominator for paths, and cuts that out of the openapi schema
+        # For example, /api/v1/... might then become /v1/...
+        # This is a bit tricky to deal with, because static schema generation doesnt
+        path_prefix = self.schema_generator.determine_path_prefix(get_paths())
 
         # Index by route
         try:
-            dynamic_urls = re.findall(r'\/<\w+:\w+>\/', self.resolved_url)
-            if not dynamic_urls:
-                closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
-                schema = schema[closest_match[0]]
-            else:
-                for dynamic_url in dynamic_urls:
-                    logger.debug('Converting self.resolved url: %s', self.resolved_url)
-                    logger.debug('Dynamic url: %s', dynamic_url)
-                    keyword = dynamic_url[dynamic_url.index('<') + 1: dynamic_url.index(':')]
-                    self.resolved_url = self.resolved_url.replace(
-                        f'<{keyword}:{keyword}>',
-                        f'{{{keyword}}}'
-                    )
-                    logger.debug('Converted self.resolved_url to %s', self.resolved_url)
-                    closest_match = difflib.get_close_matches(self.resolved_url, schema.keys(), 1)
-                    logger.debug('Indexing schema by closest match: %s', closest_match)
-                    schema = schema[closest_match[0]]
-            # For future reference: not sure about this implementation - we should look to change it for something 100% reliable.
-            # What we're doing here, is letting difflib match our resolved route, to the schema, using probabilities.
-
-            logger.debug('Closest match: %s', closest_match)
+            url = convert_resolved_url(self.resolved_url)
+            schema = complete_schema[url.replace(path_prefix, '')]
         except KeyError:
             raise SwaggerDocumentationError(
-                f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{closest_match[0]}` '
-                f'based on the resolved url `/{self.resolved_url}`, but the key does not exist in the schema.'
+                f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '
+                f'`{self.resolved_url.replace(path_prefix, "")}`, but the key does not exist in the schema.'
                 f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema.keys()])}')
 
         # Index by method and responses

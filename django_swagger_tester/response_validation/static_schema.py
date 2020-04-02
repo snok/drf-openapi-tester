@@ -14,6 +14,10 @@ logger = logging.getLogger('django_swagger_tester')
 
 class StaticSchemaSwaggerTester(SwaggerTestBase):
 
+    def __init__(self) -> None:
+        super().__init__()
+        self.path = ''
+
     def validation(self) -> None:
         """
         Holds validation and setup logic to run when Django starts.
@@ -78,15 +82,14 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         complete_schema = self._load_schema_file()
 
         # Create a list of endpoints in the schema, matching our resolved path
-        matching_endpoints = [endpoint for endpoint in [key for key in complete_schema['paths']] if endpoint in self.resolved_url]
-        if len(matching_endpoints) == 0:
+        url = self.endpoint_path
+        matched = [endpoint for endpoint in [key for key in complete_schema['paths']] if endpoint == url]
+        if not matched:
             raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
-        else:
-            matched_endpoint = matching_endpoints[0]
 
         # Return the appropriate section
-        if self.method.lower() in complete_schema['paths'][matched_endpoint]:
-            self.schema = complete_schema['paths'][matched_endpoint][self.method.lower()]['responses'][f'{self.status_code}']['content'][
+        if self.method.lower() in complete_schema['paths'][url]:
+            self.schema = complete_schema['paths'][url][self.method.lower()]['responses'][f'{self.status_code}']['content'][
                 'application/json']['schema']
         else:
             logger.error('Schema section for %s does not exist.', self.method)
