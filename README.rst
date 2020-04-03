@@ -23,7 +23,7 @@ Django Swagger Tester
 
 |
 
-This package is designed to help test the integrity of OpenAPI/Swagger documentation.
+This package lets you test the integrity of your OpenAPI/Swagger documentation.
 
 The package has three main areas of focus:
 
@@ -41,14 +41,14 @@ Similarly to the response documentation, request body examples should be represe
 
 This is currently under development and will be added for v1.0.0
 
-**Enforcing consistent casing**
+**Consistent casing**
 
 In addition to testing your responses and request bodies, the package performs case checking on every key it touches. Currently supported cases include:
 
-- camelCase (default)
-- snake_case
-- PascalCase
-- kebab-case
+- ``camelCase`` (default)
+- ``snake_case``
+- ``PascalCase``
+- ``kebab-case``
 
 This feature can optionally be turned off, and you can ignore individual keys for individual tests where required.
 

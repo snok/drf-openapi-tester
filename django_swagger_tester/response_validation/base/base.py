@@ -62,7 +62,7 @@ class SwaggerTestBase(SwaggerTester):
                 logger.debug('Adding leading `/` to provided path')
                 endpoint_path = '/' + endpoint_path
             try:
-                self.resolved_url = '/' + resolve(endpoint_path).route
+                self.resolved_url = '/' + resolve(endpoint_path).route.replace('$', '')
                 self.endpoint_path = endpoint_path
                 logger.debug('Resolved %s successfully', endpoint_path)
                 logger.debug('Resolved route: %s', self.resolved_url)
@@ -73,7 +73,7 @@ class SwaggerTestBase(SwaggerTester):
         except Resolver404:
             logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
             paths = get_paths()
-            closest_matches = ''.join([f'\n- /{i}' for i in difflib.get_close_matches(endpoint_path, paths)])
+            closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
             if closest_matches:
                 raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
                                  f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
