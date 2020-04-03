@@ -41,7 +41,7 @@ Similarly to the response documentation, request body examples should be represe
 
 This is currently under development and will be added for v1.0.0
 
-**Enforcing consistent caseing**
+**Enforcing consistent casing**
 
 In addition to testing your responses and request bodies, the package performs case checking on every key it touches. Currently supported cases include:
 
