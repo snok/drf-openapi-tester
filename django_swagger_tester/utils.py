@@ -16,15 +16,34 @@ def get_paths() -> List[str]:
 
 def convert_resolved_url(resolved_url: str) -> str:
     """
-    Converts an url from /api/v1/<vehicle_type:vehicle_type>/ to /api/v1/{vehicle_type}/
+    Converts an url:
+
+        - from /api/v1/<vehicle_type:vehicle_type>/ to /api/v1/{vehicle_type}/, and
+        - from /api/v1/<vehicle_type>/ to /api/v1/{vehicle_type}/
+
+    :return: Converted url
     """
-    dynamic_urls = re.findall(r'<\w+:\w+>', resolved_url)
-    if not dynamic_urls:
-        return resolved_url
-    else:
-        url = resolved_url
-        for dynamic_url in dynamic_urls:
-            keyword = dynamic_url[dynamic_url.index('<') + 1: dynamic_url.index(':')]
-            url = url.replace(f'<{keyword}:{keyword}>', f'{{{keyword}}}')
-        logger.debug('Converted resolved url from `%s` to `%s`', resolved_url, url)
-        return url
+    patterns = [
+        {
+            'pattern': r'<\w+:\w+>',
+            'string_pattern': '<{keyword}:{keyword}>',
+            'first_index': '<',
+            'second_index': ':'
+        },
+        {
+            'pattern': r'<\w+>',
+            'string_pattern': '<{keyword}>',
+            'first_index': '<',
+            'second_index': '>'
+        }]
+
+    for item in patterns:
+        matches = re.findall(item['pattern'], resolved_url)
+        if matches:
+            url = resolved_url
+            for dynamic_url in matches:
+                keyword = dynamic_url[dynamic_url.index(item['first_index']) + 1: dynamic_url.index(item['second_index'])]
+                url = url.replace(item['string_pattern'].format(keyword=keyword), f'{{{keyword}}}')
+            logger.debug('Converted resolved url from `%s` to `%s`', resolved_url, url)
+            resolved_url = url
+    return resolved_url

@@ -23,7 +23,7 @@ Django Swagger Tester
 
 |
 
-This package was created to help test the integrity of your OpenAPI/Swagger documentation.
+This package lets you test the integrity of your OpenAPI/Swagger documentation.
 
 The package has three main areas of focus:
 
