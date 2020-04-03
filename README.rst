@@ -20,16 +20,38 @@ Django Swagger Tester
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
 
-.. role:: python(code)
-   :language: python
 
-This package provides a simple test utility for testing the integrity of your OpenAPI/Swagger documentation.
+|
 
-The test utility has two main functions. First, the documentation is tested by ensuring that it matches the content of actual API responses, and secondly the package ensures that all documentation adheres to the case-type specified as standard, .e.g, camel case.
+This package is designed to help test the integrity of OpenAPI/Swagger documentation.
 
-The package is currently under development.
+The package has three main areas of focus:
+
+**Response documentation**
+
+An OpenAPI schema should generally span all APIs you provide. For each API, there may be several methods to document (GET, PUT, POST, DELETE, ...), and for each method you may have several responses (200, 400, 401, 404, 5XX). Seeing that at least parts of the OpenAPI schema used for rendering your swagger docs will need to be maintained manually, it is easy to see how bugs might be introduced in the documentation over time. By testing your response documentation against your actual API responses, you can make sure that errors don't pass silently.
+
+This functionality is currently compatible with rendered static schema, or generated `drf_yasg`_ swagger docs.
 
 .. _Drf_yasg: https://github.com/axnsan12/drf-yasg
+
+**Input documentation**
+
+Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
+
+This is currently under development and will be added for v1.0.0
+
+**Enforcing consistent casing**
+
+In addition to testing your responses and request bodies, the package performs case checking on every key it touches. Currently supported cases include:
+
+- camelCase (default)
+- snake_case
+- PascalCase
+- kebab-case
+
+This feature can optionally be turned off, and you can ignore individual keys for individual tests where required.
+
 
 ************
 Installation
@@ -50,18 +72,13 @@ Add package settings to your ``settings.py``:
 .. code-block:: python
 
     SWAGGER_TESTER = {
-        'SCHEMA': 'dynamic',
-        'CASE': 'camel case'
+        'CASE': 'camel case',
+        'PATH': BASE_DIR + '/openapi-schema.yml'  # not required for drf_yasg
     }
 
 **********
 Parameters
 **********
-
-* :code:`SCHEMA`
-        The type of schema you are using. Can either be :code:`dynamic` or :code:`static`.
-
-    Default: `dynamic`
 
 * :code:`CASE`
         The case standard you wish to enforce for your documentation. Needs to be one of the following:
@@ -79,7 +96,7 @@ Parameters
 * :code:`PATH`
         The path to your OpenAPI specification.
 
-    *This is not required if you're using a dynamic schema*.
+    *This setting is only required if you wish to test a static schema - not for drf_yasg implementations.*
 
 |
 
@@ -94,9 +111,18 @@ Using drf_yasg_ for dynamic schema generation, your configuration might look lik
 .. code:: python
 
     SWAGGER_TESTER = {
-        'SCHEMA': 'dynamic',
-        'CASE': 'camel case'
+        'CASE': 'snake case'
     }
+
+and you can test your responses like this
+
+.. code:: python
+
+    from django_swagger_tester.response_validation.drf_yasg import validate_response
+
+    def test_response_documentation(client):
+        response = client.get(endpoint)
+        validate_response(response=response, method='GET', endpoint_url=endpoint, ignore_case=[])
 
 While using, e.g., DRF_ for static schema generation, you would need to add the path to your generated schema:
 
@@ -105,27 +131,35 @@ While using, e.g., DRF_ for static schema generation, you would need to add the 
 .. code:: python
 
     SWAGGER_TESTER = {
-        'SCHEMA': 'dynamic',
         'CASE': 'camel case'
         'PATH': './swagger/schema.json'
     }
+
+and you can test your responses like this
+
+.. code:: python
+
+    from django_swagger_tester.response_validation.static_schema import validate_response
+
+    def test_response_documentation(client):
+        response = client.get(endpoint)
+        validate_response(response=response, method='GET', endpoint_url=endpoint, ignore_case=[])
+
 
 **************
 Implementation
 **************
 
-The OpenAPI tester is best used for supplementing your existing API tests.
+It is recommended that you implement Django Swagger Tester with existing API tests. The easiest possible way to get started would be to test valid responses from an existing endpoint test. You can also test 400 and 500 errors by passing a 400 or 500 series response.
 
-The easiest way to implement it, is by testing your schema after retrieving a valid response from an endpoint.
-
-An example might look like this:
+A working Django test example might look like this:
 
 .. code:: python
 
     from django.contrib.auth.models import User
     from rest_framework.test import APITestCase
 
-    from django_swagger_tester import validate_response
+    from django_swagger_tester.response_validation.drf_yasg import validate_response
 
 
     class TestMyAPI(APITestCase):
@@ -133,23 +167,19 @@ An example might look like this:
         def setUp(self):
             user, _ = User.objects.update_or_create(username='test_user')
             self.client.force_authenticate(user=user)
-            self.path = '/api/v1/cars'
+            self.path = '/api/v1/cars/correct/'
 
         def test_get_200(self):
             """
             Verifies that a 200 is returned for a valid GET request to the /correct/ endpoint.
             """
-            response = self.client.get(self.path + '/correct' /, headers={'Content-Type': 'application/json'})
-            expected_response = [
-                {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium', 'width': 'Very wide', 'length': '2 meters'},
-                {'name': 'Volvo', 'color': 'Red', 'height': 'Medium', 'width': 'Not wide', 'length': '2 meters'},
-                {'name': 'Tesla', 'color': 'black', 'height': 'Medium', 'width': 'Wide', 'length': '2 meters'},
-            ]
+            response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
+            expected_response = [...]
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), expected_response)
 
             # Test Swagger documentation
-            validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
+            validate_response(response=response, method='GET', endpoint_url=self.path)
 
 See the demo projects and tests folder for more examples.

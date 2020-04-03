@@ -1,8 +1,7 @@
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 __author__ = 'Sondre Lillebø Gundersen'
 
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -23,11 +22,11 @@ setup(
     url='https://github.com/sondrelg/django-swagger-tester',
     download_url='https://pypi.python.org/pypi/django-swagger-tester',
     packages=find_packages(exclude=['']),
-    install_requires=['djangorestframework', 'PyYAML', 'django'],
+    install_requires=['djangorestframework', 'django'],
     keywords=['openapi', 'swagger', 'api', 'test', 'testing', 'drf_yasg', 'django'],
     platforms='OS Independent',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Framework :: Pytest',
         'Framework :: Django',
