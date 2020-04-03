@@ -62,7 +62,7 @@ class SwaggerTestBase(SwaggerTester):
                 logger.debug('Adding leading `/` to provided path')
                 endpoint_path = '/' + endpoint_path
             try:
-                self.resolved_url = '/' + resolve(endpoint_path).route
+                self.resolved_url = '/' + resolve(endpoint_path).route.replace('$', '')
                 self.endpoint_path = endpoint_path
                 logger.debug('Resolved %s successfully', endpoint_path)
                 logger.debug('Resolved route: %s', self.resolved_url)
