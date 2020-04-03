@@ -18,7 +18,7 @@ def convert_resolved_url(resolved_url: str) -> str:
     """
     Converts an url from /api/v1/<vehicle_type:vehicle_type>/ to /api/v1/{vehicle_type}/
     """
-    dynamic_urls = re.findall(r'\/<\w+:\w+>\/', resolved_url)
+    dynamic_urls = re.findall(r'<\w+:\w+>', resolved_url)
     if not dynamic_urls:
         return resolved_url
     else:

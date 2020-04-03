@@ -57,19 +57,21 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         # For example, /api/v1/... might then become /v1/...
         # This is a bit tricky to deal with, because static schema generation doesnt
         path_prefix = self.schema_generator.determine_path_prefix(get_paths())
+        url = convert_resolved_url(self.resolved_url).replace(path_prefix, '')
 
         # Index by route
         try:
-            url = convert_resolved_url(self.resolved_url)
-            schema = complete_schema[url.replace(path_prefix, '')]
+            logger.debug('Indexing schema by route `%s`', url)
+            schema = complete_schema[url]
         except KeyError:
             raise SwaggerDocumentationError(
                 f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '
-                f'`{self.resolved_url.replace(path_prefix, "")}`, but the key does not exist in the schema.'
-                f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema.keys()])}')
+                f'`{url}`, but the key does not exist in the schema.'
+                f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in complete_schema.keys()])}')
 
         # Index by method and responses
         try:
+            logger.debug('Indexing schema by method `%s`', self.method.lower())
             schema = schema[self.method.lower()]['responses']
         except KeyError:
             raise SwaggerDocumentationError(

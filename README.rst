@@ -20,39 +20,35 @@ Django Swagger Tester
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
 
-.. role:: python(code)
-   :language: python
 
 |
 
-This package provides a simple test utility for testing the integrity of your OpenAPI/Swagger documentation. The package has three main functions:
+This package is designed to help test the integrity of OpenAPI/Swagger documentation. The package has three main areas of focus:
 
-**Ensuring correct response documentation**
+**Response documentation**
 
-This might be obvious, but given that you can have several HTTP methods per endpoint (GET, PUT, POST, DELETE, ...), and that you can have several responses per *method* (200, 400, 401, 404, 5XX), response documentation usually ends up being the majority of swagger documentation in a project.
+An OpenAPI schema should generally span all APIs you provide. For each API, there may be several methods to document (GET, PUT, POST, DELETE, ...), and for each method you may have several responses (200, 400, 401, 404, 5XX). Seeing that at least parts of the OpenAPI schema used for rendering your swagger docs will need to be maintained manually, it is easy to see how bugs might be introduced in the documentation over time. By testing your response documentation against your actual API responses, you can make sure that errors don't pass silently.
 
-The primary goal of this package is to provide a simple utility to *ensure* that your response documentation is 1:1 with your actual responses. The utility checks every attribute of both responses and response documentation, recursively.
-
-This is currently supported for swagger documentation implemented using `drf_yasg`_'s schema_view, or rendering of static schemas.
+This functionality is currently compatible with rendered static schema, or generated `drf_yasg`_ swagger docs.
 
 .. _Drf_yasg: https://github.com/axnsan12/drf-yasg
 
-**2. Testing Input Documentation**
+**Input documentation**
 
-Let you validate your request body examples against your input serializers.
+Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
 
 This is currently under development and will be added for v1.0.0
 
-**Enforcing consistent casing**
+**Enforcing consistent caseing**
 
-It is way too easy to losing consistency with you casing over time. In addition to testing your responses and request bodies, the package performs case checking on every key it touches. Currently supported cases include:
+In addition to testing your responses and request bodies, the package performs case checking on every key it touches. Currently supported cases include:
 
-- camelCase
+- camelCase (default)
 - snake_case
 - PascalCase
 - kebab-case
 
-and of course, this feature can be turned off for the whole project, or you can ignore individual keys when required.
+This feature can optionally be turned off, and you can ignore individual keys for individual tests where required.
 
 
 ************

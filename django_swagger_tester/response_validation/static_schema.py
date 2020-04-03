@@ -16,7 +16,6 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
 
     def __init__(self) -> None:
         super().__init__()
-        self.path = ''
 
     def validation(self) -> None:
         """
