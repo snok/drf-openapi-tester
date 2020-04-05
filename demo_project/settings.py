@@ -142,11 +142,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        # 'django_swagger_tester': {
-        #     'handlers': ['console'],
-        #     'level': 'DEBUG'  # <-- Set to DEBUG to show log messages from django_swagger_tester
-        # }
-        'drf_yasg': {
+        'django_swagger_tester': {
             'handlers': ['console'],
             'level': 'DEBUG'  # <-- Set to DEBUG to show log messages from django_swagger_tester
         }

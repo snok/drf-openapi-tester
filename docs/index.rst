@@ -1,6 +1,6 @@
-############################
+#####################
 Django Swagger Tester
-############################
+#####################
 
 .. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
     :target: https://pypi.org/project/django-swagger-tester/
