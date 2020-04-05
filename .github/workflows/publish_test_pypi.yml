@@ -1,9 +1,9 @@
 name: publish package to test-pypi
 
-on:
-  push:
-    branches:
-      - master
+on: [push]
+#  push:
+#    branches:
+#      - master
 
 jobs:
   build-and-publish:
@@ -15,15 +15,13 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: 3.8
-      - name: Install dependencies
+      - name: Install poetry
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements/requirements-publish-pypi.txt
-      - name: Build
+          pip install poetry
+      - name: Install dependencies
         run: |
-          python setup.py sdist bdist_wheel
-      - name: publish package to test-pypi
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.TEST_PYPI_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          poetry install
+      - name: Build and publish
+        run: |
+          poetry publish --build --pasword ${{ secrets.TEST_PYPI_TOKEN }} --no-interaction -r https://test.pypi.org/legacy/
