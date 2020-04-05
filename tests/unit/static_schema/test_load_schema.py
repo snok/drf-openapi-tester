@@ -70,7 +70,7 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
     for item in documented_endpoints:
         base.method = 'get'
         base.status_code = 200
-        base._resolve_path(item['url'])
+        base._resolve_path(item['url'])  # type: ignore
         base.load_schema()
         assert base.schema == item['expected']
 

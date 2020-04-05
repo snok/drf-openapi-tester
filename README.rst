@@ -105,7 +105,7 @@ Setting parameters
         }
 
 
-    *This setting is not required if your swagger docs are generated.
+    *This setting is not required if your swagger docs are generated.*
 
 **********************************
 Testing with django Swagger Tester

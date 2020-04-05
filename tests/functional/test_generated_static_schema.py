@@ -51,12 +51,12 @@ def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
 
     for item in good_test_data:
-        response = client.get('/api/v1' + item['url'])
+        response = client.get('/api/v1' + item['url'])  # type: ignore
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])
+        validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])  # type: ignore
 
 
 def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # noqa: TYP001
@@ -65,11 +65,11 @@ def test_bad_endpoints_static_schema(client, monkeypatch, caplog) -> None:  # no
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     for item in bad_test_data:
-        response = client.get('/api/v1' + item['url'])
+        response = client.get('/api/v1' + item['url'])  # type: ignore
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
         with pytest.raises(SwaggerDocumentationError, match='OpenAPI schema documentation suggests an empty list, '
                                                             'but the response contains list items'):
-            validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])
+            validate_response(response=response, method='GET', endpoint_url='/api/v1' + item['url'])  # type: ignore
