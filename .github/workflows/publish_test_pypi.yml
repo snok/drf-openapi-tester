@@ -24,4 +24,4 @@ jobs:
           poetry install
       - name: Build and publish
         run: |
-          poetry publish --build --pasword ${{ secrets.TEST_PYPI_TOKEN }} --no-interaction -r https://test.pypi.org/legacy/
+          poetry publish --build --password ${{ secrets.TEST_PYPI_TOKEN }} --no-interaction -r https://test.pypi.org/legacy/

@@ -1,4 +1,4 @@
-name: publish package to test-pypi and pypi
+name: publish package to pypi
 
 on: [push]
 #  release:
@@ -23,4 +23,4 @@ jobs:
           poetry install
       - name: Build and publish
         run: |
-          poetry publish --build --pasword ${{ secrets.PYPI_TOKEN }} --no-interaction
+          poetry publish --build --password ${{ secrets.PYPI_TOKEN }} --no-interaction
