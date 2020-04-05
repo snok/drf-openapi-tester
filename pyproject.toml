@@ -1,0 +1,56 @@
+[tool.poetry]
+name = "django-swagger-tester"
+version = "0.2.1"
+description = "Test utility for your Swagger documentation."
+authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
+license = "BSD-4-Clause"
+readme= "README.rst"
+homepage = "https://github.com/sondrelg/django-swagger-tester"
+repository = "https://github.com/sondrelg/django-swagger-tester"
+documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
+keywords = ['openapi', 'swagger', 'api', 'testing', 'django']
+classifiers = [
+        'Development Status :: 3 - Alpha',
+        'Environment :: Web Environment',
+        'Framework :: Pytest',
+        'Framework :: Django',
+        'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
+        'Intended Audience :: Developers',
+        'License :: OSI Approved :: BSD License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Application Frameworks',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+        'Topic :: Documentation',
+        'Topic :: Software Development :: Testing',
+        'Topic :: Software Development :: Testing :: Unit',
+    ]
+    include = ["CHANGELOG.rst"]
+
+[tool.poetry.dependencies]
+python = "^3.5"
+djangorestframework = "*"
+django = "^2.2 || ^3.0"
+
+[tool.poetry.dev-dependencies]
+pre-commit = "1.21.0"
+drf-yasg = "1.17.0"
+pyYAML = "5.3"
+djangorestframework_camel_case = "1.1.2"
+pytest = "^5.2"
+pytest-cov = "2.8.1"
+pytest-django =  "3.8.0"
+flake8 = "*"
+sphinx = "^2.4.4"
+sphinx_rtd_theme = "^0.4.3"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

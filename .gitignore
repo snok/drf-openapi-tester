@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 .idea
 NOTES.md
+test.json
 # C extensions
 *.so
 dumps/
