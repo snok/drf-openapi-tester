@@ -1,6 +1,6 @@
-############################
+#####################
 Django Swagger Tester
-############################
+#####################
 
 .. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
     :target: https://pypi.org/project/django-swagger-tester/
@@ -55,7 +55,7 @@ Configuration
 *************
 
 Settings
---------
+========
 
 To add Django Swagger Settings in your project, add a ``SWAGGER_TESTER`` object to your ``settings.py``:
 
@@ -68,7 +68,7 @@ To add Django Swagger Settings in your project, add a ``SWAGGER_TESTER`` object 
 
 
 Setting parameters
-------------------
+==================
 
 * CASE
     The case standard you wish to enforce for your documentation.
