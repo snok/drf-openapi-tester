@@ -65,7 +65,7 @@ description = "Python package for providing Mozilla's CA Bundle."
 name = "certifi"
 optional = false
 python-versions = "*"
-version = "2019.11.28"
+version = "2020.4.5"
 
 [[package]]
 category = "dev"
@@ -829,8 +829,8 @@ babel = [
     {file = "Babel-2.8.0.tar.gz", hash = "sha256:1aac2ae2d0d8ea368fa90906567f5c08463d98ade155c0c4bfedd6a0f7160e38"},
 ]
 certifi = [
-    {file = "certifi-2019.11.28-py2.py3-none-any.whl", hash = "sha256:017c25db2a153ce562900032d5bc68e9f191e44e9a0f762f373977de9df1fbb3"},
-    {file = "certifi-2019.11.28.tar.gz", hash = "sha256:25b64c7da4cd7479594d035c08c2d809eb4aab3a26e5a990ea98cc450c320f1f"},
+    {file = "certifi-2020.4.5-py2.py3-none-any.whl", hash = "sha256:e68768546aa055623812ada64aec5e1f02ca20a9e7f3d3432dd8b0f35a6e7951"},
+    {file = "certifi-2020.4.5.tar.gz", hash = "sha256:b0e07438175de96ab74de9ab5dc40985ef8b44a41e9636a2000099dc3b670ddd"},
 ]
 cfgv = [
     {file = "cfgv-2.0.1-py2.py3-none-any.whl", hash = "sha256:fbd93c9ab0a523bf7daec408f3be2ed99a980e20b2d19b50fc184ca6b820d289"},
