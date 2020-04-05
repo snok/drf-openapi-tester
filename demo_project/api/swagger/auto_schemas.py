@@ -1,3 +1,4 @@
+from drf_yasg.openapi import Schema, TYPE_ARRAY
 from drf_yasg.utils import swagger_auto_schema
 
 from demo_project.api.swagger.responses import generic_error_response, get_cars_200_response, get_trucks_200_response
@@ -59,11 +60,8 @@ def get_other_trucks_auto_schema():
         },
     )
 
+
 from rest_framework.serializers import CharField, Serializer
-from rest_framework.views import APIView
-
-
-
 
 
 class VehicleSerializer(Serializer):
@@ -72,6 +70,13 @@ class VehicleSerializer(Serializer):
 
     vehicle_type = CharField(max_length=10)
 
+
+def generate_big_schema(counter, item):
+    if counter > 100:
+        return Schema(type=TYPE_ARRAY, items=item)
+    return generate_big_schema(counter + 1, Schema(type=TYPE_ARRAY, items=item))
+
+
 def post_vehicle_auto_schema():
     return swagger_auto_schema(
         operation_id='create_vehicle',
@@ -79,6 +84,6 @@ def post_vehicle_auto_schema():
         operation_description='Creates a new vehicle type in the database',
         request_body=VehicleSerializer,
         responses={
-            '200': generic_string_schema('ok', 'a'),
+            '200': generate_big_schema(0, generic_string_schema('test', 'test')),
         }
     )

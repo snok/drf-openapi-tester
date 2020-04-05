@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+from typing import List
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -25,7 +27,7 @@ SECRET_KEY = 'ic8tu+8vu+5^mnd$t6@dwo-xw-#+e)-#k9qacj+7ie^97@lmna'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS: List[str] = []
 
 
 # Application definition
@@ -140,7 +142,11 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django_swagger_tester': {
+        # 'django_swagger_tester': {
+        #     'handlers': ['console'],
+        #     'level': 'DEBUG'  # <-- Set to DEBUG to show log messages from django_swagger_tester
+        # }
+        'drf_yasg': {
             'handlers': ['console'],
             'level': 'DEBUG'  # <-- Set to DEBUG to show log messages from django_swagger_tester
         }
