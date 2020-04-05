@@ -1,5 +1,7 @@
 import logging
-from typing import Any, List, Union, Dict
+from typing import Any, Dict, List, Union
+
+from rest_framework.response import Response
 
 from django_swagger_tester.case_checks import case_check
 from django_swagger_tester.configuration import settings
@@ -8,14 +10,97 @@ from django_swagger_tester.exceptions import SwaggerDocumentationError
 logger = logging.getLogger('django_swagger_tester')
 
 
+class CaseTester(object):
+
+    def __init__(self):
+        self.case_func = case_check(settings.CASE)
+        self.ignored_keys: List[str] = []
+
+    def _dict(self, dictionary: dict) -> None:
+        """
+        Verifies that a dictionary contains keys of the right case-type.
+
+        :param dictionary: dict
+        :raises: django_swagger_tester.exceptions.CaseError
+        """
+        logger.debug('Checking dictionary casing')
+
+        if not isinstance(dictionary, dict):
+            raise ValueError(f'Expected dictonary, but received {dictionary}')
+
+        for key in dictionary.keys():
+
+            # Check the keys for case inconsistencies
+            if key not in self.ignored_keys:
+                self.case_func(key)
+            else:
+                logger.debug('Skipping case check for key `%s`', key)
+
+            # Pass nested elements for nested checks
+            value = dictionary[key]
+
+            if value['type'] == 'object':
+                logger.debug('Calling _dict from _dict. Value: %s', value)
+                self._dict(dictionary=value['properties'])
+            elif value['type'] == 'array':
+                logger.debug('Calling _list from _dict. Value: %s', value)
+                self._list(list_items=value)
+
+    def _list(self, list_items: list) -> None:
+        """
+        Verifies that a list contains keys of the right case-type.
+
+        :param list_items: list
+        :raises: django_swagger_tester.exceptions.CaseError
+        """
+        logger.debug('Verifying that response list layer matches schema layer')
+        if not isinstance(list_items, list):
+            raise ValueError(f'Expected list, but received {list_items}')
+
+        for item in list_items:
+
+            # List item --> dict
+            if item['type'] == 'object' and item['properties']:
+                logger.debug('Calling _dict from _list')
+                self._dict(dictionary=item['properties'])
+
+            # List item --> list
+            elif item['type'] == 'array' and item['items']:
+                logger.debug('Calling _list from _list')
+                self._list(list_items=item)
+
+
 # noinspection PyMethodMayBeStatic
 class SwaggerTester(object):
 
     def __init__(self) -> None:
-        self.case_func = case_check(settings.CASE)
         self.schema = None
+        self.response_schema = None
         self.definitions: Dict[str, dict] = {}
-        self.ignored_keys: List[str] = []
+
+    def set_response_schema(self):
+        """
+        Sets self.response_schema.
+        """
+        pass
+
+    def replace_ref_sections(self):
+        """
+        Finds all $ref sections and replaces them with the right content.
+        This way we only have to worry about $refs once.
+        """
+        pass
+
+    def unpack_response(self, response: Response) -> None:
+        """
+        Unpacks response as dict.
+        """
+        try:
+            self.data = response.json()
+            self.status_code = response.status_code
+        except Exception as e:
+            logger.exception('Unable to open response object')
+            raise ValueError(f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}')
 
     def _dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
@@ -106,7 +191,7 @@ class SwaggerTester(object):
         elif not schema['items'] and not data:
             return
         elif '$ref' in schema['items']:
-            item = self.definitions[schema['items']['$ref'].split('/')[-1]]
+            item = self.schema['definitions'][schema['items']['$ref'].split('/')[-1]]
         else:
             item = schema['items']
 

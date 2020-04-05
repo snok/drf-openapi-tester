@@ -5,9 +5,8 @@ import os
 import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from rest_framework.response import Response
-
 from django_swagger_tester.response_validation.base.base import SwaggerTestBase
+from rest_framework.response import Response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -84,7 +83,7 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         self.definitions = complete_schema['definitions'] if 'definitions' in complete_schema else None
 
         # Create a list of endpoints in the schema, matching our resolved path
-        url = self.endpoint_path
+        url = self.passed_path
         matched = [endpoint for endpoint in [key for key in complete_schema['paths']] if endpoint == url]
         if not matched:
             raise ValueError('Could not match the resolved url to a documented endpoint in the OpenAPI specification')
