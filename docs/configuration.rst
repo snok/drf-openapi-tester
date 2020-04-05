@@ -7,7 +7,7 @@ Configuration
 Settings
 --------
 
-Add a ``SWAGGER_TESTER`` dict to your ``settings.py``:
+To add Django Swagger Settings in your project, add a ``SWAGGER_TESTER`` object to your ``settings.py``:
 
 .. code-block:: python
 
@@ -17,8 +17,8 @@ Add a ``SWAGGER_TESTER`` dict to your ``settings.py``:
     }
 
 
-Parameters
-----------
+Setting parameters
+------------------
 
 * CASE
     The case standard you wish to enforce for your documentation.

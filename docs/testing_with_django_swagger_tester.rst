@@ -9,6 +9,12 @@ This document contains an in-depth explanation on how the package works, and how
 Response validation
 ===================
 
+An OpenAPI schema should generally span all APIs you provide. For each API, there may be several methods to document (GET, PUT, POST, DELETE, ...), and for each method you may have several responses (200, 400, 401, 404, 5XX). Seeing that at least parts of the OpenAPI schema used for rendering your swagger docs will need to be maintained manually, it is easy to see how bugs might be introduced in the documentation over time. By testing your response documentation against your actual API responses, you can make sure that errors don't pass silently.
+
+This functionality is currently compatible with rendered static schema, or generated `drf_yasg`_ swagger docs.
+
+.. _Drf_yasg: https://github.com/axnsan12/drf-yasg
+
 At the core, the logic for testing an OpenAPI schema is the same, regardless of your Swagger implementation. However, because packages like drf_yasg_ lets you generate documentation on the fly, we need custom logic for extracting the schema. The result is that we need separate implementations for separate documentation implementations, simply for loading schemas.
 
 The validate_response function
@@ -119,4 +125,6 @@ You can also test more than a single response at the time.
 Input validation
 ================
 
-.. _Drf_yasg: https://github.com/axnsan12/drf-yasg
+Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
+
+This is currently under development and will be added for v1.0.0
