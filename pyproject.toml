@@ -35,9 +35,9 @@ classifiers = [
     include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3"
 djangorestframework = "*"
-django = "^2.2"
+django = "^2.2 || ^3.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "1.21.0"
