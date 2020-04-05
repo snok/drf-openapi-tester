@@ -15,12 +15,16 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install, lint, and test
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install poetry
           poetry install
-          python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          python -m flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-          python -m pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
-          python -m coverage report
+      - name: Lint with flake8
+        run: |
+          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      - name: Test with pytest
+        run: |
+          poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
+          poetry run coverage report
