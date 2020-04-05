@@ -106,7 +106,7 @@ class SwaggerTester(object):
         elif not schema['items'] and not data:
             return
         elif '$ref' in schema['items']:
-            item = self.definitions[schema['items']['$ref']]
+            item = self.definitions[schema['items']['$ref'].split('/')[-1]]
         else:
             item = schema['items']
 
