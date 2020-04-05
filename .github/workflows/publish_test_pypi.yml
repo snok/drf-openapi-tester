@@ -1,9 +1,9 @@
 name: publish package to test-pypi
 
-on: [push]
-#  push:
-#    branches:
-#      - master
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   build-and-publish:

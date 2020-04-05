@@ -7,7 +7,7 @@ license = "BSD-4-Clause"
 readme= "README.rst"
 homepage = "https://github.com/sondrelg/django-swagger-tester"
 repository = "https://github.com/sondrelg/django-swagger-tester"
-documentation = "https://github.com/sondrelg/django-swagger-tester"  # TODO: Add readthedocs
+documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
 keywords = ['openapi', 'swagger', 'api', 'testing', 'django']
 classifiers = [
         'Development Status :: 3 - Alpha',
@@ -48,6 +48,8 @@ pytest = "^5.2"
 pytest-cov = "2.8.1"
 pytest-django =  "3.8.0"
 flake8 = "*"
+sphinx = "^2.4.4"
+sphinx_rtd_theme = "^0.4.3"
 
 [build-system]
 requires = ["poetry>=0.12"]
