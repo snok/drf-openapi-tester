@@ -50,8 +50,11 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         logger.debug('Fetching generated dynamic schema')
 
         # Fetch schema and convert to dict
-        complete_odict_schema = self.schema_generator.get_schema()
-        complete_schema = loads(dumps(complete_odict_schema.as_odict()['paths']))  # Converts OrderedDict to dict
+        complete_odict_schema = self.schema_generator.get_schema(None, True)
+        complete_schema = loads(dumps(complete_odict_schema.as_odict()))  # Converts OrderedDict to dict
+
+        # Set definitions
+        self.definitions = complete_schema['definitions'] if 'definitions' in complete_schema else None
 
         # drf_yasg finds a common denominator for paths, and cuts that out of the openapi schema
         # For example, /api/v1/... might then become /v1/...
@@ -62,7 +65,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         # Index by route
         try:
             logger.debug('Indexing schema by route `%s`', url)
-            schema = complete_schema[url]
+            schema = complete_schema['paths'][url]
         except KeyError:
             raise SwaggerDocumentationError(
                 f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '

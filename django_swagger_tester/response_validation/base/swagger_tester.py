@@ -1,5 +1,5 @@
 import logging
-from typing import Any, List, Union
+from typing import Any, List, Union, Dict
 
 from django_swagger_tester.case_checks import case_check
 from django_swagger_tester.configuration import settings
@@ -14,6 +14,7 @@ class SwaggerTester(object):
     def __init__(self) -> None:
         self.case_func = case_check(settings.CASE)
         self.schema = None
+        self.definitions: Dict[str, dict] = {}
         self.ignored_keys: List[str] = []
 
     def _dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
@@ -52,6 +53,7 @@ class SwaggerTester(object):
                 self.case_func(schema_key)
             else:
                 logger.debug('Skipping case check for key `%s`', schema_key)
+
             if response_key not in self.ignored_keys:
                 self.case_func(response_key)
             else:
@@ -103,6 +105,8 @@ class SwaggerTester(object):
                               data=data, schema=schema, parent=parent)
         elif not schema['items'] and not data:
             return
+        elif '$ref' in schema['items']:
+            item = self.definitions[schema['items']['$ref']]
         else:
             item = schema['items']
 
