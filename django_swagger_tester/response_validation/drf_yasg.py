@@ -54,7 +54,7 @@ class DrfYasgSwaggerTester(SwaggerTestBase):
         complete_schema = loads(dumps(complete_odict_schema.as_odict()))  # Converts OrderedDict to dict
 
         # Set definitions
-        self.definitions = complete_schema['definitions']
+        self.definitions = complete_schema['definitions'] if 'definitions' in complete_schema else None
 
         # drf_yasg finds a common denominator for paths, and cuts that out of the openapi schema
         # For example, /api/v1/... might then become /v1/...

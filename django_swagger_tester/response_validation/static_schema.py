@@ -81,7 +81,7 @@ class StaticSchemaSwaggerTester(SwaggerTestBase):
         complete_schema = self._load_schema_file()
 
         # Set definitions
-        self.definitions = complete_schema['definitions']
+        self.definitions = complete_schema['definitions'] if 'definitions' in complete_schema else None
 
         # Create a list of endpoints in the schema, matching our resolved path
         url = self.endpoint_path
