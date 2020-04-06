@@ -120,5 +120,37 @@ def replace_refs(schema: dict) -> dict:
     """
     if '$ref' not in str(schema):
         return schema
-    # TODO: write
-    # refs = extract_ref_keys('$ref', schema, keys=[], master_dict={})
+
+    def find_and_replace_refs_recursively(d: dict, schema: dict) -> dict:
+        """
+        Iterates over a dictionary to look for pesky $refs.
+        """
+        if '$ref' in d:
+            indeces = [i for i in d['$ref'][d['$ref'].index('#') + 1:].split('/') if i]
+            temp_schema = schema
+            for index in indeces:
+                logger.debug(f'indexing by %s', index)
+                temp_schema = temp_schema[index]
+            return temp_schema
+        for k, v in d.items():
+            if isinstance(v, list):
+                d[k] = iterate_list(v, schema)
+            elif isinstance(v, dict):
+                d[k] = find_and_replace_refs_recursively(v, schema)
+        return d
+
+    def iterate_list(l: list, schema: dict) -> list:
+        """
+        Loves to iterate lists.
+        """
+        x = []
+        for i in l:
+            if isinstance(i, list):
+                x.append(iterate_list(i, schema))
+            elif isinstance(i, dict):
+                x.append(find_and_replace_refs_recursively(i, schema))  # type: ignore
+            else:
+                x.append(i)
+        return x
+
+    return find_and_replace_refs_recursively(schema, schema)
