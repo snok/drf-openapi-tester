@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Any, Callable, Union
 
-from .exceptions import CaseError
+from django_swagger_tester.exceptions import CaseError
 
 logger = logging.getLogger('django_swagger_tester')
 

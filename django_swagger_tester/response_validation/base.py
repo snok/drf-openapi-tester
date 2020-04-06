@@ -1,94 +1,244 @@
-import difflib
 import logging
-
-from django.urls import Resolver404, resolve
-from requests import Response
-from rest_framework.serializers import Serializer
+from typing import Any, Union
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.response_validation.response_tester import SwaggerTester
-from django_swagger_tester.utils import get_paths
+from django_swagger_tester.utils import item_types, replace_refs
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-class SwaggerTestBase(SwaggerTester):
-    """
-    Swagger tester base class.
+class ResponseTester:
 
-    There's a few things that we need to do regardless of what we want to test. For example, we need to:
+    def __init__(self, response_schema: dict, response_data: Any) -> None:
+        assert '$ref' not in str(response_schema)  # OpenAPI schema should have all $ref sections replaced before being passed to the class
+        if response_schema['type'] == 'object':
+            self.dict(schema=response_schema, data=response_data, parent='init')
+        elif response_schema['type'] == 'array':
+            self.list(schema=response_schema, data=response_data, parent='init')
+        elif response_schema['type'] in item_types():
+            self.item(schema=response_schema, data=response_data, parent='init')
+        else:
+            raise Exception(f'Unexpected error.\nSchema: {response_schema}\nResponse: {response_data}\n\nThis shouldn\'t happen.')
 
-    - Load the OpenAPI schema
-    - Resolve the endpoint url passed to our test methods
-    - Validate the passed method
-    """
-
-    def __init__(self):
-        self.endpoint_path = None  # <-- path we can use to index schema
-        self.resolved_route = None  # <-- route resolved by django (doesnt always match schema)
-        self.passed_route = None  # <-- original input `endpoint_url` - useful for logging
-        self.method = None
-        super().__init__()
-
-    def load_schema(self) -> None:
+    def dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
-        This method should do one thing: Load the OpenAPI schema section we're testing, and add it to the class context as `self.schema`.
+        Verifies that a schema dict matches a response dict.
 
-        Note that the class context holds the following variables by the time this method is called:
-
-            - resolved_url: django.urls.resolvers.ResolverMatch
-            - self.data: dictionary
-            - self.status_code: integer
-            - self.method: uppercase string
+        :param schema: OpenAPI schema
+        :param data: Response data
+        :param parent: string reference pointing to function caller
+        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
         """
-        pass
+        logger.debug('Verifying that response dict layer matches schema layer')
 
-    # ^ Methods above this line *should* be extended. Methods below *can* be extended.
+        if not isinstance(data, dict):
+            raise self.error(error_message=f"Mismatched types. Expected response to be <class 'dict'> but found {type(data)}.",
+                             data=data, schema=schema, parent=parent)
 
-    def resolve_path(self, endpoint_path: str) -> None:
-        """
-        Resolves a Django path.
-        """
-        try:
-            logger.debug('Resolving path.')
-            if endpoint_path[0] != '/':
-                logger.debug('Adding leading `/` to provided path')
-                endpoint_path = '/' + endpoint_path
-            try:
-                self.resolved_route = '/' + resolve(endpoint_path).route.replace('$', '')
-                self.passed_route = endpoint_path
-                logger.debug('Resolved %s successfully', endpoint_path)
-                logger.debug('Resolved route: %s', self.resolved_route)
-            except Resolver404:
-                self.resolved_route = '/' + resolve(endpoint_path + '/').route
-                self.passed_route = endpoint_path
-                logger.warning('Endpoint path is missing a trailing slash (`/`)', endpoint_path)
-        except Resolver404:
-            logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
-            paths = get_paths()
-            closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
-            if closest_matches:
-                raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
-                                 f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
-                                 f'value, and not the parameter pattern.')
+        schema_keys = schema['properties'].keys()
+        response_keys = data.keys()
+
+        # Verify that both dicts have the same amount of keys --> a length mismatch will always indicate an error
+        if len(schema_keys) != len(response_keys):
+            logger.debug('The number of schema dict elements does not match the number of response dict elements')
+            if len(set(response_keys)) > len(set(schema_keys)):
+                missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
+                raise self.error(error_message=f'The following properties seem to be missing from your OpenAPI/Swagger documentation: '
+                                               f'{missing_keys}.', data=data, schema=schema, parent=parent)
             else:
-                raise ValueError(f'Could not resolve path `{endpoint_path}`')
+                missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
+                raise self.error(error_message=f'The following properties seem to be missing from your response body: {missing_keys}.',
+                                 data=data, schema=schema, parent=parent)
 
-    def validate_method(self, method: str) -> None:
-        """
-        Validates the specified HTTP method.
-        """
-        methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-        if not isinstance(method, str) or method.lower() not in methods:
-            logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))
-            raise ValueError(f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.')
-        self.method = method.upper()
+        for schema_key, response_key in zip(schema_keys, response_keys):
 
-    def set_ignored_keys(self, **kwargs) -> None:
-        """
-        Lets users pass a list of string that will not be checked by case-check.
+            # Check that each element in the schema exists in the response, and vice versa
+            if schema_key not in response_keys:
+                raise self.error(error_message=f'Schema key `{schema_key}` was not found in the API response.',
+                                 data=data, schema=schema, parent=parent)
+            elif response_key not in schema_keys:
+                raise self.error(error_message=f'Response key `{response_key}` not found in the OpenAPI schema.',
+                                 data=data, schema=schema, parent=parent)
 
-        For example, validate_response(..., ignore_case=["List", "OF", "improperly cased", "kEYS"]).
+            # Pass nested elements for nested checks
+            schema_value = schema['properties'][schema_key]
+            response_value = data[schema_key]
+
+            if schema_value['type'] == 'object':
+                logger.debug('Calling _dict from _dict. Response: %s, Schema: %s', response_value, schema_value)
+                self.dict(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+            elif schema_value['type'] == 'array':
+                logger.debug('Calling _list from _dict. Response: %s, Schema: %s', response_value, schema_value)
+                self.list(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+            elif schema_value['type'] in item_types():
+                logger.debug('Calling _item from _dict. Response: %s, Schema: %s', response_value, schema_value)
+                self.item(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+            else:
+                # This part of the code should be unreachable. However, if we do have a gap in our logic,
+                # we should raise an error to highlight the error.
+                raise Exception(f'Unexpected error.\n\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
+
+    def list(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
-        if 'ignore_case' in kwargs:
-            self.ignored_keys = kwargs['ignore_case']
+        Verifies that the response item matches the schema documentation, when the schema layer is an array.
+
+        :param schema: OpenAPI schema
+        :param data: Response data
+        :param parent: string reference pointing to function caller
+        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+        """
+        logger.debug('Verifying that response list layer matches schema layer')
+        if not isinstance(data, list):
+            raise self.error(error_message=f"Mismatched types. Expected response to be <class 'list'> but found {type(data)}.",
+                             data=data, schema=schema, parent=parent)
+
+        # A schema array can only hold one item, e.g., {"type": "array", "items": {"type": "object", "properties": {...}}}
+        # At the same time we want to test each of the response objects, as they *should* match the schema.
+        if not schema['items'] and data:
+            raise self.error(error_message=f'OpenAPI schema documentation suggests an empty list, but the response contains list items.',
+                             data=data, schema=schema, parent=parent)
+        elif not schema['items'] and not data:
+            return
+        else:
+            item = schema['items']
+
+        for index in range(len(data)):
+
+            # List item --> dict
+            if item['type'] == 'object' and item['properties']:
+                logger.debug('Calling _dict from _list')
+                self.dict(schema=item, data=data[index], parent=f'{parent}.list')
+
+            # List item --> empty dict  &&  response not empty
+            elif (item['type'] == 'object' and not item['properties']) and data[index]:
+                raise self.error(error_message=f'OpenAPI schema documentation suggests an empty dictionary, but the response contains '
+                                               f'a populated dict.', data=data[index], schema=schema, parent=parent)
+
+            # List item --> list
+            elif item['type'] == 'array' and item['items']:
+                logger.debug('Calling _list from _list')
+                self.list(schema=item, data=data[index], parent=f'{parent}.list')
+
+            # List item --> empty list  &&  response not empty
+            elif (item['type'] == 'array' and not item['items']) and data[index]:
+                # If the schema says all listed items are to be arrays, and the response has values but the schema is empty
+                # ... then raise an error
+                raise self.error(
+                    error_message=f'OpenAPI schema documentation suggests an empty list, but the response contains list items.',
+                    data=data[index], schema=schema, parent=parent)
+
+            # List item --> item
+            elif item['type'] in item_types():
+                # If the schema says all listed items are individual items, check that the item is represented in the response
+                logger.debug('Calling _item from _list')
+                self.item(schema=item, data=data[index], parent=f'{parent}.list')
+
+            else:
+                # This part of the code should be unreachable. However, if we do have a gap in our logic,
+                # we should raise an error to highlight the error.
+                raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
+
+    def item(self, schema: dict, data: Any, parent: str) -> None:
+        """
+        Verifies that a response value matches the example value in the schema.
+
+        :param schema: OpenAPI schema
+        :param data: response data item
+        :param parent: string reference pointing to function caller
+        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+        """
+        checks = {
+            'boolean': {
+                'check': not isinstance(data, bool) and not (isinstance(data, str) and (data.lower() == 'true' or data.lower() == 'false')),
+                'type': "<class 'bool'>"},
+            'string': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
+            'integer': {'check': not isinstance(data, int) and data is not None, 'type': "<class 'int'>"},
+            'number': {'check': not isinstance(data, float) and data is not None, 'type': "<class 'float'>"},
+            'file': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
+        }
+        if checks[schema['type']]['check']:
+            raise self.error(error_message=f'Mismatched types.', data=data, schema=schema, parent=parent)
+
+    @staticmethod
+    def error(error_message: str, data: Any, schema: dict, parent: str) -> SwaggerDocumentationError:
+        """
+        Formats and returns a standardized excetption and error message.
+        """
+        logger.debug('Constructing error message')
+
+        # Unpack schema and data dicts
+        schema_items = [{'key': f'{key}', 'value': f'{value}'} for key, value in schema.items()]
+        schema_items += [{'key': 'parent', 'value': parent}]
+        data_items = [{'key': 'data', 'value': f'{data}'}, {'key': 'type', 'value': f'{type(data)}'}]
+
+        # Find length of items
+        longest_key = max(len(f'{item["key"]}') for item_list in [schema_items, data_items] for item in item_list)
+        longest_value = max(len(f'{item["value"]}') for item_list in [schema_items, data_items] for item in item_list)
+        line_length = longest_value if longest_value < 91 else 91
+
+        # Create a dotted line to make it pretty
+        dotted_line = line_length * '-' + '\n'
+
+        def format_string(left: Any, right: Any, offset: int) -> str:
+            left = f'{left}'
+            return left.ljust(offset) + f'{right}\n'
+
+        # Construct data property table
+        data_properties = [format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in data_items]
+        data_properties += [f'{dotted_line}\n', f'Schema\n', f'{dotted_line}']
+
+        # Construct schema property table
+        schema_properties = [format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in schema_items]
+        schema_properties += [f'{dotted_line}']
+
+        # Construct the error message
+        message = [
+                      f'Item is misspecified:\n\n',
+                      f'Error: {error_message}\n\n',
+                      f'Response\n',
+                      f'{dotted_line}',
+                  ] + data_properties + schema_properties  # noqa: E126
+
+        return SwaggerDocumentationError(''.join(message))
+
+
+def get_response_schema(schema: dict, route: str, method: str, status_code: int) -> dict:
+    """
+    Indexes schema by url, HTTP method, and status code to get the section of a schema related to a specific response.
+
+    :param schema: Full OpenAPI schema
+    :param route: Schema-compatible path
+    :param method: HTTP request method
+    :param status_code: HTTP response code
+    :return Response sub-section of the schema
+    """
+    schema = replace_refs(schema)
+    try:
+        logger.debug('Indexing schema by route `%s`', route)
+        path_indexed_schema = schema['paths'][route]
+    except KeyError:
+        raise SwaggerDocumentationError(
+            f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '
+            f'`{route}`, but the key does not exist in the schema.'
+            f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema.keys()])}')
+
+    # Index by method and responses
+    try:
+        logger.debug('Indexing schema by method `%s`', method.lower())
+        response_indexed_schema = path_indexed_schema[method.lower()]['responses']
+    except KeyError:
+        raise SwaggerDocumentationError(
+            f'No schema found for method {method}. Available methods include '
+            f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
+        )
+
+    # Index by status and schema
+    try:
+        response_schema = response_indexed_schema[f'{status_code}']['schema']
+    except KeyError:
+        raise SwaggerDocumentationError(
+            f'No schema found for response code `{status_code}`. Documented responses include '
+            f'{", ".join([code for code in schema.keys()])}.'
+        )
+
+    return response_schema
