@@ -33,7 +33,7 @@ class LoadDrfYasgSchema:
         from drf_yasg.generators import OpenAPISchemaGenerator
         self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
-        self.route = self._get_drf_yasgs_compatible_route(route)
+        self.route = self._get_drf_yasg_compatible_route(route)
         self.status_code = status_code
         self.method = method
 
@@ -70,7 +70,7 @@ class LoadDrfYasgSchema:
         """
         return self.schema_generator.determine_path_prefix(get_paths())
 
-    def _get_drf_yasgs_compatible_route(self, route):
+    def _get_drf_yasg_compatible_route(self, route):
         """
         Returns a url that matches the urls found in a drf_yasg-generated schema.
 

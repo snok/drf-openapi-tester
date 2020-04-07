@@ -3,7 +3,7 @@ import logging
 from requests import Response
 from rest_framework.serializers import Serializer
 
-from django_swagger_tester.case.base import CaseTester
+from django_swagger_tester.case.base import ResponseCaseTester, SchemaCaseTester
 from django_swagger_tester.drf_yasg.load_schema import LoadDrfYasgSchema
 from django_swagger_tester.response_validation.base import ResponseTester
 from django_swagger_tester.utils import unpack_response
@@ -26,7 +26,9 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     loader = LoadDrfYasgSchema(route=route, status_code=response.status_code, method=method)
     response_schema = loader.get_response_schema()
     ResponseTester(response_schema=response_schema, response_data=data)
-    CaseTester(**kwargs)
+    ResponseCaseTester(response_data=data, **kwargs)
+    SchemaCaseTester(schema=response_schema, **kwargs)
+
 
 def validate_input(serializer: Serializer, method: str, route: str) -> None:
     """

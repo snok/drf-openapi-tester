@@ -17,9 +17,13 @@ def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
     logger.debug('Returning `%s` case function', case)
     return {  # type: ignore
         'camel case': is_camel_case,
+        'camelCase': is_camel_case,
         'snake case': is_snake_case,
+        'snake_case': is_snake_case,
         'kebab case': is_kebab_case,
+        'kebab-case': is_kebab_case,
         'pascal case': is_pascal_case,
+        'PascalCase': is_pascal_case,
         None: skip,
     }[case]
 

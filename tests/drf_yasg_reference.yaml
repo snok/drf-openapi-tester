@@ -1,0 +1,1513 @@
+swagger: '2.0'
+info:
+  title: Snippets API
+  description: |-
+    This is a demo project for the [drf-yasg](https://github.com/axnsan12/drf-yasg) Django Rest Framework library.
+
+    The `swagger-ui` view can be found [here](/cached/swagger).
+    The `ReDoc` view can be found [here](/cached/redoc).
+    The swagger YAML document can be found [here](/cached/swagger.yaml).
+
+    You can log in using the pre-existing `admin` user with password `passwordadmin`.
+  termsOfService: https://www.google.com/policies/terms/
+  contact:
+    email: contact@snippets.local
+  license:
+    name: BSD License
+  version: v1
+host: test.local:8002
+schemes:
+  - http
+basePath: /
+consumes:
+  - application/json
+produces:
+  - application/json
+securityDefinitions:
+  Basic:
+    type: basic
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+  OAuth2 password:
+    flow: password
+    scopes:
+      read: Read everything.
+      write: Write everything,
+    tokenUrl: /o/token/
+    type: oauth2
+  Query:
+    in: query
+    name: auth
+    type: apiKey
+security:
+  - Basic: []
+  - Bearer: []
+  - OAuth2 password: []
+  - Query: []
+paths:
+  /articles/:
+    get:
+      operationId: articles_list
+      description: description from swagger_auto_schema via method_decorator
+      parameters:
+        - name: title
+          in: query
+          description: Filter the returned list by title
+          required: false
+          type: string
+        - name: ordering
+          in: query
+          description: Which field to use when ordering the results.
+          required: false
+          type: string
+        - name: limit
+          in: query
+          description: Number of results to return per page.
+          required: false
+          type: integer
+        - name: offset
+          in: query
+          description: The initial index from which to return the results.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/Article'
+      tags:
+        - articles
+    post:
+      operationId: articles_create
+      description: ArticleViewSet class docstring
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Article'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Article'
+      tags:
+        - articles
+    parameters: []
+  /articles/today/:
+    get:
+      operationId: articles_today
+      description: ArticleViewSet class docstring
+      parameters:
+        - name: title
+          in: query
+          description: Filter the returned list by title
+          required: false
+          type: string
+        - name: ordering
+          in: query
+          description: Which field to use when ordering the results.
+          required: false
+          type: string
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Article'
+      tags:
+        - articles
+    parameters: []
+  /articles/{slug}/:
+    get:
+      operationId: articles_read
+      description: retrieve class docstring
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Article'
+      tags:
+        - articles
+    put:
+      operationId: no_body_test
+      description: update method docstring
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Article'
+      tags:
+        - articles
+    patch:
+      operationId: articles_partial_update
+      summary: partial_update summary
+      description: partial_update description override
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Article'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Article'
+        '404':
+          description: slug not found
+      tags:
+        - articles
+      deprecated: true
+    delete:
+      operationId: articles_delete
+      description: destroy method docstring
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - articles
+    parameters:
+      - name: slug
+        in: path
+        description: slug model help_text
+        required: true
+        type: string
+        format: slug
+        pattern: '[a-z0-9]+(?:-[a-z0-9]+)'
+  /articles/{slug}/image/:
+    get:
+      operationId: articles_image_read
+      description: image GET description override
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Article'
+      consumes:
+        - multipart/form-data
+      tags:
+        - articles
+    post:
+      operationId: articles_image_create
+      description: image method docstring
+      parameters:
+        - name: what_am_i_doing
+          in: formData
+          description: test
+          required: false
+          type: string
+          pattern: ^69$
+          default: '69'
+          minLength: 1
+          x-nullable: true
+        - name: image_styles
+          in: formData
+          description: Parameter with Items
+          required: true
+          type: array
+          items:
+            type: string
+            enum:
+              - wide
+              - tall
+              - thumb
+              - social
+        - name: upload
+          in: formData
+          description: image serializer help_text
+          required: true
+          type: file
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/ImageUpload'
+      consumes:
+        - multipart/form-data
+      tags:
+        - articles
+    delete:
+      operationId: articles_image_delete
+      description: image method docstring
+      parameters:
+        - name: delete_form_param
+          in: formData
+          description: this should not crash (form parameter on DELETE method)
+          type: integer
+      responses:
+        '204':
+          description: ''
+      consumes:
+        - multipart/form-data
+      tags:
+        - articles
+    parameters:
+      - name: slug
+        in: path
+        description: slug model help_text
+        required: true
+        type: string
+        format: slug
+        pattern: '[a-z0-9]+(?:-[a-z0-9]+)'
+  /people/:
+    get:
+      operationId: people_list
+      description: ''
+      parameters:
+        - name: unknown_paginator
+          in: query
+          type: string
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Person'
+      tags:
+        - people
+    post:
+      operationId: people_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Person'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Person'
+      tags:
+        - people
+    parameters: []
+  /people/{id}:
+    get:
+      operationId: people_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Person'
+      tags:
+        - people
+    patch:
+      operationId: people_partial_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Person'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Person'
+      tags:
+        - people
+    delete:
+      operationId: people_delete
+      description: ''
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - people
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this person.
+        required: true
+        type: integer
+  /people/{person}/identity:
+    get:
+      operationId: people_identity_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Identity'
+      tags:
+        - people
+    patch:
+      operationId: people_identity_partial_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Identity'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Identity'
+      tags:
+        - people
+    parameters:
+      - name: person
+        in: path
+        required: true
+        type: string
+  /plain/:
+    get:
+      operationId: plain_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - plain
+    parameters: []
+  /snippets/:
+    get:
+      operationId: snippetsList
+      description: SnippetList classdoc
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Snippet'
+      tags:
+        - snippets
+    post:
+      operationId: snippetsCreate
+      description: post method docstring
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Snippet'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/Snippet'
+      tags:
+        - snippets
+    delete:
+      operationId: snippetsDeleteBulk
+      summary: summary from docstring
+      description: description body is here, summary is not included
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            type: object
+            properties:
+              body:
+                description: this should not crash (request body on DELETE method)
+                type: string
+      responses:
+        '204':
+          description: ''
+      tags:
+        - snippets
+    parameters: []
+  /snippets/views/{snippet_pk}/:
+    get:
+      operationId: snippetsViewsRead
+      description: SnippetViewerList classdoc
+      parameters:
+        - name: page
+          in: query
+          description: A page number within the paginated result set.
+          required: false
+          type: integer
+      responses:
+        '200':
+          description: ''
+          schema:
+            required:
+              - count
+              - results
+            type: object
+            properties:
+              count:
+                type: integer
+              next:
+                type: string
+                format: uri
+                x-nullable: true
+              previous:
+                type: string
+                format: uri
+                x-nullable: true
+              results:
+                type: array
+                items:
+                  $ref: '#/definitions/SnippetViewer'
+      tags:
+        - snippets
+    parameters:
+      - name: snippet_pk
+        in: path
+        required: true
+        type: string
+  /snippets/{id}/:
+    get:
+      operationId: snippetsRead
+      description: SnippetDetail classdoc
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Snippet'
+      tags:
+        - snippets
+    put:
+      operationId: snippetsUpdate
+      description: put class docstring
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Snippet'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Snippet'
+      tags:
+        - snippets
+    patch:
+      operationId: snippetsPartialUpdate
+      description: patch method docstring
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Snippet'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Snippet'
+      tags:
+        - snippets
+    delete:
+      operationId: snippetsDelete
+      description: delete method docstring
+      parameters:
+        - name: id
+          in: path
+          description: path parameter override
+          required: true
+          type: integer
+      responses:
+        '204':
+          description: this should not crash (response object with no schema)
+      tags:
+        - snippets
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this snippet.
+        required: true
+        type: integer
+  /todo/:
+    get:
+      operationId: todo_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Todo'
+      tags:
+        - todo
+    parameters: []
+  /todo/another/:
+    get:
+      operationId: todo_another_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoAnother'
+      tags:
+        - todo
+    parameters: []
+  /todo/another/{id}/:
+    get:
+      operationId: todo_another_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoAnother'
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this todo another.
+        required: true
+        type: integer
+  /todo/harvest/:
+    get:
+      operationId: todo_harvest_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Harvest'
+      tags:
+        - todo
+    parameters: []
+  /todo/harvest/{id}/:
+    put:
+      operationId: todo_harvest_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Harvest'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Harvest'
+      tags:
+        - todo
+    patch:
+      operationId: todo_harvest_partial_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/Harvest'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Harvest'
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this pack.
+        required: true
+        type: integer
+  /todo/recursive/:
+    get:
+      operationId: todo_recursive_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoRecursive'
+      tags:
+        - todo
+    post:
+      operationId: todo_recursive_create
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      responses:
+        '201':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      tags:
+        - todo
+    parameters: []
+  /todo/recursive/{id}/:
+    get:
+      operationId: todo_recursive_read
+      description: ''
+      parameters: []
+      responses:
+        '302':
+          description: Redirect somewhere
+      tags:
+        - todo
+    put:
+      operationId: todo_recursive_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      tags:
+        - todo
+    patch:
+      operationId: todo_recursive_partial_update
+      description: ''
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoRecursive'
+      tags:
+        - todo
+    delete:
+      operationId: todo_recursive_delete
+      description: ''
+      parameters: []
+      responses:
+        '204':
+          description: ''
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this todo tree.
+        required: true
+        type: integer
+  /todo/tree/:
+    get:
+      operationId: todo_tree_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoTree'
+      tags:
+        - todo
+    parameters: []
+  /todo/tree/{id}/:
+    get:
+      operationId: todo_tree_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoTree'
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this todo tree.
+        required: true
+        type: integer
+  /todo/yetanother/:
+    get:
+      operationId: todo_yetanother_list
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/TodoYetAnother'
+      tags:
+        - todo
+    parameters: []
+  /todo/yetanother/{id}/:
+    get:
+      operationId: todo_yetanother_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoYetAnother'
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this todo yet another.
+        required: true
+        type: integer
+  /todo/{id}/:
+    get:
+      operationId: todo_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/Todo'
+      tags:
+        - todo
+    parameters:
+      - name: id
+        in: path
+        description: A unique integer value identifying this todo.
+        required: true
+        type: integer
+  /todo/{todo_id}/yetanothers/{yetanother_id}/:
+    get:
+      operationId: todo_yetanothers_read
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/TodoYetAnother'
+      tags:
+        - todo
+    parameters:
+      - name: todo_id
+        in: path
+        required: true
+        type: string
+      - name: yetanother_id
+        in: path
+        required: true
+        type: string
+  /users/:
+    get:
+      operationId: users_list
+      description: UserList cbv classdoc
+      parameters:
+        - name: username
+          in: query
+          description: this field is generated from a query_serializer
+          required: false
+          type: string
+          minLength: 1
+        - name: is_staff
+          in: query
+          description: this one too!
+          required: false
+          type: boolean
+        - name: styles
+          in: query
+          description: and this one is fancy!
+          required: true
+          type: array
+          items:
+            type: string
+            enum:
+              - a
+              - b
+              - c
+              - d
+          collectionFormat: multi
+      responses:
+        '200':
+          description: ''
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/UserSerializerrr'
+      tags:
+        - Users
+    post:
+      operationId: users_create
+      description: apiview post description override
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            required:
+              - username
+            type: object
+            properties:
+              username:
+                type: string
+      responses:
+        '201':
+          description: ''
+          schema:
+            required:
+              - username
+            type: object
+            properties:
+              username:
+                type: string
+      tags:
+        - Users
+      security: []
+    patch:
+      operationId: users_dummy
+      description: dummy operation
+      parameters: []
+      responses:
+        '200':
+          description: ''
+      tags:
+        - Users
+    parameters: []
+  /users/{id}/:
+    get:
+      operationId: users_read
+      description: user_detail fbv docstring
+      parameters:
+        - name: test
+          in: query
+          description: test manual param
+          type: boolean
+        - name: test_array
+          in: query
+          description: test query array arg
+          required: true
+          type: array
+          items:
+            type: string
+          collectionFormat: multi
+      responses:
+        '200':
+          description: response description
+          schema:
+            $ref: '#/definitions/UserSerializerrr'
+      tags:
+        - Users
+    put:
+      operationId: users_update
+      description: user_detail fbv docstring
+      parameters:
+        - name: data
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/UserSerializerrr'
+      responses:
+        '200':
+          description: ''
+          schema:
+            $ref: '#/definitions/UserSerializerrr'
+      tags:
+        - Users
+    parameters:
+      - name: id
+        in: path
+        required: true
+        type: string
+definitions:
+  Article:
+    required:
+      - title
+      - body
+      - group
+    type: object
+    properties:
+      title:
+        description: title model help_text
+        type: string
+        maxLength: 255
+        minLength: 1
+      author:
+        description: The ID of the user that created this article; if none is provided,
+          defaults to the currently logged in user.
+        type: integer
+        default: 1
+      body:
+        description: body serializer help_text
+        type: string
+        maxLength: 5000
+        minLength: 1
+      slug:
+        description: slug model help_text
+        type: string
+        format: slug
+        pattern: ^[-a-zA-Z0-9_]+$
+        maxLength: 50
+      date_created:
+        type: string
+        format: date-time
+        readOnly: true
+      date_modified:
+        type: string
+        format: date-time
+        readOnly: true
+      read_only_nullable:
+        type: string
+        readOnly: true
+        minLength: 1
+        x-nullable: true
+      references:
+        description: this is a really bad example
+        type: object
+        additionalProperties:
+          description: but i needed to test these 2 fields somehow
+          type: string
+          format: uri
+          minLength: 1
+        readOnly: true
+      uuid:
+        description: should articles have UUIDs?
+        type: string
+        format: uuid
+        readOnly: true
+      cover:
+        type: string
+        readOnly: true
+        format: uri
+      cover_name:
+        type: string
+        readOnly: true
+      article_type:
+        description: IntegerField declared on model with choices=(...) and exposed
+          via ModelSerializer
+        type: integer
+        enum:
+          - 1
+          - 2
+          - 3
+          - 7
+          - 8
+        x-nullable: true
+      group:
+        type: string
+        format: uuid
+      original_group:
+        type: string
+        format: uuid
+        readOnly: true
+  ImageUpload:
+    required:
+      - image_styles
+    type: object
+    properties:
+      image_id:
+        type: string
+        format: uuid
+        readOnly: true
+      what_am_i_doing:
+        description: test
+        type: string
+        pattern: ^69$
+        default: '69'
+        minLength: 1
+        x-nullable: true
+      image_styles:
+        description: Parameter with Items
+        type: array
+        items:
+          type: string
+          enum:
+            - wide
+            - tall
+            - thumb
+            - social
+      upload:
+        description: image serializer help_text
+        type: string
+        readOnly: true
+        format: uri
+  Identity:
+    title: Identity
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      first_name:
+        title: First name
+        type: string
+        maxLength: 30
+        minLength: 1
+        x-nullable: true
+      last_name:
+        title: Last name
+        description: <strong>Here's some HTML!</strong>
+        type: string
+        maxLength: 30
+        minLength: 1
+        x-nullable: true
+  Person:
+    required:
+      - identity
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      identity:
+        $ref: '#/definitions/Identity'
+  Project:
+    required:
+      - projectName
+      - githubRepo
+    type: object
+    properties:
+      projectName:
+        title: project name custom title
+        description: Name of the project
+        type: string
+        minLength: 1
+      githubRepo:
+        title: Github repo
+        description: Github repository of the project
+        type: string
+        minLength: 1
+  Snippet:
+    required:
+      - code
+      - tags
+      - language
+    type: object
+    properties:
+      id:
+        title: Id
+        description: id serializer help text
+        type: integer
+        readOnly: true
+      created:
+        title: Client date time suu
+        type: string
+        format: integer
+        readOnly: true
+        description: Date time in unix timestamp format
+      owner:
+        title: Owner
+        description: The ID of the user that created this snippet; if none is provided,
+          defaults to the currently logged in user.
+        type: integer
+        default: 1
+      ownerAsString:
+        description: The ID of the user that created this snippet.
+        type: string
+        readOnly: true
+        minLength: 1
+        title: Owner as string
+      title:
+        title: Title
+        type: string
+        maxLength: 100
+      code:
+        title: Code
+        type: string
+        minLength: 1
+      tags:
+        type: array
+        items:
+          type: string
+          minLength: 2
+        maxItems: 15
+        minItems: 3
+      linenos:
+        title: Linenos
+        type: boolean
+      language:
+        description: Sample help text for language
+        type: object
+        properties:
+          name:
+            title: Name
+            description: The name of the programming language
+            type: string
+            enum:
+              - cpp
+              - js
+              - python
+            default: python
+          readOnlyNullable:
+            title: Read only nullable
+            type: string
+            readOnly: true
+            minLength: 1
+            x-nullable: true
+      styles:
+        type: array
+        items:
+          type: string
+          enum:
+            - monokai
+            - solarized-dark
+            - vim
+        default:
+          - solarized-dark
+      lines:
+        type: array
+        items:
+          type: integer
+        x-nullable: true
+      exampleProjects:
+        type: array
+        items:
+          $ref: '#/definitions/Project'
+        readOnly: true
+        maxItems: 100
+      difficultyFactor:
+        title: Difficulty factor
+        description: this is here just to test FloatField
+        type: number
+        readOnly: true
+        default: 6.9
+      rateAsString:
+        title: Rate as string
+        type: string
+        format: decimal
+        default: '0.000'
+      rate:
+        title: Rate
+        type: number
+        format: decimal
+        default: 0.0
+        minimum: 0.0
+  SnippetViewer:
+    required:
+      - snippet
+      - viewer
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      snippet:
+        title: Snippet
+        type: integer
+      viewer:
+        title: Viewer
+        type: integer
+  Todo:
+    required:
+      - title
+    type: object
+    properties:
+      title:
+        title: Title
+        type: string
+        maxLength: 50
+        minLength: 1
+  TodoAnother:
+    required:
+      - title
+      - todo
+    type: object
+    properties:
+      title:
+        title: Title
+        type: string
+        maxLength: 50
+        minLength: 1
+      todo:
+        $ref: '#/definitions/Todo'
+  Harvest:
+    type: object
+    properties:
+      size_code:
+        title: Size code
+        type: string
+        enum:
+          - '50'
+          - '100'
+          - '200'
+        readOnly: true
+  TodoRecursive:
+    required:
+      - title
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      title:
+        title: Title
+        type: string
+        maxLength: 50
+        minLength: 1
+      parent:
+        $ref: '#/definitions/TodoRecursive'
+      parent_id:
+        type: integer
+        title: Parent id
+        x-nullable: true
+  TodoTree:
+    required:
+      - title
+      - children
+      - many_children
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      title:
+        title: Title
+        type: string
+        maxLength: 50
+        minLength: 1
+      children:
+        type: array
+        items:
+          $ref: '#/definitions/TodoTree'
+      many_children:
+        type: array
+        items:
+          $ref: '#/definitions/TodoTree'
+  TodoYetAnother:
+    required:
+      - title
+    type: object
+    properties:
+      title:
+        title: Title
+        type: string
+        maxLength: 50
+        minLength: 1
+      todo:
+        required:
+          - title
+        type: object
+        properties:
+          id:
+            title: ID
+            type: integer
+            readOnly: true
+          title:
+            title: Title
+            type: string
+            maxLength: 50
+            minLength: 1
+          todo:
+            required:
+              - title
+            type: object
+            properties:
+              id:
+                title: ID
+                type: integer
+                readOnly: true
+              title:
+                title: Title
+                type: string
+                maxLength: 50
+                minLength: 1
+            readOnly: true
+        readOnly: true
+    example:
+      title: parent
+      todo:
+        title: child
+        todo: null
+  OtherStuff:
+    title: Other stuff
+    description: the decorator should determine the serializer class for this
+    required:
+      - foo
+    type: object
+    properties:
+      foo:
+        title: Foo
+        type: string
+        minLength: 1
+  MethodFieldExample:
+    title: Hint example
+    type: object
+    properties:
+      hinted_bool:
+        title: Hinted bool
+        description: the type hint on the method should determine this to be a bool
+        type: boolean
+        readOnly: true
+      hinted_int:
+        title: Hinted int
+        description: the type hint on the method should determine this to be an integer
+        type: integer
+        readOnly: true
+      hinted_float:
+        title: Hinted float
+        description: the type hint on the method should determine this to be a number
+        type: number
+        readOnly: true
+      hinted_decimal:
+        title: Hinted decimal
+        description: the type hint on the method should determine this to be a decimal
+        type: string
+        format: decimal
+        readOnly: true
+      hinted_datetime:
+        title: Hinted datetime
+        description: the type hint on the method should determine this to be a datetime
+        type: string
+        format: date-time
+        readOnly: true
+      hinted_date:
+        title: Hinted date
+        description: the type hint on the method should determine this to be a date
+        type: string
+        format: date
+        readOnly: true
+      hinted_uuid:
+        title: Hinted uuid
+        description: the type hint on the method should determine this to be a uuid
+        type: string
+        format: uuid
+        readOnly: true
+      hinted_unknown:
+        title: Hinted unknown
+        description: type hint is unknown, so is expected to fallback to string
+        type: string
+        readOnly: true
+      non_hinted_number:
+        title: Non hinted number
+        description: No hint on the method, so this is expected to fallback to string
+        type: string
+        readOnly: true
+  UserSerializerrr:
+    required:
+      - username
+      - articles
+      - snippets
+      - hint_example
+    type: object
+    properties:
+      id:
+        title: ID
+        type: integer
+        readOnly: true
+      username:
+        title: Username
+        description: Required. 150 characters or fewer. Letters, digits and @/./+/-/_
+          only.
+        type: string
+        pattern: ^[\w.@+-]+$
+        maxLength: 150
+        minLength: 1
+      email:
+        title: Email address
+        type: string
+        format: email
+        maxLength: 254
+      articles:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+      snippets:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+      last_connected_ip:
+        title: Last connected ip
+        description: i'm out of ideas
+        type: string
+        format: ipv4
+        readOnly: true
+        minLength: 1
+      last_connected_at:
+        title: Last connected at
+        description: really?
+        type: string
+        format: date
+        readOnly: true
+      article_slugs:
+        type: array
+        items:
+          type: string
+          format: slug
+          pattern: ^[-a-zA-Z0-9_]+$
+        readOnly: true
+        uniqueItems: true
+      other_stuff:
+        $ref: '#/definitions/OtherStuff'
+      hint_example:
+        $ref: '#/definitions/MethodFieldExample'
+      help_text_example_1:
+        title: Help text example 1
+        description: help text on field is set, so this should appear in swagger
+        type: integer
+        readOnly: true
+      help_text_example_2:
+        title: Help text example 2
+        description: instance help_text is set, so should appear in swagger
+        type: integer
+        readOnly: true
+      help_text_example_3:
+        title: Help text example 3
+        description: |2
+
+          docstring is set so should appear in swagger as fallback
+          :return:
+        type: integer
+        readOnly: true
