@@ -6,18 +6,17 @@ import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.response_validation.base import get_response_schema
+from django_swagger_tester.response_validation.utils import get_response_schema
 from django_swagger_tester.utils import validate_inputs
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-# noinspection PyMethodMayBeStatic
 class LoadStaticSchema:
 
     def __init__(self, route: str, status_code: int, method: str) -> None:
         """
-        Loads the drf_yasg-generated OpenAPI schema, and resolves the endpoint_url.
+        Loads OpenAPI schema from a static file.
 
         :param route: a django-resolved endpoint path
         :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
@@ -32,7 +31,8 @@ class LoadStaticSchema:
         self.method = method
         self.route = route
 
-    def validation(self, package_settings: dict) -> None:
+    @staticmethod
+    def validation(package_settings: dict) -> None:
         """
         Before trying to load static schema, we need to verify that:
         - The path to the static file is provided, and that the file type is compatible (json/yml/yaml)

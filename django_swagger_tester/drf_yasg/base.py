@@ -3,7 +3,7 @@ import logging
 from requests import Response
 from rest_framework.serializers import Serializer
 
-from django_swagger_tester.case.base import ResponseCaseTester, SchemaCaseTester
+from django_swagger_tester.case.base import ResponseCaseTester, ResponseSchemaCaseTester
 from django_swagger_tester.drf_yasg.load_schema import LoadDrfYasgSchema
 from django_swagger_tester.response_validation.base import ResponseTester
 from django_swagger_tester.utils import unpack_response
@@ -27,7 +27,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     response_schema = loader.get_response_schema()
     ResponseTester(response_schema=response_schema, response_data=data)
     ResponseCaseTester(response_data=data, **kwargs)
-    SchemaCaseTester(schema=response_schema, **kwargs)
+    ResponseSchemaCaseTester(schema=response_schema, **kwargs)
 
 
 def validate_input(serializer: Serializer, method: str, route: str) -> None:
@@ -43,28 +43,3 @@ def validate_input(serializer: Serializer, method: str, route: str) -> None:
     # tester_class = DrfYasgSwaggerTester(endpoint_url=endpoint_url)
     # tester_class._validate_input(serializer=serializer, method=method)
     pass
-#
-# def _validate_input(self, serializer: Serializer, method: str, **kwargs) -> None:
-#     """
-#     This function verifies that an OpenAPI schema input definition is accepted by the endpoints serializer class.
-#
-#     :param serializer: Serializer class
-#     :param method: HTTP method ('get', 'put', 'post', ...)
-#     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
-#     """
-#     self.validate_method(method)
-#     self.set_ignored_keys(**kwargs)
-#     self.load_schema()  # <-- this method is extended from the base class; self.schema is defined here
-#     if not self.schema:
-#         raise SwaggerDocumentationError('The OpenAPI schema is undefined. Schema is not testable.')
-#
-#     parameters = self.schema[self.endpoint_path][self.method]['parameters']
-#     for parameter in parameters:
-#         if '$ref' in parameter['schema']:
-#             input_example = self.schema['definitions'][parameter['schema']['$ref'].split('/')[-1]]['example']
-#         else:
-#             input_example = parameter['schema']['example']
-#         serializer = serializer(data=input_example)
-#         valid = serializer.is_valid()
-#         if not valid:
-#             raise SwaggerDocumentationError(f'Input example is not valid for endpoint {self.endpoint_path}')

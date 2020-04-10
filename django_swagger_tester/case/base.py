@@ -1,41 +1,14 @@
 import logging
-from typing import Any, Callable, List
+from typing import Any
 
 from django_swagger_tester.case.checks import case_check
+from django_swagger_tester.case.utils import conditional_check, set_ignored_keys
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.openapi import read_items, read_properties, read_type
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-def set_ignored_keys(**kwargs) -> List[str]:
-    """
-    Lets users pass a list of string that will not be checked by case-check.
-    For example, validate_response(..., ignore_case=["List", "OF", "improperly cased", "kEYS"]).
-    """
-    if 'ignore_case' in kwargs:
-        return kwargs['ignore_case']
-    return []
-
-
-def conditional_check(key: str, function: Callable, ignored_keys: list) -> None:
-    """
-    Checks a keys case if the key is not ignored.
-
-    Put this in its own function so that we're consistent in response and schema validation handling.
-
-    :param key: dictionary key
-    :param function: case check callable
-    :param ignored_keys: list of ignored values - values that shouldn't be checked
-    raises: CaseError
-    """
-    if key not in ignored_keys:
-        function(key)
-    else:
-        logger.debug('Skipping case check for ignored key `%s`', key)
-
-
-# noinspection PyMethodMayBeStatic
 class ResponseCaseTester(object):
     """
     Iterates through an API response objects to verify that dict keys are cased correctly.
