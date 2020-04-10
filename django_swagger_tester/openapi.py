@@ -32,7 +32,7 @@ def list_types() -> List[str]:
     """
     Returns supported item types.
     """
-    return ['string', 'boolean', 'integer', 'number', 'file']
+    return ['string', 'boolean', 'integer', 'number', 'file', 'object', 'array']
 
 
 def read_type(item: dict) -> str:

@@ -3,6 +3,7 @@ import logging
 import re
 from typing import List, Tuple
 
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import Resolver404, resolve
 from requests import Response
 from rest_framework.schemas.generators import EndpointEnumerator
@@ -50,9 +51,6 @@ def convert_resolved_url(resolved_url: str) -> str:
             logger.debug('Converted resolved url from `%s` to `%s`', resolved_url, url)
             resolved_url = url
     return resolved_url
-
-
-
 
 
 def resolve_path(endpoint_path: str) -> None:
@@ -150,3 +148,22 @@ def replace_refs(schema: dict) -> dict:
         return x
 
     return find_and_replace_refs_recursively(schema, schema)
+
+
+def validate_inputs(route: str, status_code: int, method: str) -> None:
+    """
+    Input validation for response validator classes.
+
+    :param route: a django-resolved endpoint path
+    :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
+    :param method: the relevant HTTP method to check in the OpenAPI schema
+    :raises: ImproperlyConfigured
+    """
+    if not isinstance(route, str):
+        raise ImproperlyConfigured('`route` is invalid.')
+    if not validate_method(method):
+        raise ImproperlyConfigured('`method` is invalid.')
+    if not isinstance(status_code, int):
+        raise ImproperlyConfigured('`status_code` should be an integer.')
+    if not 100 <= status_code <= 505:
+        raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')

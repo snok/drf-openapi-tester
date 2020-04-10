@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, List
+from typing import Any, Callable, List
 
 from django_swagger_tester.case.checks import case_check
 from django_swagger_tester.configuration import settings
@@ -18,7 +18,7 @@ def set_ignored_keys(**kwargs) -> List[str]:
     return []
 
 
-def conditional_check(key: str, function: Callable, ignored_keys: list):
+def conditional_check(key: str, function: Callable, ignored_keys: list) -> None:
     """
     Checks a keys case if the key is not ignored.
 
@@ -42,7 +42,7 @@ class ResponseCaseTester(object):
     The case we're checking for depends on the projects SWAGGER_TESTER `CASE` setting.
     """
 
-    def __init__(self, response_data, **kwargs) -> None:
+    def __init__(self, response_data: Any, **kwargs) -> None:
         """
         Finds the appropriate case check function and calls the appropriate function base on the response datas type.
 
@@ -51,13 +51,13 @@ class ResponseCaseTester(object):
         self.case_check = case_check(settings.CASE)
         self.ignored_keys = set_ignored_keys(**kwargs)
         if isinstance(response_data, dict):
-            self.dict(response_data)
+            self.test_dict(response_data)
         elif isinstance(response_data, list):
-            self.list(response_data)
+            self.test_list(response_data)
         else:
             logger.debug('Skipping case check')
 
-    def dict(self, dictionary: dict) -> None:
+    def test_dict(self, dictionary: dict) -> None:
         """
         Iterates through a response dictionary to check keys' case, and to pass nested values for further checks.
         """
@@ -66,11 +66,11 @@ class ResponseCaseTester(object):
         for key, value in dictionary.items():
             conditional_check(key, self.case_check, self.ignored_keys)
             if isinstance(value, dict):
-                self.dict(dictionary=value)
+                self.test_dict(dictionary=value)
             elif isinstance(value, list):
-                self.list(items=value)
+                self.test_list(items=value)
 
-    def list(self, items: list) -> None:
+    def test_list(self, items: list) -> None:
         """
         Iterates through a response list to pass appropriate nested items for further checks.
         Only dictionary keys need case checking, so that's what we're looking for.
@@ -81,9 +81,9 @@ class ResponseCaseTester(object):
             raise ValueError(f'Expected list, but received {items}')
         for item in items:
             if isinstance(item, dict):
-                self.dict(dictionary=item)
+                self.test_dict(dictionary=item)
             elif isinstance(item, list):
-                self.list(items=item)
+                self.test_list(items=item)
 
 
 class ResponseSchemaCaseTester(object):
@@ -92,7 +92,7 @@ class ResponseSchemaCaseTester(object):
     The case we're checking for depends on the projects SWAGGER_TESTER `CASE` setting.
     """
 
-    def __init__(self, schema, **kwargs) -> None:
+    def __init__(self, schema: dict, **kwargs) -> None:
         """
         Finds the appropriate case check function and calls the appropriate function base on the schema item type.
 
@@ -101,13 +101,15 @@ class ResponseSchemaCaseTester(object):
         self.case_check = case_check(settings.CASE)
         self.ignored_keys = set_ignored_keys(**kwargs)
         if read_type(schema) == 'object':
-            self.dict(schema)
+            logger.debug('root -> dict')
+            self.test_dict(schema)
         elif read_type(schema) == 'array':
-            self.list(schema)
+            logger.debug('root -> list')
+            self.test_list(schema)
         else:
             logger.debug('Skipping case check')
 
-    def dict(self, obj: dict) -> None:
+    def test_dict(self, obj: dict) -> None:
         """
         Iterates through a schema object to check keys' case, and to pass nested values for further checks.
         """
@@ -116,19 +118,22 @@ class ResponseSchemaCaseTester(object):
             conditional_check(key, self.case_check, self.ignored_keys)
             _type = read_type(value)
             if _type == 'object':
-                self.dict(obj=value)
+                logger.debug('dict -> dict')
+                self.test_dict(obj=value)
             elif _type == 'array':
-                self.list(array=value)
+                logger.debug('dict -> list')
+                self.test_list(array=value)
 
-    def list(self, array: dict) -> None:
+    def test_list(self, array: dict) -> None:
         """
         Iterates through a schema array to pass appropriate nested items for further checks.
         Only object keys need case checking, so that's what we're looking for.
         """
-        items = read_items(array)
-        for item in items:
-            _type = read_type(item)
-            if _type == 'object':
-                self.dict(obj=item)
-            elif _type == 'array':
-                self.list(array=item)
+        item = read_items(array)
+        _type = read_type(item)
+        if _type == 'object':
+            logger.debug('list -> dict')
+            self.test_dict(obj=item)
+        elif _type == 'array':
+            logger.debug('list -> list')
+            self.test_list(array=item)

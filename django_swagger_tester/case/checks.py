@@ -11,19 +11,21 @@ def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
     """
     Returns the appropriate case check based on the `case` input parameter.
 
+    Validation for accepted `case` inputs should be done in the package configuration.
+
     :param case: str
     :return: callable function
     """
     logger.debug('Returning `%s` case function', case)
     return {  # type: ignore
         'camel case': is_camel_case,
-        'camelCase': is_camel_case,
+        'camelCase': case_check('camel case'),
         'snake case': is_snake_case,
-        'snake_case': is_snake_case,
+        'snake_case': case_check('snake case'),
         'kebab case': is_kebab_case,
-        'kebab-case': is_kebab_case,
+        'kebab-case': case_check('kebab-case'),
         'pascal case': is_pascal_case,
-        'PascalCase': is_pascal_case,
+        'PascalCase': case_check('pascal case'),
         None: skip,
     }[case]
 

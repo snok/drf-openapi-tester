@@ -2,7 +2,8 @@ import logging
 from typing import Any, Union
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.utils import item_types, replace_refs
+from django_swagger_tester.openapi import list_types
+from django_swagger_tester.utils import replace_refs
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -12,15 +13,15 @@ class ResponseTester:
     def __init__(self, response_schema: dict, response_data: Any) -> None:
         assert '$ref' not in str(response_schema)  # OpenAPI schema should have all $ref sections replaced before being passed to the class
         if response_schema['type'] == 'object':
-            self.dict(schema=response_schema, data=response_data, parent='init')
+            self.test_dict(schema=response_schema, data=response_data, parent='init')
         elif response_schema['type'] == 'array':
-            self.list(schema=response_schema, data=response_data, parent='init')
-        elif response_schema['type'] in item_types():
-            self.item(schema=response_schema, data=response_data, parent='init')
+            self.test_list(schema=response_schema, data=response_data, parent='init')
+        elif response_schema['type'] in list_types():
+            self.test_item(schema=response_schema, data=response_data, parent='init')
         else:
             raise Exception(f'Unexpected error.\nSchema: {response_schema}\nResponse: {response_data}\n\nThis shouldn\'t happen.')
 
-    def dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
+    def test_dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
         Verifies that a schema dict matches a response dict.
 
@@ -66,19 +67,19 @@ class ResponseTester:
 
             if schema_value['type'] == 'object':
                 logger.debug('Calling _dict from _dict. Response: %s, Schema: %s', response_value, schema_value)
-                self.dict(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+                self.test_dict(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
             elif schema_value['type'] == 'array':
                 logger.debug('Calling _list from _dict. Response: %s, Schema: %s', response_value, schema_value)
-                self.list(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
-            elif schema_value['type'] in item_types():
+                self.test_list(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+            elif schema_value['type'] in list_types():
                 logger.debug('Calling _item from _dict. Response: %s, Schema: %s', response_value, schema_value)
-                self.item(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
+                self.test_item(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
             else:
                 # This part of the code should be unreachable. However, if we do have a gap in our logic,
                 # we should raise an error to highlight the error.
                 raise Exception(f'Unexpected error.\n\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
-    def list(self, schema: dict, data: Union[list, dict], parent: str) -> None:
+    def test_list(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
         Verifies that the response item matches the schema documentation, when the schema layer is an array.
 
@@ -107,7 +108,7 @@ class ResponseTester:
             # List item --> dict
             if item['type'] == 'object' and item['properties']:
                 logger.debug('Calling _dict from _list')
-                self.dict(schema=item, data=data[index], parent=f'{parent}.list')
+                self.test_dict(schema=item, data=data[index], parent=f'{parent}.list')
 
             # List item --> empty dict  &&  response not empty
             elif (item['type'] == 'object' and not item['properties']) and data[index]:
@@ -117,7 +118,7 @@ class ResponseTester:
             # List item --> list
             elif item['type'] == 'array' and item['items']:
                 logger.debug('Calling _list from _list')
-                self.list(schema=item, data=data[index], parent=f'{parent}.list')
+                self.test_list(schema=item, data=data[index], parent=f'{parent}.list')
 
             # List item --> empty list  &&  response not empty
             elif (item['type'] == 'array' and not item['items']) and data[index]:
@@ -128,17 +129,17 @@ class ResponseTester:
                     data=data[index], schema=schema, parent=parent)
 
             # List item --> item
-            elif item['type'] in item_types():
+            elif item['type'] in list_types():
                 # If the schema says all listed items are individual items, check that the item is represented in the response
                 logger.debug('Calling _item from _list')
-                self.item(schema=item, data=data[index], parent=f'{parent}.list')
+                self.test_item(schema=item, data=data[index], parent=f'{parent}.list')
 
             else:
                 # This part of the code should be unreachable. However, if we do have a gap in our logic,
                 # we should raise an error to highlight the error.
                 raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
-    def item(self, schema: dict, data: Any, parent: str) -> None:
+    def test_item(self, schema: dict, data: Any, parent: str) -> None:
         """
         Verifies that a response value matches the example value in the schema.
 
