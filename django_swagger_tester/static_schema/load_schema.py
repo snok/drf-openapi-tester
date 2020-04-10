@@ -94,3 +94,4 @@ class LoadStaticSchema:
         """
         schema = self._load_schema_file_contents()
         get_response_schema(schema=schema, method=self.method, status_code=self.status_code, route=self.route)
+        # TODO: Should there be a return here?

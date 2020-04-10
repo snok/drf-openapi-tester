@@ -52,11 +52,7 @@ def convert_resolved_url(resolved_url: str) -> str:
     return resolved_url
 
 
-def item_types() -> List[str]:
-    """
-    Returns supported item types.
-    """
-    return ['string', 'boolean', 'integer', 'number', 'file']
+
 
 
 def resolve_path(endpoint_path: str) -> None:
