@@ -3,7 +3,7 @@ info:
   title: ''
   version: ''
 paths:
-  /api/v1/cars/correct/:
+  /api/v1/{vehicle_type}/correct/:
     get:
       operationId: listGoodCars
       description: ''
@@ -74,7 +74,7 @@ paths:
       responses:
         '204':
           description: ''
-  /api/v1/cars/incorrect/:
+  /api/v1/{vehicle_type}/incorrect/:
     get:
       operationId: listBadCars
       description: ''

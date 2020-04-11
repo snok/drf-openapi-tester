@@ -1,9 +1,9 @@
 import pytest
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.response_validation.base.base import SwaggerTestBase
+from django_swagger_tester.response_validation.base import ResponseTester
 
-base = SwaggerTestBase()
+base = ResponseTester({'type': 'array', 'items': {}}, [])
 
 items = [
 
@@ -40,7 +40,7 @@ def test_valid_item_types():
     Verify that all valid item types pass successfully.
     """
     for item in items:
-        base._item(schema=item['schema'], data=item['good_data'], parent='test')
+        base.test_item(schema=item['schema'], data=item['good_data'], parent='test')
 
 
 def test_invalid_item_types():
@@ -49,4 +49,4 @@ def test_invalid_item_types():
     """
     for item in items:
         with pytest.raises(SwaggerDocumentationError):
-            base._item(schema=item['schema'], data=item['bad_data'], parent='placeholder')
+            base.test_item(schema=item['schema'], data=item['bad_data'], parent='placeholder')

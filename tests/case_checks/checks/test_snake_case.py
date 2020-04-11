@@ -1,7 +1,7 @@
 import pytest
 
-from django_swagger_tester.case_checks import is_snake_case
-from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.case.checks import is_snake_case
+from django_swagger_tester.exceptions import CaseError
 
 snake_case_test_data = [
     {'incorrect': 'camelCase', 'correct': 'camel_case'},
@@ -18,7 +18,7 @@ def test_snake_cased_words():
     """
     for item in snake_case_test_data:
         is_snake_case(item['correct'])
-        with pytest.raises(SwaggerDocumentationError):
+        with pytest.raises(CaseError):
             is_snake_case(item['incorrect'])
 
 
@@ -28,7 +28,7 @@ def test_less_than_two_chars():
     :return:
     """
     is_snake_case('')
-    with pytest.raises(SwaggerDocumentationError):
+    with pytest.raises(CaseError):
         is_snake_case(' ')
         is_snake_case('-')
         is_snake_case('_')

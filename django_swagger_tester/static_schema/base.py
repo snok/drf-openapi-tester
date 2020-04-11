@@ -1,6 +1,6 @@
 from requests import Response
 
-from django_swagger_tester.case.base import CaseTester
+from django_swagger_tester.case.base import ResponseCaseTester, ResponseSchemaCaseTester
 from django_swagger_tester.response_validation.base import ResponseTester
 from django_swagger_tester.static_schema.load_schema import LoadStaticSchema
 from django_swagger_tester.utils import unpack_response
@@ -21,4 +21,5 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     loader = LoadStaticSchema(route=route, status_code=response.status_code, method=method)
     response_schema = loader.get_response_schema()
     ResponseTester(response_schema=response_schema, response_data=data)
-    CaseTester(**kwargs)
+    ResponseCaseTester(response_data=data, **kwargs)
+    ResponseSchemaCaseTester(schema=response_schema, **kwargs)

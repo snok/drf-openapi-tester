@@ -46,7 +46,7 @@ def read_type(item: dict) -> str:
     :return: schema item type
     :raises: OpenAPISchemaError
     """
-    if 'type' not in item or not item['type'] or not isinstance(item['type'], str):
+    if item is None or not isinstance(item, dict) or 'type' not in item or not item['type'] or not isinstance(item['type'], str):
         raise OpenAPISchemaError(f'Schema item has an invalid `type` attribute. The type should be a single string.\n\nSchema item: {item}')
     if not item['type'] in list_types():
         raise OpenAPISchemaError(

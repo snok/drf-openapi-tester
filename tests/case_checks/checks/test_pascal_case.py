@@ -1,7 +1,7 @@
 import pytest
 
-from django_swagger_tester.case_checks import is_pascal_case
-from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.case.checks import is_pascal_case
+from django_swagger_tester.exceptions import CaseError
 
 pascal_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'SnakeCase'},
@@ -18,7 +18,7 @@ def test_pascal_cased_words():
     """
     for item in pascal_case_test_data:
         is_pascal_case(item['correct'])
-        with pytest.raises(SwaggerDocumentationError):
+        with pytest.raises(CaseError):
             is_pascal_case(item['incorrect'])
 
 
@@ -28,7 +28,7 @@ def test_less_than_two_chars():
     :return:
     """
     is_pascal_case('')
-    with pytest.raises(SwaggerDocumentationError):
+    with pytest.raises(CaseError):
         is_pascal_case(' ')
         is_pascal_case('-')
         is_pascal_case('_')

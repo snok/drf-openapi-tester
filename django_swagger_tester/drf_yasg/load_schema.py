@@ -5,7 +5,7 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.response_validation.utils import get_response_schema
-from django_swagger_tester.utils import convert_resolved_url, get_paths, validate_inputs
+from django_swagger_tester.utils import get_paths, validate_inputs, resolve_path, convert_resolved_route
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -46,7 +46,7 @@ class LoadDrfYasgSchema:
 
         if 'drf_yasg' not in apps.app_configs.keys():
             raise ImproperlyConfigured(
-                'The package `drf_yasg` is missing from INSTALLED_APPS. Please add it in your '
+                'The package `drf_yasg` is missing from INSTALLED_APPS. Please add it to your '
                 '`settings.py`, as it is required for this implementation')
 
     def get_schema(self) -> dict:
@@ -71,8 +71,9 @@ class LoadDrfYasgSchema:
 
         :param route: Django resolved route
         """
+        resolved_route = resolve_path(route)
+        converted_route = convert_resolved_route(resolved_route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
-        converted_route = convert_resolved_url(route)  # converts 'api/<version:version>/...' to 'api/{version}/'
         return converted_route.replace(path_prefix, '')
 
     def get_response_schema(self) -> dict:

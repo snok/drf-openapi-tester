@@ -19,13 +19,13 @@ def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
     logger.debug('Returning `%s` case function', case)
     return {  # type: ignore
         'camel case': is_camel_case,
-        'camelCase': case_check('camel case'),
+        'camelCase': is_camel_case,
         'snake case': is_snake_case,
-        'snake_case': case_check('snake case'),
+        'snake_case': is_snake_case,
         'kebab case': is_kebab_case,
-        'kebab-case': case_check('kebab-case'),
+        'kebab-case': is_kebab_case,
         'pascal case': is_pascal_case,
-        'PascalCase': case_check('pascal case'),
+        'PascalCase': is_pascal_case,
         None: skip,
     }[case]
 
@@ -42,12 +42,12 @@ def is_camel_case(key: str) -> None:
     if len(key) == 0:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
-        logger.error('%s is not camel cased', key)
+        logger.error('`%s` is not properly camel cased', key)
         raise CaseError(f'The property `{key}` is not properly camelCased')
     else:
         camel_cased_key = key[0].lower() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), key[1:])
         if camel_cased_key != key:
-            logger.error('%s is not camel cased', key)
+            logger.error('`%s` is not properly camel cased', key)
             raise CaseError(f'The property `{key}` is not properly camelCased')
 
 

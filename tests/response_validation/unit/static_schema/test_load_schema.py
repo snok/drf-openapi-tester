@@ -2,7 +2,8 @@ import pytest
 import yaml
 from django.conf import settings as django_settings
 
-from django_swagger_tester.response_validation.static_schema import StaticSchemaSwaggerTester
+from django_swagger_tester.static_schema.load_schema import LoadStaticSchema
+from django_swagger_tester.utils import resolve_path
 
 yml_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.yml'
 json_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.json'
@@ -25,9 +26,7 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
     Asserts that a schema section is returned successfully.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
-    monkeypatch.setattr('django_swagger_tester.response_validation.static_schema.StaticSchemaSwaggerTester._load_schema_file', ret_schema)
-    base = StaticSchemaSwaggerTester()
-
+    monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
     documented_endpoints = [
         {
             'url': '/api/v1/cars/correct/',
@@ -68,11 +67,8 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
         },
     ]
     for item in documented_endpoints:
-        base.method = 'get'
-        base.status_code = 200
-        base._resolve_path(item['url'])  # type: ignore
-        base.load_schema()
-        assert base.schema == item['expected']
+        base = LoadStaticSchema(item['url'], 200, 'get')  # type: ignore
+        assert base.get_response_schema() == item['expected']
 
 
 def test_successful_parse_undocumented_endpoints(monkeypatch) -> None:
@@ -80,13 +76,10 @@ def test_successful_parse_undocumented_endpoints(monkeypatch) -> None:
     Asserts that a schema section is returned successfully.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
-    monkeypatch.setattr('django_swagger_tester.response_validation.static_schema.StaticSchemaSwaggerTester._load_schema_file', ret_schema)
-    base = StaticSchemaSwaggerTester()
-    base.method = 'get'
-    base.status_code = 200
+    monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
     for url in ['/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']:
-        base._resolve_path(url)
-        base.load_schema()
+        base = LoadStaticSchema(url, 200, 'get')
+        base.get_response_schema()
 
 
 def test_method_missing_from_schema(monkeypatch) -> None:
@@ -94,13 +87,9 @@ def test_method_missing_from_schema(monkeypatch) -> None:
     Asserts that a non-existent method raises the appropriate exception.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
-    monkeypatch.setattr('django_swagger_tester.response_validation.static_schema.StaticSchemaSwaggerTester._load_schema_file', ret_schema)
-    base = StaticSchemaSwaggerTester()
-    base.method = 'gets'
-    base.status_code = 200
-    base._resolve_path('/api/v1/cars/correct/')
-    with pytest.raises(KeyError, match='The OpenAPI schema has no documented HTTP method called `gets`'):
-        base.load_schema()
+    monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
+    with pytest.raises(ValueError, match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
+        LoadStaticSchema('api/v1/trucks/correct', 200, 'gets')
 
 
 def test_no_matching_routes(monkeypatch) -> None:
@@ -108,11 +97,7 @@ def test_no_matching_routes(monkeypatch) -> None:
     Asserts that the right exception is raised when an endpoint is not documented in the schema.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
-    monkeypatch.setattr('django_swagger_tester.response_validation.static_schema.StaticSchemaSwaggerTester._load_schema_file',
+    monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file',
                         ret_bad_schema)
-    base = StaticSchemaSwaggerTester()
-    base.method = 'get'
-    base.status_code = 200
-    base._resolve_path('/api/v1/trucks/correct/')  # <-- needs to match route in ret_bad_schema
-    with pytest.raises(ValueError, match='Could not match the resolved url to a documented endpoint in the OpenAPI specification'):
-        base.load_schema()
+    with pytest.raises(ValueError, match='Could not resolve path'):
+        LoadStaticSchema('apsi/v1/trucks/correct', 200, 'get')

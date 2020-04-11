@@ -18,7 +18,7 @@ def get_paths() -> List[str]:
     return list(set(endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()))  # noqa: C401
 
 
-def convert_resolved_url(resolved_url: str) -> str:
+def convert_resolved_route(route: str) -> str:
     """
     Converts an url:
 
@@ -40,20 +40,20 @@ def convert_resolved_url(resolved_url: str) -> str:
             'first_index': '<',
             'second_index': '>'
         }]
-
     for item in patterns:
-        matches = re.findall(item['pattern'], resolved_url)
+        matches = re.findall(item['pattern'], route)
         if matches:
-            url = resolved_url
+            logger.debug('Found route pattern %s in %s', item['pattern'], route)
+            url = route
             for dynamic_url in matches:
                 keyword = dynamic_url[dynamic_url.index(item['first_index']) + 1: dynamic_url.index(item['second_index'])]
                 url = url.replace(item['string_pattern'].format(keyword=keyword), f'{{{keyword}}}')
-            logger.debug('Converted resolved url from `%s` to `%s`', resolved_url, url)
-            resolved_url = url
-    return resolved_url
+            logger.debug('Converted resolved url from `%s` to `%s`', route, url)
+            route = url
+    return route
 
 
-def resolve_path(endpoint_path: str) -> None:
+def resolve_path(endpoint_path: str) -> str:
     """
     Resolves a Django path.
     """
@@ -68,7 +68,7 @@ def resolve_path(endpoint_path: str) -> None:
             return resolved_route
         except Resolver404:
             resolved_route = '/' + resolve(endpoint_path + '/').route
-            logger.warning('Endpoint path is missing a trailing slash (`/`)', endpoint_path)
+            logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
             return resolved_route
     except Resolver404:
         logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
@@ -78,11 +78,10 @@ def resolve_path(endpoint_path: str) -> None:
             raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
                              f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
                              f'value, and not the parameter pattern.')
-        else:
-            raise ValueError(f'Could not resolve path `{endpoint_path}`')
+        raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
 
-def validate_method(method: str) -> bool:
+def validate_method(method: str) -> str:
     """
     Validates a string as a HTTP method.
     """
@@ -90,7 +89,7 @@ def validate_method(method: str) -> bool:
     if not isinstance(method, str) or method.lower() not in methods:
         logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))
         raise ValueError(f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.')
-    return True
+    return method
 
 
 def unpack_response(response: Response) -> Tuple[dict, int]:

@@ -1,12 +1,9 @@
 import pytest
 
-from django_swagger_tester.response_validation.base.base import SwaggerTestBase
-
-base = SwaggerTestBase()
+from django_swagger_tester.utils import unpack_response
 
 
 class MockResponse:
-
     status_code = 200
 
     @staticmethod
@@ -22,9 +19,9 @@ def test_successful_unpack():
     """
     This should run without errors.
     """
-    base._unpack_response(response)
-    assert base.data == {'test': 'test'}
-    assert base.status_code == 200
+    data, status_code = unpack_response(response)
+    assert data == {'test': 'test'}
+    assert status_code == 200
 
 
 def test_unsuccesful_unpack():
@@ -37,4 +34,4 @@ def test_unsuccesful_unpack():
 
     response.json = _raise_exception
     with pytest.raises(Exception, match='Unable to unpack response object. Make sure you are passing response, and not response.json()'):
-        base._unpack_response(response)
+        unpack_response(response)

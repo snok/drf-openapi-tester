@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.response_validation.base.swagger_tester import SwaggerTester
+from django_swagger_tester.response_validation.base import ResponseTester
 from copy import deepcopy
 schema = {
     'type': 'object',
@@ -15,14 +15,14 @@ schema = {
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
-tester = SwaggerTester()
+tester = ResponseTester({'type': 'array', 'items': {}}, [])
 
 
 def test_valid_dict() -> None:
     """
     Asserts that valid data passes successfully.
     """
-    tester._dict(schema=schema, data=data, parent='placeholder')
+    tester.test_dict(schema=schema, data=data, parent='placeholder')
 
 
 def test_bad_data_type() -> None:
@@ -30,7 +30,7 @@ def test_bad_data_type() -> None:
     Asserts that the appropriate exception is raised for a bad response data type.
     """
     with pytest.raises(SwaggerDocumentationError, match="Expected response to be <class 'dict'> but found <class 'list'>."):
-        tester._dict(schema=schema, data=[data], parent='placeholder')
+        tester.test_dict(schema=schema, data=[data], parent='placeholder')
 
 
 def test_unmatched_lengths() -> None:
@@ -42,7 +42,7 @@ def test_unmatched_lengths() -> None:
             SwaggerDocumentationError,
             match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`'
     ):
-        tester._dict(schema=schema, data=weird_data, parent='placeholder')
+        tester.test_dict(schema=schema, data=weird_data, parent='placeholder')
 
 
 def test_schema_key_not_in_response():
@@ -53,7 +53,7 @@ def test_schema_key_not_in_response():
     bad_data['names'] = bad_data['name']
     del bad_data['name']
     with pytest.raises(SwaggerDocumentationError, match='Schema key `name` was not found in the API response.'):
-        tester._dict(schema=schema, data=bad_data, parent='placeholder')
+        tester.test_dict(schema=schema, data=bad_data, parent='placeholder')
 
 
 def test_response_key_not_in_schema():
@@ -64,7 +64,7 @@ def test_response_key_not_in_schema():
     bad_schema['properties']['names'] = bad_schema['properties']['name']
     del bad_schema['properties']['name']
     with pytest.raises(SwaggerDocumentationError, match='Response key `name` not found in the OpenAPI schema.'):
-        tester._dict(schema=bad_schema, data=data, parent='placeholder')
+        tester.test_dict(schema=bad_schema, data=data, parent='placeholder')
 
 
 def test_call_dict_from_dict():
@@ -73,7 +73,7 @@ def test_call_dict_from_dict():
     """
     custom_schema = {'type': 'object', 'properties': {'test': schema}}
     custom_data = {'test': data}
-    assert tester._dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
+    assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
 
 
 def test_call_list_from_dict():
@@ -87,10 +87,10 @@ def test_call_list_from_dict():
         }
     }
     custom_data = {'list': []}
-    assert tester._dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
+    assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
 
 
-def test_exception():
+def test_bad_type():
     """
     If a schema is passed, with unsupported types, we want to raise a general exception.
     """
@@ -101,5 +101,5 @@ def test_exception():
         }
     }
     custom_data = {'list': []}
-    with pytest.raises(Exception, match='This shouldn\'t happen.'):
-        assert tester._dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
+    with pytest.raises(Exception, match='Schema item has an invalid \`type\` attribute. The type rarray is not supported'):
+        assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None

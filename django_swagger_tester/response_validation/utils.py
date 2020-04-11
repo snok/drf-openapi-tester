@@ -26,7 +26,7 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
         raise SwaggerDocumentationError(
             f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '
             f'`{route}`, but the key does not exist in the schema.'
-            f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema.keys()])}')
+            f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema["paths"].keys()])}')
 
     # Index by method and responses
     try:
@@ -35,19 +35,23 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
     except KeyError:
         raise SwaggerDocumentationError(
             f'No schema found for method {method}. Available methods include '
-            f'{", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
+            f'{", ".join([method.upper() for method in path_indexed_schema.keys() if method.upper() != "PARAMETERS"])}.'
         )
 
     # Index by status and schema
     try:
-        response_schema = response_indexed_schema[f'{status_code}']['schema']
+        response_schema = response_indexed_schema[f'{status_code}']
     except KeyError:
         raise SwaggerDocumentationError(
             f'No schema found for response code `{status_code}`. Documented responses include '
-            f'{", ".join([code for code in schema.keys()])}.'
+            f'{", ".join([code for code in response_indexed_schema.keys()])}.'
         )
 
-    return response_schema
+    # Not sure about this logic - this is what my static reference schema looks like, but not the drf_yasg dynamic schema
+    if 'content' in response_schema and 'application/json' in response_schema['content']:
+        response_schema = response_schema['content']['application/json']
+
+    return response_schema['schema']
 
 
 def format_error(error_message: str, data: Any, schema: dict, parent: str) -> SwaggerDocumentationError:

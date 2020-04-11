@@ -23,7 +23,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
-    loader = LoadDrfYasgSchema(route=route, status_code=response.status_code, method=method)
+    loader = LoadDrfYasgSchema(route=route, status_code=status_code, method=method)
     response_schema = loader.get_response_schema()
     ResponseTester(response_schema=response_schema, response_data=data)
     ResponseCaseTester(response_data=data, **kwargs)

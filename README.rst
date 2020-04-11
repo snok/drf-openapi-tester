@@ -157,7 +157,7 @@ The drf_yasg_ implementation can be imported from its own project folder:
 
 .. code-block:: python
 
-    from django_swagger_tester.response_validation.drf_yasg import validate_response
+    from django_swagger_tester.drf_yasg import validate_response
 
 
 Statically rendered OpenAPI schema

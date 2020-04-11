@@ -1,7 +1,8 @@
 import pytest
+from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.drf_yasg.base import validate_response
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.response_validation.drf_yasg import DrfYasgSwaggerTester, validate_response
 
 good_test_data = [
     {
@@ -51,7 +52,7 @@ def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url=item['url'])  # type: ignore
+        validate_response(response=response, method='GET', route=item['url'])  # type: ignore
 
 
 def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
@@ -76,11 +77,7 @@ def test_missing_method_match(client, monkeypatch) -> None:  # noqa: TYP001
     def mocked_validate_method(*args, **kwargs):
         pass
 
-    monkeypatch.setattr('django_swagger_tester.response_validation.drf_yasg.SwaggerTestBase._validate_method', mocked_validate_method)
-
-    tester = DrfYasgSwaggerTester()
-    tester.method = 'gets'
-
+    monkeypatch.setattr('django_swagger_tester.drf_yasg.load_schema.validate_inputs', mocked_validate_method)
     for item in bad_test_data:
         response = client.get(item['url'])
         assert response.status_code == 200
@@ -89,7 +86,7 @@ def test_missing_method_match(client, monkeypatch) -> None:  # noqa: TYP001
         # Test Swagger documentation
         with pytest.raises(SwaggerDocumentationError, match='No schema found for method gets. '
                                                             'Available methods include GET, POST, PUT, DELETE.'):
-            tester._validate_response(response=response, method='GET', endpoint_url=item['url'])  # type: ignore
+            validate_response(response=response, method='gets', route=item['url'])  # type: ignore
 
 
 def test_missing_status_code_match(client, monkeypatch) -> None:  # noqa: TYP001
@@ -98,18 +95,10 @@ def test_missing_status_code_match(client, monkeypatch) -> None:  # noqa: TYP001
     """
 
     def mocked_unpack_response(*args, **kwargs):
-        pass
+        return {}, 'bad status code'
 
-    monkeypatch.setattr('django_swagger_tester.response_validation.drf_yasg.SwaggerTestBase._unpack_response', mocked_unpack_response)
-
-    tester = DrfYasgSwaggerTester()
-    tester.status_code = 'test'  # type: ignore
-
+    monkeypatch.setattr('django_swagger_tester.drf_yasg.base.unpack_response', mocked_unpack_response)
     for item in bad_test_data:
         response = client.get(item['url'])
-        assert response.status_code == 200
-        assert response.json() == item['expected_response']
-
-        # Test Swagger documentation
-        with pytest.raises(SwaggerDocumentationError, match='No schema found for response code '):
-            tester._validate_response(response=response, method='GET', endpoint_url=item['url'])  # type: ignore
+        with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):
+            validate_response(response=response, method='GET', route=item['url'])  # type: ignore
