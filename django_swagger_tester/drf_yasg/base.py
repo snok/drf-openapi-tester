@@ -33,7 +33,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     ResponseSchemaCaseTester(schema=response_schema, **kwargs)
 
 
-def validate_input(serializer: Serializer, method: str, route: str, underscoreize: bool = False) -> None:
+def validate_input(serializer: Serializer, method: str, route: str, camel_case_parser: bool = False) -> None:
     """
     Verifies that an OpenAPI schema request body definition is valid, according to the API view's input serializer.
 
@@ -45,7 +45,7 @@ def validate_input(serializer: Serializer, method: str, route: str, underscoreiz
     loader = LoadDrfYasgSchema(route=route, method=method)
     request_body_schema = loader.get_request_body()
     json_request_body = serialize_request_body_schema(request_body_schema)  # TODO: Create
-    if underscoreize:
+    if camel_case_parser:
         from djangorestframework_camel_case.util import underscoreize
         json_request_body = underscoreize(json_request_body)
     serializer = serializer(data=json_request_body)

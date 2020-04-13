@@ -66,7 +66,7 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
         },
     ]
     for item in documented_endpoints:
-        base = LoadStaticSchema(item['url'], 200, 'get')  # type: ignore
+        base = LoadStaticSchema(item['url'], 'get', status_code=200)  # type: ignore
         assert base.get_response_schema() == item['expected']
 
 
@@ -77,7 +77,7 @@ def test_successful_parse_undocumented_endpoints(monkeypatch) -> None:
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
     for url in ['/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']:
-        base = LoadStaticSchema(url, 200, 'get')
+        base = LoadStaticSchema(url, 'get', status_code=200)
         base.get_response_schema()
 
 
@@ -88,7 +88,7 @@ def test_method_missing_from_schema(monkeypatch) -> None:
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
     with pytest.raises(ValueError, match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
-        LoadStaticSchema('api/v1/trucks/correct', 200, 'gets')
+        LoadStaticSchema('api/v1/trucks/correct', 'gets', status_code=200)
 
 
 def test_no_matching_routes(monkeypatch) -> None:
@@ -99,4 +99,4 @@ def test_no_matching_routes(monkeypatch) -> None:
     monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file',
                         ret_bad_schema)
     with pytest.raises(ValueError, match='Could not resolve path'):
-        LoadStaticSchema('apsi/v1/trucks/correct', 200, 'get')
+        LoadStaticSchema('apsi/v1/trucks/correct', 'get', status_code=200)

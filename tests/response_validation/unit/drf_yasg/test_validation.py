@@ -8,7 +8,7 @@ def test_validation():
     """
     Verify that validation runs successfully for the demo project.
     """
-    base = LoadDrfYasgSchema('api/v1/cars/correct', 200, 'get')
+    base = LoadDrfYasgSchema('api/v1/cars/correct', 'get', status_code=200)
     assert base.validation() is None
 
 
@@ -23,7 +23,7 @@ def test_drf_yasg_not_installed(monkeypatch):
     sys.modules['drf_yasg'] = None
 
     with pytest.raises(ImproperlyConfigured, match='The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.'):
-        LoadDrfYasgSchema('api/v1/cars/correct', 200, 'get')
+        LoadDrfYasgSchema('api/v1/cars/correct', 'get', status_code=200)
 
     sys.modules['drf_yasg'] = temp
 
@@ -44,4 +44,4 @@ def test_drf_yasg_not_in_installed_apps(monkeypatch):
     monkeypatch.setattr('django_swagger_tester.drf_yasg.load_schema.apps', MockedApps())
 
     with pytest.raises(ImproperlyConfigured, match='is missing from INSTALLED_APPS'):
-        LoadDrfYasgSchema('api/v1/cars/correct', 200, 'get')
+        LoadDrfYasgSchema('api/v1/cars/correct', 'get', status_code=200)

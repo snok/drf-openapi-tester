@@ -21,6 +21,8 @@ class LoadDrfYasgSchema:
         :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
         :param method: the relevant HTTP method to check in the OpenAPI schema
         """
+        if status_code is None:
+            status_code = 0  # <-- this can be improved upon // mypy doesnt like leaving it as None
         validate_inputs(route, status_code, method)
         self.validation()
 

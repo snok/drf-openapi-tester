@@ -11,7 +11,7 @@ def test_validation(monkeypatch):
     """
     path = django_settings.BASE_DIR + '/demo_project/openapi-schema.yml'
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': path})
-    base = LoadStaticSchema('api/v1/trucks/correct', 200, 'get')
+    base = LoadStaticSchema('api/v1/trucks/correct', 'get', status_code=200)
     assert base.path == path
 
 
@@ -29,7 +29,7 @@ def test_drf_yasg_not_installed(monkeypatch):
 
     with pytest.raises(ImproperlyConfigured, match='The package `PyYAML` is required for parsing yaml files. '
                                                    'Please run `pip install PyYAML` to install it.'):
-        LoadStaticSchema('api/v1/trucks/correct', 200, 'get')
+        LoadStaticSchema('api/v1/trucks/correct', 'get', status_code=200)
 
     sys.modules['yaml'] = temp
 
@@ -40,7 +40,7 @@ def test_missing_path():
     """
     with pytest.raises(ImproperlyConfigured, match='\`PATH\` is required when testing static schemas. '
                                                    'Please update your SWAGGER_TESTER settings.'):
-        LoadStaticSchema('api/v1/trucks/correct', 200, 'get')
+        LoadStaticSchema('api/v1/trucks/correct', 'get', status_code=200)
 
 
 def test_bad_path_type(monkeypatch):
@@ -49,4 +49,4 @@ def test_bad_path_type(monkeypatch):
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': 2})
     with pytest.raises(ImproperlyConfigured, match='`PATH` needs to be a string. Please update your SWAGGER_TESTER settings.'):
-        LoadStaticSchema('api/v1/trucks/correct', 200, 'get')
+        LoadStaticSchema('api/v1/trucks/correct', 'get', status_code=200)

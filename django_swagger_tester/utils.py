@@ -162,7 +162,7 @@ def validate_inputs(route: str, status_code: int, method: str) -> None:
         raise ImproperlyConfigured('`route` is invalid.')
     if not validate_method(method):
         raise ImproperlyConfigured('`method` is invalid.')
-    if status_code is not None:
+    if status_code != 0:
         if not isinstance(status_code, int):
             raise ImproperlyConfigured('`status_code` should be an integer.')
         if not 100 <= status_code <= 505:

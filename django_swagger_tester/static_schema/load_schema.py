@@ -22,7 +22,9 @@ class LoadStaticSchema:
         :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
         :param method: the relevant HTTP method to check in the OpenAPI schema
         """
-        validate_inputs(route, status_code, method)
+        if status_code is None:
+            status_code = 0
+        validate_inputs(route=route, status_code=status_code, method=method)
         package_settings = settings.SWAGGER_TESTER
         self.validation(package_settings)  # run validation
 
