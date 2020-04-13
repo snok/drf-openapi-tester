@@ -14,7 +14,7 @@ logger = logging.getLogger('django_swagger_tester')
 
 class LoadStaticSchema:
 
-    def __init__(self, route: str, status_code: int, method: str) -> None:
+    def __init__(self, route: str, method: str, status_code: int = None) -> None:
         """
         Loads OpenAPI schema from a static file.
 

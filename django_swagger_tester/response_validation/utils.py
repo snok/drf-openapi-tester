@@ -3,6 +3,7 @@ from collections import KeysView
 from typing import Any
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.openapi import index_schema
 from django_swagger_tester.utils import replace_refs
 
 logger = logging.getLogger('django_swagger_tester')
@@ -16,42 +17,30 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
     :param route: Schema-compatible path
     :param method: HTTP request method
     :param status_code: HTTP response code
-    :return Response sub-section of the schema
+    :return Response schema
     """
     schema = replace_refs(schema)
-    try:
-        logger.debug('Indexing schema by route `%s`', route)
-        path_indexed_schema = schema['paths'][route]
-    except KeyError:
-        raise SwaggerDocumentationError(
-            f'Failed initialization\n\nError: Unsuccessfully tried to index the OpenAPI schema by '
-            f'`{route}`, but the key does not exist in the schema.'
-            f'\n\nFor debugging purposes: valid urls include {", ".join([key for key in schema["paths"].keys()])}')
-
-    # Index by method and responses
-    try:
-        logger.debug('Indexing schema by method `%s`', method.lower())
-        response_indexed_schema = path_indexed_schema[method.lower()]['responses']
-    except KeyError:
-        raise SwaggerDocumentationError(
-            f'No schema found for method {method}. Available methods include '
-            f'{", ".join([method.upper() for method in path_indexed_schema.keys() if method.upper() != "PARAMETERS"])}.'
-        )
-
-    # Index by status and schema
-    try:
-        response_schema = response_indexed_schema[f'{status_code}']
-    except KeyError:
-        raise SwaggerDocumentationError(
-            f'No schema found for response code `{status_code}`. Documented responses include '
-            f'{", ".join([code for code in response_indexed_schema.keys()])}.'
-        )
+    # Replace all $ref sections in the schema with actual values
+    no_ref_schema = replace_refs(schema)
+    # Index by paths
+    paths_schema = index_schema(schema=no_ref_schema, variable='paths')
+    # Index by route
+    route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in schema.keys()])}'
+    route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
+    # Index by method
+    method_error = f'\n\nAvailable methods include {", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
+    method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
+    # Index by responses
+    responses_schema = index_schema(schema=method_schema, variable='responses')
+    # Index by status code
+    status_code_error = f'Documented responses include {", ".join([code for code in responses_schema.keys()])}.'
+    status_code_schema = index_schema(schema=responses_schema, variable=str(status_code), error_addon=status_code_error)
 
     # Not sure about this logic - this is what my static reference schema looks like, but not the drf_yasg dynamic schema
-    if 'content' in response_schema and 'application/json' in response_schema['content']:
-        response_schema = response_schema['content']['application/json']
+    if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
+        status_code_schema = status_code_schema['content']['application/json']
 
-    return response_schema['schema']
+    return index_schema(status_code_schema, 'schema')
 
 
 def format_error(error_message: str, data: Any, schema: dict, parent: str) -> SwaggerDocumentationError:
@@ -105,7 +94,6 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
     :param response_keys: Response dictionary keys
     :raises: SwaggerDocumentationError
     """
-    #
     if len(schema_keys) != len(response_keys):
         logger.debug('The number of schema dict elements does not match the number of response dict elements')
         if len(set(response_keys)) > len(set(schema_keys)):

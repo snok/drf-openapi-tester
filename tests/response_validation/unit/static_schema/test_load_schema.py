@@ -3,7 +3,6 @@ import yaml
 from django.conf import settings as django_settings
 
 from django_swagger_tester.static_schema.load_schema import LoadStaticSchema
-from django_swagger_tester.utils import resolve_path
 
 yml_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.yml'
 json_path = django_settings.BASE_DIR + '/demo_project/openapi-schema.json'

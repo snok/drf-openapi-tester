@@ -7,9 +7,12 @@ in case we're ever dealt with an incorrect schema.
 
 Instead of raising unhandled errors, it is useful for us to raise appropriate exceptions.
 """
+import logging
 from typing import List
 
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import OpenAPISchemaError, SwaggerDocumentationError
+
+logger = logging.getLogger('django_swagger_tester')
 
 
 def read_items(array: dict) -> dict:
@@ -101,3 +104,23 @@ def is_nullable(schema_item: dict) -> bool:
     openapi_schema_3_nullable = 'nullable' in schema_item and schema_item['nullable']
     swagger_2_nullable = 'x-nullable' in schema_item and schema_item['x-nullable']
     return swagger_2_nullable or openapi_schema_3_nullable
+
+
+def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
+    """
+    Indexes schema by string variable.
+
+    :param schema: Schema to index
+    :param variable: Variable to index by
+    :param error_addon: Additional error info
+    :return: Indexed schema
+    :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+    """
+    if error_addon is None:
+        error_addon = ''
+    try:
+        logger.debug('Indexing schema by `%s`', variable)
+        return schema[f'{variable}']
+    except KeyError:
+        raise SwaggerDocumentationError(
+            f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.' + error_addon)

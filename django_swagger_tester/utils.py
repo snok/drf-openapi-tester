@@ -59,7 +59,7 @@ def resolve_path(endpoint_path: str) -> str:
     """
     try:
         logger.debug('Resolving path.')
-        if endpoint_path[0] != '/':
+        if endpoint_path == '' or endpoint_path[0] != '/':
             logger.debug('Adding leading `/` to provided path')
             endpoint_path = '/' + endpoint_path
         try:
@@ -162,7 +162,8 @@ def validate_inputs(route: str, status_code: int, method: str) -> None:
         raise ImproperlyConfigured('`route` is invalid.')
     if not validate_method(method):
         raise ImproperlyConfigured('`method` is invalid.')
-    if not isinstance(status_code, int):
-        raise ImproperlyConfigured('`status_code` should be an integer.')
-    if not 100 <= status_code <= 505:
-        raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
+    if status_code is not None:
+        if not isinstance(status_code, int):
+            raise ImproperlyConfigured('`status_code` should be an integer.')
+        if not 100 <= status_code <= 505:
+            raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
