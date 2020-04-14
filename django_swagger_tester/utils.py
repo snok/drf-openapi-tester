@@ -63,13 +63,17 @@ def resolve_path(endpoint_path: str) -> str:
             logger.debug('Adding leading `/` to provided path')
             endpoint_path = '/' + endpoint_path
         try:
-            resolved_route = '/' + resolve(endpoint_path).route.replace('$', '')
+            resolved_route = resolve(endpoint_path)
             logger.debug('Resolved %s successfully', endpoint_path)
-            return resolved_route
         except Resolver404:
-            resolved_route = '/' + resolve(endpoint_path + '/').route
+            resolved_route = resolve(endpoint_path + '/')
             logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
-            return resolved_route
+
+        kwarg = resolved_route.kwargs
+        for key, value in kwarg.items():
+            endpoint_path = endpoint_path.replace(value, f'{{{key}}}')
+        return endpoint_path
+
     except Resolver404:
         logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
         paths = get_paths()
