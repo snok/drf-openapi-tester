@@ -130,20 +130,20 @@ SWAGGER_TESTER = {
 
 ---
 
-For a full explanation of how to use this package, please see the [docs](https://django-swagger-tester.readthedocs.io/).
+This section is only a simplified version of the docs, to give you an indication of how the package works.
 
-The section below is only a simplified version of the docs, though it does have functioning implementation examples, which should be enough to get you started.
+For a full explanation of how to implement it, please see the [docs](https://django-swagger-tester.readthedocs.io/).
 
 ---
 
-# Response validation
+## Response validation
 
 To verify that your API response documentation is correct, we test the generated documentation against actual API responses.
 
 A pytest implementation might look like this:
 
 ```python
-from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
+from django_swagger_tester.drf_yasg import validate_response  # or replace drf_yasg with `static_schema`
 
 
 def test_response_documentation(client):
@@ -204,7 +204,7 @@ def test_response_documentation(client):
 ```
 
 
-# Input validation
+## Input validation
 
 Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
 
