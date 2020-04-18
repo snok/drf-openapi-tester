@@ -139,40 +139,46 @@ To verify that your API response documentation is correct, we suggest testing th
 
 The ``validate_response`` function takes three required inputs:
 
-* response
-    description: This should be the response object returned from an API call. Note: Make sure to pass the response object, not the response data, as we need to match both ``status_code`` and ``json`` to the OpenAPI schema.
-    type: Response
+* `response`
 
-* method
-    description: This should be the HTTP method used to get the response.
-    type: string
-    example: 'GET'
+    **description**: This should be the response object returned from an API call. Note: Make sure to pass the response object, not the response data, as we need to match both ``status_code`` and ``json`` to the OpenAPI schema.
 
-* endpoint_url
-    description: This should be the resolvable path of your endpoint.
-    type: string
-    example: 'api/v1/test'
+    **type**: Response
+
+* `method`
+
+    **description**: This should be the HTTP method used to get the response.
+
+    **type**: string
+
+    **example**: 'GET'
+
+* `route`
+
+    **description**: This should be the resolvable path of your endpoint.
+
+    **type**: string
+
+    **example**: '/api/v1/test'
 
 In addition, the function also takes one optional input:
 
-* ignore_case
-    description: List of keys for which we will skip case-validation. This can be useful for when you've made a conscious decision to, e.g., keep an acronym upper-cased although you have camelCase as a general standard.
-    type: list of strings
-    example: ['API',]
+* `ignore_case`
 
-### drf_yasg
+    **description**: List of keys for which we will skip case-validation. This can be useful for when you've made a conscious decision to, e.g., keep an acronym upper-cased although you have camelCase as a general standard.
 
-The drf_yasg tester is be imported from its own project folder:
+    **type**: list of strings
 
+    **example**: ['API',]
+
+**drf_yasg**:
 ```python
 from django_swagger_tester.drf_yasg import validate_response
 ```
 
-### Statically rendered docs
+**Statically rendered docs**:
 
 When testing a static schema (located locally in your project), make sure to point to the right file in the ``PATH`` setting.
-
-The static schema implementation can be imported from its own project folder:
 
 ```python
 from django_swagger_tester.static_schema import validate_response
