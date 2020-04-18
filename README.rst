@@ -35,9 +35,9 @@
 
 --------------
 
-**Documentation**: [https://django-swagger-tester.readthedocs.io/](https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest)
+**Documentation**: `https://django-swagger-tester.readthedocs.io/ <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: [https://github.com/sondrelg/django-swagger-tester](https://github.com/sondrelg/django-swagger-tester)
+**Repository**: `https://github.com/sondrelg/django-swagger-tester <https://github.com/sondrelg/django-swagger-tester>`_
 
 --------------
 
