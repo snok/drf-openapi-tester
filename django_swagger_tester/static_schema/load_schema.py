@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.response_validation.utils import get_response_schema
-from django_swagger_tester.utils import convert_resolved_route, resolve_path, validate_inputs
+from django_swagger_tester.utils import resolve_path, validate_inputs
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -27,7 +27,7 @@ class LoadStaticSchema:
         package_settings = settings.SWAGGER_TESTER
         self.validation(package_settings)  # run validation
 
-        self.route = convert_resolved_route(resolve_path(route))
+        self.route = resolve_path(route)
         self.path = package_settings['PATH']
         self.status_code = status_code
         self.method = method

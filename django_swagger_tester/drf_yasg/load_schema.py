@@ -6,7 +6,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.input_validation.utils import get_request_body
 from django_swagger_tester.response_validation.utils import get_response_schema
-from django_swagger_tester.utils import convert_resolved_route, get_paths, resolve_path, validate_inputs
+from django_swagger_tester.utils import get_paths, resolve_path, validate_inputs
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -79,9 +79,8 @@ class LoadDrfYasgSchema:
         :param route: Django resolved route
         """
         resolved_route = resolve_path(route)
-        converted_route = convert_resolved_route(resolved_route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
-        return converted_route.replace(path_prefix, '')
+        return resolved_route.replace(path_prefix, '')
 
     def get_response_schema(self) -> dict:
         """
