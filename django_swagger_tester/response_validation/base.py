@@ -9,6 +9,7 @@ from django_swagger_tester.response_validation.utils import check_keys_match, fo
 logger = logging.getLogger('django_swagger_tester')
 
 
+# noinspection PyMethodMayBeStatic
 class ResponseTester:
     def __init__(self, response_schema: dict, response_data: Any) -> None:
         """
@@ -16,7 +17,7 @@ class ResponseTester:
 
         :param response_schema: Response OpenAPI schema section
         :param response_data: API response data
-        raises: SwaggerDocumentationError or ImproperlyConfigured
+        raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
         if '$ref' in str(response_schema):
             # `$ref`s should be replaced inplace before the schema is passed to this class

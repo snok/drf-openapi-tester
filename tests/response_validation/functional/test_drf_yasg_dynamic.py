@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.drf_yasg.base import validate_response
+from django_swagger_tester.drf_yasg import validate_response
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 good_test_data = [

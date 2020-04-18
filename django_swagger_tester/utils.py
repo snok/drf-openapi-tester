@@ -1,6 +1,6 @@
 import difflib
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import Resolver404, resolve
@@ -121,7 +121,7 @@ def replace_refs(schema: dict) -> dict:
     return find_and_replace_refs_recursively(schema, schema)
 
 
-def validate_inputs(route: str, status_code: int, method: str) -> None:
+def validate_inputs(route: str, status_code: Optional[int], method: str) -> None:
     """
     Input validation for response validator classes.
 
@@ -134,7 +134,7 @@ def validate_inputs(route: str, status_code: int, method: str) -> None:
         raise ImproperlyConfigured('`route` is invalid.')
     if not validate_method(method):
         raise ImproperlyConfigured('`method` is invalid.')
-    if status_code != 0:
+    if status_code is not None:
         if not isinstance(status_code, int):
             raise ImproperlyConfigured('`status_code` should be an integer.')
         if not 100 <= status_code <= 505:

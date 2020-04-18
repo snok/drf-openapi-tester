@@ -23,7 +23,7 @@ def conditional_check(key: str, function: Callable, ignored_keys: list) -> None:
     :param key: dictionary key
     :param function: case check callable
     :param ignored_keys: list of ignored values - values that shouldn't be checked
-    raises: CaseError
+    raises: django_swagger_tester.exceptions.CaseError
     """
     if key not in ignored_keys:
         function(key)

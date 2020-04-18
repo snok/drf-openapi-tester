@@ -1,6 +1,6 @@
 import logging
 from collections import KeysView
-from typing import Any
+from typing import Any, Optional
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.openapi import index_schema
@@ -9,7 +9,7 @@ from django_swagger_tester.utils import replace_refs
 logger = logging.getLogger('django_swagger_tester')
 
 
-def get_response_schema(schema: dict, route: str, method: str, status_code: int) -> dict:
+def get_response_schema(schema: dict, route: str, method: str, status_code: Optional[int]) -> dict:
     """
     Indexes schema by url, HTTP method, and status code to get the section of a schema related to a specific response.
 
@@ -100,7 +100,7 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
     :param data: Response data
     :param parent: Logging reference to output for errors -
         this makes it easier to identify where in a response/schema an error is happening
-    :raises: SwaggerDocumentationError
+    :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
     """
     if len(schema_keys) != len(response_keys):
         logger.debug('The number of schema dict elements does not match the number of response dict elements')

@@ -89,11 +89,10 @@ class ResponseSchemaCaseTester(object):
         properties = read_properties(obj)
         for key, value in properties.items():
             conditional_check(key, self.case_check, self.ignored_keys)
-            _type = read_type(value)
-            if _type == 'object':
+            if read_type(value) == 'object':
                 logger.debug('dict -> dict')
                 self.test_dict(obj=value)
-            elif _type == 'array':
+            elif read_type(value) == 'array':
                 logger.debug('dict -> list')
                 self.test_list(array=value)
 
@@ -103,10 +102,9 @@ class ResponseSchemaCaseTester(object):
         Only object keys need case checking, so that's what we're looking for.
         """
         item = read_items(array)
-        _type = read_type(item)
-        if _type == 'object':
+        if read_type(item) == 'object':
             logger.debug('list -> dict')
             self.test_dict(obj=item)
-        elif _type == 'array':
+        elif read_type(item) == 'array':
             logger.debug('list -> list')
             self.test_list(array=item)

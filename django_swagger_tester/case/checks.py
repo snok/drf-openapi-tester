@@ -36,7 +36,7 @@ def is_camel_case(key: str) -> None:
 
     :param key: str
     :return: None
-    :raises: CaseError
+    :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly camel cased', key)
     if len(key) == 0:
@@ -57,7 +57,7 @@ def is_snake_case(key: str) -> None:
 
     :param key: str
     :return: None
-    :raises: CaseError
+    :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly snake cased', key)
     if len(key) == 0:
@@ -82,7 +82,7 @@ def is_kebab_case(key: str) -> None:
 
     :param key: str
     :return: None
-    :raises: CaseError
+    :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly kebab cased', key)
     if len(key) == 0:
@@ -107,7 +107,7 @@ def is_pascal_case(key: str) -> None:
 
     :param key: str
     :return: None
-    :raises: CaseError
+    :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly pascal cased', key)
     if len(key) == 0:
