@@ -7,12 +7,12 @@ from django_swagger_tester.exceptions import CaseError
 from django_swagger_tester.utils import replace_refs
 
 
-def load_schema(path):
+def loader(path):
     with open(settings.BASE_DIR + path, 'r') as f:
         return replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
-schema = load_schema('/tests/drf_yasg_reference.yaml')
+schema = loader('/tests/drf_yasg_reference.yaml')
 
 
 def test_schema_case_tester_on_reference_schema():

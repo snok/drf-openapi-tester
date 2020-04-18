@@ -79,7 +79,7 @@ def test_missing_method_match(client, monkeypatch) -> None:  # noqa: TYP001
     def mocked_validate_method(*args, **kwargs):
         pass
 
-    monkeypatch.setattr('django_swagger_tester.drf_yasg.load_schema.validate_inputs', mocked_validate_method)
+    monkeypatch.setattr('django_swagger_tester.drf_yasg.loader.validate_inputs', mocked_validate_method)
     for item in bad_test_data:
         response = client.get(item['url'])
         assert response.status_code == 200
@@ -98,7 +98,7 @@ def test_missing_status_code_match(client, monkeypatch) -> None:  # noqa: TYP001
     def mocked_unpack_response(*args, **kwargs):
         return {}, 'bad status code'
 
-    monkeypatch.setattr('django_swagger_tester.drf_yasg.base.unpack_response', mocked_unpack_response)
+    monkeypatch.setattr('django_swagger_tester.response_validation.validation.unpack_response', mocked_unpack_response)
     for item in bad_test_data:
         response = client.get(item['url'])
         with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):
