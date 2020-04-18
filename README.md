@@ -43,7 +43,7 @@
 
 This package is a utility for testing Django Swagger documentation, with the goal of making it easy for developers to spot documentation errors.
 
-#### Features
+### Features
 The package has three main features:
 
 - [Testing response documentation](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation)
@@ -54,9 +54,9 @@ The package has three main features:
 
     Supported naming standards include `camelCase`, `snake_case`, `kebab-case`, and `PascalCase`.
 
-#### Supported Swagger Implementations
+### Supported Implementations
 
-- [drf_yasg](https://github.com/axnsan12/drf-yasg)
+- Dynamically rendered documentation, using [drf_yasg](https://github.com/axnsan12/drf-yasg)'s `get_schema_view`
 - Any implementation rendered from OpenAPI schema file (yaml/json)
 
 If you're using another method to generate your documentation and would like to use this library, feel free to add an issue, or create a PR.
