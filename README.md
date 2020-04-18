@@ -130,7 +130,7 @@ SWAGGER_TESTER = {
 
 For a full explanation of how to use this package, please see the [docs](https://django-swagger-tester.readthedocs.io/).
 
-The section below is meant to serve as a simplified version of the docs to get you started only.
+The section below is only a simplified version of the docs, though it does have functioning implementation examples, which should be enough to get you started.
 
 ---
 
