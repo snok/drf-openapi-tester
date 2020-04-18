@@ -126,6 +126,8 @@ SWAGGER_TESTER = {
 
     *This setting is not required if your swagger docs are generated.*
 
+# Implementation
+
 ---
 
 For a full explanation of how to use this package, please see the [docs](https://django-swagger-tester.readthedocs.io/).
@@ -136,62 +138,14 @@ The section below is only a simplified version of the docs, though it does have 
 
 # Response validation
 
-To verify that your API response documentation is correct, we suggest testing the generated documentation against an actual API response.
-
-### The `validate_response` function
-
-The `validate_response` function takes three required inputs:
-
-* `response`
-
-    **description**: This should be the response object returned from an API call. Note: Make sure to pass the response object, not the response data, as we need to match both ``status_code`` and ``json`` to the OpenAPI schema.
-
-    **type**: Response
-
-* `method`
-
-    **description**: This should be the HTTP method used to get the response.
-
-    **type**: string
-
-    **example**: 'GET'
-
-* `route`
-
-    **description**: This should be the resolvable path of your endpoint.
-
-    **type**: string
-
-    **example**: '/api/v1/test'
-
-In addition, the function also takes one optional input:
-
-* `ignore_case`
-
-    **description**: List of keys for which we will skip case-validation. This can be useful for when you've made a conscious decision to, e.g., keep an acronym upper-cased although you have camelCase as a general standard.
-
-    **type**: list of strings
-
-    **example**: ['API',]
-
-### Drf_yasg
-```python
-from django_swagger_tester.drf_yasg import validate_response
-```
-
-### Static schemas
-
-When testing a static schema (located locally in your project), make sure to point to the right file in the ``PATH`` setting.
-
-```python
-from django_swagger_tester.static_schema import validate_response
-```
-
-### Examples
+To verify that your API response documentation is correct, we test the generated documentation against actual API responses.
 
 A pytest implementation might look like this:
 
 ```python
+from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
+
+
 def test_response_documentation(client):
     response = client.get('api/v1/test/')
 
@@ -205,6 +159,9 @@ def test_response_documentation(client):
 A Django-test implementation might look like this:
 
 ```python
+from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
+
+
 class MyApiTest(APITestCase):
 
     def setUp(self) -> None:
@@ -229,6 +186,9 @@ class MyApiTest(APITestCase):
 You can also test more than a single response at the time:
 
 ```python
+from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
+
+
 def test_response_documentation(client):
     # 201 - Resource created
     response = client.post('api/v1/test/', data=...)
@@ -244,7 +204,7 @@ def test_response_documentation(client):
 ```
 
 
-## Input validation
+# Input validation
 
 Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
 
