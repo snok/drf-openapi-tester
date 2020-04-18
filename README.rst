@@ -41,8 +41,8 @@
 
 --------------
 
-Django Swagger Tester
-=====================
+Purpose
+=======
 
 This package is a utility for testing Django Swagger documentation. Its aim is to make it easy for developers to catch and correct API documentation errors.
 
