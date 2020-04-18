@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-      <a><img width="750px" src="https://gph.is/1a72aF1" alt='logo'></a>
+      <a><img width="750px" src="https://giphy.com/embed/wu29mJA7MXBzG" alt='logo'></a>
     </p>
     <p align="center">
       <em>Django test utility for validating Swagger documentation</em>
