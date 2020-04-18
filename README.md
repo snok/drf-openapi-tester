@@ -135,9 +135,9 @@ For a full explanation of how to use this package, please see the [docs](https:/
 
 To verify that your API response documentation is correct, we suggest testing the generated documentation against an actual API response.
 
-### The validate_response function
+### The `validate_response` function
 
-The ``validate_response`` function takes three required inputs:
+The `validate_response` function takes three required inputs:
 
 * `response`
 
@@ -171,12 +171,12 @@ In addition, the function also takes one optional input:
 
     **example**: ['API',]
 
-**drf_yasg**:
+### Drf_yasg
 ```python
 from django_swagger_tester.drf_yasg import validate_response
 ```
 
-**Statically rendered docs**:
+### Static schemas
 
 When testing a static schema (located locally in your project), make sure to point to the right file in the ``PATH`` setting.
 
