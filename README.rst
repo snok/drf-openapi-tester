@@ -75,10 +75,10 @@ Supported Implementations
 
 We currently support:
 
-- Dynamically rendered documentation, using `drf_yasg`_'s `get_schema_view`
+- Dynamically rendered Swagger docs, using `drf_yasg`_'
 - Any implementation rendered from OpenAPI schema file (yaml/json)
 
-If you're using another method to generate your documentation and would like to use this library, feel free to add an issue, or create a PR. I am really only using `drf_yasg`_, and so that's what I've given the most attention. However, adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema as a dict.
+If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
 
 Installation
 ============
