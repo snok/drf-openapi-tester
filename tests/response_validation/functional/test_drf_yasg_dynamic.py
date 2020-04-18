@@ -65,7 +65,9 @@ def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(SwaggerDocumentationError, match='The following properties seem to be missing from your response body:'):
+        with pytest.raises(
+            SwaggerDocumentationError, match='The following properties seem to be missing from your response body:'
+        ):
             validate_response(response, 'GET', item['url'])  # type: ignore
 
 

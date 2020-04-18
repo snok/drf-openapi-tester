@@ -45,7 +45,7 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
 
 def format_error(error_message: str, data: Any, schema: dict, parent: str) -> SwaggerDocumentationError:
     """
-    Formats and returns a standardized excetption and error message.
+    Formats and returns a standardized exception and error message.
     """
     logger.debug('Constructing error message')
 
@@ -67,20 +67,23 @@ def format_error(error_message: str, data: Any, schema: dict, parent: str) -> Sw
         return left.ljust(offset) + f'{right}\n'
 
     # Construct data property table
-    data_properties = [format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in data_items]
+    data_properties = [
+        format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in data_items
+    ]
     data_properties += [f'{dotted_line}\n', f'Schema\n', f'{dotted_line}']
 
     # Construct schema property table
-    schema_properties = [format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in schema_items]
+    schema_properties = [
+        format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in schema_items
+    ]
     schema_properties += [f'{dotted_line}']
 
     # Construct the error message
-    message = [
-                  f'Item is misspecified:\n\n',
-                  f'Error: {error_message}\n\n',
-                  f'Response\n',
-                  f'{dotted_line}',
-              ] + data_properties + schema_properties  # noqa: E126
+    message = (
+        [f'Item is misspecified:\n\nError: {error_message}\n\nResponse\n{dotted_line}']
+        + data_properties
+        + schema_properties
+    )  # noqa: E126
 
     return SwaggerDocumentationError(''.join(message))
 
@@ -100,11 +103,15 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
             missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
             raise format_error(
                 f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
-                data=data, schema=schema, parent=parent
+                data=data,
+                schema=schema,
+                parent=parent,
             )
         else:
             missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
             raise format_error(
                 f'The following properties seem to be missing from your response body: {missing_keys}.',
-                data=data, schema=schema, parent=parent
+                data=data,
+                schema=schema,
+                parent=parent,
             )

@@ -5,7 +5,6 @@ from demo_project.api.swagger.auto_schemas import VehicleSerializer, post_vehicl
 
 
 class Vehicles(APIView):
-
     @post_vehicle_auto_schema()
     def post(self, request):
         serializer = VehicleSerializer(data=request.data)

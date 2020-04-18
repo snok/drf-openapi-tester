@@ -16,5 +16,7 @@ def test_invalid_methods_raise():
     Make sure invalid methods raise the appropriate exception.
     """
     for method in ['test', '', -1, 22, 0.2, [], {}, (None,), None]:
-        with pytest.raises(ValueError, match='is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
+        with pytest.raises(
+            ValueError, match='is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
+        ):
             validate_method(method=method)

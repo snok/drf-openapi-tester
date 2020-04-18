@@ -16,8 +16,17 @@ def test_valid_cases(monkeypatch) -> None:  # noqa: TYP001
     """
     Assert that valid cases always pass without errors.
     """
-    for case in ['snake case', 'camel case', 'pascal case', 'kebab case', None,
-                 'snake_case', 'camelCase', 'PascalCase', 'kebab-case']:
+    for case in [
+        'snake case',
+        'camel case',
+        'pascal case',
+        'kebab case',
+        None,
+        'snake_case',
+        'camelCase',
+        'PascalCase',
+        'kebab-case',
+    ]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CASE': case})
         SwaggerTesterSettings()
 
@@ -28,9 +37,14 @@ def test_invalid_cases(monkeypatch) -> None:
     """
     for case in ['snakecase', 'camel', '', 1, -22, {}]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CASE': case})
-        with pytest.raises(ImproperlyConfigured, match=('Set case to `snake case` for snake_case, `camel case` for '
-                                                        'camelCase, `pascal case` for PascalCase,`kebab case` for kebab-case, '
-                                                        'or to `None` to skip case validation outright.')):
+        with pytest.raises(
+            ImproperlyConfigured,
+            match=(
+                'Set case to `snake case` for snake_case, `camel case` for '
+                'camelCase, `pascal case` for PascalCase,`kebab case` for kebab-case, '
+                'or to `None` to skip case validation outright.'
+            ),
+        ):
             SwaggerTesterSettings()
 
 

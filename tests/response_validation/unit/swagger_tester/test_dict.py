@@ -3,6 +3,7 @@ import pytest
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.response_validation.base import ResponseTester
 from copy import deepcopy
+
 schema = {
     'type': 'object',
     'properties': {
@@ -11,7 +12,7 @@ schema = {
         'height': {'description': 'How tall the car is.', 'type': 'string', 'example': 'Medium height'},
         'width': {'description': 'How wide the car is.', 'type': 'string', 'example': 'Very wide'},
         'length': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
-    }
+    },
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
@@ -29,7 +30,9 @@ def test_bad_data_type() -> None:
     """
     Asserts that the appropriate exception is raised for a bad response data type.
     """
-    with pytest.raises(SwaggerDocumentationError, match="Expected response to be <class 'dict'> but found <class 'list'>."):
+    with pytest.raises(
+        SwaggerDocumentationError, match="Expected response to be <class 'dict'> but found <class 'list'>."
+    ):
         tester.test_dict(schema=schema, data=[data], parent='placeholder')
 
 
@@ -39,8 +42,8 @@ def test_unmatched_lengths() -> None:
     """
     weird_data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
     with pytest.raises(
-            SwaggerDocumentationError,
-            match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`'
+        SwaggerDocumentationError,
+        match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`',
     ):
         tester.test_dict(schema=schema, data=weird_data, parent='placeholder')
 
@@ -83,8 +86,11 @@ def test_call_list_from_dict():
     custom_schema = {
         'type': 'object',
         'properties': {
-            'list': {'type': 'array', 'items': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'}}
-        }
+            'list': {
+                'type': 'array',
+                'items': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
+            }
+        },
     }
     custom_data = {'list': []}
     assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None
@@ -97,9 +103,14 @@ def test_bad_type():
     custom_schema = {
         'type': 'object',
         'properties': {
-            'list': {'type': 'rarray', 'items': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'}}
-        }
+            'list': {
+                'type': 'rarray',
+                'items': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
+            }
+        },
     }
     custom_data = {'list': []}
-    with pytest.raises(Exception, match='Schema item has an invalid \`type\` attribute. The type rarray is not supported'):
+    with pytest.raises(
+        Exception, match='Schema item has an invalid \`type\` attribute. The type rarray is not supported'
+    ):
         assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None

@@ -13,7 +13,6 @@ logger = logging.getLogger('django_swagger_tester')
 
 
 class LoadStaticSchema:
-
     def __init__(self, route: str, method: str, status_code: int = None) -> None:
         """
         Loads OpenAPI schema from a static file.
@@ -42,7 +41,9 @@ class LoadStaticSchema:
         """
         if 'PATH' not in package_settings or package_settings['PATH'] is None:
             logger.error('PATH setting is not specified.')
-            raise ImproperlyConfigured(f'`PATH` is required when testing static schemas. Please update your SWAGGER_TESTER settings.')
+            raise ImproperlyConfigured(
+                f'`PATH` is required when testing static schemas. Please update your SWAGGER_TESTER settings.'
+            )
         elif not isinstance(package_settings['PATH'], str):
             logger.error('PATH setting is not a string.')
             raise ImproperlyConfigured('`PATH` needs to be a string. Please update your SWAGGER_TESTER settings.')
@@ -50,8 +51,10 @@ class LoadStaticSchema:
             try:
                 import yaml  # noqa: F401
             except ModuleNotFoundError:
-                raise ImproperlyConfigured('The package `PyYAML` is required for parsing yaml files. '
-                                           'Please run `pip install PyYAML` to install it.')
+                raise ImproperlyConfigured(
+                    'The package `PyYAML` is required for parsing yaml files. '
+                    'Please run `pip install PyYAML` to install it.'
+                )
 
     def load_schema_file(self) -> dict:
         """
@@ -63,7 +66,8 @@ class LoadStaticSchema:
         if not os.path.isfile(self.path):
             logger.error('Path `%s` does not resolve as a valid file.', self.path)
             raise ImproperlyConfigured(
-                f'The path `{self.path}` does not point to a valid file. Make sure to point to the specification file.')
+                f'The path `{self.path}` does not point to a valid file. Make sure to point to the specification file.'
+            )
         try:
             logger.debug('Fetching static schema from %s', self.path)
             with open(self.path, 'r') as f:
@@ -71,7 +75,8 @@ class LoadStaticSchema:
         except Exception as e:
             logger.exception('Exception raised when fetching OpenAPI schema from %s. Error: %s', self.path, e)
             raise ImproperlyConfigured(
-                f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}')
+                f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}'
+            )
         if '.json' in self.path:
             return json.loads(content)
         elif '.yaml' in self.path or '.yml' in self.path:

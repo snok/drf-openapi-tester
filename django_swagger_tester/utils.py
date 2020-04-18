@@ -28,25 +28,18 @@ def convert_resolved_route(route: str) -> str:
     :return: Converted url
     """
     patterns = [
-        {
-            'pattern': r'<\w+:\w+>',
-            'string_pattern': '<{keyword}:{keyword}>',
-            'first_index': '<',
-            'second_index': ':'
-        },
-        {
-            'pattern': r'<\w+>',
-            'string_pattern': '<{keyword}>',
-            'first_index': '<',
-            'second_index': '>'
-        }]
+        {'pattern': r'<\w+:\w+>', 'string_pattern': '<{keyword}:{keyword}>', 'first_index': '<', 'second_index': ':'},
+        {'pattern': r'<\w+>', 'string_pattern': '<{keyword}>', 'first_index': '<', 'second_index': '>'},
+    ]
     for item in patterns:
         matches = re.findall(item['pattern'], route)
         if matches:
             logger.debug('Found route pattern %s in %s', item['pattern'], route)
             url = route
             for dynamic_url in matches:
-                keyword = dynamic_url[dynamic_url.index(item['first_index']) + 1: dynamic_url.index(item['second_index'])]
+                keyword = dynamic_url[
+                    dynamic_url.index(item['first_index']) + 1 : dynamic_url.index(item['second_index'])
+                ]
                 url = url.replace(item['string_pattern'].format(keyword=keyword), f'{{{keyword}}}')
             logger.debug('Converted resolved url from `%s` to `%s`', route, url)
             route = url
@@ -79,9 +72,11 @@ def resolve_path(endpoint_path: str) -> str:
         paths = get_paths()
         closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
         if closest_matches:
-            raise ValueError(f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
-                             f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
-                             f'value, and not the parameter pattern.')
+            raise ValueError(
+                f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
+                f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
+                f'value, and not the parameter pattern.'
+            )
         raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
 
@@ -104,7 +99,9 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
         return response.json(), response.status_code
     except Exception as e:
         logger.exception('Unable to open response object')
-        raise ValueError(f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}')
+        raise ValueError(
+            f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
+        )
 
 
 def replace_refs(schema: dict) -> dict:
@@ -123,7 +120,7 @@ def replace_refs(schema: dict) -> dict:
         Iterates over a dictionary to look for pesky $refs.
         """
         if '$ref' in d:
-            indeces = [i for i in d['$ref'][d['$ref'].index('#') + 1:].split('/') if i]
+            indeces = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
             temp_schema = schema
             for index in indeces:
                 logger.debug(f'indexing by %s', index)

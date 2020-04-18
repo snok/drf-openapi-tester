@@ -6,31 +6,30 @@ from django_swagger_tester.response_validation.base import ResponseTester
 base = ResponseTester({'type': 'array', 'items': {}}, [])
 
 items = [
-
     {
         'schema': {'description': 'This is a description for a float', 'type': 'number', 'example': 2.1},
         'good_data': 5.0,
-        'bad_data': 5
+        'bad_data': 5,
     },
     {
         'schema': {'description': 'This is a description for a file', 'type': 'file', 'example': 'image/jpeg'},
         'good_data': 'string',
-        'bad_data': 5
+        'bad_data': 5,
     },
     {
         'schema': {'description': 'This is a description for a bool', 'type': 'boolean', 'example': 'true'},
         'good_data': True,
-        'bad_data': 5
+        'bad_data': 5,
     },
     {
         'schema': {'description': 'This is a description for a string', 'type': 'string', 'example': 'test'},
         'good_data': 'string',
-        'bad_data': 5
+        'bad_data': 5,
     },
     {
         'schema': {'description': 'This is a description for an integer', 'type': 'integer', 'example': 2},
         'good_data': 1,
-        'bad_data': '1'
+        'bad_data': '1',
     },
 ]
 

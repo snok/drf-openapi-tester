@@ -30,7 +30,8 @@ def test_schema_case_tester_on_reference_schema():
                     continue
                 with pytest.raises(CaseError, match='The property `date_created` is not properly camelCased'):
                     ResponseSchemaCaseTester(
-                        schema=schema['paths'][key][method]['responses'][status_code]['schema'], key=f'path: {key}\nmethod: {method}'
+                        schema=schema['paths'][key][method]['responses'][status_code]['schema'],
+                        key=f'path: {key}\nmethod: {method}',
                     )
 
 
@@ -43,8 +44,11 @@ def test_ignore_case():
                 if 'schema' not in schema['paths'][key][method]['responses']:
                     continue
                 with pytest.raises(CaseError, match='The property `read_only_nullable` is not properly camelCased'):
-                    ResponseSchemaCaseTester(schema=schema['paths'][key][method]['responses'][status_code]['schema'],
-                                             key=f'path: {key}\nmethod: {method}', ignore_case=['date_created', 'date_modified'])
+                    ResponseSchemaCaseTester(
+                        schema=schema['paths'][key][method]['responses'][status_code]['schema'],
+                        key=f'path: {key}\nmethod: {method}',
+                        ignore_case=['date_created', 'date_modified'],
+                    )
 
 
 class MockSettings:

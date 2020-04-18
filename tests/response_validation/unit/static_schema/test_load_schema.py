@@ -56,8 +56,11 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
                     'properties': {
                         'name': {'description': 'A swedish truck?', 'type': 'string', 'example': 'Saab'},
                         'color': {'description': 'The color of the truck.', 'type': 'string', 'example': 'Yellow'},
-                        'height': {'description': 'How tall the truck is.', 'type': 'string',
-                                   'example': 'Medium height'},
+                        'height': {
+                            'description': 'How tall the truck is.',
+                            'type': 'string',
+                            'example': 'Medium height',
+                        },
                         'width': {'description': 'How wide the truck is.', 'type': 'string', 'example': 'Very wide'},
                         'length': {'description': 'How long the truck is.', 'type': 'string', 'example': '2 meters'},
                     },
@@ -87,7 +90,9 @@ def test_method_missing_from_schema(monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_schema)
-    with pytest.raises(ValueError, match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'):
+    with pytest.raises(
+        ValueError, match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
+    ):
         LoadStaticSchema('api/v1/trucks/correct', 'gets', status_code=200)
 
 
@@ -96,7 +101,8 @@ def test_no_matching_routes(monkeypatch) -> None:
     Asserts that the right exception is raised when an endpoint is not documented in the schema.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
-    monkeypatch.setattr('django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file',
-                        ret_bad_schema)
+    monkeypatch.setattr(
+        'django_swagger_tester.static_schema.load_schema.LoadStaticSchema.load_schema_file', ret_bad_schema
+    )
     with pytest.raises(ValueError, match='Could not resolve path'):
         LoadStaticSchema('apsi/v1/trucks/correct', 'get', status_code=200)

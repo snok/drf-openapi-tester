@@ -1,6 +1,13 @@
 import pytest
 
-from django_swagger_tester.case.checks import is_snake_case, case_check, is_camel_case, is_kebab_case, is_pascal_case, skip
+from django_swagger_tester.case.checks import (
+    is_snake_case,
+    case_check,
+    is_camel_case,
+    is_kebab_case,
+    is_pascal_case,
+    skip,
+)
 
 
 def test_case_check_is_valid():

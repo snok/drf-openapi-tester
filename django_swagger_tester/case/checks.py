@@ -7,7 +7,7 @@ from django_swagger_tester.exceptions import CaseError
 logger = logging.getLogger('django_swagger_tester')
 
 
-def case_check(case: Union[str, None]) -> Callable[[str, ], None]:
+def case_check(case: Union[str, None]) -> Callable[[str, str], None]:
     """
     Returns the appropriate case check based on the `case` input parameter.
 
@@ -66,9 +66,10 @@ def is_snake_case(key: str) -> None:
         logger.error('%s is not snake cased', key)
         raise CaseError(f'The property `{key}` is not properly snake_cased')
     snake_cased_key = (
-        re.sub('([a-z0-9])([A-Z])', r'\1_\2', re.sub('(.)(-)([A-Z][a-z]+)', r'\1_\2', key)).lower().replace('-',
-                                                                                                            '_').replace(
-            ' ', '')
+        re.sub('([a-z0-9])([A-Z])', r'\1_\2', re.sub('(.)(-)([A-Z][a-z]+)', r'\1_\2', key))
+        .lower()
+        .replace('-', '_')
+        .replace(' ', '')
     )
     if snake_cased_key != key:
         logger.error('%s is not snake cased', key)
@@ -90,9 +91,10 @@ def is_kebab_case(key: str) -> None:
         logger.error('%s is not kebab cased', key)
         raise CaseError(f'The property `{key}` is not properly kebab-cased')
     kebab_cased_key = (
-        re.sub('([a-z0-9])([A-Z])', r'\1-\2', re.sub('(.)([A-Z][a-z]+)', r'\1-\2', key)).lower().replace('_',
-                                                                                                         '-').replace(
-            ' ', '')
+        re.sub('([a-z0-9])([A-Z])', r'\1-\2', re.sub('(.)([A-Z][a-z]+)', r'\1-\2', key))
+        .lower()
+        .replace('_', '-')
+        .replace(' ', '')
     )
     if kebab_cased_key != key:
         logger.error('%s is not kebab cased', key)

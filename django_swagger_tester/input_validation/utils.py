@@ -36,6 +36,7 @@ def serialize_request_body_schema(request_body_schema: dict) -> dict:
     """
     schema = request_body_schema[0]
     if 'in' not in schema or schema['in'] != 'body':
-        raise ImproperlyConfigured('Input validation tries to test request body documentation, '
-                                   'but the provided schema has no request body.')
+        raise ImproperlyConfigured(
+            'Input validation tries to test request body documentation, ' 'but the provided schema has no request body.'
+        )
     return schema['schema']['example']

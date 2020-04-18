@@ -49,11 +49,20 @@ def read_type(item: dict) -> str:
     :return: schema item type
     :raises: OpenAPISchemaError
     """
-    if item is None or not isinstance(item, dict) or 'type' not in item or not item['type'] or not isinstance(item['type'], str):
-        raise OpenAPISchemaError(f'Schema item has an invalid `type` attribute. The type should be a single string.\n\nSchema item: {item}')
+    if (
+        item is None
+        or not isinstance(item, dict)
+        or 'type' not in item
+        or not item['type']
+        or not isinstance(item['type'], str)
+    ):
+        raise OpenAPISchemaError(
+            f'Schema item has an invalid `type` attribute. The type should be a single string.\n\nSchema item: {item}'
+        )
     if not item['type'] in list_types():
         raise OpenAPISchemaError(
-            f'Schema item has an invalid `type` attribute. The type {item["type"]} is not supported.\n\nSchema item: {item}')
+            f'Schema item has an invalid `type` attribute. The type {item["type"]} is not supported.\n\nSchema item: {item}'
+        )
     return item['type']
 
 
@@ -66,7 +75,9 @@ def read_additional_properties(schema_object: dict) -> dict:
     :raises: OpenAPISchemaError
     """
     if 'additionalProperties' not in schema_object:
-        raise OpenAPISchemaError(f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}')
+        raise OpenAPISchemaError(
+            f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}'
+        )
     return schema_object['additionalProperties']
 
 
@@ -123,4 +134,6 @@ def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
         return schema[f'{variable}']
     except KeyError:
         raise SwaggerDocumentationError(
-            f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.' + error_addon)
+            f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.'
+            + error_addon
+        )

@@ -22,7 +22,10 @@ def test_drf_yasg_not_installed(monkeypatch):
     temp = sys.modules['drf_yasg']
     sys.modules['drf_yasg'] = None
 
-    with pytest.raises(ImproperlyConfigured, match='The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.'):
+    with pytest.raises(
+        ImproperlyConfigured,
+        match='The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.',
+    ):
         LoadDrfYasgSchema('api/v1/cars/correct', 'get', status_code=200)
 
     sys.modules['drf_yasg'] = temp

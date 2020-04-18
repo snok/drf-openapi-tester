@@ -2,12 +2,7 @@ import pytest
 
 from django_swagger_tester.utils import resolve_path
 
-paths = [
-    '/api/v1/cars/correct/',
-    '/api/v1/trucks/correct/',
-    '/api/v1/cars/incorrect/',
-    '/api/v1/trucks/incorrect/'
-]
+paths = ['/api/v1/cars/correct/', '/api/v1/trucks/correct/', '/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']
 
 
 def test_successful_resolve() -> None:

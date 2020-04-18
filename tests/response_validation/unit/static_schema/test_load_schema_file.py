@@ -36,8 +36,10 @@ def test_non_existent_file(caplog, monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': 'test'})
     base = LoadStaticSchema('api/v1/trucks/correct', 'GET', status_code=200)
-    with pytest.raises(ImproperlyConfigured,
-                       match='The path `test` does not point to a valid file. Make sure to point to the specification file.'):
+    with pytest.raises(
+        ImproperlyConfigured,
+        match='The path `test` does not point to a valid file. Make sure to point to the specification file.',
+    ):
         base.load_schema_file()
         assert 'Path `test` does not resolve as a valid file.' in caplog.records
 
@@ -55,8 +57,7 @@ def test_unreadable_file(monkeypatch, caplog) -> None:
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path + 's'})
     base = LoadStaticSchema('api/v1/trucks/correct', 'GET', status_code=200)
     with pytest.raises(
-            ImproperlyConfigured,
-            match='Unable to read the schema file. Please make sure the path setting is correct.'
+        ImproperlyConfigured, match='Unable to read the schema file. Please make sure the path setting is correct.'
     ):
         base.load_schema_file()
 
@@ -67,5 +68,7 @@ def test_bad_filetype(monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': settings.BASE_DIR + '/demo_project/settings.py'})
     base = LoadStaticSchema('api/v1/trucks/correct', 'GET', status_code=200)
-    with pytest.raises(ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'):
+    with pytest.raises(
+        ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'
+    ):
         base.load_schema_file()
