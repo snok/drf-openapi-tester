@@ -35,7 +35,7 @@ classifiers = [
     include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
-python = "^3.5"
+python = "^3.6"
 djangorestframework = "*"
 django = "^2.2 || ^3.0"
 
@@ -50,10 +50,8 @@ pytest-django =  "3.8.0"
 flake8 = "*"
 sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
-
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+django-stubs = "^1.5.0"
+djangorestframework-stubs = "^1.1.0"
 
 [tool.black]
 line-length = 120
@@ -65,3 +63,7 @@ exclude = '''
     (\.eggs|\.git|\.hg|\.mypy_cache|\.tox|\.venv|\venv|\.github|\docs|\tests|\__pycache__)
 )
 '''
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

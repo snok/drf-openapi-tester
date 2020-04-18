@@ -46,12 +46,12 @@ def validate_input(serializer: Serializer, method: str, route: str, camel_case_p
     """
     loader = LoadDrfYasgSchema(route=route, method=method)
     request_body_schema = loader.get_request_body()
-    json_request_body = serialize_request_body_schema(request_body_schema)  # TODO: Create
+    json_request_body = serialize_request_body_schema(request_body_schema)
     if camel_case_parser:
         from djangorestframework_camel_case.util import underscoreize
 
         json_request_body = underscoreize(json_request_body)
-    serializer = serializer(data=json_request_body)
+    serializer = serializer(data=json_request_body)  # type: ignore
     if not serializer.is_valid():
         raise SwaggerDocumentationError(
             f'Request body is not valid according to the passed serializer.'

@@ -18,15 +18,18 @@ Django Swagger Tester
 .. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/sondrelg/django-swagger-tester
 
+|
+
+.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
+    :target: http://mypy-lang.org/
+    :alt: Checked with mypy
+
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
     :target: https://pypi.org/project/django-swagger-tester/
 
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
 
-.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
-    :target: http://mypy-lang.org/
-    :alt: Checked with mypy
 
 The package has three main features:
 
