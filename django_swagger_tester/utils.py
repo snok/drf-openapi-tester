@@ -68,7 +68,7 @@ def resolve_path(endpoint_path: str) -> str:
         return endpoint_path
 
     except Resolver404:
-        logger.error(f'URL `%s` did not resolve succesfully', endpoint_path)
+        logger.error(f'URL `%s` did not resolve successfully', endpoint_path)
         paths = get_paths()
         closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
         if closest_matches:
@@ -120,9 +120,9 @@ def replace_refs(schema: dict) -> dict:
         Iterates over a dictionary to look for pesky $refs.
         """
         if '$ref' in d:
-            indeces = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
+            indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
             temp_schema = schema
-            for index in indeces:
+            for index in indices:
                 logger.debug(f'indexing by %s', index)
                 temp_schema = temp_schema[index]
             return temp_schema
@@ -133,16 +133,16 @@ def replace_refs(schema: dict) -> dict:
                 d[k] = find_and_replace_refs_recursively(v, schema)
         return d
 
-    def iterate_list(l: list, schema: dict) -> list:
+    def iterate_list(l: list, s: dict) -> list:
         """
         Loves to iterate lists.
         """
         x = []
         for i in l:
             if isinstance(i, list):
-                x.append(iterate_list(i, schema))
+                x.append(iterate_list(i, s))
             elif isinstance(i, dict):
-                x.append(find_and_replace_refs_recursively(i, schema))  # type: ignore
+                x.append(find_and_replace_refs_recursively(i, s))  # type: ignore
             else:
                 x.append(i)
         return x

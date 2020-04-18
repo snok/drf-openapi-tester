@@ -28,7 +28,8 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
     route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in schema.keys()])}'
     route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
     # Index by method
-    method_error = f'\n\nAvailable methods include {", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
+    joined_methods = ', '.join([method.upper() for method in schema.keys() if method.upper() != 'PARAMETERS'])
+    method_error = f'\n\nAvailable methods include {joined_methods}.'
     method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
     # Index by responses
     responses_schema = index_schema(schema=method_schema, variable='responses')
@@ -36,7 +37,7 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: int)
     status_code_error = f'Documented responses include {", ".join([code for code in responses_schema.keys()])}.'
     status_code_schema = index_schema(schema=responses_schema, variable=str(status_code), error_addon=status_code_error)
 
-    # Not sure about this logic - this is what my static reference schema looks like, but not the drf_yasg dynamic schema
+    # Not sure about this logic - this is what my static schema looks like, but not the drf_yasg dynamic schema
     if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
         status_code_schema = status_code_schema['content']['application/json']
 
@@ -95,6 +96,10 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
 
     :param schema_keys: Schema object keys
     :param response_keys: Response dictionary keys
+    :param schema: OpenAPI schema
+    :param data: Response data
+    :param parent: Logging reference to output for errors -
+        this makes it easier to identify where in a response/schema an error is happening
     :raises: SwaggerDocumentationError
     """
     if len(schema_keys) != len(response_keys):

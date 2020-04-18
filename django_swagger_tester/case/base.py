@@ -32,10 +32,10 @@ class ResponseCaseTester(object):
 
     def test_dict(self, dictionary: dict) -> None:
         """
-        Iterates through a response dictionary to check keys' case, and to pass nested values for further checks.
+        Iterates through a response dictionary to check keys' case, and to pass nested values for further test_checks.
         """
         if not isinstance(dictionary, dict):
-            raise ValueError(f'Expected dictonary, but received {dictionary}')
+            raise ValueError(f'Expected dictionary, but received {dictionary}')
         for key, value in dictionary.items():
             conditional_check(key, self.case_check, self.ignored_keys)
             if isinstance(value, dict):
@@ -45,7 +45,7 @@ class ResponseCaseTester(object):
 
     def test_list(self, items: list) -> None:
         """
-        Iterates through a response list to pass appropriate nested items for further checks.
+        Iterates through a response list to pass appropriate nested items for further test_checks.
         Only dictionary keys need case checking, so that's what we're looking for.
 
         :param items: list of unknown items
@@ -84,7 +84,7 @@ class ResponseSchemaCaseTester(object):
 
     def test_dict(self, obj: dict) -> None:
         """
-        Iterates through a schema object to check keys' case, and to pass nested values for further checks.
+        Iterates through a schema object to check keys' case, and to pass nested values for further test_checks.
         """
         properties = read_properties(obj)
         for key, value in properties.items():
@@ -99,7 +99,7 @@ class ResponseSchemaCaseTester(object):
 
     def test_list(self, array: dict) -> None:
         """
-        Iterates through a schema array to pass appropriate nested items for further checks.
+        Iterates through a schema array to pass appropriate nested items for further test_checks.
         Only object keys need case checking, so that's what we're looking for.
         """
         item = read_items(array)

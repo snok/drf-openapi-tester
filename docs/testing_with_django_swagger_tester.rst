@@ -27,7 +27,7 @@ The ``validate_response`` function takes three required inputs:
     type: Response
 
 * method
-    description: This should be the HTTP method used to get the reponse.
+    description: This should be the HTTP method used to get the response.
     type: string
     example: 'GET'
 
@@ -128,3 +128,27 @@ Input validation
 Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
 
 This is currently under development and will be added for v1.0.0
+
+Case checking
+=============
+
+Documentation inconsistencies can be hard to catch when maintaining more than two APIs, let alone hundreds. As a part of the documentation validators mentioned above, this package also implements case checking on all documented property names.
+
+``Case`` in this case, refers to which naming convention your project uses for its property names.
+For example, it might use
+`camelCase <https://en.wikipedia.org/wiki/Camel_case>`_,
+`snake_case <https://en.wikipedia.org/wiki/Snake_case>`_,
+or other related formats; the point being that, once you settle on a convention,
+it is important to remain consistent.
+
+These checks run as background processes in the package, and will raise errors when a suspected
+mistake is caught. If the package finds an inconsistency in your schema that *you would like to keep
+as it is*, you can pass a list of the names you would like to ignore using `ignore_case` as a key
+word argument to the validator you're using. One example of this could be if you are camel casing your
+responses, but you prefer to keep an abbreviation fully capitalized::
+
+    from django_swgger_tester.drf_yasg import validate_response
+
+    ...
+
+    validate_response(response=response, method='GET', route='/api/v1/myApi/', ignore_case=['GUID', 'IP'])

@@ -45,7 +45,7 @@ class TestCorrectlyDocumentedCars(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
+        validate_response(response=response, method='GET', route=self.path + '/correct/')
 
 
 class TestCorrectlyDocumentedTrucks(APITestBase):
@@ -68,4 +68,4 @@ class TestCorrectlyDocumentedTrucks(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
+        validate_response(response=response, method='GET', route=self.path + '/correct/')

@@ -82,7 +82,7 @@ class ResponseTester:
             elif read_type(schema_value) == 'array':
                 logger.debug('test_dict --> test_list. Response: %s, Schema: %s', response_value, schema_value)
                 self.test_list(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
-            elif read_type(schema_value) in list_types():  # This needs to come after array and object checks
+            elif read_type(schema_value) in list_types():  # This needs to come after array and object test_checks
                 logger.debug('test_dict --> test_item. Response: %s, Schema: %s', response_value, schema_value)
                 self.test_item(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
             else:

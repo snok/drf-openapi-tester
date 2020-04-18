@@ -2,7 +2,7 @@
 This file should contain a collection of schema-parsing utility functions.
 
 While this package should never become an OpenAPI schema parser,
-it is useful for us to apply the rules of the schema specifiction
+it is useful for us to apply the rules of the schema specification
 in case we're ever dealt with an incorrect schema.
 
 Instead of raising unhandled errors, it is useful for us to raise appropriate exceptions.
@@ -104,7 +104,7 @@ def is_nullable(schema_item: dict) -> bool:
     but in OpenAPI 3.0 they added `nullable: true` to specify that the value may be null.
     Note that null is different from an empty string "".
 
-    This feature was backported to the Swagger 2 parser as a vendored extension `x-nullable`. This is what drf_yasg generates.
+    This feature was back-ported to the Swagger 2 parser as a vendored extension `x-nullable`. This is what drf_yasg generates.
 
     OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
     Swagger 2 ref: https://help.apiary.io/api_101/swagger-extensions/

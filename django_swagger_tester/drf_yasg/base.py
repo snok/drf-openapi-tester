@@ -18,7 +18,8 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     """
     Verifies that an OpenAPI schema definition matches an API response.
 
-    It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
+    It inspects the schema recursively,
+    and verifies that the schema matches the structure of the response at every level.
 
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)

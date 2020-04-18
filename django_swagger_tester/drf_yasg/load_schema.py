@@ -66,7 +66,8 @@ class LoadDrfYasgSchema:
         """
         Returns the drf_yasg specified path prefix.
 
-        Drf_yasg `cleans` schema paths by finding recurring path patterns, and cutting them out of the generated openapi schema.
+        Drf_yasg `cleans` schema paths by finding recurring path patterns,
+        and cutting them out of the generated openapi schema.
         For example, `/api/v1/example` might then just become `/example`
         """
         return self.schema_generator.determine_path_prefix(get_paths())
@@ -84,14 +85,16 @@ class LoadDrfYasgSchema:
 
     def get_response_schema(self) -> dict:
         """
-        Indexes schema by url, HTTP method, and status code to get the section of a schema related to a specific response.
+        Indexes schema by url, HTTP method, and status code
+        to get the section of a schema related to a specific response.
         """
         schema = self.get_schema()
         return get_response_schema(schema=schema, method=self.method, status_code=self.status_code, route=self.route)
 
     def get_request_body(self) -> dict:
         """
-        Indexes schema by url, HTTP method, and status code, toget the request body of the section of a schema related to an endpoint.
+        Indexes schema by url, HTTP method, and status code,
+        to get the request body of the section of a schema related to an endpoint.
         """
         schema = self.get_schema()
         return get_request_body(schema=schema, method=self.method, route=self.route)

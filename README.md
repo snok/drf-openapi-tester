@@ -1,41 +1,54 @@
-#####################
-Django Swagger Tester
-#####################
+<p align="center">
+  <a><img width="420px" src="docs/img/logo.png" alt='logo'></a>
+</p>
+<p align="center">
+    <em>Django Swagger Tester</em>
+</p>
 
-.. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
-    :target: https://pypi.org/project/django-swagger-tester/
+<p align="center">
+<a href="https://pypi.org/project/django-swagger-tester/">
+    <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
+</a>
+<a href="https://pypi.org/project/django-swagger-tester/">
+    <img src="https://img.shields.io/pypi/pyversions/django-swagger-tester.svg" alt="Supported Python versions">
+</a>
+<a href="https://pypi.python.org/pypi/django-swagger-tester">
+    <img src="https://img.shields.io/pypi/djversions/django-swagger-tester.svg" alt="Supported Django versions">
+</a>
+<a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
+    <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
+</a>
+<a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
+    <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
+</a>
+<a href="http://mypy-lang.org/">
+    <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
+</a>
+<a href="https://pypi.org/project/django-swagger-tester/">
+    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
+</a>
+<a href="https://github.com/pre-commit/pre-commit">
+    <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="Pre-commit enabled">
+</a>
+</p>
 
-.. image:: https://img.shields.io/pypi/pyversions/django-swagger-tester.svg
-    :target: https://pypi.org/project/django-swagger-tester/
+---
 
-.. image:: https://img.shields.io/pypi/djversions/django-swagger-tester.svg
-    :target: https://pypi.python.org/pypi/django-swagger-tester
+**Documentation**: [https://django-swagger-tester.readthedocs.io/](https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest)
 
-.. image:: https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest
-    :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
-    :alt: Documentation Status
+**Repository**: [https://github.com/sondrelg/django-swagger-tester](https://github.com/sondrelg/django-swagger-tester)
 
-.. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/sondrelg/django-swagger-tester
+---
 
-|
-
-.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
-    :target: http://mypy-lang.org/
-    :alt: Checked with mypy
-
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://pypi.org/project/django-swagger-tester/
-
-.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
-    :target: https://github.com/pre-commit/pre-commit
-
+## What does it do
 
 The package has three main features:
 
-* `Testing response documentation <testing_with_django_swagger_tester.html>`_
-* `Testing input documentation <testing_with_django_swagger_tester.html>`_
-* `Ensuring all documentation complies with a case standard <configuration.html>`_. Available standards include:
+* [Testing response documentation](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation)
+* [Testing input documentation](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#input-validation)
+* [Ensuring all documentation complies with a single parameter naming standard](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking).
+
+    Supported naming standards include:
 
     * camelCase
     * snake_case
@@ -139,7 +152,7 @@ The ``validate_response`` function takes three required inputs:
     type: Response
 
 * method
-    description: This should be the HTTP method used to get the reponse.
+    description: This should be the HTTP method used to get the response.
     type: string
     example: 'GET'
 
