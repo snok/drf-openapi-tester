@@ -7,6 +7,10 @@
       <em>Django test utility for validating Swagger documentation</em>
     </p>
 
+|
+
+.. raw:: html
+
     <p align="center">
     <a href="https://pypi.org/project/django-swagger-tester/">
         <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
