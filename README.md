@@ -126,12 +126,15 @@ SWAGGER_TESTER = {
 
     *This setting is not required if your swagger docs are generated.*
 
-
-# Implementation
+---
 
 For a full explanation of how to use this package, please see the [docs](https://django-swagger-tester.readthedocs.io/).
 
-## Response validation
+The section below is meant to serve as a simplified version of the docs to get you started only.
+
+---
+
+# Response validation
 
 To verify that your API response documentation is correct, we suggest testing the generated documentation against an actual API response.
 
