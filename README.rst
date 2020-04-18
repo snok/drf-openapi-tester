@@ -197,9 +197,25 @@ A Django-test implementation might look like this:
 
 You can also test more than a single response at the time:
 
-\```python def test_response_documentation(client): # 201 - Resource
-created response = client.post(’api/v1/t
+.. code:: python
 
+    def test_response_documentation(client):
+        # 201 - Resource created
+        response = client.post('api/v1/test/', data=...)
+        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+
+        # 200 - Idempotency --> if an object exists, return it with a 200 without creating a new resource
+        response = client.post('api/v1/test/', data=...)
+        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+
+        # 400 - Bad data
+        response = client.post('api/v1/test/', data=bad_data)
+        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+
+Input validation
+----------------
+
+TODO: Write input validation docs
 
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation
