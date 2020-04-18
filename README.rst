@@ -3,6 +3,9 @@
     <p align="center">
       <a><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
     </p>
+    <p align="center">
+      <em>▶ Django test utility for validating Swagger documentation ✅</em>
+    </p>
 
     <p align="center">
     <a href="https://pypi.org/project/django-swagger-tester/">
@@ -40,9 +43,6 @@
 **Repository**: `https://github.com/sondrelg/django-swagger-tester <https://github.com/sondrelg/django-swagger-tester>`_
 
 --------------
-
-Purpose
-=======
 
 This package is a utility for testing Django Swagger documentation. Its aim is to make it easy for developers to catch and correct API documentation errors.
 
