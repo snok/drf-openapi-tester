@@ -1,5 +1,5 @@
 <p align="center">
-  <a><img width="420px" src="docs/img/logo.png" alt='logo'></a>
+  <a><img src="docs/img/logo.png" alt='logo'></a>
 </p>
 <p align="center">
     <em>Django Swagger Tester</em>
