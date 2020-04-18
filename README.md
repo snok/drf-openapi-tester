@@ -1,5 +1,5 @@
 <p align="center">
-  <a><img width="840px" src="docs/img/readme_logo4.png" alt='logo'></a>
+  <a><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
 </p>
 
 <p align="center">
@@ -20,11 +20,11 @@
 </a>
 </p>
 <p align="center">
-<a href="http://mypy-lang.org/">
-    <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-</a>
 <a href="https://pypi.org/project/django-swagger-tester/">
     <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
+</a>
+<a href="http://mypy-lang.org/">
+    <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
 </a>
 <a href="https://github.com/pre-commit/pre-commit">
     <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="Pre-commit enabled">
