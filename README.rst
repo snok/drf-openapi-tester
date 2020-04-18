@@ -75,8 +75,8 @@ Supported Implementations
 
 We currently support:
 
-- Dynamically rendered Swagger docs, using `drf_yasg`_'
-- Any implementation rendered from OpenAPI schema file (yaml/json)
+- Dynamically rendered Swagger docs, using `drf_yasg`_
+- All implementations which render Swagger docs from a schema file (yaml or json)
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
 
