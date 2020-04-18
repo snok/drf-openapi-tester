@@ -43,16 +43,22 @@
 
 This package is a utility for testing Django Swagger documentation, with the goal of making it easy for developers to spot documentation errors.
 
+#### Features
 The package has three main features:
 
 - [Testing response documentation](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation)
 
 - [Testing input documentation](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#input-validation)
 
-- [Ensuring all documentation complies with a single parameter naming standard](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking). Supported naming standards include `camelCase`, `snake_case`, `kebab-case`, and `PascalCase`.
+- [Ensuring all documentation complies with a single parameter naming standard](https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking).
 
-Django Swagger Tester is currently compatible with Swagger documentation generated
-using [drf_yasg](https://github.com/axnsan12/drf-yasg), or docs rendered from a schema file (yaml/json).
+    Supported naming standards include `camelCase`, `snake_case`, `kebab-case`, and `PascalCase`.
+
+#### Supported Swagger Implementations
+
+- [drf_yasg](https://github.com/axnsan12/drf-yasg)
+- Any implementation rendered from OpenAPI schema file (yaml/json)
+
 If you're using another method to generate your documentation and would like to use this library, feel free to add an issue, or create a PR.
 
 ## Installation
