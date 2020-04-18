@@ -159,9 +159,6 @@ def test_response_documentation(client):
 A Django-test implementation might look like this:
 
 ```python
-from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
-
-
 class MyApiTest(APITestCase):
 
     def setUp(self) -> None:
@@ -186,9 +183,6 @@ class MyApiTest(APITestCase):
 You can also test more than a single response at the time:
 
 ```python
-from django_swagger_tester.drf_yasg import validate_response  # replace drf_yasg with `static_schema` for static schema testing
-
-
 def test_response_documentation(client):
     # 201 - Resource created
     response = client.post('api/v1/test/', data=...)
