@@ -20,9 +20,9 @@ def get_request_body(schema: dict, method: str, route: str) -> dict:
     schema = replace_refs(schema)
     no_ref_schema = replace_refs(schema)
     paths_schema = index_schema(schema=no_ref_schema, variable='paths')
-    route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in schema.keys()])}'
+    route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in paths_schema.keys()])}'
     route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
-    method_error = f'\n\nAvailable methods include {", ".join([method.upper() for method in schema.keys() if method.upper() != "PARAMETERS"])}.'
+    method_error = f'\n\nAvailable methods include {", ".join([method.upper() for method in route_schema.keys() if method.upper() != "PARAMETERS"])}.'
     method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
     return index_schema(schema=method_schema, variable='parameters')
 

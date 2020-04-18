@@ -40,6 +40,8 @@ def validate_input(serializer: Serializer, method: str, route: str, camel_case_p
     :param serializer: Serializer class used for input validation in your API view
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param route: Relative path of the endpoint being tested
+    :param camel_case_parser: True if request body should be camel cased - this is usually required when you're using
+        djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     loader = LoadDrfYasgSchema(route=route, method=method)

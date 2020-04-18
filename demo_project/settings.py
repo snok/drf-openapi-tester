@@ -115,7 +115,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-SWAGGER_TESTER = {'CASE': 'camel case'}
+SWAGGER_TESTER = {'CASE': 'camel case', 'PATH': 'C:/test'}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),

@@ -84,8 +84,7 @@ def test_missing_method_match(client, monkeypatch) -> None:  # noqa: TYP001
         assert response.json() == item['expected_response']
 
         # Test Swagger documentation
-        with pytest.raises(SwaggerDocumentationError, match='No schema found for method gets. '
-                                                            'Available methods include GET, POST, PUT, DELETE.'):
+        with pytest.raises(SwaggerDocumentationError, match='Failed indexing schema.'):
             validate_response(response=response, method='gets', route=item['url'])  # type: ignore
 
 

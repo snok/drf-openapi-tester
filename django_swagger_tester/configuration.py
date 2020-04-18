@@ -16,6 +16,7 @@ class SwaggerTesterSettings(object):
         Initializes tester class with base settings.
         """
         self.CASE = 'camel case'
+        self.PATH = ''
 
         if not hasattr(django_settings, 'SWAGGER_TESTER'):
             return

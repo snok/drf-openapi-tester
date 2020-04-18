@@ -9,7 +9,8 @@ def test_valid_input_validation(client):
     """
     from demo_project.api.swagger.auto_schemas import VehicleSerializer
     from django_swagger_tester.drf_yasg.base import validate_input
-    validate_input(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles', underscoreize=True)
+    validate_input(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles/', camel_case_parser=True)
+
 
 def test_invalid_input_validation(client):
     """
@@ -18,4 +19,4 @@ def test_invalid_input_validation(client):
     from demo_project.api.swagger.auto_schemas import VehicleSerializer
     from django_swagger_tester.drf_yasg.base import validate_input
     with pytest.raises(SwaggerDocumentationError, match='Request body is not valid according to the passed serializer'):
-        validate_input(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles', underscoreize=False)
+        validate_input(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles/', camel_case_parser=False)

@@ -34,10 +34,11 @@ def test_drf_yasg_not_installed(monkeypatch):
     sys.modules['yaml'] = temp
 
 
-def test_missing_path():
+def test_missing_path(monkeypatch):
     """
     Verify that validation runs successfully for the demo project.
     """
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {})
     with pytest.raises(ImproperlyConfigured, match='\`PATH\` is required when testing static schemas. '
                                                    'Please update your SWAGGER_TESTER settings.'):
         LoadStaticSchema('api/v1/trucks/correct', 'get', status_code=200)
