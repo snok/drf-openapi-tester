@@ -1,5 +1,5 @@
 <p align="center">
-  <a><img width="840px" src="docs/img/logo.png" alt='logo'></a>
+  <a><img width="840px" src="docs/img/readme_logo.png" alt='logo'></a>
 </p>
 
 <p align="center">
@@ -18,6 +18,8 @@
 <a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
     <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
 </a>
+</p>
+<p align="center">
 <a href="http://mypy-lang.org/">
     <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
 </a>
