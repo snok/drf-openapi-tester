@@ -24,7 +24,9 @@ Django Swagger Tester
 .. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
     :target: https://github.com/pre-commit/pre-commit
 
-This package lets you test the integrity of your OpenAPI/Swagger documentation.
+.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
+    :target: http://mypy-lang.org/
+    :alt: Checked with mypy
 
 The package has three main features:
 
