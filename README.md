@@ -41,7 +41,7 @@
 
 # Django Swagger Tester
 
-This package is a utility for testing Django Swagger documentation, with the goal of making it easy for developers to spot documentation errors.
+This package is a utility for testing Django Swagger documentation. Its aim is to make it easy for developers to spot documentation errors in their Swagger docs.
 
 ### Features
 The package has three main features:
@@ -56,12 +56,14 @@ The package has three main features:
 
 ### Supported Implementations
 
+We currently support:
+
 - Dynamically rendered documentation, using [drf_yasg](https://github.com/axnsan12/drf-yasg)'s `get_schema_view`
 - Any implementation rendered from OpenAPI schema file (yaml/json)
 
-If you're using another method to generate your documentation and would like to use this library, feel free to add an issue, or create a PR.
+If you're using another method to generate your documentation and would like to use this library, feel free to add an issue, or create a PR. I am really only using [drf_yasg](https://github.com/axnsan12/drf-yasg), and so that's what I've given the most attention. However, adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema as a dict.
 
-## Installation
+# Installation
 
 Install using pip:
 
@@ -70,10 +72,10 @@ pip install django-swagger-tester
 ```
 
 
-## Configuration
+# Configuration
 
 
-### Settings
+## Settings
 
 
 To add Django Swagger Settings in your project, add a ``SWAGGER_TESTER`` object to your ``settings.py``:
@@ -85,7 +87,7 @@ SWAGGER_TESTER = {
 }
 ```
 
-### Setting parameters
+## Setting parameters
 
 * CASE
     The case standard you wish to enforce for your documentation.
@@ -125,15 +127,15 @@ SWAGGER_TESTER = {
     *This setting is not required if your swagger docs are generated.*
 
 
-## Implementation
+# Implementation
 
 For a full explanation of how to use this package, please see the [docs](https://django-swagger-tester.readthedocs.io/).
 
-### Response validation
+## Response validation
 
 To verify that your API response documentation is correct, we suggest testing the generated documentation against an actual API response.
 
-#### The validate_response function
+### The validate_response function
 
 The ``validate_response`` function takes three required inputs:
 
@@ -158,7 +160,7 @@ In addition, the function also takes one optional input:
     type: list of strings
     example: ['API',]
 
-#### drf_yasg
+### drf_yasg
 
 The drf_yasg tester is be imported from its own project folder:
 
@@ -166,7 +168,7 @@ The drf_yasg tester is be imported from its own project folder:
 from django_swagger_tester.drf_yasg import validate_response
 ```
 
-#### Statically rendered docs
+### Statically rendered docs
 
 When testing a static schema (located locally in your project), make sure to point to the right file in the ``PATH`` setting.
 
@@ -176,7 +178,7 @@ The static schema implementation can be imported from its own project folder:
 from django_swagger_tester.static_schema import validate_response
 ```
 
-#### Examples
+### Examples
 
 A pytest implementation might look like this:
 
@@ -233,7 +235,7 @@ def test_response_documentation(client):
 ```
 
 
-### Input validation
+## Input validation
 
 Similarly to the response documentation, request body examples should be representative of a functioning request body. If you use Django Rest Framework's `Serializer` class for input validation, it is simple to make sure that all your documented request bodies would pass input validation for all endpoints.
 
