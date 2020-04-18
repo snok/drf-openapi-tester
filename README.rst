@@ -53,7 +53,7 @@ Django Swagger Tester
 
 This package is a simple test utility for testing your Django Swagger documentation.
 
-Its aim is to make it easy for developers to catch and correct documentation errors by, e.g., comparing the Swagger documentation to actual API responses.
+Its aim is to make it easy for developers to catch and correct documentation errors by comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
 
 Features
 --------
