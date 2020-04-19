@@ -43,7 +43,7 @@ class SwaggerTesterSettings(object):
             'PascalCase',
         ]
         if self.CASE is None:
-            pass  # <-- we skip case test_checks when CASE is None
+            pass  # <-- we skip case checks when CASE is None
         elif not isinstance(self.CASE, str) or self.CASE not in accepted_cases:
             logger.error('CASE setting is misspecified.')
             raise ImproperlyConfigured(
