@@ -109,43 +109,47 @@ object to your ``settings.py``:
 Parameters
 ----------
 
--  **CASE**
+CASE
+~~~~
 
-    The case standard you wish to enforce for your documentation.
+The parameter naming standard you wish to enforce for your documentation.
 
-    Needs to be one of the following:
+Needs to be one of the following:
 
-    -  ``camel case``
-    -  ``snake case``
-    -  ``pascal case``
-    -  ``kebab case``
-    -  ``None``
+-  ``camel case``
+-  ``snake case``
+-  ``pascal case``
+-  ``kebab case``
+-  ``None``
 
-    Your OpenAPI schema will be assessed to make sure all parameter names
-    are correctly cased according to this preference. If you do not wish
-    to enforce this check, you can specify ``None`` to skip this feature.
+Your OpenAPI schema will be assessed to make sure all parameter names
+are correctly cased according to this preference. If you do not wish
+to enforce this check, you can specify ``None`` to skip this feature.
 
-    Example:
+Example:
 
-   .. code:: python
+.. code:: python
 
-      SWAGGER_TESTER = {
-          'CASE': 'snake case',
-      }
+  SWAGGER_TESTER = {
+      'CASE': 'snake case',
+  }
 
-   Default: ``camel case``
+**Default**: ``camel case``
 
--  PATH The path to your OpenAPI specification.
+PATH
+~~~~
 
-   Example:
+The path to your OpenAPI specification.
 
-   .. code:: python
+Example:
 
-      SWAGGER_TESTER = {
-          'PATH': BASE_DIR + '/openapi-schema.yml',
-      }
+.. code:: python
 
-   *This setting is not required if your swagger docs are generated.*
+  SWAGGER_TESTER = {
+      'PATH': BASE_DIR + '/openapi-schema.yml',
+  }
+
+*This setting is not required if your swagger docs are generated.*
 
 Implementation
 ==============
