@@ -109,8 +109,8 @@ object to your ``settings.py``:
 Parameters
 ----------
 
-CASE
-~~~~
+*CASE*
+~~~~~~
 
 The parameter naming standard you wish to enforce for your documentation.
 
@@ -136,8 +136,8 @@ Example:
 
 **Default**: ``camel case``
 
-PATH
-~~~~
+*PATH*
+~~~~~~
 
 The path to your OpenAPI specification.
 
