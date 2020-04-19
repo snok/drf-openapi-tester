@@ -156,15 +156,15 @@ Example:
 .. raw:: html
 
     <p align="center">
-        <b>Note</b>
+        <b>Please note</b>
     </p>
     <p align="center">
-        This README is only a simplified version of the
-        <a href="https://django-swagger-tester.readthedocs.io/">docs</a> to give you a quick
+        The following sections are only simplified versions of the
+        <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
         indication of how the package works.
     </p>
     <p align="center">
-        If you decide to use it, it is highly recommended you read the full
+        If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
         <a href="https://django-swagger-tester.readthedocs.io/">documentation</a> for instructions.
     </p>
 
