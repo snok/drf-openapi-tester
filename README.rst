@@ -152,16 +152,17 @@ Example:
 *This setting is not required if your swagger docs are generated.*
 
 |
+|
 
 --------------
 
 .. raw:: html
 
     <p align="center">
-        <b>Please note</b>
+        <b>Please Note</b>
     </p>
     <p align="center">
-        The following sections are only simplified versions of the
+        The following sections contain simplified versions of the
         <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
         indication of how the package functions.
     </p>
@@ -174,7 +175,7 @@ Example:
 
 |
 
-Response validation
+Response Validation
 ===================
 
 To verify that your API response documentation is correct, we test the
@@ -237,7 +238,7 @@ You can also test more than a single response at the time:
         response = client.post('api/v1/test/', data=bad_data)
         validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
 
-Input validation
+Input Validation
 ================
 
 TODO: Write input validation docs
