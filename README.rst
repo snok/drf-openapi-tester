@@ -151,12 +151,16 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
-.. Note::
+.. raw:: html
 
-    This README is only a simplified version of the `docs`_, to give you a quick
-    indication of how the package works.
+    <p align="center">
+        <b>Note</b>
+        This README is only a simplified version of the `docs`_, to give you a quick
+        indication of how the package works.
 
-    If you decide to use it, it is highly recommended you read the full `documentation`_ for instructions.
+        If you decide to use it, it is highly recommended you read the full `documentation`_ for instructions.
+    </p>
+
 
 Response validation
 ===================
