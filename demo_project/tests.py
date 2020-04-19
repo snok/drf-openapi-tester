@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from requests.models import Response
 from rest_framework.test import APITestCase
 
-from django_swagger_tester.response_validation.drf_yasg import validate_response
+from django_swagger_tester.drf_yasg import validate_response
 
 
 class APITestBase(APITestCase):
@@ -45,7 +45,7 @@ class TestCorrectlyDocumentedCars(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
+        validate_response(response=response, method='GET', route=self.path + '/correct/')
 
 
 class TestCorrectlyDocumentedTrucks(APITestBase):
@@ -68,4 +68,4 @@ class TestCorrectlyDocumentedTrucks(APITestBase):
         self.assertEqual(response.json(), expected_response)
 
         # Test Swagger documentation
-        validate_response(response=response, method='GET', endpoint_url=self.path + '/correct/')
+        validate_response(response=response, method='GET', route=self.path + '/correct/')

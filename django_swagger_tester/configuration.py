@@ -16,6 +16,7 @@ class SwaggerTesterSettings(object):
         Initializes tester class with base settings.
         """
         self.CASE = 'camel case'
+        self.PATH = ''
 
         if not hasattr(django_settings, 'SWAGGER_TESTER'):
             return
@@ -31,7 +32,16 @@ class SwaggerTesterSettings(object):
                 raise ImproperlyConfigured(f'`{setting}` is not a valid setting for the django-swagger-tester module')
 
         logger.debug('Validating settings.')
-        accepted_cases = ['camel case', 'camelCase', 'snake case', 'snake_case', 'kebab case', 'kebab-case', 'pascal case', 'PascalCase']
+        accepted_cases = [
+            'camel case',
+            'camelCase',
+            'snake case',
+            'snake_case',
+            'kebab case',
+            'kebab-case',
+            'pascal case',
+            'PascalCase',
+        ]
         if self.CASE is None:
             pass  # <-- we skip case checks when CASE is None
         elif not isinstance(self.CASE, str) or self.CASE not in accepted_cases:

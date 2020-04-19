@@ -1,4 +1,4 @@
-from drf_yasg.openapi import Schema, TYPE_ARRAY, TYPE_INTEGER, TYPE_OBJECT, TYPE_STRING
+from drf_yasg.openapi import Schema, TYPE_INTEGER, TYPE_STRING
 
 
 def generic_string_schema(example, description):
