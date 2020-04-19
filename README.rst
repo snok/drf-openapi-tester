@@ -151,16 +151,22 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
+--------------
+
 .. raw:: html
 
     <p align="center">
         <b>Note</b>
+    </p>
+    <p align="center">
         This README is only a simplified version of the `docs`_, to give you a quick
         indication of how the package works.
-
+    </p>
+    <p align="center">
         If you decide to use it, it is highly recommended you read the full `documentation`_ for instructions.
     </p>
 
+--------------
 
 Response validation
 ===================
