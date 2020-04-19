@@ -151,17 +151,15 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
-Implementation
-==============
+.. Note::
 
-This section is only a simplified version of the docs, to give you an
-indication of how the package works.
+    This README is only a simplified version of the `docs`_, to give you a quick
+    indication of how the package works.
 
-For a full explanation of how to implement it, please see the full `documentation`_.
-
+    If you decide to use it, it is highly recommended you read the full `documentation`_ for instructions.
 
 Response validation
--------------------
+===================
 
 To verify that your API response documentation is correct, we test the
 generated documentation against actual API responses.
@@ -224,7 +222,7 @@ You can also test more than a single response at the time:
         validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
 
 Input validation
-----------------
+================
 
 TODO: Write input validation docs
 
@@ -234,3 +232,4 @@ TODO: Write input validation docs
 .. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
 .. _documentation: https://django-swagger-tester.readthedocs.io/
+.. _docs: https://django-swagger-tester.readthedocs.io/
