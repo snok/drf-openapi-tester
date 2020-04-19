@@ -91,7 +91,7 @@ def read_properties(schema_object: dict) -> dict:
     """
     if 'properties' not in schema_object:
         if 'additionalProperties' in schema_object:
-            return read_additional_properties(schema_object)
+            return {'': read_additional_properties(schema_object)}
         raise OpenAPISchemaError(f'Object is missing a `properties` attribute.\n\nObject schema: {schema_object}')
     return schema_object['properties']
 

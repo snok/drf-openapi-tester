@@ -21,14 +21,14 @@ def test_schema_case_tester_on_reference_schema():
 
     The iteration is done to test all paths, status codes, and responses.
     """
-    for key in schema['paths'].keys():
-        for method in schema['paths'][key].keys():
-            if 'responses' not in schema['paths'][key][method]:
-                continue
-            for status_code in schema['paths'][key][method]['responses'].keys():
-                if 'schema' not in schema['paths'][key][method]['responses']:
+    with pytest.raises(CaseError, match='The property `date_created` is not properly camelCased'):
+        for key in schema['paths'].keys():
+            for method in schema['paths'][key].keys():
+                if 'responses' not in schema['paths'][key][method]:
                     continue
-                with pytest.raises(CaseError, match='The property `date_created` is not properly camelCased'):
+                for status_code in schema['paths'][key][method]['responses'].keys():
+                    if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
+                        continue
                     ResponseSchemaCaseTester(
                         schema=schema['paths'][key][method]['responses'][status_code]['schema'],
                         key=f'path: {key}\nmethod: {method}',
@@ -36,14 +36,14 @@ def test_schema_case_tester_on_reference_schema():
 
 
 def test_ignore_case():
-    for key in schema['paths'].keys():
-        for method in schema['paths'][key].keys():
-            if 'responses' not in schema['paths'][key][method]:
-                continue
-            for status_code in schema['paths'][key][method]['responses'].keys():
-                if 'schema' not in schema['paths'][key][method]['responses']:
+    with pytest.raises(CaseError, match='The property `read_only_nullable` is not properly camelCased'):
+        for key in schema['paths'].keys():
+            for method in schema['paths'][key].keys():
+                if 'responses' not in schema['paths'][key][method]:
                     continue
-                with pytest.raises(CaseError, match='The property `read_only_nullable` is not properly camelCased'):
+                for status_code in schema['paths'][key][method]['responses'].keys():
+                    if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
+                        continue
                     ResponseSchemaCaseTester(
                         schema=schema['paths'][key][method]['responses'][status_code]['schema'],
                         key=f'path: {key}\nmethod: {method}',
@@ -57,11 +57,17 @@ class MockSettings:
 
 def test_schema_using_snake_case(monkeypatch):
     monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
-    for key in schema['paths'].keys():
-        for method in schema['paths'][key].keys():
-            if 'responses' not in schema['paths'][key][method]:
-                continue
-            for status_code in schema['paths'][key][method]['responses'].keys():
-                if 'schema' not in schema['paths'][key][method]['responses']:
+    with pytest.raises(CaseError, match='The property `ownerAsString` is not properly snake_cased'):
+        for key in schema['paths'].keys():
+            for method in schema['paths'][key].keys():
+                if 'responses' not in schema['paths'][key][method]:
                     continue
-                ResponseSchemaCaseTester(schema=schema['paths'][key][method]['responses'][status_code]['schema'])
+                for status_code in schema['paths'][key][method]['responses'].keys():
+                    if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
+                        continue
+                    ResponseSchemaCaseTester(schema=schema['paths'][key][method]['responses'][status_code]['schema'])
+
+
+def test_skipped_case_check(caplog):
+    ResponseSchemaCaseTester(schema={'type': 'string'})
+    assert 'Skipping case check' in [record.message for record in caplog.records]

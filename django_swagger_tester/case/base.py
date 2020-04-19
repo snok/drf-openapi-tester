@@ -35,7 +35,7 @@ class ResponseCaseTester(object):
         Iterates through a response dictionary to check keys' case, and to pass nested values for further test_checks.
         """
         if not isinstance(dictionary, dict):
-            raise ValueError(f'Expected dictionary, but received {dictionary}')
+            raise ValueError(f'Expected dictionary, but received {type(dictionary)}')
         for key, value in dictionary.items():
             conditional_check(key, self.case_check, self.ignored_keys)
             if isinstance(value, dict):
@@ -51,7 +51,7 @@ class ResponseCaseTester(object):
         :param items: list of unknown items
         """
         if not isinstance(items, list):
-            raise ValueError(f'Expected list, but received {items}')
+            raise ValueError(f'Expected list, but received {type(items)}')
         for item in items:
             if isinstance(item, dict):
                 self.test_dict(dictionary=item)
