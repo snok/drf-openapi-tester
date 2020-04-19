@@ -255,9 +255,12 @@ A pytest implementation of input validation might look like this::
         """
         Verifies that our request body documentation is representative of a valid request body.
         """
-        from django_swagger_tester.drf_yasg import validate_input
+        from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
         validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
 
+
+The ``camel_case_parser`` argument should be set to ``True`` if you are using ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``
+from the `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_ package.
 
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation
