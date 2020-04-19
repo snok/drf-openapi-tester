@@ -151,26 +151,28 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
+|
+
 --------------
 
 .. raw:: html
 
-    <div style="background-color: blue; color: white">
-        <p align="center">
-            <b>Please note</b>
-        </p>
-        <p align="center">
-            The following sections are only simplified versions of the
-            <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
-            indication of how the package functions.
-        </p>
-        <p align="center">
-            If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
-            <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
-        </p>
-    </div>
+    <p align="center">
+        <b>Please note</b>
+    </p>
+    <p align="center">
+        The following sections are only simplified versions of the
+        <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
+        indication of how the package functions.
+    </p>
+    <p align="center">
+        If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
+        <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
+    </p>
 
 --------------
+
+|
 
 Response validation
 ===================
