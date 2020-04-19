@@ -159,11 +159,13 @@ Example:
         <b>Note</b>
     </p>
     <p align="center">
-        This README is only a simplified version of the `docs`_, to give you a quick
+        This README is only a simplified version of the
+        <a href="https://django-swagger-tester.readthedocs.io/">docs</a> to give you a quick
         indication of how the package works.
     </p>
     <p align="center">
-        If you decide to use it, it is highly recommended you read the full `documentation`_ for instructions.
+        If you decide to use it, it is highly recommended you read the full
+        <a href="https://django-swagger-tester.readthedocs.io/">documentation</a> for instructions.
     </p>
 
 --------------
