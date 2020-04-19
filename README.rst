@@ -155,7 +155,7 @@ Example:
 
 .. raw:: html
 
-    <div style="background: blue">
+    <div style="background-color: blue; color: white">
         <p align="center">
             <b>Please note</b>
         </p>
