@@ -241,7 +241,8 @@ You can also test more than a single response at the time:
 Input Validation
 ================
 
-To verify that your request bodies are correctly documented in your swagger docs, it can be useful to test it.
+To make sure your request body documentation is accurate, and will stay accurate, it can be useful to set up tests.
+
 Considering most APIs will use input serializers for input validation, it seems sensible to just run the
 example documentation on your serializer.
 
@@ -256,8 +257,6 @@ A pytest implementation of input validation might look like this::
         """
         from django_swagger_tester.drf_yasg import validate_input
         validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
-
-
 
 
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
