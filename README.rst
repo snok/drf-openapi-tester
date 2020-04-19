@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-      <a href="https://django-swagger-tester.readthedocs.io/" target="_blank"><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
+      <a href="https://django-swagger-tester.readthedocs.io/"><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -241,7 +241,24 @@ You can also test more than a single response at the time:
 Input Validation
 ================
 
-TODO: Write input validation docs
+To verify that your request bodies are correctly documented in your swagger docs, it can be useful to test it.
+Considering most APIs will use input serializers for input validation, it seems sensible to just run the
+example documentation on your serializer.
+
+A pytest implementation of input validation might look like this::
+
+    from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
+
+
+    def test_request_body_documentation(client):
+        """
+        Verifies that our request body documentation is representative of a valid request body.
+        """
+        from django_swagger_tester.drf_yasg import validate_input
+        validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+
+
+
 
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation
