@@ -1,7 +1,8 @@
 .. raw:: html
 
     <p align="center">
-      <a href="https://django-swagger-tester.readthedocs.io/"><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
+        <a href="https://django-swagger-tester.readthedocs.io/">
+        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/readme_logo4.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -228,15 +229,15 @@ You can also test more than a single response at the time:
     def test_response_documentation(client):
         # 201 - Resource created
         response = client.post('api/v1/test/', data=...)
-        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+        validate_response(response=response, method='POST', route='api/v1/test/')
 
         # 200 - Idempotency --> if an object exists, return it with a 200 without creating a new resource
         response = client.post('api/v1/test/', data=...)
-        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+        validate_response(response=response, method='POST', route='api/v1/test/')
 
         # 400 - Bad data
         response = client.post('api/v1/test/', data=bad_data)
-        validate_response(response=response, method='POST', endpoint_url='api/v1/test/')
+        validate_response(response=response, method='POST', route='api/v1/test/')
 
 Input Validation
 ================

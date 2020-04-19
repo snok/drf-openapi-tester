@@ -28,7 +28,7 @@ def get_request_body(schema: dict, method: str, route: str) -> dict:
     return index_schema(schema=method_schema, variable='parameters')
 
 
-def serialize_request_body_schema(request_body_schema: dict) -> dict:
+def get_request_body_schema(request_body_schema: dict) -> dict:
     """
     Translates the `parameters` section of an OpenAPI schema to an example request body.
 
@@ -41,4 +41,4 @@ def serialize_request_body_schema(request_body_schema: dict) -> dict:
         raise ImproperlyConfigured(
             'Input validation tries to test request body documentation, but the provided schema has no request body.'
         )
-    return schema['schema']['example']
+    return schema['schema']

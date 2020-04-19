@@ -2,7 +2,7 @@ import pytest
 import yaml
 from django.conf import settings
 
-from django_swagger_tester.case.base import ResponseSchemaCaseTester
+from django_swagger_tester.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import CaseError
 from django_swagger_tester.utils import replace_refs
 
@@ -29,7 +29,7 @@ def test_schema_case_tester_on_reference_schema():
                 for status_code in schema['paths'][key][method]['responses'].keys():
                     if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
                         continue
-                    ResponseSchemaCaseTester(
+                    SchemaCaseTester(
                         schema=schema['paths'][key][method]['responses'][status_code]['schema'],
                         key=f'path: {key}\nmethod: {method}',
                     )
@@ -44,7 +44,7 @@ def test_ignore_case():
                 for status_code in schema['paths'][key][method]['responses'].keys():
                     if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
                         continue
-                    ResponseSchemaCaseTester(
+                    SchemaCaseTester(
                         schema=schema['paths'][key][method]['responses'][status_code]['schema'],
                         key=f'path: {key}\nmethod: {method}',
                         ignore_case=['date_created', 'date_modified'],
@@ -65,11 +65,11 @@ def test_schema_using_snake_case(monkeypatch):
                 for status_code in schema['paths'][key][method]['responses'].keys():
                     if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
                         continue
-                    ResponseSchemaCaseTester(schema=schema['paths'][key][method]['responses'][status_code]['schema'])
+                    SchemaCaseTester(schema=schema['paths'][key][method]['responses'][status_code]['schema'])
 
 
 def test_skipped_case_check(caplog):
-    ResponseSchemaCaseTester(schema={'type': 'string'})
+    SchemaCaseTester(schema={'type': 'string'})
     assert 'Skipping case check' in [record.message for record in caplog.records]
 
 
@@ -77,7 +77,5 @@ def test_nested_list(caplog):
     """
     This doesn't happen in our test-response schema, so testing it individually.
     """
-    ResponseSchemaCaseTester(
-        schema={'type': 'array', 'items': {'type': 'array', 'items': {'type': 'integer', 'example': 5}}}
-    )
+    SchemaCaseTester(schema={'type': 'array', 'items': {'type': 'array', 'items': {'type': 'integer', 'example': 5}}})
     assert 'list -> list' in [record.message for record in caplog.records]

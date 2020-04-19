@@ -2,7 +2,7 @@ import logging
 
 from requests import Response
 
-from django_swagger_tester.case.base import ResponseCaseTester, ResponseSchemaCaseTester
+from django_swagger_tester.case.base import ResponseCaseTester, SchemaCaseTester
 from django_swagger_tester.response_validation.base import ResponseTester
 from django_swagger_tester.utils import unpack_response
 
@@ -26,4 +26,4 @@ def response_validation(loader_class, response: Response, method: str, route: st
     response_schema = loader.get_response_schema()
     ResponseTester(response_schema=response_schema, response_data=data)
     ResponseCaseTester(response_data=data, **kwargs)
-    ResponseSchemaCaseTester(schema=response_schema, **kwargs)
+    SchemaCaseTester(schema=response_schema, **kwargs)

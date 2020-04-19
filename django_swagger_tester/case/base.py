@@ -59,7 +59,7 @@ class ResponseCaseTester(object):
                 self.test_list(items=item)
 
 
-class ResponseSchemaCaseTester(object):
+class SchemaCaseTester(object):
     """
     Iterates through an OpenAPI schema to verify that object keys are cased correctly.
     The case we're checking for depends on the projects SWAGGER_TESTER `CASE` setting.

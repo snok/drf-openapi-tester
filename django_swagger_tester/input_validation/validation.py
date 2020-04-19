@@ -3,8 +3,9 @@ import logging
 
 from rest_framework.serializers import Serializer
 
+from django_swagger_tester.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.input_validation.utils import serialize_request_body_schema
+from django_swagger_tester.input_validation.utils import get_request_body_schema
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -29,17 +30,18 @@ def input_validation(
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     loader = loader_class(route=route, method=method, **kwargs)
-    request_body_schema = loader.get_request_body()
-    json_request_body = serialize_request_body_schema(request_body_schema)
+    endpoint_schema = loader.get_request_body()
+    request_body_schema = get_request_body_schema(endpoint_schema)
+    example = request_body_schema['example']
     if camel_case_parser:
         from djangorestframework_camel_case.util import underscoreize
 
-        json_request_body = underscoreize(json_request_body)
-    serializer = serializer(data=json_request_body)  # type: ignore
+        example = underscoreize(example)
+    serializer = serializer(data=example)  # type: ignore
     if not serializer.is_valid():
         raise SwaggerDocumentationError(
             f'Request body is not valid according to the passed serializer.'
-            f'\n\nSwagger example request body: \n\n\t{json.dumps(json_request_body)}'
+            f'\n\nSwagger example request body: \n\n\t{json.dumps(example)}'
             f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}'
         )
-    # TODO: Write a request body case tester to run after validation
+    SchemaCaseTester(request_body_schema)
