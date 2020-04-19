@@ -1,45 +1,36 @@
-.. raw:: html
+Django Swagger Tester
+=====================
 
-    <p align="center">
-        <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
-    </p>
-    <p align="center">
-      <em>A Django test utility for validating Swagger documentation</em>
-    </p>
+.. role:: python(code)
+   :language: python
+
+.. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
+    :target: https://pypi.org/project/django-swagger-tester/
+
+.. image:: https://img.shields.io/pypi/pyversions/django-swagger-tester.svg
+    :target: https://pypi.org/project/django-swagger-tester/
+
+.. image:: https://img.shields.io/pypi/djversions/django-swagger-tester.svg
+    :target: https://pypi.python.org/pypi/django-swagger-tester
+
+.. image:: https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest
+    :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
+.. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/sondrelg/django-swagger-tester
 
 |
 
-.. raw:: html
+.. image:: https://img.shields.io/badge/code%20style-black-000000.svg
+    :target: https://pypi.org/project/django-swagger-tester/
 
-    <p align="center">
-    <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
-    </a>
-    <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
-        <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
-    </a>
-    <a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
-        <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
-    </a>
-    <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/pypi/pyversions/django-swagger-tester.svg" alt="Supported Python versions">
-    </a>
-    <a href="https://pypi.python.org/pypi/django-swagger-tester">
-        <img src="https://img.shields.io/pypi/djversions/django-swagger-tester.svg" alt="Supported Django versions">
-    </a>
-    </p>
-    <p align="center">
-    <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
-    </a>
-    <a href="http://mypy-lang.org/">
-        <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-    </a>
-    <a href="https://github.com/pre-commit/pre-commit">
-        <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="Pre-commit enabled">
-    </a>
-    </p>
+.. image:: http://www.mypy-lang.org/static/mypy_badge.svg
+    :target: http://mypy-lang.org/
+    :alt: Checked with mypy
+
+.. image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
+    :target: https://github.com/pre-commit/pre-commit
 
 --------------
 
@@ -49,8 +40,7 @@
 
 --------------
 
-Django Swagger Tester
-=====================
+
 
 This package is a simple test utility for your Django Swagger documentation.
 
@@ -152,29 +142,6 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
-|
-|
-
---------------
-
-.. raw:: html
-
-    <p align="center">
-        <b>Please Note</b>
-    </p>
-    <p align="center">
-        The following sections contain simplified versions of the
-        <a href="https://django-swagger-tester.readthedocs.io/">docs</a>.
-        They are included to give you a quick indication of how the package functions.
-    </p>
-    <p align="center">
-        If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
-        <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
-    </p>
-
---------------
-
-|
 
 Response Validation
 ===================

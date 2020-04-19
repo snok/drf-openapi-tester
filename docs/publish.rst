@@ -15,6 +15,9 @@ A publish to test-pypi is done every time a branch is merged into master (this m
 
 To publish to pypi, the push-to-pypi jobs is triggered by creating a ``release`` in the Github UI. See previous releases for formatting.
 
+.. Note::
+
+    Our ``README.rst`` and ``index.rst`` uses embedded html. This is not allowed by PyPi, and so we currently maintain a separate PYPI_README.rst that also needs to be updated to reflect changes.
 
 Read the docs
 -------------

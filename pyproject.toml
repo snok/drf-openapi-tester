@@ -1,10 +1,10 @@
 [tool.poetry]
 name = "django-swagger-tester"
 version = "1.0.0"  # Remember to also change in django_swagger_tester/__init__
-description = "Test utility for your Swagger documentation."
+description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"
-readme = "README.rst"
+readme = "docs/PYPI_README.rst"
 homepage = "https://github.com/sondrelg/django-swagger-tester"
 repository = "https://github.com/sondrelg/django-swagger-tester"
 documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
