@@ -155,18 +155,20 @@ Example:
 
 .. raw:: html
 
-    <p align="center">
-        <b>Please note</b>
-    </p>
-    <p align="center">
-        The following sections are only simplified versions of the
-        <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
-        indication of how the package functions.
-    </p>
-    <p align="center">
-        If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
-        <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
-    </p>
+    <div style="background: blue">
+        <p align="center">
+            <b>Please note</b>
+        </p>
+        <p align="center">
+            The following sections are only simplified versions of the
+            <a href="https://django-swagger-tester.readthedocs.io/">docs</a> - here to give you a quick
+            indication of how the package functions.
+        </p>
+        <p align="center">
+            If you decide to implement Django Swagger Tester functions, it is highly recommended you read the full
+            <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
+        </p>
+    </div>
 
 --------------
 
