@@ -58,7 +58,9 @@ def validate_method(method: str) -> str:
     methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
     if not isinstance(method, str) or method.lower() not in methods:
         logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))
-        raise ValueError(f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.')
+        raise ImproperlyConfigured(
+            f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.'
+        )
     return method
 
 
@@ -132,8 +134,7 @@ def validate_inputs(route: str, status_code: Optional[int], method: str) -> None
     """
     if not isinstance(route, str):
         raise ImproperlyConfigured('`route` is invalid.')
-    if not validate_method(method):
-        raise ImproperlyConfigured('`method` is invalid.')
+    validate_method(method)
     if status_code is not None:
         if not isinstance(status_code, int):
             raise ImproperlyConfigured('`status_code` should be an integer.')

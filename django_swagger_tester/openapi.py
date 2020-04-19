@@ -61,7 +61,8 @@ def read_type(item: dict) -> str:
         )
     if not item['type'] in list_types():
         raise OpenAPISchemaError(
-            f'Schema item has an invalid `type` attribute. The type {item["type"]} is not supported.\n\nSchema item: {item}'
+            f'Schema item has an invalid `type` attribute. '
+            f'The type `{item["type"]}` is not supported.\n\nSchema item: {item}'
         )
     return item['type']
 
@@ -91,6 +92,8 @@ def read_properties(schema_object: dict) -> dict:
     """
     if 'properties' not in schema_object:
         if 'additionalProperties' in schema_object:
+            # We return this with an empty key, so we can still iterate over the results .items(), as we would with
+            # normal properties
             return {'': read_additional_properties(schema_object)}
         raise OpenAPISchemaError(f'Object is missing a `properties` attribute.\n\nObject schema: {schema_object}')
     return schema_object['properties']
@@ -112,9 +115,15 @@ def is_nullable(schema_item: dict) -> bool:
     :param schema_item: schema item
     :return: whether or not the item can be None
     """
-    openapi_schema_3_nullable = 'nullable' in schema_item and schema_item['nullable']
-    swagger_2_nullable = 'x-nullable' in schema_item and schema_item['x-nullable']
-    return swagger_2_nullable or openapi_schema_3_nullable
+    openapi_schema_3_nullable = 'nullable'
+    swagger_2_nullable = 'x-nullable'
+    for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]:
+        if schema_item and isinstance(schema_item, dict):
+            if nullable_key in schema_item:
+                if isinstance(schema_item[nullable_key], str):
+                    if schema_item[nullable_key] == 'true':
+                        return True
+    return False
 
 
 def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:

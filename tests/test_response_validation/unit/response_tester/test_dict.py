@@ -111,6 +111,6 @@ def test_bad_type():
     }
     custom_data = {'list': []}
     with pytest.raises(
-        Exception, match='Schema item has an invalid \`type\` attribute. The type rarray is not supported'
+        Exception, match='Schema item has an invalid \`type\` attribute. The type `rarray` is not supported'
     ):
         assert tester.test_dict(schema=custom_schema, data=custom_data, parent='placeholder') is None

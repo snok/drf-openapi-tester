@@ -71,3 +71,13 @@ def test_schema_using_snake_case(monkeypatch):
 def test_skipped_case_check(caplog):
     ResponseSchemaCaseTester(schema={'type': 'string'})
     assert 'Skipping case check' in [record.message for record in caplog.records]
+
+
+def test_nested_list(caplog):
+    """
+    This doesn't happen in our test-response schema, so testing it individually.
+    """
+    ResponseSchemaCaseTester(
+        schema={'type': 'array', 'items': {'type': 'array', 'items': {'type': 'integer', 'example': 5}}}
+    )
+    assert 'list -> list' in [record.message for record in caplog.records]

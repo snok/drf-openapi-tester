@@ -3,7 +3,7 @@ from typing import Any, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.openapi import list_types, read_items, read_properties, read_type
+from django_swagger_tester.openapi import list_types, read_items, read_properties, read_type, is_nullable
 from django_swagger_tester.response_validation.utils import check_keys_match, format_error
 
 logger = logging.getLogger('django_swagger_tester')
@@ -26,12 +26,15 @@ class ResponseTester:
             )
 
         if read_type(response_schema) == 'object':
+            logger.debug('init --> dict')
             self.test_dict(schema=response_schema, data=response_data, parent='init')
         elif read_type(response_schema) == 'array':
+            logger.debug('init --> list')
             self.test_list(schema=response_schema, data=response_data, parent='init')
         elif (
             read_type(response_schema) in list_types()
         ):  # this should be third, as list_types also contains array and object
+            logger.debug('init --> item')
             self.test_item(schema=response_schema, data=response_data, parent='init')
         else:
             raise Exception(
@@ -152,5 +155,7 @@ class ResponseTester:
             'number': {'check': not isinstance(data, float) and data is not None, 'type': "<class 'float'>"},
             'file': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
         }
-        if checks[schema['type']]['check']:
+        if data is None and is_nullable(schema):
+            return
+        elif checks[schema['type']]['check']:
             raise format_error(error_message=f'Mismatched types.', data=data, schema=schema, parent=parent)

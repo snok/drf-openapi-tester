@@ -8,10 +8,7 @@ from django_swagger_tester.static_schema.loader import LoadStaticSchema as loade
 
 def validate_response(response: Response, method: str, route: str, **kwargs) -> None:
     """
-    Verifies that an OpenAPI schema definition matches an API response.
-
-    It inspects the schema recursively,
-    and verifies that the schema matches the structure of the response at every level.
+    Calls the response validation function with the static schema loader class.
 
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)
@@ -23,7 +20,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
 
 def validate_input(serializer: Serializer, method: str, route: str, **kwargs) -> None:
     """
-    Verifies that an OpenAPI schema request body definition is valid, according to the API view's input serializer.
+    Calls the input validation function with the static schema loader class.
 
     :param serializer: Serializer class used for input validation in your API view
     :param method: HTTP method ('get', 'put', 'post', ...)

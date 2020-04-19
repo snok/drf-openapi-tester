@@ -1,6 +1,7 @@
 import pytest
 import yaml
 from django.conf import settings as django_settings
+from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.static_schema.loader import LoadStaticSchema
 
@@ -91,7 +92,8 @@ def test_method_missing_from_schema(monkeypatch) -> None:
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path})
     monkeypatch.setattr('django_swagger_tester.static_schema.loader.LoadStaticSchema.get_schema', ret_schema)
     with pytest.raises(
-        ValueError, match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
+        ImproperlyConfigured,
+        match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.',
     ):
         LoadStaticSchema('api/v1/trucks/correct', 'gets', status_code=200)
 
