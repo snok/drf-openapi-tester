@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-      <a><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
+      <a href="https://django-swagger-tester.readthedocs.io/"><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -164,8 +164,6 @@ Example:
     <p align="center">
         The following sections contain simplified versions of the
         <a href="https://django-swagger-tester.readthedocs.io/">docs</a>.
-    </p>
-    <p align="center">
         They are included to give you a quick indication of how the package functions.
     </p>
     <p align="center">
