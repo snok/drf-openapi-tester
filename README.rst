@@ -4,7 +4,7 @@
       <a><img width="750px" src="docs/img/readme_logo4.png" alt='logo'></a>
     </p>
     <p align="center">
-      <em>Django test utility for validating Swagger documentation</em>
+      <em>A Django test utility for validating Swagger documentation</em>
     </p>
 
 |
@@ -42,7 +42,7 @@
 
 --------------
 
-**Documentation**: `https://django-swagger-tester.readthedocs.io/ <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
 **Repository**: `https://github.com/sondrelg/django-swagger-tester <https://github.com/sondrelg/django-swagger-tester>`_
 
@@ -51,9 +51,10 @@
 Django Swagger Tester
 =====================
 
-This package is a simple test utility for testing your Django Swagger documentation.
+This package is a simple test utility for your Django Swagger documentation.
 
-Its aim is to make it easy for developers to catch and correct documentation errors by comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
+Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger docs by
+comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
 
 Features
 --------
@@ -64,16 +65,16 @@ The package has three main features:
 
 -  `Testing input documentation`_
 
--  `Ensuring all documentation complies with a single parameter naming
-   standard`_.
+-  `Ensuring your docs comply with a single parameter naming standard`_.
 
    Supported naming standards include ``camelCase``, ``snake_case``,
    ``kebab-case``, and ``PascalCase``.
 
-Supported Implementations
--------------------------
 
-We currently support:
+Implementations
+---------------
+
+We currently support testing of:
 
 - Dynamically rendered Swagger docs, using `drf_yasg`_
 - All implementations which render Swagger docs from a schema file (yaml or json)
@@ -95,7 +96,7 @@ Configuration
 Settings
 --------
 
-To add Django Swagger Settings in your project, add a ``SWAGGER_TESTER``
+To use Django Swagger Settings in your project, your first need to add a ``SWAGGER_TESTER``
 object to your ``settings.py``:
 
 .. code:: python
@@ -105,24 +106,26 @@ object to your ``settings.py``:
        'PATH': BASE_DIR + '/openapi-schema.yml'  # not required for drf_yasg implementations
    }
 
-Setting parameters
-------------------
+Parameters
+----------
 
--  CASE The case standard you wish to enforce for your documentation.
+-  **CASE**
 
-   Needs to be one of the following:
+    The case standard you wish to enforce for your documentation.
 
-   -  ``camel case``
-   -  ``snake case``
-   -  ``pascal case``
-   -  ``kebab case``
-   -  ``None``
+    Needs to be one of the following:
 
-   Your OpenAPI schema will be assessed to make sure all parameter names
-   are correctly cased according to this preference. If you do not wish
-   to enforce this check, you can specify ``None`` to skip this feature.
+    -  ``camel case``
+    -  ``snake case``
+    -  ``pascal case``
+    -  ``kebab case``
+    -  ``None``
 
-   Example:
+    Your OpenAPI schema will be assessed to make sure all parameter names
+    are correctly cased according to this preference. If you do not wish
+    to enforce this check, you can specify ``None`` to skip this feature.
+
+    Example:
 
    .. code:: python
 
@@ -224,6 +227,6 @@ TODO: Write input validation docs
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation
 .. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#input-validation
-.. _Ensuring all documentation complies with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking
+.. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
 .. _documentation: https://django-swagger-tester.readthedocs.io/
