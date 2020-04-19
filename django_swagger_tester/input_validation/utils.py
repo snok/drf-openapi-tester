@@ -17,7 +17,6 @@ def get_request_body(schema: dict, method: str, route: str) -> dict:
     :param route: Schema-compatible path
     :return: Request body schema
     """
-    schema = replace_refs(schema)
     no_ref_schema = replace_refs(schema)
     paths_schema = index_schema(schema=no_ref_schema, variable='paths')
     route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in paths_schema.keys()])}'
