@@ -97,6 +97,6 @@ Contents
     changelog
 
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
-.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#response-validation
-.. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/testing_with_django_swagger_tester.html#case-checking
+.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking

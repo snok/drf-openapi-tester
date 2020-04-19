@@ -19,7 +19,7 @@ This way, you *know* that your API responses match your documented responses.
 
 This makes it easy to catch and fix documentation errors proactively instead of reactively.
 
-drf_yasg
+Drf_yasg
 --------
 
 If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` response validator::
@@ -150,7 +150,7 @@ request body documentation to ensure it is-, and remains, accurate.
 
 The current input validation function requires that you're using Django Rest Framework's ``Serializer`` for input validation.
 
-drf_yasg
+Drf_yasg
 --------
 
 If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` input validator::
