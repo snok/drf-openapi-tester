@@ -2,7 +2,7 @@
 
     <p align="center">
         <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/readme_logo4.png" alt='logo'></a>
+        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
