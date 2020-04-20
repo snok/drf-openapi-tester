@@ -1,8 +1,10 @@
 import logging
+from typing import Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.openapi import index_schema
+from django_swagger_tester.openapi import index_schema, read_items
+from django_swagger_tester.openapi import read_type
 from django_swagger_tester.utils import replace_refs
 
 logger = logging.getLogger('django_swagger_tester')
@@ -38,6 +40,49 @@ def get_request_body_schema(request_body_schema: dict) -> dict:
     if 'in' not in schema or schema['in'] != 'body':
         logger.debug('Request body schema seems to be missing a request body section')
         raise ImproperlyConfigured(
-            'Input validation tries to test request body documentation, but the provided schema has no request body.'
+            'Tried to test request body documentation, but the provided schema has no request body.'
         )
     return schema['schema']
+
+
+def _iterate_schema_dict(d: dict) -> dict:
+    x = {}
+    for key, value in d['properties'].items():
+        if read_type(value) == 'object':
+            x[key] = _iterate_schema_dict(value)
+        elif read_type(value) == 'array':
+            x[key] = _iterate_schema_list(value)  # type: ignore
+        elif 'example' in value:
+            x[key] = value['example']
+        else:
+            raise ImproperlyConfigured(f'This request body item does not seem to have example value. Item: {value}')
+    return x
+
+
+def _iterate_schema_list(l: dict) -> list:
+    x = []
+    i = read_items(l)
+    if read_type(i) == 'object':
+        x.append(_iterate_schema_dict(i))
+    elif read_type(i) == 'array':
+        x.append(_iterate_schema_list(i))  # type: ignore
+    elif 'example' in i:
+        x.append(i['example'])
+    else:
+        raise ImproperlyConfigured(f'This request body item does not seem to have example value. Item: {i}')
+    return x
+
+
+def serialize_schema(schema: dict) -> Union[list, dict]:
+    """
+    Converts an OpenAPI schema representation of a dict to dict.
+    """
+    if 'properties' not in schema and 'items' not in schema:
+        raise ImproperlyConfigured('Received a schema without a properties tag')
+
+    if 'items' in schema:
+        logger.debug('--> list')
+        return _iterate_schema_list(schema)
+    else:
+        logger.debug('--> dict')
+        return _iterate_schema_dict(schema)

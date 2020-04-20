@@ -31,16 +31,10 @@ class ResponseTester:
         elif read_type(response_schema) == 'array':
             logger.debug('init --> list')
             self.test_list(schema=response_schema, data=response_data, parent='init')
-        elif (
-            read_type(response_schema) in list_types()
-        ):  # this should be third, as list_types also contains array and object
+        # this should always be third, as list_types also contains `array` and `object`
+        elif read_type(response_schema) in list_types():
             logger.debug('init --> item')
             self.test_item(schema=response_schema, data=response_data, parent='init')
-        else:
-            raise Exception(
-                f'Unexpected error.\nSchema: {response_schema}\nResponse: {response_data}\n\nThis shouldn\'t happen.'
-            )
-        #   ^ dont move exception block down - that will cause it to be executed after if statements
 
     def test_dict(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
@@ -89,12 +83,6 @@ class ResponseTester:
             elif read_type(schema_value) in list_types():  # This needs to come after array and object test_checks
                 logger.debug('test_dict --> test_item. Response: %s, Schema: %s', response_value, schema_value)
                 self.test_item(schema=schema_value, data=response_value, parent=f'{parent}.dict:key:{schema_key}')
-            else:
-                # This part of the code should be unreachable. However, if we do have a gap in our logic,
-                # we should raise an error to highlight the error.
-                #
-                # dont move exception block down as this will cause it to be executed after if statements
-                raise Exception(f'Unexpected error.\n\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
     def test_list(self, schema: dict, data: Union[list, dict], parent: str) -> None:
         """
@@ -127,13 +115,6 @@ class ResponseTester:
             elif read_type(item) in list_types():
                 logger.debug('test_list --> test_item')
                 self.test_item(schema=item, data=data[index], parent=f'{parent}.list')
-
-            else:
-                # This part of the code should be unreachable. However, if we do have a gap in our logic,
-                # we should raise an error to highlight the error.
-                #
-                # dont move exception block down as this will cause it to be executed after if statements
-                raise Exception(f'Unexpected error.\nSchema: {schema}\nResponse: {data}\n\nThis shouldn\'t happen.')
 
     def test_item(self, schema: dict, data: Any, parent: str) -> None:
         """

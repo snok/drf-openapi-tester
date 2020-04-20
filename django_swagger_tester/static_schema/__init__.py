@@ -1,9 +1,9 @@
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.input_validation.validation import input_validation
-from django_swagger_tester.response_validation.validation import response_validation
-from django_swagger_tester.static_schema.loader import LoadStaticSchema as loader_class
+from django_swagger_tester.input_validation.validation import input_validation as _input_validation
+from django_swagger_tester.response_validation.validation import response_validation as _response_validation
+from django_swagger_tester.static_schema.loader import LoadStaticSchema as _loader_class
 
 
 def validate_response(response: Response, method: str, route: str, **kwargs) -> None:
@@ -15,7 +15,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     :param route: Relative path of the endpoint being tested
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    return response_validation(loader_class=loader_class, response=response, method=method, route=route, **kwargs)
+    return _response_validation(loader_class=_loader_class, response=response, method=method, route=route, **kwargs)
 
 
 def validate_input(
@@ -31,8 +31,8 @@ def validate_input(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    return input_validation(
-        loader_class=loader_class,
+    return _input_validation(
+        loader_class=_loader_class,
         serializer=serializer,
         method=method,
         route=route,

@@ -62,7 +62,7 @@ class SwaggerTesterSettings(object):
         else:
             if self.CAMEL_CASE_PARSER:
                 try:
-                    from djangorestframework_camel_case.util import underscoreize, camelize  # noqa: F401
+                    import djangorestframework_camel_case  # noqa: F401
                 except ImportError:
                     raise ImproperlyConfigured(
                         'The package `djangorestframework_camel_case` is not installed, '
