@@ -1,8 +1,6 @@
 import json
 import logging
 
-from rest_framework.serializers import Serializer
-
 from django_swagger_tester.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.input_validation.utils import get_request_body_schema
@@ -12,7 +10,7 @@ logger = logging.getLogger('django_swagger_tester')
 
 def input_validation(
     loader_class,  # noqa: TYP001
-    serializer: Serializer,
+    serializer,  # noqa: TYP001
     method: str,
     route: str,
     camel_case_parser: bool = False,
@@ -44,4 +42,4 @@ def input_validation(
             f'\n\nSwagger example request body: \n\n\t{json.dumps(example)}'
             f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}'
         )
-    SchemaCaseTester(request_body_schema)
+    SchemaCaseTester(request_body_schema, **kwargs)

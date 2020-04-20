@@ -145,7 +145,7 @@ In addition, the function also takes one optional input:
 Input Validation
 ================
 
-Similarly to the response documentation, it is useful to test your
+As with your response documentation, it can be useful to test your
 request body documentation to ensure it is-, and remains, accurate.
 
 The current input validation function requires that you're using Django Rest Framework's ``Serializer`` for input validation.
@@ -176,15 +176,15 @@ Example
 
 .. code-block:: python
 
-    from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
+    from myapp.api.serializers import MySerializer  # your custom serializer
+    from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
 
 
     def test_request_body_documentation(client):
         """
         Verifies that our request body documentation is representative of a valid request body.
         """
-        from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
-        validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+        validate_input(serializer=MySerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
 
 .. Note::
 
@@ -221,7 +221,7 @@ responses, but you prefer to keep an abbreviation fully capitalized::
 
     ...
 
-    validate_response(response=response, method='GET', route='/api/v1/myApi/', ignore_case=['GUID', 'IP'])
+    validate_response(..., route='/api/v1/myApi/', ignore_case=['GUID', 'IP'])
 
 
 Disabling Case Checks

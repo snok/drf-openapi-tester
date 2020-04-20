@@ -1,5 +1,4 @@
 from rest_framework.response import Response
-from rest_framework.serializers import Serializer
 
 from django_swagger_tester.drf_yasg.loader import LoadDrfYasgSchema as loader_class
 from django_swagger_tester.input_validation.validation import input_validation
@@ -18,7 +17,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     return response_validation(loader_class=loader_class, response=response, method=method, route=route, **kwargs)
 
 
-def validate_input(serializer: Serializer, method: str, route: str, **kwargs) -> None:
+def validate_input(serializer, method: str, route: str, **kwargs) -> None:  # noqa: TYP001
     """
     Calls the input validation function with the drf_yasg loader class.
 
