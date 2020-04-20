@@ -109,7 +109,7 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-SWAGGER_TESTER = {'CASE': 'camel case', 'PATH': BASE_DIR + '/openapi-schema.yml'}
+SWAGGER_TESTER = {'CASE': 'camel case', 'PATH': BASE_DIR + '/openapi-schema.yml', 'CAMEL_CASE_PARSER': True}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),

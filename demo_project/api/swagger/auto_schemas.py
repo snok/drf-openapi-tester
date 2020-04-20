@@ -1,7 +1,7 @@
 from drf_yasg.openapi import Schema, TYPE_ARRAY, TYPE_OBJECT
 from drf_yasg.utils import swagger_auto_schema
 
-from demo_project.api.serializers import VehicleSerializer
+from demo_project.api.serializers import VehicleSerializer, ItemSerializer
 from demo_project.api.swagger.responses import generic_error_response, get_cars_200_response, get_trucks_200_response
 from demo_project.api.swagger.schemas import generic_string_schema
 
@@ -74,6 +74,20 @@ def post_vehicle_auto_schema():
         operation_summary='Creates a new vehicle type',
         operation_description='Creates a new vehicle type in the database',
         request_body=VehicleSerializer,
+        responses={
+            '201': Schema(
+                type=TYPE_OBJECT, properties={'success': generic_string_schema('this is a response', 'description')}
+            ),
+        },
+    )
+
+
+def post_item_auto_schema():
+    return swagger_auto_schema(
+        operation_id='create_item',
+        operation_summary='Creates a new item type',
+        operation_description='Creates a new item type in the database',
+        request_body=Schema(type=TYPE_OBJECT, properties={'itemType': generic_string_schema('truck', 'type of item')}),
         responses={
             '201': Schema(
                 type=TYPE_OBJECT, properties={'success': generic_string_schema('this is a response', 'description')}

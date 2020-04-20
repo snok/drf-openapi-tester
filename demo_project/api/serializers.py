@@ -6,3 +6,7 @@ class VehicleSerializer(serializers.Serializer):
         swagger_schema_fields = {'example': {'vehicleType': 'truck'}}
 
     vehicle_type = serializers.CharField(max_length=10)
+
+
+class ItemSerializer(serializers.Serializer):
+    item_type = serializers.CharField(max_length=10)

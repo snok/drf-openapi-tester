@@ -19,16 +19,15 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: Opti
     :param status_code: HTTP response code
     :return Response schema
     """
-    schema = replace_refs(schema)
     # Replace all $ref sections in the schema with actual values
     no_ref_schema = replace_refs(schema)
     # Index by paths
     paths_schema = index_schema(schema=no_ref_schema, variable='paths')
     # Index by route
-    route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in schema.keys()])}'
+    route_error = f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in paths_schema.keys()])}'
     route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
     # Index by method
-    joined_methods = ', '.join([method.upper() for method in schema.keys() if method.upper() != 'PARAMETERS'])
+    joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
     method_error = f'\n\nAvailable methods include {joined_methods}.'
     method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
     # Index by responses

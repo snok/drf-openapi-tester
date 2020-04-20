@@ -13,6 +13,7 @@ def test_get_paths():
         '/api/v1/{vehicle_type}/correct/',
         '/api/v1/{vehicle_type}/incorrect/',
         '/api/v1/vehicles/',
+        '/api/v1/items/',
         '/api/v1/trucks/correct/',
     ]
     assert [url in expected for url in urls]

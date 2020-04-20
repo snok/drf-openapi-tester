@@ -141,11 +141,41 @@ In addition, the function also takes one optional input:
 
     **example**: ``ignore_case=['API', 'IP]``
 
+Suggested Use
+-------------
+
+The response validation function can be called from anywhere,
+but because the tests require a request client it generally makes sense to include
+these tests with your existing API view tests.
+
+For example::
+
+    class TestGetCustomers(AuthorizedRequestBase):
+
+        ...
+
+        def test_is_valid(self):
+            """
+            Verify that we get a 200 from a valid request.
+            """
+            response = self.get(route='api/v1/customers/')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected_response)
+
+        def test_swagger_schema(self):
+            """
+            Verifies that the API response matches the swagger documentation for the endpoint.
+            """
+            response = self.get(route='api/v1/customers/')
+            validate_response(response=response, method='GET', route='api/v1/customers/')
+
+        ...
+
 
 Input Validation
 ================
 
-Similarly to the response documentation, it is useful to test your
+As with your response documentation, it can be useful to test your
 request body documentation to ensure it is-, and remains, accurate.
 
 The current input validation function requires that you're using Django Rest Framework's ``Serializer`` for input validation.
@@ -176,21 +206,111 @@ Example
 
 .. code-block:: python
 
-    from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
+    from myapp.api.serializers import MySerializer  # your custom serializer
+    from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
 
 
     def test_request_body_documentation(client):
         """
         Verifies that our request body documentation is representative of a valid request body.
         """
-        from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
-        validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+        validate_input(serializer=MySerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
 
 .. Note::
 
     The ``camel_case_parser`` argument should be set to ``True`` if your DRF API uses
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
     ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
+
+The ``validate_input`` Function
+----------------------------------
+
+The ``validate_input`` function takes three required inputs:
+
+* serializer
+    **description**: The Serializer object used for validating API inputs.
+
+    **type**: rest_framework.serializer.Serializer
+
+* method
+    **description**: The HTTP method used to get the response.
+
+    **type**: string
+
+    **example**: ``method='GET'``
+
+* route
+    **description**: The resolvable path of your API.
+
+    **type**: string
+
+    **example**: ``route='api/v1/test'``
+
+
+In addition, the function also takes one optional input:
+
+* camel_case_parser
+    **description**: Whether or not to convert a camel-cased example to snake case before passing it to your serializer.
+
+    **type**: boolean
+
+    **example**: ``camel_case_parser=True``
+
+.. Note::
+
+    The ``CAMEL_CASE_PARSER`` project setting lets you specify a project-wide default for the ``camel_case_parser`` argument.
+
+    See `configuration <configuration.html#camel-case-parser>`_ for more info.
+
+
+Suggested Use
+-------------
+
+If you have a file for tests related to each view, input validation tests can be added to each file individually, like we would reccomend you do with response validation tests.
+However, input validation tests are also well suited to live separately from your API view tests, because they do not require a database or a request client.
+
+This allows you to put all your input tests into one file. This enables you to very simply test a whole suite of endpoints with very little code::
+
+    from django.test import SimpleTestCase
+    from django_swagger_tester.drf_yasg import validate_input
+
+    from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ...
+
+
+    class TestSwaggerInput(SimpleTestCase):
+        endpoints = [
+            {
+                'api/v1/orders/': [
+                    ('POST', ValidateOrderBody),
+                    ('PUT', ValidatePutOrderBody),
+                    ('DELETE', ValidateDeleteOrderBody)
+                ]
+            },
+            {
+                'api/v1/orders/entries/': [
+                    ('POST', ValidateEntryBody),
+                    ('PUT', ValidatePutEntryBody),
+                    ('DELETE', ValidateEntryDeleteBody)
+                ]
+            },
+            {
+                'api/v1/orders/directentries/': [
+                    ('POST', ValidateDirectEntriesBody),
+                    ('PUT', ValidatePutDirectEntriesBody),
+                    ('DELETE', ValidateEntryDeleteBody)
+                ]
+            },
+        ]
+
+        def test_swagger_input(self) -> None:
+            """
+            Verifies that the documented request bodies are valid.
+            """
+            for endpoint in self.endpoints:
+                for route, values in endpoint.items():
+                    for method, serializer in values:
+                        validate_input(serializer=serializer, method=method, route=route)
+
 
 Case checking
 =============
@@ -221,7 +341,7 @@ responses, but you prefer to keep an abbreviation fully capitalized::
 
     ...
 
-    validate_response(response=response, method='GET', route='/api/v1/myApi/', ignore_case=['GUID', 'IP'])
+    validate_response(..., route='/api/v1/myApi/', ignore_case=['GUID', 'IP'])
 
 
 Disabling Case Checks

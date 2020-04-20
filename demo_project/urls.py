@@ -19,6 +19,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
+from demo_project.api.views.items import Items
 from . import views
 from .api.views.cars import BadCars, GoodCars
 from .api.views.trucks import BadTrucks, GoodTrucks
@@ -39,7 +40,8 @@ api_urlpatterns = [
     path('api/v1/<vehicle_type:vehicle_type>/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
     path('api/v1/trucks/correct/', GoodTrucks.as_view(), name='correctly_documented_trucks'),
     path('api/v1/trucks/incorrect/', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
-    path('api/v1/vehicles/', Vehicles.as_view(), name='incorrectly_documented_trucks'),
+    path('api/v1/vehicles/', Vehicles.as_view(), name='vehicles'),
+    path('api/v1/items/', Items.as_view(), name='items'),
 ]
 schema_view = get_schema_view(
     openapi.Info(
