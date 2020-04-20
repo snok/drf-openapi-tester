@@ -17,6 +17,7 @@ class SwaggerTesterSettings(object):
         """
         self.CASE = 'camel case'
         self.PATH = ''
+        self.CAMEL_CASE_PARSER = False
 
         if not hasattr(django_settings, 'SWAGGER_TESTER'):
             return

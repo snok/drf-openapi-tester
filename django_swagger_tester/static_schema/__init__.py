@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 
+from django_swagger_tester.configuration import settings
 from django_swagger_tester.input_validation.validation import input_validation
 from django_swagger_tester.response_validation.validation import response_validation
 from django_swagger_tester.static_schema.loader import LoadStaticSchema as loader_class
@@ -17,7 +18,9 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     return response_validation(loader_class=loader_class, response=response, method=method, route=route, **kwargs)
 
 
-def validate_input(serializer, method: str, route: str, **kwargs) -> None:  # noqa: TYP001
+def validate_input(
+    serializer, method: str, route: str, camel_case_parser: bool = settings.CAMEL_CASE_PARSER, **kwargs  # noqa: TYP001
+) -> None:
     """
     Calls the input validation function with the static schema loader class.
 
@@ -28,4 +31,11 @@ def validate_input(serializer, method: str, route: str, **kwargs) -> None:  # no
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    return input_validation(loader_class=loader_class, serializer=serializer, method=method, route=route, **kwargs)
+    return input_validation(
+        loader_class=loader_class,
+        serializer=serializer,
+        method=method,
+        route=route,
+        camel_case_parser=camel_case_parser,
+        **kwargs,
+    )
