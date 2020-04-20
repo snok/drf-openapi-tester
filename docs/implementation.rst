@@ -141,6 +141,36 @@ In addition, the function also takes one optional input:
 
     **example**: ``ignore_case=['API', 'IP]``
 
+Suggested Use
+-------------
+
+The response validation function can be called from anywhere,
+but because the tests require a request client it generally makes sense to include
+these tests with your existing API view tests.
+
+For example::
+
+    class TestGetCustomers(AuthorizedRequestBase):
+
+        ...
+
+        def test_is_valid(self):
+            """
+            Verify that we get a 200 from a valid request.
+            """
+            response = self.get(route='api/v1/customers/')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected_response)
+
+        def test_swagger_schema(self):
+            """
+            Verifies that the API response matches the swagger documentation for the endpoint.
+            """
+            response = self.get(route='api/v1/customers/')
+            validate_response(response=response, method='GET', route='api/v1/customers/')
+
+        ...
+
 
 Input Validation
 ================
@@ -191,6 +221,59 @@ Example
     The ``camel_case_parser`` argument should be set to ``True`` if your DRF API uses
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
     ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
+
+Suggested Use
+-------------
+
+If you have a file for tests related to each view, input validation tests can be added to each file individually, like we would reccomend you do with response validation tests.
+However, input validation tests are also well suited to live separately from your API view tests, because they do not require a database or a request client.
+
+This allows you to put all your input tests into one file. This enables you to very simply test a whole suite of endpoints with very little code::
+
+    from django.test import SimpleTestCase
+    from django_swagger_tester.drf_yasg import validate_input
+
+    from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ValidateDirectEntriesBody, ValidateEntryBody, \
+        ValidateEntryDeleteBody, ValidateOrderBody, ValidatePutDirectEntriesBody, ValidatePutEntryBody, ValidatePutOrderBody
+
+
+    class TestSwaggerInput(SimpleTestCase):
+        endpoints = [
+            {
+                'route': 'api/v1/orders/',
+                'serializers': [
+                    {'method': 'POST', 'serializer': ValidateOrderBody},
+                    {'method': 'PUT', 'serializer': ValidatePutOrderBody},
+                    {'method': 'DELETE', 'serializer': ValidateDeleteOrderBody}
+                ]
+            },
+            {
+                'route': 'api/v1/orders/entries/',
+                'serializers': [
+                    {'method': 'POST', 'serializer': ValidateEntryBody},
+                    {'method': 'PUT', 'serializer': ValidatePutEntryBody},
+                    {'method': 'DELETE', 'serializer': ValidateEntryDeleteBody}
+                ]
+            },
+            {
+                'route': 'api/v1/orders/directEntries/',
+                'serializers': [
+                    {'method': 'POST', 'serializer': ValidateDirectEntriesBody},
+                    {'method': 'PUT', 'serializer': ValidatePutDirectEntriesBody},
+                    {'method': 'DELETE', 'serializer': ValidateEntryDeleteBody}
+                ]
+            },
+        ]
+
+        def test_swagger_input(self) -> None:
+            """
+            Verifies that the documented request bodies are valid.
+            """
+            for endpoint in self.endpoints:
+                for item in endpoint['serializers']:
+                    validate_input(serializer=item['method'], method=item['serializer'], route=endpoint['route'])
+
+
 
 Case checking
 =============
