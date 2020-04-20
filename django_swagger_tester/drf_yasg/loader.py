@@ -79,7 +79,11 @@ class LoadDrfYasgSchema:
         """
         resolved_route = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
-        return resolved_route.replace(path_prefix, '')
+        logger.debug('Path prefix: %s', path_prefix)
+        if path_prefix != '/':
+            return resolved_route[len(path_prefix) :]
+        else:
+            return resolved_route
 
     def get_response_schema(self) -> dict:
         """
