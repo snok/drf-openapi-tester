@@ -222,6 +222,47 @@ Example
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
     ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
 
+The ``validate_input`` Function
+----------------------------------
+
+The ``validate_input`` function takes three required inputs:
+
+* serializer
+    **description**: The Serializer object used for validating API inputs.
+
+    **type**: rest_framework.serializer.Serializer
+
+* method
+    **description**: The HTTP method used to get the response.
+
+    **type**: string
+
+    **example**: ``method='GET'``
+
+* route
+    **description**: The resolvable path of your API.
+
+    **type**: string
+
+    **example**: ``route='api/v1/test'``
+
+
+In addition, the function also takes one optional input:
+
+* camel_case_parser
+    **description**: Whether or not to convert a camel-cased example to snake case before passing it to your serializer.
+
+    **type**: boolean
+
+    **example**: ``camel_case_parser=True``
+
+.. Note::
+
+    The ``CAMEL_CASE_PARSER`` project setting lets you specify a project-wide default for the ``camel_case_parser`` argument.
+
+    See `configuration <configuration.html#camel-case-parser>`_ for more info.
+
+
 Suggested Use
 -------------
 
