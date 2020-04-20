@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-swagger-tester"
-version = "0.9.9"  # Remember to also change in django_swagger_tester/__init__
+version = "1.0.0"  # Remember to also change in django_swagger_tester/__init__
 description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"

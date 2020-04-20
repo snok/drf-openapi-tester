@@ -152,6 +152,24 @@ Example:
 
 *This setting is not required if your swagger docs are generated.*
 
+*CAMEL_CASE_PARSER*
+~~~~~~~~~~~~~~~~~~~
+
+Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
+``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
+
+By settings this to True, example values constructed in the ``validate_input`` function will be snake cased before it's passed
+to a serializer. See the `function docs <https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#the-validate-input-function>`_ for more info.
+
+Example:
+
+.. code:: python
+
+  SWAGGER_TESTER = {
+      'CAMEL_CASE_PARSER': True,
+  }
+
+
 |
 |
 
