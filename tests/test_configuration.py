@@ -71,3 +71,19 @@ def test_excess_settings(monkeypatch) -> None:  # noqa: TYP001
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'bad_setting': 5})
     with pytest.raises(ImproperlyConfigured, match='is not a valid setting for the django-swagger-tester module'):
         SwaggerTesterSettings()
+
+
+def test_camel_case_parser_setting(monkeypatch) -> None:
+    """
+    Make sure all states are OK.
+    """
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CAMEL_CASE_PARSER': True})
+    SwaggerTesterSettings()
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CAMEL_CASE_PARSER': False})
+    SwaggerTesterSettings()
+    with pytest.raises(
+        ImproperlyConfigured,
+        match='\`CAMEL_CASE_PARSER\` needs to be True or False, or unspecified \(defaults to False\)',
+    ):
+        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CAMEL_CASE_PARSER': None})
+        SwaggerTesterSettings()

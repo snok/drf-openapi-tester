@@ -55,6 +55,19 @@ class SwaggerTesterSettings(object):
                 f'`kebab case` for kebab-case, '
                 f'or to `None` to skip case validation outright.'
             )
+        if not isinstance(self.CAMEL_CASE_PARSER, bool):
+            raise ImproperlyConfigured(
+                '`CAMEL_CASE_PARSER` needs to be True or False, or unspecified (defaults to False).'
+            )
+        else:
+            if self.CAMEL_CASE_PARSER:
+                try:
+                    from djangorestframework_camel_case.util import underscoreize, camelize  # noqa: F401
+                except ImportError:
+                    raise ImproperlyConfigured(
+                        'The package `djangorestframework_camel_case` is not installed, '
+                        'and is required to enable camel case parsing.'
+                    )
 
 
 settings = SwaggerTesterSettings()

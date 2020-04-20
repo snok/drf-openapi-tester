@@ -1,2 +1,2 @@
-__version__ = '1.0.0'  # Remember to also change in pyproject.toml
+__version__ = '0.3.4'  # Remember to also change in pyproject.toml
 __author__ = 'Sondre Lillebø Gundersen'

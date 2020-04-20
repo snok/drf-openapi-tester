@@ -67,47 +67,35 @@ def input_validation(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    imported = True
-    try:
-        from djangorestframework_camel_case.util import underscoreize, camelize
-    except ImportError:
-        if camel_case_parser:
-            raise ImproperlyConfigured(
-                'The package `djangorestframework_camel_case` is not installed, '
-                'and is required to enable camel case parsing.'
-            )
-        else:
-            imported = False
-
     loader = loader_class(route=route, method=method, **kwargs)
     endpoint_schema = loader.get_request_body()
+
     request_body_schema = get_request_body_schema(endpoint_schema)
-    example = serialize_schema(request_body_schema)
+    if 'example' in request_body_schema:
+        # Find a ready dict object
+        # This happens when you use your Serializer as the request body parameter in drf_yasg auto schemas
+        example = request_body_schema['example']
+    else:
+        # Parses schema bit by bit
+        # This happens if you use static schemas or document your request body using Schema objects in drf_yasg
+        example = serialize_schema(request_body_schema)
+
+    # Make camelCased input snake_cased so the serializer can read it
     if camel_case_parser:
-        # Make camelCased input snake_cased so the serializer can read it
+        from djangorestframework_camel_case.util import underscoreize
+
         example = underscoreize(example)
+
     logger.debug('Validating example: %s', example)
     serializer = serializer(data=example)  # type: ignore
     if not serializer.is_valid():
-
-        # This is an attempt at spotting camel-case/snake-case inconsistencies - perhaps not a good idea
-        suspected_conversion_error = False
-        if imported:
-            for parameter_name in serializer.errors.keys():
-                if camelize(parameter_name) in example or underscoreize(parameter_name) in example:
-                    suspected_conversion_error = True
-        if suspected_conversion_error:
-            addon = (
-                '\n\nNote: It looks like you have parameter names matched, '
-                'but with the wrong case. Maybe you need to specify `camel_case_parser=True` or `camel_case_parser=False`.'
-            )
-        else:
-            addon = ''
-
+        logger.info('Example was invalid')
         raise SwaggerDocumentationError(
             f'Request body is not valid according to the passed serializer.'
             f'\n\nSwagger example request body: \n\n\t{json.dumps(example)}'
-            f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}{addon}'
+            f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}\n\n'
+            f'Note: If all your parameters are correct, you might need to change `camel_case_parser` to True or False.'
         )
 
+    # Check the example's case for inconsistencies
     SchemaCaseTester(request_body_schema, **kwargs)
