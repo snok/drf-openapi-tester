@@ -233,34 +233,30 @@ This allows you to put all your input tests into one file. This enables you to v
     from django.test import SimpleTestCase
     from django_swagger_tester.drf_yasg import validate_input
 
-    from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ValidateDirectEntriesBody, ValidateEntryBody, \
-        ValidateEntryDeleteBody, ValidateOrderBody, ValidatePutDirectEntriesBody, ValidatePutEntryBody, ValidatePutOrderBody
+    from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ...
 
 
     class TestSwaggerInput(SimpleTestCase):
         endpoints = [
             {
-                'route': 'api/v1/orders/',
-                'serializers': [
-                    {'method': 'POST', 'serializer': ValidateOrderBody},
-                    {'method': 'PUT', 'serializer': ValidatePutOrderBody},
-                    {'method': 'DELETE', 'serializer': ValidateDeleteOrderBody}
+                'api/v1/orders/': [
+                    ('POST', ValidateOrderBody),
+                    ('PUT', ValidatePutOrderBody),
+                    ('DELETE', ValidateDeleteOrderBody)
                 ]
             },
             {
-                'route': 'api/v1/orders/entries/',
-                'serializers': [
-                    {'method': 'POST', 'serializer': ValidateEntryBody},
-                    {'method': 'PUT', 'serializer': ValidatePutEntryBody},
-                    {'method': 'DELETE', 'serializer': ValidateEntryDeleteBody}
+                'api/v1/orders/entries/': [
+                    ('POST', ValidateEntryBody),
+                    ('PUT', ValidatePutEntryBody),
+                    ('DELETE', ValidateEntryDeleteBody)
                 ]
             },
             {
-                'route': 'api/v1/orders/directEntries/',
-                'serializers': [
-                    {'method': 'POST', 'serializer': ValidateDirectEntriesBody},
-                    {'method': 'PUT', 'serializer': ValidatePutDirectEntriesBody},
-                    {'method': 'DELETE', 'serializer': ValidateEntryDeleteBody}
+                'api/v1/orders/directentries/': [
+                    ('POST', ValidateDirectEntriesBody),
+                    ('PUT', ValidatePutDirectEntriesBody),
+                    ('DELETE', ValidateEntryDeleteBody)
                 ]
             },
         ]
@@ -270,9 +266,9 @@ This allows you to put all your input tests into one file. This enables you to v
             Verifies that the documented request bodies are valid.
             """
             for endpoint in self.endpoints:
-                for item in endpoint['serializers']:
-                    validate_input(serializer=item['method'], method=item['serializer'], route=endpoint['route'])
-
+                for route, values in endpoint.items():
+                    for method, serializer in values:
+                        validate_input(serializer=serializer, method=method, route=route)
 
 
 Case checking
