@@ -87,3 +87,20 @@ def test_camel_case_parser_setting(monkeypatch) -> None:
     ):
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'CAMEL_CASE_PARSER': None})
         SwaggerTesterSettings()
+
+
+def test_djangorestframework_camel_case_not_installed():
+    """
+    Verify that validation raises an exception if the package isnt installed.
+    """
+    import sys
+
+    # Mock away the dependency
+    temp = sys.modules['djangorestframework_camel_case']
+    sys.modules['djangorestframework_camel_case'] = None
+
+    e = 'The package `djangorestframework_camel_case` is not installed, and is required to enable camel case parsing.'
+    with pytest.raises(ImproperlyConfigured, match=e):
+        SwaggerTesterSettings()
+
+    sys.modules['djangorestframework_camel_case'] = temp

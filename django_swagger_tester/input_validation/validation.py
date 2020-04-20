@@ -1,50 +1,11 @@
 import json
 import logging
-from typing import Union
-
-from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.input_validation.utils import get_request_body_schema
-from django_swagger_tester.openapi import read_type
+from django_swagger_tester.input_validation.utils import get_request_body_schema, serialize_schema
 
 logger = logging.getLogger('django_swagger_tester')
-
-
-def serialize_schema(schema: dict) -> Union[list, dict]:
-    """
-    Converts an OpenAPI schema representation of a dict to dict.
-    """
-    if 'properties' not in schema and 'items' not in schema:
-        raise ImproperlyConfigured('Received a schema without a properties tag')
-
-    def iterate_dict(d: dict) -> dict:
-        x = {}
-        for key, value in d['properties'].items():
-            if read_type(value) == 'object':
-                x[key] = iterate_dict(value)
-            elif read_type(value) == 'array':
-                x[key] = iterate_list(value)  # type: ignore
-            else:
-                x[key] = value['example']
-        return x
-
-    def iterate_list(l: dict) -> list:
-        x = []
-        for i in l['items']:
-            if read_type(i) == 'object':
-                x.append(iterate_dict(i))
-            elif read_type(i) == 'array':
-                x.append(iterate_list(i))  # type: ignore
-            else:
-                x.append(i['example'])
-        return x
-
-    if 'items' in schema:
-        return iterate_list(schema)
-    else:
-        return iterate_dict(schema)
 
 
 # noinspection PyUnboundLocalVariable

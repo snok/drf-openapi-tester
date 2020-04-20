@@ -32,6 +32,6 @@ def test_error_handling():
     """
     If we get a schema we're not prepared for, we raise an error.
     """
-    e = 'Input validation tries to test request body documentation, but the provided schema has no request body'
+    e = 'Tried to test request body documentation, but the provided schema has no request body'
     with pytest.raises(ImproperlyConfigured, match=e):
         get_request_body_schema('test')
