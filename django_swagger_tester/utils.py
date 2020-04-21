@@ -69,12 +69,20 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
     Unpacks HTTP response.
     """
     try:
-        return response.json(), response.status_code
+        status_code = response.status_code
     except Exception as e:
         logger.exception('Unable to open response object')
         raise ValueError(
             f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
         )
+    try:
+        return response.json(), status_code
+    except Exception as e:
+        if status_code == 204:
+            raise ImproperlyConfigured(
+                'Response returned a 204, indicating no response. There is no response JSON to test.'
+            )
+        raise ValueError(f'Unable to unpack response object. Error: {e}')
 
 
 def replace_refs(schema: dict) -> dict:
