@@ -35,7 +35,11 @@ def resolve_path(endpoint_path: str) -> str:
 
         kwarg = resolved_route.kwargs
         for key, value in kwarg.items():
-            endpoint_path = endpoint_path.replace(value, f'{{{key}}}')
+            # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex regex handling
+            # However, its important not to freely use the .replace() function, as a {value} of `1` would also cause the `1` in api/v1/ to
+            # be replaced
+            var_index = endpoint_path.rfind(value)
+            endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(value) :]
         return endpoint_path
 
     except Resolver404:
@@ -69,12 +73,20 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
     Unpacks HTTP response.
     """
     try:
-        return response.json(), response.status_code
+        status_code = response.status_code
     except Exception as e:
         logger.exception('Unable to open response object')
         raise ValueError(
             f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
         )
+    try:
+        return response.json(), status_code
+    except Exception as e:
+        if status_code == 204:
+            raise ImproperlyConfigured(
+                'Response returned a 204, indicating no response. There is no response JSON to test.'
+            )
+        raise ValueError(f'Unable to unpack response object. Error: {e}')
 
 
 def replace_refs(schema: dict) -> dict:

@@ -75,9 +75,7 @@ def test_unsuccesful_unpack():
         raise Exception('test')
 
     response.json = _raise_exception
-    with pytest.raises(
-        Exception, match='Unable to unpack response object. Make sure you are passing response, and not response.json()'
-    ):
+    with pytest.raises(Exception, match='Unable to unpack response object. Error: test'):
         unpack_response(response)
 
 

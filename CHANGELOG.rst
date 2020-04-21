@@ -4,6 +4,17 @@
 Changelog
 *********
 
+1.0.1 2020-04-21
+----------------
+
+**Improvements**
+
+* Added handling of 204 HTTP responses.
+* Improved exception handling for missing request bodies.
+* Improved robustness of our route handling.
+
+
+
 1.0.0 2020-04-20
 ----------------
 

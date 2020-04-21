@@ -3,6 +3,7 @@ from typing import Union
 
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.exceptions import OpenAPISchemaError
 from django_swagger_tester.openapi import index_schema, read_items
 from django_swagger_tester.openapi import read_type
 from django_swagger_tester.utils import replace_refs
@@ -36,7 +37,12 @@ def get_request_body_schema(request_body_schema: dict) -> dict:
     :param request_body_schema: Schema section
     :return: Example request body
     """
-    schema = request_body_schema[0]
+    try:
+        schema = request_body_schema[0]
+    except IndexError:
+        raise OpenAPISchemaError(
+            f'Request body does not seem to be documented. Schema parameters: {request_body_schema}'
+        )
     if 'in' not in schema or schema['in'] != 'body':
         logger.debug('Request body schema seems to be missing a request body section')
         raise ImproperlyConfigured(
