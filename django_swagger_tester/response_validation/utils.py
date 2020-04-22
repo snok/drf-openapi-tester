@@ -69,7 +69,8 @@ def format_error(
     dotted_line = get_dotted_line(values=[reference, example_item, data])
     longest_key = max(len(i) for i in ['Sequence', 'Expected', 'Received'])
 
-    if 'detailed' in kwargs and kwargs['detailed'] is True:
+    verbose = 'verbose' in kwargs and kwargs['verbose'] is True
+    if verbose:
         tab = (longest_key + 4) * ' '
 
         # - Construct additional tables to be added onto the message list
@@ -97,7 +98,7 @@ def format_error(
         data: str = f'\n{tab}' + json.dumps(data, indent=4, sort_keys=True).replace('\n', f'\n{tab}')  # type: ignore
 
     else:
-        addon = '\n* If you wish to see more detailed data, you can pass `detailed=True` to the `validate_response` function *'
+        addon = '\n* If you need more details: set `verbose=True`'
 
     sys.stdout.flush()
 
@@ -106,7 +107,8 @@ def format_error(
     message = [
         f'Item is misspecified:\n\n'
         # -- Summary table --
-        f'Summary\n',
+        f'Summary',
+        '\n' if not verbose else '',
         f'{dotted_line}',
         '\n',
         'Error:'.ljust(offset) + f'{error_message}\n',
@@ -116,7 +118,7 @@ def format_error(
         '\n',
         'Hint:'.ljust(offset) + f'{hint}\n',
         'Sequence:'.ljust(offset) + f'{reference}\n',
-        '\n',
+        '\n' if not verbose else '',
         f'{dotted_line}',
         f'{addon}',
     ]

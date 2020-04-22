@@ -78,7 +78,7 @@ def _iterate_schema_list(l: dict) -> list:
     return x
 
 
-def serialize_schema(schema: dict) -> Union[list, dict]:
+def serialize_schema(schema: dict) -> Union[list, dict, str, int, bool]:
     """
     Converts an OpenAPI schema representation of a dict to dict.
     """
