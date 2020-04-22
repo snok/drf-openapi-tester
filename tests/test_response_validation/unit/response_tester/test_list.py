@@ -23,7 +23,7 @@ def test_valid_list() -> None:
     """
     Asserts that valid data passes successfully.
     """
-    tester.test_list(schema=list_type, data=list_data, parent='placeholder')
+    tester.test_list(schema=list_type, data=list_data, reference='placeholder')
 
 
 def test_bad_data_type() -> None:
@@ -33,14 +33,14 @@ def test_bad_data_type() -> None:
     with pytest.raises(
         SwaggerDocumentationError, match="Expected response to be <class 'list'> but found <class 'dict'>"
     ):
-        tester.test_list(schema=list_type, data={'test': list_data}, parent='placeholder')
+        tester.test_list(schema=list_type, data={'test': list_data}, reference='placeholder')
 
 
 def test_empty_response_data_list() -> None:
     """
     Asserts that the no exception is raised when the response data is missing - this has valid cases.
     """
-    tester.test_list(schema=list_type, data=[], parent='placeholder')
+    tester.test_list(schema=list_type, data=[], reference='placeholder')
 
 
 def test_call_list_from_list():
@@ -66,7 +66,7 @@ def test_call_list_from_list():
         },
     }
     custom_data = [[{'string': string_data, 'integer': integer_data, 'number': number_data, 'bool': bool_data}]]
-    assert tester.test_list(schema=custom_list, data=custom_data, parent='placeholder') is None
+    assert tester.test_list(schema=custom_list, data=custom_data, reference='placeholder') is None
 
 
 def test_call_item_from_list():
@@ -81,7 +81,7 @@ def test_call_item_from_list():
     ]:
         custom_list = {'title': 'list_type_title', 'type': 'array', 'items': type_schema[0]}
         custom_data = [type_schema[1]]
-        assert tester.test_list(schema=custom_list, data=custom_data, parent='placeholder') is None
+        assert tester.test_list(schema=custom_list, data=custom_data, reference='placeholder') is None
 
 
 def test_bad_type():
@@ -96,4 +96,4 @@ def test_bad_type():
     with pytest.raises(
         Exception, match='Schema item has an invalid `type` attribute. The type `stringo` is not supported.'
     ):
-        assert tester.test_list(schema=custom_schema, data=custom_data, parent='placeholder') is None
+        assert tester.test_list(schema=custom_schema, data=custom_data, reference='placeholder') is None

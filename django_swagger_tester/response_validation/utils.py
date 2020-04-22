@@ -1,8 +1,11 @@
+import json
 import logging
+import sys
 from collections import KeysView
 from typing import Any, Optional
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.input_validation.utils import serialize_schema
 from django_swagger_tester.openapi import index_schema
 from django_swagger_tester.utils import replace_refs
 
@@ -43,52 +46,87 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: Opti
     return index_schema(status_code_schema, 'schema')
 
 
-def format_error(error_message: str, data: Any, schema: dict, parent: str) -> SwaggerDocumentationError:
+def format_error(
+    error_message: str, data: Any, schema: dict, reference: str, hint: Optional[str] = None, **kwargs
+) -> SwaggerDocumentationError:
     """
     Formats and returns a standardized exception and error message.
     """
     logger.debug('Constructing error message')
 
-    # Unpack schema and data dicts
-    schema_items = [{'key': f'{key}', 'value': f'{value}'} for key, value in schema.items()]
-    schema_items += [{'key': 'parent', 'value': parent}]
-    data_items = [{'key': 'data', 'value': f'{data}'}, {'key': 'type', 'value': f'{type(data)}'}]
+    if hint is None:
+        hint = ''
 
-    # Find length of items
-    longest_key = max(len(f'{item["key"]}') for item_list in [schema_items, data_items] for item in item_list)
-    longest_value = max(len(f'{item["value"]}') for item_list in [schema_items, data_items] for item in item_list)
-    line_length = longest_value if longest_value < 91 else 91
+    # Construct example dict/list from schema - this is useful to display comparable items
+    example_item = serialize_schema(schema)
 
-    # Create a dotted line to make it pretty
-    dotted_line = line_length * '-' + '\n'
+    def get_dotted_line(values: list) -> str:
+        longest_value = max(len(f'{v}') for v in values)
+        line_length = longest_value if longest_value < 91 else 91
+        return line_length * '-' + '\n'
 
-    def format_string(left: Any, right: Any, offset: int) -> str:
-        left = f'{left}'
-        return left.ljust(offset) + f'{right}\n'
+    # Find the max length of keys and values we're showing and create a dotted line to helps us format a nice looking error message
+    dotted_line = get_dotted_line(values=[reference, example_item, data])
+    longest_key = max(len(i) for i in ['Sequence', 'Expected', 'Received'])
 
-    # Construct data property table
-    data_properties = [
-        format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in data_items
+    verbose = 'verbose' in kwargs and kwargs['verbose'] is True
+    if verbose:
+        tab = (longest_key + 4) * ' '
+
+        # - Construct additional tables to be added onto the message list
+
+        # Unpack schema and data dicts
+        schema_items = [{'key': f'{key}', 'value': f'{value}'} for key, value in schema.items()]
+        data_items = [{'key': 'data', 'value': f'{data}'}, {'key': 'type', 'value': f'{type(data)}'}]
+
+        # Find length of items
+        longest_detailed_key = max(
+            len(f'{item["key"]}') for item_list in [schema_items, data_items] for item in item_list
+        )
+
+        offset = longest_detailed_key + 4
+        addon = ''.join(
+            [f'\nResponse details\n', f'{dotted_line}']
+            + [item['key'].ljust(offset) + f'{item["value"]}\n' for item in data_items]
+            + [f'{dotted_line}\n', f'Schema\n', f'{dotted_line}']
+            + [item['key'].ljust(offset) + f'{item["value"]}\n' for item in schema_items]
+            + [f'{dotted_line}']
+        )
+
+        # Then - For a detailed view, we change `example item` and `data` to expanded versions of themselves
+        example_item: str = f'\n{tab}' + json.dumps(example_item, indent=4, sort_keys=True).replace('\n', f'\n{tab}')  # type: ignore
+        data: str = f'\n{tab}' + json.dumps(data, indent=4, sort_keys=True).replace('\n', f'\n{tab}')  # type: ignore
+
+    else:
+        addon = '\n* If you need more details: set `verbose=True`'
+
+    sys.stdout.flush()
+
+    # Construct error message
+    offset = longest_key + 4
+    message = [
+        f'Item is misspecified:\n\n'
+        # -- Summary table --
+        f'Summary',
+        '\n' if not verbose else '',
+        f'{dotted_line}',
+        '\n',
+        'Error:'.ljust(offset) + f'{error_message}\n',
+        '\n',
+        'Expected:'.ljust(offset) + f'{example_item}\n',
+        'Received:'.ljust(offset) + f'{data}\n',
+        '\n',
+        'Hint:'.ljust(offset) + f'{hint}\n',
+        'Sequence:'.ljust(offset) + f'{reference}\n',
+        '\n' if not verbose else '',
+        f'{dotted_line}',
+        f'{addon}',
     ]
-    data_properties += [f'{dotted_line}\n', f'Schema\n', f'{dotted_line}']
-
-    # Construct schema property table
-    schema_properties = [
-        format_string(left=item['key'], right=item['value'], offset=longest_key + 4) for item in schema_items
-    ]
-    schema_properties += [f'{dotted_line}']
-
-    # Construct the error message
-    message = (
-        [f'Item is misspecified:\n\nError: {error_message}\n\nResponse\n{dotted_line}']
-        + data_properties
-        + schema_properties
-    )  # noqa: E126
 
     return SwaggerDocumentationError(''.join(message))
 
 
-def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dict, data: dict, parent: str) -> None:
+def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dict, data: dict, reference: str) -> None:
     """
     Verifies that both sets have the same amount of keys.
     A length mismatch in the two sets, indicates an error in one of them.
@@ -97,7 +135,7 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
     :param response_keys: Response dictionary keys
     :param schema: OpenAPI schema
     :param data: Response data
-    :param parent: Logging reference to output for errors -
+    :param reference: Logging reference to output for errors -
         this makes it easier to identify where in a response/schema an error is happening
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
     """
@@ -109,7 +147,7 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
                 f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
                 data=data,
                 schema=schema,
-                parent=parent,
+                reference=reference,
             )
         else:
             missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
@@ -117,5 +155,5 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
                 f'The following properties seem to be missing from your response body: {missing_keys}.',
                 data=data,
                 schema=schema,
-                parent=parent,
+                reference=reference,
             )

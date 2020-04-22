@@ -24,6 +24,6 @@ def response_validation(loader_class, response: Response, method: str, route: st
     data, status_code = unpack_response(response)
     loader = loader_class(route=route, status_code=status_code, method=method)
     response_schema = loader.get_response_schema()
-    ResponseTester(response_schema=response_schema, response_data=data)
+    ResponseTester(response_schema=response_schema, response_data=data, **kwargs)
     ResponseCaseTester(response_data=data, **kwargs)
     SchemaCaseTester(schema=response_schema, **kwargs)
