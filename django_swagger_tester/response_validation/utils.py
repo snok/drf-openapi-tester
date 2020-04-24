@@ -148,6 +148,7 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
                 data=data,
                 schema=schema,
                 reference=reference,
+                hint='Add the key(s) to your Swagger docs, or stop returning it in your view.',
             )
         else:
             missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
@@ -156,4 +157,5 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
                 data=data,
                 schema=schema,
                 reference=reference,
+                hint='Remove the key(s) from you Swagger docs, or include it in your API response.',
             )
