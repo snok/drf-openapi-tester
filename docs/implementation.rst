@@ -38,7 +38,7 @@ If you render Swagger docs from a file (json or yaml), you should use the ``stat
 
     When testing a static schema, you need to add a ``PATH`` setting, pointing to the schema file.
 
-    See `Configuration <configuration.html>`_ for more info.
+    See `Configuration <configuration.html>`__ for more info.
 
 
 
@@ -132,7 +132,7 @@ The ``validate_response`` function takes three required inputs:
     **example**: ``route='api/v1/test'``
 
 
-In addition, the function also takes one optional input:
+In addition, the function also takes two optional inputs:
 
 * ignore_case
     **description**: List of keys for which we will skip case-validation. This can be useful for when you've made a conscious decision to, e.g., keep an acronym upper-cased although you have camelCase as a general standard.
@@ -140,6 +140,16 @@ In addition, the function also takes one optional input:
     **type**: List of strings
 
     **example**: ``ignore_case=['API', 'IP]``
+
+* verbose
+    **description**: Whether to output more detailed error messages.
+
+    **type**: bool
+
+    **default**: ``False``
+
+    **example**: ``verbose=True``
+
 
 Suggested Use
 -------------
@@ -198,7 +208,7 @@ If you render Swagger docs from a file (json or yaml), you should use the ``stat
 
     When testing a static schema, you need to add a ``PATH`` setting, pointing to the schema file.
 
-    See `Configuration <configuration.html>`_ for more info.
+    See `Configuration <configuration.html>`__ for more info.
 
 
 Example
