@@ -31,6 +31,9 @@ def resolve_path(endpoint_path: str) -> str:
             logger.debug('Resolved %s successfully', endpoint_path)
         except Resolver404:
             resolved_route = resolve(endpoint_path + '/')
+            endpoint_path = (
+                endpoint_path + '/'
+            )  # if we don't change endpoint path here, indexing paths will fail later on
             logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
 
         kwarg = resolved_route.kwargs
