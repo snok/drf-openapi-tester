@@ -88,7 +88,7 @@ The package has three main features:
 Implementations
 ---------------
 
-We currently support testing of:
+Django Swagger Tester currently support testing of:
 
 - Dynamically rendered Swagger docs, using `drf_yasg`_
 - All implementations which render Swagger docs from a schema file (yaml or json)
