@@ -2,7 +2,7 @@
 
     <p align="center">
         <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
+        <img width="650px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -64,7 +64,22 @@ The package has three main features:
 
 -  `Testing response documentation`_
 
+.. raw:: html
+
+    <p align="center">
+        <a href="https://django-swagger-tester.readthedocs.io/">
+        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/readme/docs/img/response.png" alt='logo'></a>
+    </p>
+
 -  `Testing input documentation`_
+
+.. raw:: html
+
+    <p align="center">
+        <a href="https://django-swagger-tester.readthedocs.io/">
+        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/readme/docs/img/input.png" alt='logo'></a>
+    </p>
+
 
 -  `Ensuring your docs comply with a single parameter naming standard`_.
 
