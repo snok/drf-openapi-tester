@@ -67,7 +67,7 @@ The package has three main features:
 .. raw:: html
 
     <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/readme/docs/img/response.png" alt='logo'></a>
+        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/response.png" alt='logo'></a>
     </p>
 
 -  `Testing input documentation`_:
@@ -75,7 +75,7 @@ The package has three main features:
 .. raw:: html
 
     <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/readme/docs/img/input.png" alt='logo'></a>
+        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/input.png" alt='logo'></a>
     </p>
 
 
