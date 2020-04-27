@@ -48,7 +48,7 @@ pytest = "^5.2"
 pytest-cov = "2.8.1"
 pytest-django =  "3.8.0"
 flake8 = "*"
-sphinx = "^2.4.4"  # test
+sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
 
 [tool.black]
