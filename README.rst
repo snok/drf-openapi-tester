@@ -62,26 +62,24 @@ Features
 
 The package has three main features:
 
--  `Testing response documentation`_
+-  `Testing response documentation`_:
 
 .. raw:: html
 
     <p align="center">
-        <a href="https://django-swagger-tester.readthedocs.io/">
         <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/readme/docs/img/response.png" alt='logo'></a>
     </p>
 
--  `Testing input documentation`_
+-  `Testing input documentation`_:
 
 .. raw:: html
 
     <p align="center">
-        <a href="https://django-swagger-tester.readthedocs.io/">
         <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/readme/docs/img/input.png" alt='logo'></a>
     </p>
 
 
--  `Ensuring your docs comply with a single parameter naming standard`_.
+-  and `ensuring your docs comply with a single parameter naming standard`_.
 
    Supported naming standards include ``camelCase``, ``snake_case``,
    ``kebab-case``, and ``PascalCase``.
