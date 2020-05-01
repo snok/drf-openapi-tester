@@ -278,7 +278,9 @@ To make sure your request body documentation is accurate, and will stay accurate
 Considering most APIs will use input serializers for input validation, it seems sensible to just run the
 example documentation on your serializer.
 
-A pytest implementation of input validation might look like this::
+A pytest implementation of input validation might look like this:
+
+.. code:: python
 
     from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
 
