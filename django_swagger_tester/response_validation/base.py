@@ -1,7 +1,6 @@
 import logging
-from typing import Any, Union
-
 from django.core.exceptions import ImproperlyConfigured
+from typing import Any, Union
 
 from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
 from django_swagger_tester.response_validation.utils import check_keys_match, format_error
@@ -54,7 +53,7 @@ class ResponseTester:
                     # NoneTypes are OK if the schema says the field is nullable
                     return
                 hint = (
-                    'Your schema needs to set `x-nullable: True` if there\'s a change it will return None.'
+                    'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                     '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
                 )
             raise format_error(
@@ -131,7 +130,7 @@ class ResponseTester:
                     # NoneTypes are OK if the schema says the field is nullable
                     return
             hint = (
-                'Your schema needs to set `x-nullable: True` if there\'s a change it will return None.'
+                'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
             raise format_error(
