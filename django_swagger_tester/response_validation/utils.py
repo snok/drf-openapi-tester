@@ -116,7 +116,9 @@ def format_error(
         'Expected:'.ljust(offset) + f'{example_item}\n',
         'Received:'.ljust(offset) + f'{data}\n',
         '\n',
-        'Hint:'.ljust(offset) + f'{hint}\n',
+        'Hint:'.ljust(offset)
+        + '\n'.ljust(offset + 1).join(hint.split('\n'))
+        + '\n',  # the join logic add support for multi-line hints
         'Sequence:'.ljust(offset) + f'{reference}\n',
         '\n' if not verbose else '',
         f'{dotted_line}',

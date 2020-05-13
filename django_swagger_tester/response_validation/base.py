@@ -49,6 +49,14 @@ class ResponseTester:
             hint = ''
             if isinstance(data, list):
                 hint = 'The expected item should be a dict, or your schema should be a list.'
+            elif data is None:
+                if 'x-nullable' in schema and schema['x-nullable']:
+                    # NoneTypes are OK if the schema says the field is nullable
+                    return
+                hint = (
+                    'Your schema needs to set `x-nullable: True` if there\'s a change it will return None.'
+                    '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
+                )
             raise format_error(
                 error_message=f"Mismatched types. Expected response to be <class 'dict'> but found {type(data)}.",
                 data=data,
@@ -118,6 +126,14 @@ class ResponseTester:
             hint = ''
             if isinstance(data, dict):
                 hint = 'You might need to wrap your response item in a list, or remove the excess list layer from your documented response.'
+            elif data is None:
+                if 'x-nullable' in schema and schema['x-nullable']:
+                    # NoneTypes are OK if the schema says the field is nullable
+                    return
+            hint = (
+                'Your schema needs to set `x-nullable: True` if there\'s a change it will return None.'
+                '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
+            )
             raise format_error(
                 error_message=f"Mismatched types. Expected response to be <class 'list'> but found {type(data)}.",
                 data=data,
