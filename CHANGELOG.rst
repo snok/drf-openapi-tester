@@ -4,6 +4,15 @@
 Changelog
 *********
 
+1.0.3 2020-05-13
+----------------
+
+**Improvements**
+
+* Added support for nullable arrays and objects.
+* Added custom error hint for nullable arrays and objects.
+* Added multi-line hints to response error messages.
+
 1.0.2 2020-04-24
 ----------------
 
