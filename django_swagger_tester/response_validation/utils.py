@@ -36,7 +36,10 @@ def get_response_schema(schema: dict, route: str, method: str, status_code: Opti
     # Index by responses
     responses_schema = index_schema(schema=method_schema, variable='responses')
     # Index by status code
-    status_code_error = f'Documented responses include {", ".join([code for code in responses_schema.keys()])}.'
+    status_code_error = (
+        f'\n\nDocumented responses include(s) {", ".join([f"`{code}`" for code in responses_schema.keys()])}. '
+        f'Is the `{status_code}` response documented?'
+    )
     status_code_schema = index_schema(schema=responses_schema, variable=str(status_code), error_addon=status_code_error)
 
     # Not sure about this logic - this is what my static schema looks like, but not the drf_yasg dynamic schema
