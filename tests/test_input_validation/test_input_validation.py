@@ -33,6 +33,6 @@ def test_serialize_schema_validation():
     Make sure we raise an ImproperlyConfigured error before letting the logic fail.
     """
     with pytest.raises(
-        ImproperlyConfigured, match="This schema item does not seem to have example value. Item: {'type': 'string'}"
+        ImproperlyConfigured, match="This schema item does not seem to have an example value. Item: {'type': 'string'}"
     ):
         serialize_schema({'type': 'string'})
