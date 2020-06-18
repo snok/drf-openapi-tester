@@ -60,7 +60,7 @@ def _iterate_schema_dict(d: dict) -> dict:
         elif 'example' in value:
             x[key] = value['example']
         else:
-            raise ImproperlyConfigured(f'This schema item does not seem to have example value. Item: {value}')
+            raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {value}')
     return x
 
 
@@ -74,7 +74,7 @@ def _iterate_schema_list(l: dict) -> list:
     elif 'example' in i:
         x.append(i['example'])
     else:
-        raise ImproperlyConfigured(f'This schema item does not seem to have example value. Item: {i}')
+        raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {i}')
     return x
 
 
@@ -91,4 +91,4 @@ def serialize_schema(schema: dict) -> Union[list, dict, str, int, bool]:
     elif 'example' in schema:
         return schema['example']
     else:
-        raise ImproperlyConfigured(f'This schema item does not seem to have example value. Item: {schema}')
+        raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {schema}')
