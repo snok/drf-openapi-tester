@@ -4,6 +4,13 @@
 Changelog
 *********
 
+1.0.4 2020-07-14
+----------------
+
+**Improvements**
+
+* Improves various error messages
+
 1.0.3 2020-05-13
 ----------------
 
