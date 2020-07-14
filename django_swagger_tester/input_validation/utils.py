@@ -4,8 +4,7 @@ from typing import Union
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import OpenAPISchemaError
-from django_swagger_tester.openapi import index_schema, read_items
-from django_swagger_tester.openapi import read_type
+from django_swagger_tester.openapi import index_schema, read_items, read_type
 from django_swagger_tester.utils import replace_refs
 
 logger = logging.getLogger('django_swagger_tester')
@@ -61,7 +60,7 @@ def _iterate_schema_dict(d: dict) -> dict:
         elif 'example' in value:
             x[key] = value['example']
         else:
-            raise ImproperlyConfigured(f'This request body item does not seem to have example value. Item: {value}')
+            raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {value}')
     return x
 
 
@@ -75,20 +74,21 @@ def _iterate_schema_list(l: dict) -> list:
     elif 'example' in i:
         x.append(i['example'])
     else:
-        raise ImproperlyConfigured(f'This request body item does not seem to have example value. Item: {i}')
+        raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {i}')
     return x
 
 
-def serialize_schema(schema: dict) -> Union[list, dict]:
+def serialize_schema(schema: dict) -> Union[list, dict, str, int, bool]:
     """
     Converts an OpenAPI schema representation of a dict to dict.
     """
-    if 'properties' not in schema and 'items' not in schema:
-        raise ImproperlyConfigured('Received a schema without a properties tag')
-
-    if 'items' in schema:
+    if read_type(schema) == 'array':
         logger.debug('--> list')
         return _iterate_schema_list(schema)
-    else:
+    elif read_type(schema) == 'object':
         logger.debug('--> dict')
         return _iterate_schema_dict(schema)
+    elif 'example' in schema:
+        return schema['example']
+    else:
+        raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {schema}')

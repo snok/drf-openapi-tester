@@ -31,6 +31,9 @@ def resolve_path(endpoint_path: str) -> str:
             logger.debug('Resolved %s successfully', endpoint_path)
         except Resolver404:
             resolved_route = resolve(endpoint_path + '/')
+            endpoint_path = (
+                endpoint_path + '/'
+            )  # if we don't change endpoint path here, indexing paths will fail later on
             logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
 
         kwarg = resolved_route.kwargs
@@ -79,14 +82,12 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
         raise ValueError(
             f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
         )
-    try:
+    if hasattr(response, 'json'):
         return response.json(), status_code
-    except Exception as e:
-        if status_code == 204:
-            raise ImproperlyConfigured(
-                'Response returned a 204, indicating no response. There is no response JSON to test.'
-            )
-        raise ValueError(f'Unable to unpack response object. Error: {e}')
+    else:
+        raise ImproperlyConfigured(
+            'Response does not contain a JSON-formatted response and cannot be tested against a response schema.'
+        )
 
 
 def replace_refs(schema: dict) -> dict:

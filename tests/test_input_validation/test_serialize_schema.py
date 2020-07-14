@@ -25,8 +25,8 @@ def test_serialize_schema():
     Makes sure we're able to accurately serialize an object.
     """
     e = (
-        'This request body item does not seem to have example value. Item: '
-        "{'description': 'title model help_text', 'type': 'string', 'maxLength': 255, 'minLength': 1}"
+        'This schema item does not seem to have an example value. '
+        "Item: {'description': 'title model help_text', 'type': 'string', 'maxLength': 255, 'minLength': 1}"
     )
     with pytest.raises(ImproperlyConfigured, match=e):
         for key in schema['paths'].keys():

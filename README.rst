@@ -2,7 +2,7 @@
 
     <p align="center">
         <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="750px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
+        <img width="650px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -62,11 +62,24 @@ Features
 
 The package has three main features:
 
--  `Testing response documentation`_
+-  `Testing response documentation`_:
 
--  `Testing input documentation`_
+.. raw:: html
 
--  `Ensuring your docs comply with a single parameter naming standard`_.
+    <p align="center">
+        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/response.png" alt='logo'></a>
+    </p>
+
+-  `Testing input documentation`_:
+
+.. raw:: html
+
+    <p align="center">
+        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/input.png" alt='logo'></a>
+    </p>
+
+
+-  and `ensuring your docs comply with a single parameter naming standard`_.
 
    Supported naming standards include ``camelCase``, ``snake_case``,
    ``kebab-case``, and ``PascalCase``.
@@ -75,7 +88,7 @@ The package has three main features:
 Implementations
 ---------------
 
-We currently support testing of:
+Django Swagger Tester currently support testing of:
 
 - Dynamically rendered Swagger docs, using `drf_yasg`_
 - All implementations which render Swagger docs from a schema file (yaml or json)
@@ -265,7 +278,9 @@ To make sure your request body documentation is accurate, and will stay accurate
 Considering most APIs will use input serializers for input validation, it seems sensible to just run the
 example documentation on your serializer.
 
-A pytest implementation of input validation might look like this::
+A pytest implementation of input validation might look like this:
+
+.. code:: python
 
     from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
 
