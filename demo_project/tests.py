@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from requests.models import Response
 from rest_framework.test import APITestCase
 
-from django_swagger_tester.drf_yasg import validate_response
+from django_swagger_tester.testing import validate_response_schema
 
 
 class APITestBase(APITestCase):

@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.response_validation.base import ResponseTester
+from django_swagger_tester.schema_validation.response.base import ResponseTester
 from tests.types import (
     bool_data,
     bool_type,

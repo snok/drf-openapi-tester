@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.case.base import ResponseCaseTester
+from django_swagger_tester.schema_validation.case.base import ResponseCaseTester
 from django_swagger_tester.exceptions import CaseError
 
 valid_cc_response = [
@@ -21,7 +21,7 @@ def test_valid_camel_case_response(monkeypatch):
     class MockSettings:
         CASE = 'camelCase'
 
-    monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
+    monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
     ResponseCaseTester(response_data=valid_cc_response)
     ResponseCaseTester(response_data=valid_cc_response[0])
 
@@ -30,7 +30,7 @@ def test_invalid_camel_case_response(monkeypatch):
     class MockSettings:
         CASE = 'camelCase'
 
-    monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
+    monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
     with pytest.raises(CaseError, match='The property `snake_cased_key` is not properly camelCased'):
         ResponseCaseTester(response_data=valid_sc_response)
         ResponseCaseTester(response_data=valid_sc_response[0])
@@ -40,7 +40,7 @@ def test_valid_snake_case_response(monkeypatch):
     class MockSettings:
         CASE = 'snake_case'
 
-    monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
+    monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
     ResponseCaseTester(response_data=valid_sc_response)
     ResponseCaseTester(response_data=valid_sc_response[0])
 
@@ -49,7 +49,7 @@ def test_invalid_snake_case_response(monkeypatch):
     class MockSettings:
         CASE = 'snake_case'
 
-    monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
+    monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
     with pytest.raises(CaseError, match='The property `camelCasedKey` is not properly snake_cased'):
         ResponseCaseTester(response_data=valid_cc_response)
         ResponseCaseTester(response_data=valid_cc_response[0])

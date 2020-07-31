@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.drf_yasg import validate_response
+from django_swagger_tester.testing import validate_response_schema
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 good_test_data = [
@@ -98,7 +98,9 @@ def test_missing_status_code_match(client, monkeypatch) -> None:  # noqa: TYP001
     def mocked_unpack_response(*args, **kwargs):
         return {}, 'bad status code'
 
-    monkeypatch.setattr('django_swagger_tester.response_validation.validation.unpack_response', mocked_unpack_response)
+    monkeypatch.setattr(
+        'django_swagger_tester.schema_validation.response.validation.unpack_response', mocked_unpack_response
+    )
     for item in bad_test_data:
         response = client.get(item['url'])
         with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):

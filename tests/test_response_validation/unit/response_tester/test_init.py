@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.response_validation.base import ResponseTester
+from django_swagger_tester.schema_validation.response.base import ResponseTester
 
 
 def test_validation():

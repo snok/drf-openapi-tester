@@ -2,8 +2,8 @@ import logging
 
 from requests import Response
 
-from django_swagger_tester.case.base import ResponseCaseTester, SchemaCaseTester
-from django_swagger_tester.response_validation.base import ResponseTester
+from django_swagger_tester.schema_validation.case.base import ResponseCaseTester, SchemaCaseTester
+from django_swagger_tester.schema_validation.response.base import ResponseTester
 from django_swagger_tester.utils import unpack_response
 
 logger = logging.getLogger('django_swagger_tester')

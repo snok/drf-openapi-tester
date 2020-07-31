@@ -1,4 +1,4 @@
-from django_swagger_tester.case.checks import skip
+from django_swagger_tester.schema_validation.case.checks import skip
 
 
 def test_skip():

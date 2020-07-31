@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.case.checks import (
+from django_swagger_tester.schema_validation.case.checks import (
     is_snake_case,
     case_check,
     is_camel_case,

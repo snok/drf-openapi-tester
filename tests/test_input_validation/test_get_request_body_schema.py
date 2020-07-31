@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.input_validation.utils import get_request_body_schema
+from django_swagger_tester.schema_validation.request_body.utils import get_request_body_schema
 
 example_schema = [
     {

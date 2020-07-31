@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.case.checks import is_camel_case
+from django_swagger_tester.schema_validation.case.checks import is_camel_case
 from django_swagger_tester.exceptions import CaseError
 
 camel_case_test_data = [

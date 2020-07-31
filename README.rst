@@ -217,7 +217,7 @@ A pytest implementation might look like this:
 
 .. code:: python
 
-   from django_swagger_tester.drf_yasg import validate_response  # or replace drf_yasg with `static_schema`
+   from django_swagger_tester.testing import validate_response_schema  # or replace drf_yasg with `static_schema`
 
 
    def test_response_documentation(client):

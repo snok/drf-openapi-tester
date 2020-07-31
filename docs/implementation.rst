@@ -24,7 +24,7 @@ Drf_yasg
 
 If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` response validator::
 
-    from django_swagger_tester.drf_yasg import validate_response
+    from django_swagger_tester.testing import validate_response_schema
 
 
 Static Schema

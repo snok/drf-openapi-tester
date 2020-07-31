@@ -1,9 +1,9 @@
 import json
 import logging
 
-from django_swagger_tester.case.base import SchemaCaseTester
+from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.input_validation.utils import get_request_body_schema, serialize_schema
+from django_swagger_tester.schema_validation.request_body.utils import get_request_body_schema, serialize_schema
 
 logger = logging.getLogger('django_swagger_tester')
 

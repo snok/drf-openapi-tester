@@ -3,7 +3,7 @@ import yaml
 from django.core.exceptions import ImproperlyConfigured
 
 from demo_project import settings
-from django_swagger_tester.input_validation.utils import (
+from django_swagger_tester.schema_validation.request_body.utils import (
     serialize_schema,
     get_request_body_schema,
     _iterate_schema_dict,

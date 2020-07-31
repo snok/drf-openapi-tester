@@ -2,7 +2,7 @@ import pytest
 import yaml
 from django.conf import settings
 
-from django_swagger_tester.case.base import SchemaCaseTester
+from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import CaseError
 from django_swagger_tester.utils import replace_refs
 
@@ -56,7 +56,7 @@ class MockSettings:
 
 
 def test_schema_using_snake_case(monkeypatch):
-    monkeypatch.setattr('django_swagger_tester.case.base.settings', MockSettings)
+    monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
     with pytest.raises(CaseError, match='The property `ownerAsString` is not properly snake_cased'):
         for key in schema['paths'].keys():
             for method in schema['paths'][key].keys():

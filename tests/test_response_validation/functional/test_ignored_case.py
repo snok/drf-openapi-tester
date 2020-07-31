@@ -1,4 +1,4 @@
-from django_swagger_tester.drf_yasg import validate_response
+from django_swagger_tester.testing import validate_response_schema
 
 
 def test_endpoints_dynamic_schema(client, caplog) -> None:  # noqa: TYP001

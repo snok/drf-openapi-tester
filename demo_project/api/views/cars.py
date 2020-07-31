@@ -1,12 +1,18 @@
+import logging
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django_swagger_tester.testing import validate
 from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_schema
+
+logger = logging.getLogger('django_swagger_tester')
 
 
 class GoodCars(APIView):
     @staticmethod
+    @validate(response=True)
     @get_cars_auto_schema()
     def get(request: Request, **kwargs) -> Response:
         cars = [
@@ -31,6 +37,7 @@ class GoodCars(APIView):
 
 class BadCars(APIView):
     @staticmethod
+    @validate(response=True)
     @get_other_cars_auto_schema()
     def get(request: Request, **kwargs) -> Response:
         cars = [
