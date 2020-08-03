@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-swagger-tester"
-version = "1.0.4"  # Remember to also change in django_swagger_tester/__init__
+version = "2.0.0"  # Remember to also change in django_swagger_tester/__init__
 description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"
@@ -50,6 +50,7 @@ pytest-django =  "3.8.0"
 flake8 = "*"
 sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
+ipython = "^7.16.1"
 
 [tool.black]
 line-length = 120

@@ -1,6 +1,6 @@
 import difflib
 import logging
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import Resolver404, resolve
@@ -14,7 +14,7 @@ def get_paths() -> List[str]:
     """
     Returns a list of endpoint paths.
     """
-    return list(set(endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()))  # noqa: C401
+    return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
 
 def resolve_path(endpoint_path: str) -> str:
@@ -31,9 +31,7 @@ def resolve_path(endpoint_path: str) -> str:
             logger.debug('Resolved %s successfully', endpoint_path)
         except Resolver404:
             resolved_route = resolve(endpoint_path + '/')
-            endpoint_path = (
-                endpoint_path + '/'
-            )  # if we don't change endpoint path here, indexing paths will fail later on
+            endpoint_path += '/'
             logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
 
         kwarg = resolved_route.kwargs

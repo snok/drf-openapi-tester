@@ -1,17 +1,16 @@
 import logging
 from typing import Any
 
-from django_swagger_tester.schema_validation.case.checks import case_check
-from django_swagger_tester.schema_validation.case.utils import conditional_check, set_ignored_keys
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.openapi import read_items, read_properties, read_type
+from django_swagger_tester.schema_validation.case.utils import conditional_check, set_ignored_keys
 
 logger = logging.getLogger('django_swagger_tester')
 
 
 class ResponseCaseTester(object):
     """
-    Iterates through an API response objects to verify that dict keys are cased correctly.
+    Iterates through an API response object to verify that dict keys are cased correctly.
     The case we're checking for depends on the projects SWAGGER_TESTER `CASE` setting.
     """
 
@@ -21,7 +20,7 @@ class ResponseCaseTester(object):
 
         :param response_data: typically will be an API responses response.json() output.
         """
-        self.case_check = case_check(settings.CASE)
+        self.case_checker = settings.CASE_CHECKER
         self.ignored_keys = set_ignored_keys(**kwargs)
         if isinstance(response_data, dict):
             self.test_dict(response_data)
@@ -37,7 +36,7 @@ class ResponseCaseTester(object):
         if not isinstance(dictionary, dict):
             raise ValueError(f'Expected dictionary, but received {type(dictionary)}')
         for key, value in dictionary.items():
-            conditional_check(key, self.case_check, self.ignored_keys)
+            conditional_check(key, self.case_checker, self.ignored_keys)
             if isinstance(value, dict):
                 self.test_dict(dictionary=value)
             elif isinstance(value, list):
@@ -71,7 +70,7 @@ class SchemaCaseTester(object):
 
         :param schema: openapi schema item
         """
-        self.case_check = case_check(settings.CASE)
+        self.case_checker = settings.CASE_CHECKER
         self.ignored_keys = set_ignored_keys(**kwargs)
         if read_type(schema) == 'object':
             logger.debug('root -> dict')
@@ -88,7 +87,7 @@ class SchemaCaseTester(object):
         """
         properties = read_properties(obj)
         for key, value in properties.items():
-            conditional_check(key, self.case_check, self.ignored_keys)
+            conditional_check(key, self.case_checker, self.ignored_keys)
             if read_type(value) == 'object':
                 logger.debug('dict -> dict')
                 self.test_dict(obj=value)

@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/3.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
-
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -111,11 +110,26 @@ SWAGGER_SETTINGS = {
     'DEFAULT_INFO': 'demo_project.urls.swagger_info',
 }
 
-SWAGGER_TESTER = {'CASE': 'camel case', 'PATH': BASE_DIR + '/openapi-schema.yml', 'CAMEL_CASE_PARSER': True}
+from django_swagger_tester.case_checks import is_camel_case
+from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+
+SWAGGER_TESTER = {
+    'SCHEMA_LOADER': StaticSchemaLoader,  # Class responsible for loading the projects OpenAPI schema
+    'PATH': 'demo_project/openapi-schema.yml',
+    'MIDDLEWARE': {  # Middleware-specific settings
+        'LOG_LEVEL': 'ERROR',  # Log level to log when validation fails
+        'MODE': 'STRICT',  # Strict-mode rejects incoming requests when request body validation fails, default logs
+    },
+    'CASE_CHECKER': is_camel_case,  # Function responsible for checking schema casing
+    'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
-    'DEFAULT_RENDERER_CLASSES': ('djangorestframework_camel_case.render.CamelCaseJSONRenderer',),
+    'DEFAULT_RENDERER_CLASSES': (
+        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ),
     'DEFAULT_PARSER_CLASSES': (
         'djangorestframework_camel_case.parser.CamelCaseFormParser',
         'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',

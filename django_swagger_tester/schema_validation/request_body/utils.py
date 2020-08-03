@@ -82,7 +82,7 @@ def serialize_schema(schema: dict) -> Union[list, dict, str, int, bool]:
     """
     Converts an OpenAPI schema representation of a dict to dict.
     """
-    if read_type(schema) == 'array':
+    if read_type(schema) == 'array' and schema['items']:
         logger.debug('--> list')
         return _iterate_schema_list(schema)
     elif read_type(schema) == 'object':
@@ -91,4 +91,6 @@ def serialize_schema(schema: dict) -> Union[list, dict, str, int, bool]:
     elif 'example' in schema:
         return schema['example']
     else:
+        # TODO: Should we implement an UndocumentedError?
+        #  This is particularly relevant for static schemas, where this type of error must be more common
         raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {schema}')

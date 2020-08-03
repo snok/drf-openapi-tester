@@ -22,8 +22,7 @@ def response_validation(loader_class, response: Response, method: str, route: st
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
-    loader = loader_class(route=route, status_code=status_code, method=method)
-    response_schema = loader.get_response_schema()
+    response_schema = loader_class.get_response_schema(route=route, status_code=status_code, method=method)
     ResponseTester(response_schema=response_schema, response_data=data, **kwargs)
     ResponseCaseTester(response_data=data, **kwargs)
     SchemaCaseTester(schema=response_schema, **kwargs)

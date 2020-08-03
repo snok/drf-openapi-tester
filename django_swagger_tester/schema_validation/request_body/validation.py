@@ -1,8 +1,8 @@
 import json
 import logging
 
-from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
 from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
 from django_swagger_tester.schema_validation.request_body.utils import get_request_body_schema, serialize_schema
 
 logger = logging.getLogger('django_swagger_tester')
@@ -28,8 +28,8 @@ def input_validation(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    loader = loader_class(route=route, method=method, **kwargs)
-    endpoint_schema = loader.get_request_body()
+    loader = loader_class(**kwargs)
+    endpoint_schema = loader.get_request_body(route=route, method=method)
 
     request_body_schema = get_request_body_schema(endpoint_schema)
     if 'example' in request_body_schema:

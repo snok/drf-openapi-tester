@@ -1,6 +1,7 @@
 import logging
-from django.core.exceptions import ImproperlyConfigured
 from typing import Any, Union
+
+from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
 from django_swagger_tester.schema_validation.response.utils import check_keys_match, format_error
@@ -124,12 +125,12 @@ class ResponseTester:
         if not isinstance(data, list):
             hint = ''
             if isinstance(data, dict):
-                hint = 'You might need to wrap your response item in a list, or remove the excess list layer from your documented response.'
+                hint = 'You might need to wrap your response item in a list, or remove the excess list layer from your documented response.\n'
             elif data is None:
                 if 'x-nullable' in schema and schema['x-nullable']:
                     # NoneTypes are OK if the schema says the field is nullable
                     return
-            hint = (
+            hint += (
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
@@ -143,19 +144,33 @@ class ResponseTester:
             )
 
         item = read_items(schema)
-        for index in range(len(data)):
-
+        if not item and data:
+            raise format_error(
+                error_message=f'Mismatched content. Response array contains data, when schema is empty.',
+                data=data,
+                schema=schema,
+                reference=reference,
+                hint='Document the contents of the empty dictionary to match the response object.',
+                **kwargs,
+            )
+        for datum in data:
             if read_type(item) == 'object':
                 logger.debug('test_list --> test_dict')
-                self.test_dict(schema=item, data=data[index], reference=f'{reference}.list', **kwargs)
+                self.test_dict(
+                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
+                )
 
             elif read_type(item) == 'array':
                 logger.debug('test_list --> test_dict')
-                self.test_list(schema=item, data=data[index], reference=f'{reference}.list', **kwargs)
+                self.test_list(
+                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
+                )
 
             elif read_type(item) in list_types():
                 logger.debug('test_list --> test_item')
-                self.test_item(schema=item, data=data[index], reference=f'{reference}.list', **kwargs)
+                self.test_item(
+                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
+                )
 
     def test_item(self, schema: dict, data: Any, reference: str, **kwargs) -> None:
         """
@@ -169,14 +184,15 @@ class ResponseTester:
         checks = {
             'boolean': {
                 'check': not isinstance(data, bool)
-                and not (isinstance(data, str) and (data.lower() == 'true' or data.lower() == 'false')),
+                and not (isinstance(data, str) and data.lower() in ['true', 'false']),
                 'type': "<class 'bool'>",
             },
             'string': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
             'integer': {'check': not isinstance(data, int) and data is not None, 'type': "<class 'int'>"},
             'number': {'check': not isinstance(data, float) and data is not None, 'type': "<class 'float'>"},
-            'file': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
+            'file': {'check': not (isinstance(data, str) or data is None), 'type': "<class 'str'>"},
         }
+
         if data is None and is_nullable(schema):
             return
         elif checks[schema['type']]['check']:
