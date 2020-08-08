@@ -1,4 +1,7 @@
+import json
 import logging
+from copy import deepcopy
+from json import JSONDecodeError
 from typing import Callable, Union
 
 from django.apps import apps
@@ -6,7 +9,14 @@ from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from rest_framework.schemas.generators import EndpointEnumerator
 
+from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.openapi import list_types, read_type
+from django_swagger_tester.schema_validation.request_body.validation import (
+    get_request_body_example,
+    get_request_body_schema,
+)
+from django_swagger_tester.schema_validation.response.base import ResponseTester
 from django_swagger_tester.testing import validate_response_schema
 from django_swagger_tester.utils import resolve_path
 
@@ -70,6 +80,7 @@ class SwaggerValidationMiddleware(object):
         """
         path = request.path
         method = request.method.upper()
+        middleware_settings = settings.MIDDLEWARE
 
         api_request = False
         resolved_path = resolve_path(path)
@@ -81,28 +92,78 @@ class SwaggerValidationMiddleware(object):
                 api_request = True
                 break
 
+        # TODO: Add explicit settings for validate request body and validate response body?
+
+        # Validate request body
         if api_request and request.body:
-            print('--> Validate request body')
-            # TODO: Write function
+
+            # Fetch the section of the OpenAPI schema related to the request body of this query
+            request_body_schema = get_request_body_schema(path, method)
+
+            # Read the type of the request body from the schema
+            request_body_type = read_type(request_body_schema)
+
+            # Verify that hte type is valid
+            if request_body_type not in list_types():
+                middleware_settings.LOGGER(
+                    'Received unexpected type name, `%s`, for the request body of %s, %s',
+                    request_body_type,
+                    path,
+                    method,
+                )
+
+            # Try to parse the incoming byte-data as the type the expected type
+            handler = {
+                'object': {'exception': JSONDecodeError, 'loader': json.loads},
+                'array': {'exception': JSONDecodeError, 'loader': json.loads},
+                'boolean': {'exception': JSONDecodeError, 'loader': json.loads},
+                'string': {'exception': ValueError, 'loader': str},
+                'file': {'exception': ValueError, 'loader': str},
+                'integer': {'exception': ValueError, 'loader': int},
+                'number': {'exception': ValueError, 'loader': float},
+            }[request_body_type]
+
+            try:
+                # Parse request body as the correct type
+                value = handler['loader'](request.body)  # type: ignore
+            except handler['exception']:  # type: ignore
+                # Handle parsing failure
+                msg = f'Failed to parse request body as {request_body_type}'
+                if middleware_settings.STRICT:
+                    # Return 400 if strict
+                    return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
+                else:
+                    # Log otherwise
+                    middleware_settings.LOGGER(msg)
+            else:
+                try:
+                    # If parsing did not fail, run schema tester
+                    ResponseTester(request_body_schema, value)
+                except SwaggerDocumentationError as e:
+                    # Handle bad request body error
+                    if middleware_settings.STRICT:
+                        # Return 400 if strict
+                        example = get_request_body_example(request_body_schema)
+                        msg = f'Request body is invalid. The request body should have the following format: {example}'
+                        return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
+                    else:
+                        # Log otherwise
+                        middleware_settings.LOGGER(
+                            'Bad request body passed for %s request to %s. Swagger error: \n\n%s', method, path, e
+                        )
 
         # ^ Code above this line is executed before the view and later middleware
         response = self.get_response(request)
-
+        return response
+        # Validate response body
         if api_request:
-            copied_response = response
+            copied_response = deepcopy(response)
             copied_response.json = lambda: response.data
             try:
                 validate_response_schema(response=copied_response, method=method, route=path)
             except SwaggerDocumentationError as e:
-                logger.error(
-                    'Incorrect response template returned for %s request to %s. ' 'Swagger error: \n\n%s',
-                    method,
-                    path,
-                    e,
+                middleware_settings.LOGGER(
+                    'Incorrect response template returned for %s request to %s. Swagger error: \n\n%s', method, path, e
                 )
-            except Exception as e:
-                # TODO: Change
-                logger.critical('DONT UNDERSTAND THIS: %s', e)
-                raise
 
         return response

@@ -1,26 +1,28 @@
 import json
 import logging
 
+from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
-from django_swagger_tester.schema_validation.request_body.utils import get_request_body_schema, serialize_schema
+from django_swagger_tester.schema_validation.request_body.utils import get_request_body_schema_section, serialize_schema
 
 logger = logging.getLogger('django_swagger_tester')
 
 
+def get_request_body_schema(route, method):
+    endpoint_schema = settings.LOADER_CLASS.get_request_body(route=route, method=method)
+    return get_request_body_schema_section(endpoint_schema)
+
+
+def get_request_body_example(request_body_schema: dict):
+    return request_body_schema.get('example', serialize_schema(request_body_schema))
+
+
 # noinspection PyUnboundLocalVariable
-def input_validation(
-    loader_class,  # noqa: TYP001
-    serializer,  # noqa: TYP001
-    method: str,
-    route: str,
-    camel_case_parser: bool,
-    **kwargs,
-) -> None:
+def input_validation(serializer, method: str, route: str, camel_case_parser: bool, **kwargs,) -> None:  # noqa: TYP001
     """
     Verifies that an OpenAPI schema request body definition is valid, according to the API view's input serializer.
 
-    :param loader_class: Class containing a `get_request_body` method
     :param serializer: Serializer class used for input validation in your API view
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param route: Relative path of the endpoint being tested
@@ -28,18 +30,8 @@ def input_validation(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    loader = loader_class(**kwargs)
-    endpoint_schema = loader.get_request_body(route=route, method=method)
-
-    request_body_schema = get_request_body_schema(endpoint_schema)
-    if 'example' in request_body_schema:
-        # Find a ready dict object
-        # This happens when you use your Serializer as the request body parameter in drf_yasg auto schemas
-        example = request_body_schema['example']
-    else:
-        # Parses schema bit by bit
-        # This happens if you use static schemas or document your request body using Schema objects in drf_yasg
-        example = serialize_schema(request_body_schema)
+    request_body_schema = get_request_body_schema(route, method)
+    example = get_request_body_example(request_body_schema)
 
     # Make camelCased input snake_cased so the serializer can read it
     if camel_case_parser:

@@ -107,7 +107,7 @@ def replace_refs(schema: dict) -> dict:
             indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
             temp_schema = schema
             for index in indices:
-                logger.debug(f'indexing by %s', index)
+                logger.debug(f'Indexing schema by `%s`', index)
                 temp_schema = temp_schema[index]
             return temp_schema
         for k, v in d.items():

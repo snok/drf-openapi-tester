@@ -24,7 +24,7 @@ def validate_response_schema(response: Response, method: str, route: str, **kwar
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     return _response_validation(
-        loader_class=settings.SCHEMA_LOADER, response=response, method=method, route=route, **kwargs
+        loader_class=settings.LOADER_CLASS, response=response, method=method, route=route, **kwargs
     )
 
 
@@ -42,7 +42,7 @@ def validate_request_body_schema(
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     return _input_validation(
-        loader_class=settings.SCHEMA_LOADER,
+        loader_class=settings.LOADER_CLASS,
         serializer=serializer,
         method=method,
         route=route,

@@ -114,11 +114,11 @@ from django_swagger_tester.case_checks import is_camel_case
 from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 
 SWAGGER_TESTER = {
-    'SCHEMA_LOADER': StaticSchemaLoader,  # Class responsible for loading the projects OpenAPI schema
-    'PATH': 'demo_project/openapi-schema.yml',
+    'SCHEMA_LOADER': DrfYasgSchemaLoader,  # Class responsible for loading the projects OpenAPI schema
+    # 'PATH': 'demo_project/openapi-schema.yml',
     'MIDDLEWARE': {  # Middleware-specific settings
         'LOG_LEVEL': 'ERROR',  # Log level to log when validation fails
-        'MODE': 'STRICT',  # Strict-mode rejects incoming requests when request body validation fails, default logs
+        'STRICT': True,  # Strict-mode rejects incoming requests when request body validation fails, default logs
     },
     'CASE_CHECKER': is_camel_case,  # Function responsible for checking schema casing
     'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled

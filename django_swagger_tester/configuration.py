@@ -1,6 +1,6 @@
 import logging
 from types import FunctionType
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Optional, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -9,29 +9,78 @@ from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoade
 logger = logging.getLogger('django_swagger_tester')
 
 
-def get_logger(level: str, logger_name: str) -> Callable:
+class MiddlewareSettings(object):
     """
-    Return logger.
-    :param level: log level
-    :param logger_name: logger name
-    :return: logger
+    Holds middleware specific settings.
     """
-    if level == 'DEBUG':
-        return logging.getLogger(logger_name).debug
-    elif level == 'INFO':
-        return logging.getLogger(logger_name).info
-    elif level == 'WARNING':
-        return logging.getLogger(logger_name).warning
-    elif level == 'ERROR':
-        return logging.getLogger(logger_name).error
-    elif level == 'EXCEPTION':
-        return logging.getLogger(logger_name).exception
-    elif level == 'CRITICAL':
-        return logging.getLogger(logger_name).critical
-    else:
-        raise ImproperlyConfigured(
-            f'The log level for the `{logger_name}` logger was set as `{level}` ' f'which is not a valid log level.'
-        )
+
+    def __init__(self, middleware_settings: dict) -> None:
+        """
+        Initializes tester class with base settings.
+        """
+        # Define default values for middleware settings
+        self.LOG_LEVEL = 'ERROR'
+        self.STRICT = False
+        self.VALIDATE_RESPONSE = True
+        self.VALIDATE_REQUEST_BODY = True
+
+        # Overwrite defaults
+        for setting, value in middleware_settings.items():
+            if hasattr(self, setting):
+                setattr(self, setting, value)
+            else:
+                raise ImproperlyConfigured(f'Received invalid middleware setting, `{setting}`, for SWAGGER_TESTER')
+
+        self.validate_and_set_logger()
+        self.validate_bool(self.STRICT, 'STRICT')
+        self.validate_bool(self.VALIDATE_REQUEST_BODY, 'VALIDATE_REQUEST_BODY')
+        self.validate_bool(self.VALIDATE_RESPONSE, 'VALIDATE_RESPONSE')
+
+    def validate_and_set_logger(self) -> None:
+        """
+        Makes sure the LOG_LEVEL setting is the right type, and sets LOGGER.
+
+        Bad strings are handled in self.get_logger
+        """
+        if not isinstance(self.LOG_LEVEL, str):
+            raise ImproperlyConfigured(f'The SWAGGER_TESTER middleware setting `LOG_LEVEL` must be a string value')
+        self.LOGGER: Callable = self.get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
+
+    @staticmethod
+    def validate_bool(value: bool, setting_name: str) -> None:
+        """
+        Validates a boolean setting.
+        """
+        if not isinstance(value, bool):
+            raise ImproperlyConfigured(
+                f'The SWAGGER_TESTER middleware setting `{setting_name}` must be a boolean value'
+            )
+
+    @staticmethod
+    def get_logger(level: str, logger_name: str) -> Callable:
+        """
+        Return logger.
+
+        :param level: log level
+        :param logger_name: logger name
+        :return: logger
+        """
+        if level == 'DEBUG':
+            return logging.getLogger(logger_name).debug
+        elif level == 'INFO':
+            return logging.getLogger(logger_name).info
+        elif level == 'WARNING':
+            return logging.getLogger(logger_name).warning
+        elif level == 'ERROR':
+            return logging.getLogger(logger_name).error
+        elif level == 'EXCEPTION':
+            return logging.getLogger(logger_name).exception
+        elif level == 'CRITICAL':
+            return logging.getLogger(logger_name).critical
+        else:
+            raise ImproperlyConfigured(
+                f'The log level for the `{logger_name}` logger was set as `{level}` which is not a valid log level.'
+            )
 
 
 class SwaggerTesterSettings(object):
@@ -39,25 +88,38 @@ class SwaggerTesterSettings(object):
     Loads and validates the packages Django settings.
     """
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # sourcery skip: remove-redundant-pass
         """
         Initializes tester class with base settings.
         """
-        # Initialize required package settings (no defaults)
-        self.SCHEMA_LOADER: Optional[Union[StaticSchemaLoader, DrfYasgSchemaLoader]] = None
+        # Get SWAGGER_TESTER settings
+        swagger_tester_settings = self.get_package_settings()
 
-        # Initialize optional package settings (initialized with default settings)
-        self.MIDDLEWARE: Dict[str, str] = {'LOG_LEVEL': 'ERROR', 'MODE': 'NORMAL'}
-        self.CASE_CHECKER: Optional[Callable] = None
-        self.MIDDLEWARE_LOGGER: Optional[Callable] = None
+        # Required package settings
+        self.SCHEMA_LOADER: Callable = lambda: None  # Schema loader is collected from package settings
+
+        # Defaulted package settings
+        self.CASE_CHECKER: Callable = lambda: None
         self.CAMEL_CASE_PARSER = False
 
-        django_settings = self.get_package_settings()
-        self.set_package_settings(django_settings)
+        # Overwrite defaults
+        for setting, value in swagger_tester_settings.items():
+            if hasattr(self, setting):
+                setattr(self, setting, value)
+            else:
+                # Some loader classes will have extra settings passed to the loader class as kwargs
+                # Therefore, we cannot raise errors for excess settings
+                pass
+
+        # Load middleware settings as its own class
+        self.MIDDLEWARE = MiddlewareSettings(swagger_tester_settings.get('MIDDLEWARE', {}))
+
+        # Make sure schema loader was specified
+        self.set_and_validate_schema_loader(swagger_tester_settings)
+
+        # Validate other specified settings to make sure they are valid
         self.validate_case_checker_setting()
         self.validate_camel_case_parser_setting()
-        self.validate_middleware_settings()
-        self.validate_schema_loader(django_settings)
 
     @staticmethod
     def get_package_settings() -> dict:
@@ -71,14 +133,6 @@ class SwaggerTesterSettings(object):
                 'Please configure SWAGGER_TESTER in your settings ' 'or remove django-swagger-tester as a dependency'
             )
         return django_settings.SWAGGER_TESTER
-
-    def set_package_settings(self, django_settings) -> None:
-        """
-        Writes SWAGGER_TESTER attributes to the class' setting variables.
-        """
-        for setting, value in django_settings.items():
-            if hasattr(self, setting):
-                setattr(self, setting, value)
 
     def validate_case_checker_setting(self) -> None:
         """
@@ -112,37 +166,24 @@ class SwaggerTesterSettings(object):
                     'and is required to enable camel case parsing.'
                 )
 
-    def validate_middleware_settings(self) -> None:
+    def set_and_validate_schema_loader(self, package_settings: dict) -> None:
         """
-        Sets and validates middleware settings.
+        Sets self.LOADER_CLASS and validates the setting.
         """
-        if self.MIDDLEWARE is None or isinstance(self.MIDDLEWARE, dict) and not self.MIDDLEWARE:
-            self.MIDDLEWARE = {'LOG_LEVEL': 'ERROR', 'MODE': 'NORMAL'}
-        elif not isinstance(self.MIDDLEWARE, dict):
-            raise ImproperlyConfigured('MIDDLEWARE setting needs to be a dictionary or None')
-        else:
-            # Set the MIDDLEWARE_LOGGER
-            if 'LOG_LEVEL' not in self.MIDDLEWARE:
-                self.MIDDLEWARE['LOG_LEVEL'] = 'ERROR'
-            self.MIDDLEWARE_LOGGER = get_logger(self.MIDDLEWARE['LOG_LEVEL'], 'django_swagger_tester')
-
-            # Set the middleware MODE
-            if 'MODE' not in self.MIDDLEWARE:
-                self.MIDDLEWARE['MODE'] = 'NORMAL'
-            if not isinstance(self.MIDDLEWARE['MODE'], str) or self.MIDDLEWARE['MODE'].upper() not in [
-                'NORMAL',
-                'STRICT',
-            ]:
-                raise ImproperlyConfigured(
-                    'The SWAGGER_TESTER middleware mode needs to be set to None, "NORMAL", or "STRICT"'
-                )
-            self.MIDDLEWARE['MODE'] = self.MIDDLEWARE['MODE'].upper()
-
-    def validate_schema_loader(self, django_settings):
+        if self.LOADER_CLASS is None:
+            raise ImproperlyConfigured(
+                'The SWAGGER_TESTER setting `LOADER_CLASS` needs to be a loader class, not None.'
+            )
+        # TODO: finish custom validation
         # ------ Validation first -----
         # Then
-        self.SCHEMA_LOADER = self.SCHEMA_LOADER()
-        self.SCHEMA_LOADER.validation(package_settings=django_settings)
+        self.LOADER_CLASS: Union[DrfYasgSchemaLoader, StaticSchemaLoader] = self.SCHEMA_LOADER()
+
+        if self.LOADER_CLASS is None:
+            # TODO:
+            pass
+
+        self.LOADER_CLASS.validation(package_settings=package_settings)
 
 
 settings = SwaggerTesterSettings()
