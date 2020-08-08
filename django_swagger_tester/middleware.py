@@ -1,6 +1,5 @@
 import json
 import logging
-from copy import deepcopy
 from json import JSONDecodeError
 from typing import Callable, Union
 
@@ -80,9 +79,7 @@ class SwaggerValidationMiddleware(object):
         """
         path = request.path
         method = request.method.upper()
-        middleware_settings = settings.MIDDLEWARE
-
-        api_request = False
+        api_request = False  # whether we should handle the request at all
         resolved_path = resolve_path(path)
 
         # Determine whether the request is being made to an API
@@ -92,16 +89,17 @@ class SwaggerValidationMiddleware(object):
                 api_request = True
                 break
 
-        # TODO: Add explicit settings for validate request body and validate response body?
+        validate_request_body = api_request and request.body and settings.MIDDLEWARE.VALIDATE_REQUEST_BODY
 
-        # Validate request body
-        if api_request and request.body:
+        if validate_request_body:
 
             # Fetch the section of the OpenAPI schema related to the request body of this query
             request_body_schema = get_request_body_schema(path, method)
 
             # Read the type of the request body from the schema
             request_body_type = read_type(request_body_schema)
+
+            middleware_settings = settings.MIDDLEWARE
 
             # Verify that hte type is valid
             if request_body_type not in list_types():
@@ -154,15 +152,16 @@ class SwaggerValidationMiddleware(object):
 
         # ^ Code above this line is executed before the view and later middleware
         response = self.get_response(request)
-        return response
-        # Validate response body
-        if api_request:
-            copied_response = deepcopy(response)
+
+        validate_response = settings.MIDDLEWARE.VALIDATE_RESPONSE and api_request
+
+        if validate_response:
+            copied_response = response.deepcopy()
             copied_response.json = lambda: response.data
             try:
                 validate_response_schema(response=copied_response, method=method, route=path)
             except SwaggerDocumentationError as e:
-                middleware_settings.LOGGER(
+                settings.MIDDLEWARE.LOGGER(
                     'Incorrect response template returned for %s request to %s. Swagger error: \n\n%s', method, path, e
                 )
 
