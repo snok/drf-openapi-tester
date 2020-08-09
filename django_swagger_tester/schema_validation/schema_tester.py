@@ -1,16 +1,57 @@
 import logging
+from collections import KeysView
 from typing import Any, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
-from django_swagger_tester.schema_validation.response.utils import check_keys_match, format_error
+from django_swagger_tester.schema_validation.error import format_error
+from django_swagger_tester.schema_validation.openapi import (
+    is_nullable,
+    list_types,
+    read_items,
+    read_properties,
+    read_type,
+)
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-# noinspection PyMethodMayBeStatic
-class ResponseTester:
+def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dict, data: dict, reference: str) -> None:
+    """
+    Verifies that both sets have the same amount of keys.
+    A length mismatch in the two sets, indicates an error in one of them.
+
+    :param schema_keys: Schema object keys
+    :param response_keys: Response dictionary keys
+    :param schema: OpenAPI schema
+    :param data: Response data
+    :param reference: Logging reference to output for errors -
+        this makes it easier to identify where in a response/schema an error is happening
+    :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+    """
+    if len(schema_keys) != len(response_keys):
+        logger.debug('The number of schema dict elements does not match the number of response dict elements')
+        if len(set(response_keys)) > len(set(schema_keys)):
+            missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
+            raise format_error(
+                f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
+                data=data,
+                schema=schema,
+                reference=reference,
+                hint='Add the key(s) to your Swagger docs, or stop returning it in your view.',
+            )
+        else:
+            missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
+            raise format_error(
+                f'The following properties seem to be missing from your response body: {missing_keys}.',
+                data=data,
+                schema=schema,
+                reference=reference,
+                hint='Remove the key(s) from you Swagger docs, or include it in your API response.',
+            )
+
+
+class SchemaTester:
     def __init__(self, response_schema: dict, response_data: Any, **kwargs) -> None:
         """
         Iterates through both a response schema and an actual API response to check that they match.
@@ -54,8 +95,9 @@ class ResponseTester:
                     # NoneTypes are OK if the schema says the field is nullable
                     return
                 hint = (
-                    'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
-                    '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
+                    'If you wish to allow null values for this schema item, your schema needs to '
+                    'set `x-nullable: True`.\nFor drf-yasg implementations, set `x_nullable=True` '
+                    'in your Schema definition.'
                 )
             raise format_error(
                 error_message=f"Mismatched types. Expected response to be <class 'dict'> but found {type(data)}.",
@@ -80,7 +122,8 @@ class ResponseTester:
                     data=data,
                     schema=schema,
                     reference=reference,
-                    hint='You need to add the missing schema key to the response, or remove it from the documented response.',
+                    hint='You need to add the missing schema key to the response, '
+                    'or remove it from the documented response.',
                     **kwargs,
                 )
             elif response_key not in schema_keys:
@@ -89,7 +132,8 @@ class ResponseTester:
                     data=data,
                     schema=schema,
                     reference=reference,
-                    hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
+                    hint='You need to add the missing schema key to your documented response, '
+                    'or stop returning it in your API.',
                     **kwargs,
                 )
 
@@ -125,7 +169,10 @@ class ResponseTester:
         if not isinstance(data, list):
             hint = ''
             if isinstance(data, dict):
-                hint = 'You might need to wrap your response item in a list, or remove the excess list layer from your documented response.\n'
+                hint = (
+                    'You might need to wrap your response item in a list, or remove the excess list '
+                    'layer from your documented response.\n'
+                )
             elif data is None:
                 if 'x-nullable' in schema and schema['x-nullable']:
                     # NoneTypes are OK if the schema says the field is nullable
@@ -172,7 +219,8 @@ class ResponseTester:
                     schema=item, data=datum, reference=f'{reference}.list', **kwargs,
                 )
 
-    def test_item(self, schema: dict, data: Any, reference: str, **kwargs) -> None:
+    @staticmethod
+    def test_item(schema: dict, data: Any, reference: str, **kwargs) -> None:
         """
         Verifies that a response value matches the example value in the schema.
 

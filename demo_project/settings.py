@@ -111,7 +111,7 @@ SWAGGER_SETTINGS = {
 }
 
 from django_swagger_tester.case_checks import is_camel_case
-from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 
 SWAGGER_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,  # Class responsible for loading the projects OpenAPI schema

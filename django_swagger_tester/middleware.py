@@ -1,23 +1,19 @@
 import json
 import logging
+from copy import deepcopy
 from json import JSONDecodeError
 from typing import Callable, Union
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
-from rest_framework.schemas.generators import EndpointEnumerator
 
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.openapi import list_types, read_type
-from django_swagger_tester.schema_validation.request_body.validation import (
-    get_request_body_example,
-    get_request_body_schema,
-)
-from django_swagger_tester.schema_validation.response.base import ResponseTester
+from django_swagger_tester.schema_validation.openapi import list_types, read_type
+from django_swagger_tester.schema_validation.schema_tester import SchemaTester
+from django_swagger_tester.schema_validation.utils import resolve_path, get_endpoint_paths
 from django_swagger_tester.testing import validate_response_schema
-from django_swagger_tester.utils import resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -55,7 +51,7 @@ class SwaggerValidationMiddleware(object):
         """
         One-time configuration and initialization of the middleware.
         """
-        self.endpoints = EndpointEnumerator().get_api_endpoints()  # TODO: Replace with a local copy
+        self.endpoints = get_endpoint_paths()
         self.get_response = get_response
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed
@@ -80,21 +76,24 @@ class SwaggerValidationMiddleware(object):
         path = request.path
         method = request.method.upper()
         api_request = False  # whether we should handle the request at all
-        resolved_path = resolve_path(path)
-
-        # Determine whether the request is being made to an API
-        for route, _, _ in self.endpoints:
-            if resolved_path == route:
-                logger.debug('Request to %s is an API request', path)
-                api_request = True
-                break
+        try:
+            resolved_path = resolve_path(path)
+        except ValueError:
+            logger.debug('Skipping validation for %s request to %s', method, path)
+        else:
+            # Determine whether the request is being made to an API
+            for route in self.endpoints:
+                if resolved_path == route:
+                    logger.debug('Request to %s is an API request', path)
+                    api_request = True
+                    break
 
         validate_request_body = api_request and request.body and settings.MIDDLEWARE.VALIDATE_REQUEST_BODY
 
         if validate_request_body:
 
             # Fetch the section of the OpenAPI schema related to the request body of this query
-            request_body_schema = get_request_body_schema(path, method)
+            request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(path, method)
 
             # Read the type of the request body from the schema
             request_body_type = read_type(request_body_schema)
@@ -136,12 +135,12 @@ class SwaggerValidationMiddleware(object):
             else:
                 try:
                     # If parsing did not fail, run schema tester
-                    ResponseTester(request_body_schema, value)
+                    SchemaTester(request_body_schema, value)
                 except SwaggerDocumentationError as e:
                     # Handle bad request body error
                     if middleware_settings.STRICT:
                         # Return 400 if strict
-                        example = get_request_body_example(request_body_schema)
+                        example = settings.LOADER_CLASS.get_request_body_example(path, method)
                         msg = f'Request body is invalid. The request body should have the following format: {example}'
                         return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
                     else:
@@ -156,7 +155,7 @@ class SwaggerValidationMiddleware(object):
         validate_response = settings.MIDDLEWARE.VALIDATE_RESPONSE and api_request
 
         if validate_response:
-            copied_response = response.deepcopy()
+            copied_response = deepcopy(response)
             copied_response.json = lambda: response.data
             try:
                 validate_response_schema(response=copied_response, method=method, route=path)
@@ -164,5 +163,8 @@ class SwaggerValidationMiddleware(object):
                 settings.MIDDLEWARE.LOGGER(
                     'Incorrect response template returned for %s request to %s. Swagger error: \n\n%s', method, path, e
                 )
+            except IndexError as e:
+                # TODO: Fix this section - handling indexerror is not robus enough
+                logger.debug('Failed indexing schema')
 
         return response

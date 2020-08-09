@@ -37,14 +37,14 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.6"
 djangorestframework = "*"
-django = "^2.2 || ^3.0"
+django = "^2.2 || ^3.1"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "1.21.0"
 drf-yasg = "1.17.0"
 pyYAML = "5.3"
 djangorestframework_camel_case = "1.1.2"
-pytest = "^5.2"
+pytest = "^5.4"
 pytest-cov = "2.8.1"
 pytest-django =  "3.8.0"
 flake8 = "*"

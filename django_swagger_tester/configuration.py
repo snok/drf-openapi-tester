@@ -1,10 +1,10 @@
 import logging
 from types import FunctionType
-from typing import Callable, Optional, Union
+from typing import Callable, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -170,10 +170,6 @@ class SwaggerTesterSettings(object):
         """
         Sets self.LOADER_CLASS and validates the setting.
         """
-        if self.LOADER_CLASS is None:
-            raise ImproperlyConfigured(
-                'The SWAGGER_TESTER setting `LOADER_CLASS` needs to be a loader class, not None.'
-            )
         # TODO: finish custom validation
         # ------ Validation first -----
         # Then

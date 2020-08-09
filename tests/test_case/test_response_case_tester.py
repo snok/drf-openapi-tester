@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.schema_validation.case.base import ResponseCaseTester
+from django_swagger_tester.schema_validation.case import ResponseCaseTester
 from django_swagger_tester.exceptions import CaseError
 
 valid_cc_response = [
