@@ -1,6 +1,6 @@
 import logging
 from types import FunctionType
-from typing import Callable, Union
+from typing import Callable, Union, List
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -23,13 +23,17 @@ class MiddlewareSettings(object):
         self.STRICT = False
         self.VALIDATE_RESPONSE = True
         self.VALIDATE_REQUEST_BODY = True
+        self.VALIDATION_EXEMPT_URLS: List[str] = []
 
         # Overwrite defaults
         for setting, value in middleware_settings.items():
             if hasattr(self, setting):
                 setattr(self, setting, value)
             else:
-                raise ImproperlyConfigured(f'Received invalid middleware setting, `{setting}`, for SWAGGER_TESTER')
+                raise ImproperlyConfigured(
+                    f'Received excess middleware setting, `{setting}`, for SWAGGER_TESTER. '
+                    f'Please correct or remove this from the middleware settings.'
+                )
 
         self.validate_and_set_logger()
         self.validate_bool(self.STRICT, 'STRICT')

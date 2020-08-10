@@ -1,7 +1,7 @@
 import json
 import logging
 from functools import wraps
-from typing import Callable
+from typing import Callable, Any
 
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.request import Request
@@ -32,13 +32,19 @@ def validate_response_schema(response: Response, method: str, route: str, **kwar
     response_schema = settings.LOADER_CLASS.get_response_schema_section(
         route=route, status_code=status_code, method=method
     )
-    SchemaTester(response_schema=response_schema, response_data=data, **kwargs)
+    tester = SchemaTester(response_schema=response_schema, response_data=data, **kwargs)
+    if tester.error:
+        raise SwaggerDocumentationError(tester.error)
     ResponseCaseTester(response_data=data, **kwargs)
     SchemaCaseTester(schema=response_schema, **kwargs)
 
 
 def drf_serializer_validate_request_body_schema(
-    serializer, method: str, route: str, camel_case_parser: bool = settings.CAMEL_CASE_PARSER, **kwargs
+    serializer,  # noqa: F401, TYP001
+    method: str,
+    route: str,
+    camel_case_parser: bool = settings.CAMEL_CASE_PARSER,
+    **kwargs,
 ) -> None:
     """
     Verifies that an OpenAPI schema request body definition is valid, according to the API view's input serializer.
@@ -74,7 +80,7 @@ def drf_serializer_validate_request_body_schema(
     SchemaCaseTester(request_body_schema, **kwargs)
 
 
-def validate(request_body=False, response=False, **kwargs):
+def validate(request_body: bool = False, response: bool = False, **kwargs) -> Any:
     """
     Wrapper function to enable middleware-style validation, but for individual API views.
 
@@ -82,9 +88,9 @@ def validate(request_body=False, response=False, **kwargs):
     :param response: Whether to validate the response
     """
 
-    def outer(fn: Callable):
+    def outer(fn: Callable) -> Any:
         @wraps(fn)
-        def inner(*args, **kwargs):
+        def inner(*args, **kwargs) -> Any:
             if not isinstance(args[0], Request):
                 raise ImproperlyConfigured('The first argument to a view needs to be a Request')
 

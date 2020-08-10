@@ -2,10 +2,7 @@ import difflib
 import logging
 from typing import List, Tuple
 
-from django.core.exceptions import ImproperlyConfigured
-from django.urls import Resolver404, resolve
 from requests import Response
-from rest_framework.schemas.generators import EndpointEnumerator
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -14,6 +11,8 @@ def get_endpoint_paths() -> List[str]:
     """
     Returns a list of endpoint paths.
     """
+    from rest_framework.schemas.generators import EndpointEnumerator
+
     return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
 
@@ -21,6 +20,8 @@ def resolve_path(endpoint_path: str) -> str:
     """
     Resolves a Django path.
     """
+    from django.urls import Resolver404, resolve
+
     try:
         logger.debug('Resolving path.')
         if endpoint_path == '' or endpoint_path[0] != '/':
@@ -70,6 +71,8 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
     if hasattr(response, 'json'):
         return response.json(), status_code
     else:
+        from django.core.exceptions import ImproperlyConfigured
+
         raise ImproperlyConfigured(
             'Response does not contain a JSON-formatted response and cannot be tested against a response schema.'
         )

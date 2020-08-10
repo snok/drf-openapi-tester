@@ -20,7 +20,7 @@ class _LoaderBase:
     The base contains a template of methods that are required from a loader class.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    def __init__(self,) -> None:
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
 
@@ -34,7 +34,7 @@ class _LoaderBase:
         """
         pass
 
-    def load_schema(self, *args, **kwargs) -> dict:
+    def load_schema(self) -> dict:
         """
         Loader function which must be overwritten by subclass.
         """
@@ -42,19 +42,19 @@ class _LoaderBase:
 
     # </ methods to be overwritten >
 
-    def get_schema(self, *args, **kwargs) -> dict:
+    def get_schema(self,) -> dict:
         """
         Returns the OpenAPI schema as a dict.
         """
         if self.schema is None:
-            self.set_schema(self.load_schema(*args, **kwargs))
+            self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
-    def set_schema(self, schema: dict, *args, **kwargs) -> None:
+    def set_schema(self, schema: dict,) -> None:
         """
         Sets self.schema as a cleaned version of the loaded schema
         """
-        self.schema = self.replace_refs(schema, *args, **kwargs)
+        self.schema = self.replace_refs(schema,)
         self.original_schema = schema
 
     def get_route(self, route: str) -> str:
@@ -63,11 +63,11 @@ class _LoaderBase:
 
         This method was primarily implemented because drf-yasg has its own route style.
         """
-        return route
+        return resolve_path(route)
 
     def get_response_schema_section(self, route: str, method: str, status_code: int) -> dict:
         """
-        Indexes schema by url, HTTP method, and status code to get the section of a schema related to a specific response.
+        Indexes schema by url, HTTP method, and status code to get the schema section related to a specific response.
 
         :param route: Schema-compatible path
         :param method: HTTP request method
@@ -77,7 +77,7 @@ class _LoaderBase:
         self.validate_method(method)
         self.validate_route(route)
         self.validate_status_code(status_code)
-        resolved_route = resolve_path(route)
+        route = self.get_route(route)
         schema = self.get_schema()
 
         # Index by paths
@@ -86,7 +86,7 @@ class _LoaderBase:
         # Index by route
         routes = ', '.join([key for key in paths_schema.keys()])
         route_error = f'\n\nFor debugging purposes: valid routes include {routes}'
-        route_schema = index_schema(schema=paths_schema, variable=resolved_route, error_addon=route_error)
+        route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
@@ -111,7 +111,7 @@ class _LoaderBase:
 
         return index_schema(status_code_schema, 'schema')
 
-    def get_request_body_schema_section(self, route: str, method: str, *args, **kwargs) -> dict:
+    def get_request_body_schema_section(self, route: str, method: str,) -> dict:
         """
         Indexes schema to get an endpoints request body.
 
@@ -189,7 +189,7 @@ class _LoaderBase:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
     @staticmethod
-    def replace_refs(schema: dict, *args, **kwargs) -> dict:
+    def replace_refs(schema: dict,) -> dict:
         """
         Finds all $ref sections in a schema and replaces them with the referenced content.
         This way we only have to worry about $refs once.
@@ -200,22 +200,22 @@ class _LoaderBase:
         if '$ref' not in str(schema):
             return schema
 
-        def find_and_replace_refs_recursively(d: dict, schema: dict) -> dict:
+        def find_and_replace_refs_recursively(d: dict, s: dict) -> dict:
             """
             Iterates over a dictionary to look for pesky $refs.
             """
             if '$ref' in d:
                 indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
-                temp_schema = schema
+                temp_schema = s
                 for index in indices:
                     logger.debug(f'Indexing schema by `%s`', index)
                     temp_schema = temp_schema[index]
                 return temp_schema
             for k, v in d.items():
                 if isinstance(v, list):
-                    d[k] = iterate_list(v, schema)
+                    d[k] = iterate_list(v, s)
                 elif isinstance(v, dict):
-                    d[k] = find_and_replace_refs_recursively(v, schema)
+                    d[k] = find_and_replace_refs_recursively(v, s)
             return d
 
         def iterate_list(l: list, s: dict) -> list:
@@ -234,8 +234,8 @@ class _LoaderBase:
 
         return find_and_replace_refs_recursively(schema, schema)
 
-    def get_request_body_example(self, route: str, method: str, *args, **kwargs) -> Any:
-        request_body_schema = self.get_request_body_schema_section(route, method, *args, **kwargs)
+    def get_request_body_example(self, route: str, method: str,) -> Any:
+        request_body_schema = self.get_request_body_schema_section(route, method,)
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
     @staticmethod
@@ -291,8 +291,8 @@ class DrfYasgSchemaLoader(_LoaderBase):
     Loads OpenAPI schema when schema is dynamically generated by drf_yasg.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self,) -> None:
+        super().__init__()
         self.validation()
         from drf_yasg.openapi import Info
         from drf_yasg.generators import OpenAPISchemaGenerator
@@ -319,7 +319,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
                 '`settings.py`, as it is required for this implementation'
             )
 
-    def load_schema(self, *args, **kwargs) -> dict:
+    def load_schema(self,) -> dict:
         """
         Loads generated schema from drf-yasg and returns it as a dict.
         """
@@ -360,8 +360,8 @@ class StaticSchemaLoader(_LoaderBase):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
+    def __init__(self,) -> None:
+        super().__init__()
         self.path: str = ''
 
     def set_path(self, path: str) -> None:
@@ -398,7 +398,7 @@ class StaticSchemaLoader(_LoaderBase):
                 )
         self.set_path(kwargs['package_settings']['PATH'])
 
-    def load_schema(self, *args, **kwargs) -> dict:
+    def load_schema(self) -> dict:
         """
         Loads a static OpenAPI schema from file, and parses it to a python dict.
 

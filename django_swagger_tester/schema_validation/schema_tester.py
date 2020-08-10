@@ -1,6 +1,6 @@
 import logging
 from collections import KeysView
-from typing import Any, Union
+from typing import Any, Union, Optional, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -16,7 +16,9 @@ from django_swagger_tester.schema_validation.openapi import (
 logger = logging.getLogger('django_swagger_tester')
 
 
-def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dict, data: dict, reference: str) -> None:
+def check_keys_match(
+    schema_keys: KeysView, response_keys: KeysView, schema: dict, data: dict, reference: str
+) -> Tuple[Optional[str], Optional[str]]:
     """
     Verifies that both sets have the same amount of keys.
     A length mismatch in the two sets, indicates an error in one of them.
@@ -33,7 +35,7 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
         logger.debug('The number of schema dict elements does not match the number of response dict elements')
         if len(set(response_keys)) > len(set(schema_keys)):
             missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
-            raise format_error(
+            return format_error(
                 f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
                 data=data,
                 schema=schema,
@@ -42,13 +44,14 @@ def check_keys_match(schema_keys: KeysView, response_keys: KeysView, schema: dic
             )
         else:
             missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
-            raise format_error(
+            return format_error(
                 f'The following properties seem to be missing from your response body: {missing_keys}.',
                 data=data,
                 schema=schema,
                 reference=reference,
                 hint='Remove the key(s) from you Swagger docs, or include it in your API response.',
             )
+    return None, None
 
 
 class SchemaTester:
@@ -60,6 +63,9 @@ class SchemaTester:
         :param response_data: API response data
         raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
+        self.error = None
+        self.formatted_error = None
+
         if '$ref' in str(response_schema):
             # `$ref`s should be replaced inplace before the schema is passed to this class
             raise ImproperlyConfigured(
@@ -68,16 +74,24 @@ class SchemaTester:
 
         if read_type(response_schema) == 'object':
             logger.debug('init --> dict')
-            self.test_dict(schema=response_schema, data=response_data, reference='init', **kwargs)
+            self.formatted_error, self.error = self.test_dict(
+                schema=response_schema, data=response_data, reference='init', **kwargs
+            )
         elif read_type(response_schema) == 'array':
             logger.debug('init --> list')
-            self.test_list(schema=response_schema, data=response_data, reference='init', **kwargs)
+            self.formatted_error, self.error = self.test_list(
+                schema=response_schema, data=response_data, reference='init', **kwargs
+            )
         # this should always be third, as list_types also contains `array` and `object`
         elif read_type(response_schema) in list_types():
             logger.debug('init --> item')
-            self.test_item(schema=response_schema, data=response_data, reference='init', **kwargs)
+            self.formatted_error, self.error = self.test_item(
+                schema=response_schema, data=response_data, reference='init', **kwargs
+            )
 
-    def test_dict(self, schema: dict, data: Union[list, dict], reference: str, **kwargs) -> None:
+    def test_dict(
+        self, schema: dict, data: Union[list, dict], reference: str, **kwargs
+    ) -> Tuple[Optional[str], Optional[str]]:
         """
         Verifies that a schema dict matches a response dict.
 
@@ -93,13 +107,13 @@ class SchemaTester:
             elif data is None:
                 if 'x-nullable' in schema and schema['x-nullable']:
                     # NoneTypes are OK if the schema says the field is nullable
-                    return
+                    return None, None
                 hint = (
                     'If you wish to allow null values for this schema item, your schema needs to '
                     'set `x-nullable: True`.\nFor drf-yasg implementations, set `x_nullable=True` '
                     'in your Schema definition.'
                 )
-            raise format_error(
+            return format_error(
                 error_message=f"Mismatched types. Expected response to be <class 'dict'> but found {type(data)}.",
                 data=data,
                 schema=schema,
@@ -111,13 +125,15 @@ class SchemaTester:
         properties = read_properties(schema)
         schema_keys = properties.keys()
         response_keys = data.keys()
-        check_keys_match(schema_keys, response_keys, schema, data, reference)
+        formatted_error, error = check_keys_match(schema_keys, response_keys, schema, data, reference)
+        if error:
+            return formatted_error, error
 
         for schema_key, response_key in zip(schema_keys, response_keys):
 
             # Check that each element in the schema exists in the response, and vice versa
             if schema_key not in response_keys:
-                raise format_error(
+                return format_error(
                     error_message=f'Schema key `{schema_key}` was not found in the API response.',
                     data=data,
                     schema=schema,
@@ -127,7 +143,7 @@ class SchemaTester:
                     **kwargs,
                 )
             elif response_key not in schema_keys:
-                raise format_error(
+                return format_error(
                     error_message=f'Response key `{response_key}` not found in the OpenAPI schema.',
                     data=data,
                     schema=schema,
@@ -143,21 +159,24 @@ class SchemaTester:
 
             if read_type(schema_value) == 'object':
                 logger.debug('test_dict --> test_dict. Response: %s, Schema: %s', response_value, schema_value)
-                self.test_dict(
+                return self.test_dict(
                     schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}', **kwargs
                 )
             elif read_type(schema_value) == 'array':
                 logger.debug('test_dict --> test_list. Response: %s, Schema: %s', response_value, schema_value)
-                self.test_list(
+                return self.test_list(
                     schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}', **kwargs
                 )
             elif read_type(schema_value) in list_types():  # This needs to come after array and object test_checks
                 logger.debug('test_dict --> test_item. Response: %s, Schema: %s', response_value, schema_value)
-                self.test_item(
+                return self.test_item(
                     schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}', **kwargs
                 )
+        return None, None
 
-    def test_list(self, schema: dict, data: Union[list, dict], reference: str, **kwargs) -> None:
+    def test_list(
+        self, schema: dict, data: Union[list, dict], reference: str, **kwargs
+    ) -> Tuple[Optional[str], Optional[str]]:
         """
         Verifies that a schema array matches a response list.
 
@@ -181,7 +200,7 @@ class SchemaTester:
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
-            raise format_error(
+            return format_error(
                 error_message=f"Mismatched types. Expected response to be <class 'list'> but found {type(data)}.",
                 data=data,
                 schema=schema,
@@ -192,7 +211,7 @@ class SchemaTester:
 
         item = read_items(schema)
         if not item and data:
-            raise format_error(
+            return format_error(
                 error_message=f'Mismatched content. Response array contains data, when schema is empty.',
                 data=data,
                 schema=schema,
@@ -203,24 +222,19 @@ class SchemaTester:
         for datum in data:
             if read_type(item) == 'object':
                 logger.debug('test_list --> test_dict')
-                self.test_dict(
-                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
-                )
+                return self.test_dict(schema=item, data=datum, reference=f'{reference}.list', **kwargs,)
 
             elif read_type(item) == 'array':
                 logger.debug('test_list --> test_dict')
-                self.test_list(
-                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
-                )
+                return self.test_list(schema=item, data=datum, reference=f'{reference}.list', **kwargs,)
 
             elif read_type(item) in list_types():
                 logger.debug('test_list --> test_item')
-                self.test_item(
-                    schema=item, data=datum, reference=f'{reference}.list', **kwargs,
-                )
+                return self.test_item(schema=item, data=datum, reference=f'{reference}.list', **kwargs,)
+        return None, None
 
     @staticmethod
-    def test_item(schema: dict, data: Any, reference: str, **kwargs) -> None:
+    def test_item(schema: dict, data: Any, reference: str, **kwargs) -> Tuple[Optional[str], Optional[str]]:
         """
         Verifies that a response value matches the example value in the schema.
 
@@ -242,9 +256,9 @@ class SchemaTester:
         }
 
         if data is None and is_nullable(schema):
-            return
+            pass
         elif checks[schema['type']]['check']:
-            raise format_error(
+            return format_error(
                 error_message=f'Mismatched types.',
                 data=data,
                 schema=schema,
@@ -253,3 +267,4 @@ class SchemaTester:
                 f'or change your documented type to {type(data)}.',
                 **kwargs,
             )
+        return None, None

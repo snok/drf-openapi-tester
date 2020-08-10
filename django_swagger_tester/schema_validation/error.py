@@ -1,17 +1,16 @@
 import json
 import logging
 import sys
-from typing import Any, Optional
+from typing import Any, Optional, Tuple
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import SwaggerDocumentationError
 
 logger = logging.getLogger('django_swagger_tester')
 
 
 def format_error(
     error_message: str, data: Any, schema: dict, reference: str, hint: Optional[str] = None, **kwargs
-) -> SwaggerDocumentationError:
+) -> Tuple[str, str]:
     """
     Formats and returns a standardized exception and error message.
     """
@@ -58,9 +57,9 @@ def format_error(
         )
 
         # Then - For a detailed view, we change `example item` and `data` to expanded versions of themselves
-        example_item: str = f'\n{tab}' + json.dumps(example_item, indent=4, sort_keys=True).replace(
+        example_item: str = f'\n{tab}' + json.dumps(example_item, indent=4, sort_keys=True).replace(  # type: ignore
             '\n', f'\n{tab}'
-        )  # type: ignore
+        )
         data: str = f'\n{tab}' + json.dumps(data, indent=4, sort_keys=True).replace('\n', f'\n{tab}')  # type: ignore
 
     else:
@@ -91,4 +90,4 @@ def format_error(
         f'{addon}',
     ]
 
-    return SwaggerDocumentationError(''.join(message))
+    return ''.join(message), error_message

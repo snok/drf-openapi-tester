@@ -44,7 +44,7 @@ exclude =
     .git,
     .idea,
     __pycache__,
-    demo_project/*,
+    demo/*,
     tests/*,
     venv,
     manage.py,
