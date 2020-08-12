@@ -63,7 +63,7 @@ class _LoaderBase:
 
         This method was primarily implemented because drf-yasg has its own route style.
         """
-        return resolve_path(route)
+        return resolve_path(route)[0]
 
     def get_response_schema_section(self, route: str, method: str, status_code: int) -> dict:
         """
@@ -324,7 +324,9 @@ class DrfYasgSchemaLoader(_LoaderBase):
         Loads generated schema from drf-yasg and returns it as a dict.
         """
         odict_schema = self.schema_generator.get_schema(None, True)
-        return loads(dumps(odict_schema.as_odict()))
+        schema = loads(dumps(odict_schema.as_odict()))
+        logger.debug('Successfully loaded schema')
+        return schema
 
     def get_path_prefix(self) -> str:
         """
@@ -346,7 +348,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         """
         from django_swagger_tester.schema_validation.utils import resolve_path
 
-        resolved_route = resolve_path(route)
+        resolved_route = resolve_path(route)[0]
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         logger.debug('Path prefix: %s', path_prefix)
         if path_prefix != '/':
@@ -420,10 +422,14 @@ class StaticSchemaLoader(_LoaderBase):
                 f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}'
             )
         if '.json' in self.path:
-            return json.loads(content)
+            schema = json.loads(content)
+            logger.debug('Successfully loaded schema')
+            return schema
         elif '.yaml' in self.path or '.yml' in self.path:
             import yaml
 
-            return yaml.load(content, Loader=yaml.FullLoader)
+            schema = yaml.load(content, Loader=yaml.FullLoader)
+            logger.debug('Successfully loaded schema')
+            return schema
         else:
             raise ImproperlyConfigured('The specified file path does not seem to point to a JSON or YAML file.')

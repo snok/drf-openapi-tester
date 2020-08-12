@@ -12,9 +12,6 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
-# from django_swagger_tester.case_checks import is_camel_case
-# from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
 
@@ -97,6 +94,7 @@ SWAGGER_TESTER = {
     'MIDDLEWARE': {  # Middleware-specific settings
         'LOG_LEVEL': 'ERROR',  # Log level to log when validation fails
         'STRICT': True,  # Strict-mode rejects incoming requests when request body validation fails, default logs
+        'VALIDATION_EXEMPT_URLS': [],
     },
     'CASE_CHECKER': is_camel_case,  # Function responsible for checking schema casing
     'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled

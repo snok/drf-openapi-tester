@@ -16,7 +16,7 @@ def get_endpoint_paths() -> List[str]:
     return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
 
-def resolve_path(endpoint_path: str) -> str:
+def resolve_path(endpoint_path: str) -> tuple:
     """
     Resolves a Django path.
     """
@@ -42,7 +42,7 @@ def resolve_path(endpoint_path: str) -> str:
             # also cause the `1` in api/v1/ to be replaced
             var_index = endpoint_path.rfind(value)
             endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(value) :]
-        return endpoint_path
+        return endpoint_path, resolved_route
 
     except Resolver404:
         logger.error(f'URL `%s` did not resolve successfully', endpoint_path)

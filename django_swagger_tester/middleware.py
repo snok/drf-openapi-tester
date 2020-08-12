@@ -1,11 +1,13 @@
 import json
 import logging
 from json import JSONDecodeError
-from typing import Callable, Union, Optional
 from re import compile
+from typing import Callable, Union, Optional
+
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
+from django.urls import Resolver404
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
@@ -70,29 +72,38 @@ class SwaggerValidationMiddleware(object):
         :param request: HttpRequest from Django
         :return: Passes on the request or response to the next middleware
         """
-        if request.headers['Content-Type'] not in ['application/json']:
-            # Non-JSON content types are not handled
-            handle_request = False
-        elif any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
-            # Skip handling for ignored routes
+        if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
+            # If the route is ignored in the settings, we skip validation completely
+            logger.debug('Validation skipped - %s request to %s is in exempt urls', request.method, request.path)
+            return self.get_response(request)
+        elif not self.path_in_endpoints(path=request.path, method=request.method):
+            # Only handle requests if path is a valid endpoint
+            return self.get_response(request)
+        elif request.headers['Content-Type'] not in ['application/json']:
+            # Non-JSON content types are not handled by the request validation function
+            logger.debug(
+                'Validation skipped - %s request to %s has non-JSON content-type', request.method, request.path
+            )
             handle_request = False
         else:
-            # Handle request if path is a valid endpoint
-            handle_request = self.path_in_endpoints(request.path, request.method)
+            handle_request = True
 
+        # Check settings
         validate_request_body = handle_request and request.body and self.middleware_settings.VALIDATE_REQUEST_BODY
         validate_response = self.middleware_settings.VALIDATE_RESPONSE
 
         if validate_request_body:
-
+            logger.debug('Validating request body')
             potential_response = self.validate_request_body(request)
             if potential_response is not None:
+                # If validation function rejects the request, we return a 400 - only if strict is True
                 return potential_response
 
         # ^ Code above this line is executed before the view and later middleware
         response = self.get_response(request)
 
         if validate_response:
+            logger.debug('Validating response')
             self.validate_response(response, request)
 
         return response
@@ -107,19 +118,23 @@ class SwaggerValidationMiddleware(object):
         :param request: HTTP request
         """
         logger.info('Validating response for %s request to %s', request.method, request.path)
-        response_schema = settings.LOADER_CLASS.get_response_schema_section(
-            route=request.path, status_code=response.status_code, method=request.method
-        )
-        tester = SchemaTester(response_schema=response_schema, response_data=response.data)
-        if tester.error:
-            self.middleware_settings.LOGGER(
-                'Incorrect response template returned for %s request to %s. Swagger error: %s',
-                request.method,
-                request.path,
-                tester.error,
+        try:
+            response_schema = settings.LOADER_CLASS.get_response_schema_section(
+                route=request.path, status_code=response.status_code, method=request.method
             )
-        ResponseCaseTester(response_data=response.data)
-        SchemaCaseTester(schema=response_schema)
+        except IndexError as e:
+            self.middleware_settings.LOGGER('Failed to access section of schema. Error: %s', e)
+        else:
+            tester = SchemaTester(response_schema=response_schema, response_data=response.data)
+            if tester.error:
+                self.middleware_settings.LOGGER(
+                    'Incorrect response template returned for %s request to %s. Swagger error: %s',
+                    request.method,
+                    request.path,
+                    tester.error,
+                )
+            ResponseCaseTester(response_data=response.data)
+            SchemaCaseTester(schema=response_schema)
 
     def validate_request_body(self, request: HttpRequest) -> Optional[HttpResponse]:
         """
@@ -135,7 +150,13 @@ class SwaggerValidationMiddleware(object):
         logger.info('Validating request body for %s request to %s', request.method, request.path)
 
         # Fetch the OpenAPI schema section related to the request body of this endpoint
-        request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(request.path, request.method)
+        try:
+            request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(request.path, request.method)
+        except Exception as e:
+            self.middleware_settings.LOGGER(
+                'Failed loading request body for %s request to %s. Error: %s', request.method, request.path, e
+            )
+            return None  # todo: can we reject a request for this? I dont think so, but perhaps it could be setting-dependent
 
         try:
             # Parse request body as the correct type
@@ -166,6 +187,7 @@ class SwaggerValidationMiddleware(object):
                     request.path,
                     tester.error,
                 )
+        logger.debug('Response for %s request to %s is correctly documented', request.method, request.path)
         return None
 
     def path_in_endpoints(self, path: str, method: str) -> bool:
@@ -179,13 +201,20 @@ class SwaggerValidationMiddleware(object):
         :return: Bool indicating whether the request should be handled
         """
         try:
-            resolved_path = resolve_path(path)
+            deparameterized_path, resolved_path = resolve_path(path)
         except ValueError:
-            logger.debug('Failed to resolve path for %s request to %s. Skipping validation', method, path)
+            logger.debug('Validation skipped - %s request to %s failed to resolve', method, path)
             return False
-        else:
-            for route in self.endpoints:
-                if resolved_path == route:
-                    logger.debug('Request to %s is an API request', path)
-                    return True
+        except Resolver404:
+            logger.debug('Validation skipped - %s request to %s failed to resolve', method, path)
+            return False
+        for route in self.endpoints:
+            if deparameterized_path == route:
+                # Verify that the view has contains the method
+                if not hasattr(resolved_path.func.view_class, method.lower()):
+                    logger.debug('Validation skipped - %s request method does not exist in the view', method)
+                    return False
+                logger.debug('%s request to %s is an API request', method, path)
+                return True
+        logger.debug('Validation skipped - %s request to %s was not found in API endpoints', method, path)
         return False
