@@ -23,11 +23,12 @@ def resolve_path(endpoint_path: str) -> str:
     """
     try:
         logger.debug('Resolving path.')
+        if '?' in endpoint_path:
+            endpoint_path = endpoint_path.split('?')[0]
         if endpoint_path == '' or endpoint_path[0] != '/':
             logger.debug('Adding leading `/` to provided path')
             endpoint_path = '/' + endpoint_path
-        if '?' in endpoint_path:
-            endpoint_path = endpoint_path.split('?')[0]
+
         try:
             resolved_route = resolve(endpoint_path)
             logger.debug('Resolved %s successfully', endpoint_path)
