@@ -15,7 +15,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
 
-from django_swagger_tester.case_checks import is_camel_case
+from django_swagger_tester.case_testers import is_camel_case
 from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
@@ -128,7 +128,7 @@ SWAGGER_TESTER = {
         'STRICT': True,  # Strict-mode rejects incoming requests when request body validation fails, default logs
         'VALIDATION_EXEMPT_URLS': [],
     },
-    'CASE_CHECKER': is_camel_case,  # Function responsible for checking schema casing
+    'CASE_TESTER': is_camel_case,  # Function responsible for checking schema casing
     'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled
     'CASE_WHITELIST': [],
 }

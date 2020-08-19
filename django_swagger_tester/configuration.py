@@ -104,7 +104,7 @@ class SwaggerTesterSettings(object):
         self.SCHEMA_LOADER = None
 
         # Defaulted package settings
-        self.CASE_CHECKER: Callable = lambda: None
+        self.CASE_TESTER: Callable = lambda: None
         self.CAMEL_CASE_PARSER = False
         self.CASE_WHITELIST: List[str] = []
 
@@ -124,7 +124,7 @@ class SwaggerTesterSettings(object):
         self.set_and_validate_schema_loader(swagger_tester_settings)
 
         # Validate other specified settings to make sure they are valid
-        self.validate_case_checker_setting()
+        self.validate_case_tester_setting()
         self.validate_camel_case_parser_setting()
         self.validate_case_whitelist()
 
@@ -137,33 +137,35 @@ class SwaggerTesterSettings(object):
 
         if not hasattr(django_settings, 'SWAGGER_TESTER'):
             raise ImproperlyConfigured(
-                'Please configure SWAGGER_TESTER in your settings ' 'or remove django-swagger-tester as a dependency'
+                'Please configure SWAGGER_TESTER in your settings or remove django-swagger-tester as a dependency'
             )
+
+        if not django_settings.SWAGGER_TESTER:
+            raise ImproperlyConfigured('Your SWAGGER_TESTER settings need to be configured')
+
         return django_settings.SWAGGER_TESTER
 
-    def validate_case_checker_setting(self) -> None:
+    def validate_case_tester_setting(self) -> None:
         """
         Make sure we receive a callable or a None.
         """
-        if self.CASE_CHECKER is not None and not isinstance(self.CASE_CHECKER, FunctionType):
-            logger.error('CASE_CHECKER setting is misspecified.')
+        if self.CASE_TESTER is not None and not isinstance(self.CASE_TESTER, FunctionType):
+            logger.error('CASE_TESTER setting is misspecified.')
             raise ImproperlyConfigured(
-                f'The django-swagger-tester CASE_CHECKER settings is misspecified. '
-                f'Valid inputs include None or a callable function.\n\n'
-                f'Package supported case checkers can be imported from django_swagger_tester.case_checkers'
+                f'The django-swagger-tester CASE_TESTER setting is misspecified. '
+                f'Please pass a case tester callable from django_swagger_tester.case_testers, '
+                f'make your own, or pass `None` to skip case validation.'
             )
-        elif self.CASE_CHECKER is None:
-            # If None is passed, we want to do nothing when self.CASE_CHECKER is called, so we just assign a lambda expression
-            self.CASE_CHECKER = lambda: None
+        elif self.CASE_TESTER is None:
+            # If None is passed, we want to do nothing when self.CASE_TESTER is called, so we just assign a lambda expression
+            self.CASE_TESTER = lambda: None
 
     def validate_camel_case_parser_setting(self) -> None:
         """
         Make sure CAMEL_CASE_PARSER is a boolean, and that the required dependencies are installed if set to True.
         """
         if not isinstance(self.CAMEL_CASE_PARSER, bool):
-            raise ImproperlyConfigured(
-                '`CAMEL_CASE_PARSER` needs to be True or False, or unspecified (defaults to False).'
-            )
+            raise ImproperlyConfigured('`CAMEL_CASE_PARSER` needs to be True or False')
         if self.CAMEL_CASE_PARSER:
             try:
                 import djangorestframework_camel_case  # noqa: F401
@@ -187,14 +189,17 @@ class SwaggerTesterSettings(object):
         """
         Sets self.LOADER_CLASS and validates the setting.
         """
+        addon = '. Please pass a loader class from django_swagger_tester.schema_loaders.'
         if self.SCHEMA_LOADER is None:
-            raise ImproperlyConfigured('The LOADER_CLASS setting is required')
+            raise ImproperlyConfigured(
+                'SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon
+            )
 
         if not inspect.isclass(self.SCHEMA_LOADER):
-            raise ImproperlyConfigured('The LOADER_CLASS setting must be a class')
+            raise ImproperlyConfigured('SCHEMA_LOADER must be a class' + addon)
         elif not issubclass(self.SCHEMA_LOADER, _LoaderBase):
             raise ImproperlyConfigured(
-                'The specified LOADER_CLASS must inherit from django_swagger_tester.schema_loaders._LoaderBase'
+                'The supplied LOADER_CLASS must inherit django_swagger_tester.schema_loaders._LoaderBase' + addon
             )
 
         self.LOADER_CLASS: _LoaderBase = self.SCHEMA_LOADER()

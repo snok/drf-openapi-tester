@@ -118,13 +118,14 @@ def is_nullable(schema_item: dict) -> bool:
     """
     openapi_schema_3_nullable = 'nullable'
     swagger_2_nullable = 'x-nullable'
-    for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]:
-        if schema_item and isinstance(schema_item, dict):
-            if nullable_key in schema_item:
-                if isinstance(schema_item[nullable_key], str):
-                    if schema_item[nullable_key] == 'true':
-                        return True
-    return False
+    return any(
+        schema_item
+        and isinstance(schema_item, dict)
+        and nullable_key in schema_item
+        and isinstance(schema_item[nullable_key], str)
+        and schema_item[nullable_key] == 'true'
+        for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
+    )
 
 
 def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
