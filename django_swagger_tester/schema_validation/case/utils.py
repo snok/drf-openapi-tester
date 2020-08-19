@@ -14,7 +14,7 @@ def set_ignored_keys(**kwargs) -> List[str]:
     return []
 
 
-def conditional_check(key: str, function: Callable, ignored_keys: list) -> None:
+def conditional_case_check(key: str, function: Callable, ignored_keys: list) -> None:
     """
     Checks a keys case if the key is not ignored.
 

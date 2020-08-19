@@ -34,6 +34,18 @@ Strict should reject incoming requests when uri param og request body validation
 """
 
 
+def is_api_request(endpoints, path) -> False:
+    """
+    Indicates whether a request is meant for a documented API endpoint or not.
+    """
+    resolved_path = resolve_path(path)
+    for route, _, _ in endpoints:
+        if resolved_path == route:
+            logger.debug('Request to %s is an API request', path)
+            return True
+    return False
+
+
 class SwaggerValidationMiddleware(object):
     """
     # TODO: Verify or update before release
@@ -55,7 +67,7 @@ class SwaggerValidationMiddleware(object):
         """
         One-time configuration and initialization of the middleware.
         """
-        self.endpoints = EndpointEnumerator().get_api_endpoints()  # TODO: Replace with a local copy
+        self.endpoints = EndpointEnumerator().get_api_endpoints()
         self.get_response = get_response
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed
@@ -79,15 +91,9 @@ class SwaggerValidationMiddleware(object):
         """
         path = request.path
         method = request.method.upper()
-        api_request = False  # whether we should handle the request at all
-        resolved_path = resolve_path(path)
 
         # Determine whether the request is being made to an API
-        for route, _, _ in self.endpoints:
-            if resolved_path == route:
-                logger.debug('Request to %s is an API request', path)
-                api_request = True
-                break
+        api_request = is_api_request(self.endpoints, path)
 
         validate_request_body = api_request and request.body and settings.MIDDLEWARE.VALIDATE_REQUEST_BODY
 

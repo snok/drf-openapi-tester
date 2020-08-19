@@ -3,7 +3,10 @@ from typing import Any, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.case_checks import is_camel_case
+from django_swagger_tester.configuration import settings
 from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
+from django_swagger_tester.schema_validation.case.utils import conditional_case_check, set_ignored_keys
 from django_swagger_tester.schema_validation.response.utils import check_keys_match, format_error
 
 logger = logging.getLogger('django_swagger_tester')
@@ -19,6 +22,9 @@ class ResponseTester:
         :param response_data: API response data
         raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
+        self.case_checker = settings.CASE_CHECKER
+        self.ignored_keys = set_ignored_keys(**kwargs)
+
         if '$ref' in str(response_schema):
             # `$ref`s should be replaced inplace before the schema is passed to this class
             raise ImproperlyConfigured(
@@ -92,6 +98,10 @@ class ResponseTester:
                     hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
                     **kwargs,
                 )
+
+            # Check case
+            conditional_case_check(response_key, self.case_checker, self.ignored_keys)
+            conditional_case_check(schema_key, self.case_checker, self.ignored_keys)
 
             # Pass nested elements to the appropriate function
             schema_value = properties[schema_key]
