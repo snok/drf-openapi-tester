@@ -1,13 +1,13 @@
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.utils import get_paths, validate_inputs
+from django_swagger_tester.schema_validation.utils import get_endpoint_paths
 
 
-def test_get_paths():
+def test_get_endpoint_paths():
     """
     Make sure the function returns a valid list of strings.
     """
-    urls = list(set(get_paths()))
+    urls = list(set(get_endpoint_paths()))
     expected = [
         '/api/v1/trucks/incorrect/',
         '/api/v1/{vehicle_type}/correct/',
@@ -18,9 +18,6 @@ def test_get_paths():
     ]
     assert [url in expected for url in urls]
     assert len(expected) == len(urls)
-
-
-from django_swagger_tester.utils import validate_method
 
 
 def test_valid_methods_pass():
@@ -42,7 +39,7 @@ def test_invalid_methods_raise():
             validate_method(method=method)
 
 
-from django_swagger_tester.utils import unpack_response
+from django_swagger_tester.schema_validation.utils import unpack_response
 
 
 def test_successful_unpack():
@@ -84,7 +81,7 @@ def test_unsuccesful_unpack():
 
 import pytest
 
-from django_swagger_tester.utils import resolve_path
+from django_swagger_tester.schema_validation.utils import resolve_path
 
 paths = ['/api/v1/cars/correct/', '/api/v1/trucks/correct/', '/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']
 

@@ -3,7 +3,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from demo_project.api.serializers import ItemSerializer
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.input_validation.validation import serialize_schema
+from django_swagger_tester.input_validation.validation import create_dict_from_schema
 
 
 def test_valid_input_validation(client):
@@ -28,11 +28,11 @@ def test_invalid_input_validation(client):
         validate_input(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles/', camel_case_parser=False)
 
 
-def test_serialize_schema_validation():
+def test_create_dict_from_schema_validation():
     """
     Make sure we raise an ImproperlyConfigured error before letting the logic fail.
     """
     with pytest.raises(
         ImproperlyConfigured, match="This schema item does not seem to have an example value. Item: {'type': 'string'}"
     ):
-        serialize_schema({'type': 'string'})
+        create_dict_from_schema({'type': 'string'})

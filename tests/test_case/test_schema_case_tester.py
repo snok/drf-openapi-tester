@@ -2,14 +2,13 @@ import pytest
 import yaml
 from django.conf import settings
 
-from django_swagger_tester.schema_validation.case.base import SchemaCaseTester
+from django_swagger_tester.configuration import settings as _settings
 from django_swagger_tester.exceptions import CaseError
-from django_swagger_tester.utils import replace_refs
 
 
 def loader(path):
     with open(settings.BASE_DIR + path, 'r') as f:
-        return replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return _settings.LOADER_CLASS.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')

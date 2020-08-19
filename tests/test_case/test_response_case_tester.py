@@ -1,7 +1,7 @@
 import pytest
 
-from django_swagger_tester.response.base import SchemaTester
 from django_swagger_tester.exceptions import CaseError
+from django_swagger_tester.schema_validation.schema_tester import SchemaTester
 
 valid_cc_response = [
     {
@@ -22,8 +22,8 @@ def test_valid_camel_case_response(monkeypatch):
         CASE = 'camelCase'
 
     monkeypatch.setattr('django_swagger_tester.schema_validation.case.base.settings', MockSettings)
-    ResponseCaseTester(response_data=valid_cc_response)
-    ResponseCaseTester(response_data=valid_cc_response[0])
+    SchemaTester(response_data=valid_cc_response)
+    SchemaTester(response_data=valid_cc_response[0])
 
 
 def test_invalid_camel_case_response(monkeypatch):

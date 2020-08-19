@@ -3,24 +3,18 @@ import yaml
 from django.core.exceptions import ImproperlyConfigured
 
 from demo_project import settings
-from django_swagger_tester.schema_validation.request_body.utils import (
-    serialize_schema,
-    get_request_body_schema,
-    _iterate_schema_dict,
-    _iterate_schema_list,
-)
-from django_swagger_tester.utils import replace_refs
+from django_swagger_tester.configuration import settings as _settings
 
 
 def loader(path):
     with open(settings.BASE_DIR + path, 'r') as f:
-        return replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return _settings.LOADER_CLASS.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')
 
 
-def test_serialize_schema():
+def test_create_dict_from_schema():
     """
     Makes sure we're able to accurately serialize an object.
     """
@@ -37,10 +31,10 @@ def test_serialize_schema():
                     if 'schema' not in schema['paths'][key][method]['responses'][status_code]:
                         continue
                     try:
-                        response_schema = get_request_body_schema(schema['paths'][key][method]['parameters'])
+                        response_schema = _settings.LOADER_CLASS.get_request_body_schema_section(schema['paths'][key][method]['parameters'])
                     except ImproperlyConfigured:
                         continue
-                    serialize_schema(response_schema)
+                    _settings.LOADER_CLASS.create_dict_from_schema(response_schema)
 
 
 def test_iterate_schema_dict():

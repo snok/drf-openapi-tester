@@ -12,7 +12,8 @@ def _case_error_message(case: str, key: str) -> str:
     """
     return (
         f'The property `{key}` is not properly {case}\n\n'
-        f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{key}\']` to your function call'
+        f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{key}\']` when to the '
+        f'`validate_response_schema` function call, or by adding the key to the CASE_WHITELIST in the SWAGGER_TESTER settings'
     )
 
 
