@@ -52,6 +52,7 @@ pytest-django =  "3.8.0"
 flake8 = "*"
 sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
+drf-spectacular = "^0.9.13"
 ipython = "^7.16.1"
 
 [tool.black]
