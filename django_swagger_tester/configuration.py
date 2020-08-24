@@ -4,7 +4,7 @@ from types import FunctionType
 from typing import Callable, List
 
 from django.core.exceptions import ImproperlyConfigured
-
+from re import compile
 from django_swagger_tester.schema_loaders import _LoaderBase
 
 logger = logging.getLogger('django_swagger_tester')
@@ -21,7 +21,7 @@ class MiddlewareSettings(object):
         """
         # Define default values for middleware settings
         self.LOG_LEVEL = 'ERROR'
-        self.STRICT = False
+        self.REJECT_INVALID_REQUEST_BODIES = False
         self.VALIDATE_RESPONSE = True
         self.VALIDATE_REQUEST_BODY = True
         self.VALIDATION_EXEMPT_URLS: List[str] = []
@@ -37,9 +37,10 @@ class MiddlewareSettings(object):
                 )
 
         self.validate_and_set_logger()
-        self.validate_bool(self.STRICT, 'STRICT')
+        self.validate_bool(self.REJECT_INVALID_REQUEST_BODIES, 'REJECT_INVALID_REQUEST_BODIES')
         self.validate_bool(self.VALIDATE_REQUEST_BODY, 'VALIDATE_REQUEST_BODY')
         self.validate_bool(self.VALIDATE_RESPONSE, 'VALIDATE_RESPONSE')
+        self.validate_exempt_urls(self.VALIDATION_EXEMPT_URLS)
 
     def validate_and_set_logger(self) -> None:
         """
@@ -60,6 +61,16 @@ class MiddlewareSettings(object):
             raise ImproperlyConfigured(
                 f'The SWAGGER_TESTER middleware setting `{setting_name}` must be a boolean value'
             )
+
+    @staticmethod
+    def validate_exempt_urls(values: List[str]) -> None:
+        """
+        Makes sure we're able to compile the input values as regular expressions.
+        """
+        try:
+            [compile(url_pattern) for url_pattern in values]
+        except Exception:
+            raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
 
     @staticmethod
     def get_logger(level: str, logger_name: str) -> Callable:
@@ -84,7 +95,8 @@ class MiddlewareSettings(object):
             return logging.getLogger(logger_name).critical
         else:
             raise ImproperlyConfigured(
-                f'The log level for the `{logger_name}` logger was set as `{level}` which is not a valid log level.'
+                f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+                f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
             )
 
 
@@ -118,7 +130,8 @@ class SwaggerTesterSettings(object):
                 pass
 
         # Load middleware settings as its own class
-        self.MIDDLEWARE = MiddlewareSettings(swagger_tester_settings.get('MIDDLEWARE', {}))
+        middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
+        self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)

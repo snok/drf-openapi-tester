@@ -1,0 +1,35 @@
+# This is a configuration file for the coverage package, which we use to measure test coverage for the project.
+
+# To run the coverage package:
+# run tests --> `poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain --cov-report=xml`
+# getting the report --> `poetry run coverage report`
+
+[run]
+source = django_swagger_tester/*
+
+omit =
+    demo/*
+    docs/*
+    tests/*
+    */python38-32/*
+    */python3.8/*
+
+[report]
+exclude_lines =
+  pragma: no cover
+
+    # Don't complain about missing debug-only code:
+    def __unicode__
+    def __repr__
+    if self\.debug
+
+    # Don't complain if tests don't hit defensive assertion code:
+    raise AssertionError
+    raise NotImplementedError
+
+    # Don't complain if non-runnable code isn't run:
+    if 0:
+    if __name__ == .__main__.:
+
+show_missing = True
+skip_covered = True

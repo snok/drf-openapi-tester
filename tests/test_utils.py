@@ -1,5 +1,6 @@
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.schema_loaders import _LoaderBase
 from django_swagger_tester.schema_validation.utils import get_endpoint_paths
 
 
@@ -25,7 +26,7 @@ def test_valid_methods_pass():
     Make sure valid methods pass the validation.
     """
     for method in ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']:
-        assert validate_method(method=method) == method
+        assert _LoaderBase().validate_method(method=method) == method
 
 
 def test_invalid_methods_raise():
@@ -36,7 +37,7 @@ def test_invalid_methods_raise():
         with pytest.raises(
             ImproperlyConfigured, match='is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
         ):
-            validate_method(method=method)
+            _LoaderBase().validate_method(method=method)
 
 
 from django_swagger_tester.schema_validation.utils import unpack_response
@@ -124,18 +125,3 @@ def test_no_path_suggestions():
     """
     with pytest.raises(ValueError, match='Could not resolve path'):
         resolve_path('this is not a path')
-
-
-def test_invalid_inputs():
-    """
-    Make sure validation fails when we pass invalid inputs.
-    """
-    with pytest.raises(ImproperlyConfigured, match='`route` is invalid.'):
-        validate_inputs(route=2, status_code=200, method='GET')
-    with pytest.raises(
-        ImproperlyConfigured,
-        match='Method `GETs` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.',
-    ):
-        validate_inputs(route='str', status_code=200, method='GETs')
-    with pytest.raises(ImproperlyConfigured, match='`status_code` should be a valid HTTP response code.'):
-        validate_inputs(route='str', status_code=1, method='GET')
