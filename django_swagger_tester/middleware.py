@@ -2,7 +2,7 @@ import json
 import logging
 from json import JSONDecodeError
 from re import compile
-from typing import Callable, Union, Optional
+from typing import Callable, Optional, Union
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.schema_validation.schema_tester import SchemaTester
-from django_swagger_tester.schema_validation.utils import resolve_path, get_endpoint_paths
+from django_swagger_tester.schema_validation.utils import get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -71,29 +71,30 @@ class SwaggerValidationMiddleware(object):
         :param request: HttpRequest from Django
         :return: Passes on the request or response to the next middleware
         """
+        # Skip validation if the route is ignored in the settings
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
-            # If the route is ignored in the settings, we skip validation completely
             logger.debug('Validation skipped - %s request to %s is in exempt urls', request.method, request.path)
             return self.get_response(request)
+
+        # Skip validation if the request path is not a valid endpoint
         elif not self.path_in_endpoints(path=request.path, method=request.method):
-            # Only handle requests if path is a valid endpoint
             return self.get_response(request)
+
+        # Skip validation if the request has a non-JSON content type
+        # - support for other content types could be added in the future
         elif request.headers['Content-Type'] not in ['application/json']:
-            # Non-JSON content types are not handled by the request validation function
             logger.debug(
                 'Validation skipped - %s request to %s has non-JSON content-type', request.method, request.path
             )
-            handle_request = False
-        else:
-            handle_request = True
+            return self.get_response(request)
 
-        # Check settings
-        validate_request_body = handle_request and request.body and self.middleware_settings.VALIDATE_REQUEST_BODY
-        validate_response = self.middleware_settings.VALIDATE_RESPONSE
+        # -- anything below this line is handled by the middleware --
 
-        if validate_request_body:
+        if request.body and self.middleware_settings.VALIDATE_REQUEST_BODY:
             logger.debug('Validating request body')
-            potential_response = self.validate_request_body(request)
+            potential_response = self.validate_request_body(
+                request, strict=self.middleware_settings.REJECT_INVALID_REQUEST_BODIES
+            )
             if potential_response is not None:
                 # If validation function rejects the request, we return a 400 - only if strict is True
                 return potential_response
@@ -101,7 +102,7 @@ class SwaggerValidationMiddleware(object):
         # ^ Code above this line is executed before the view and later middleware
         response = self.get_response(request)
 
-        if validate_response:
+        if self.middleware_settings.VALIDATE_RESPONSE:
             logger.debug('Validating response')
             self.validate_response(response, request)
 
@@ -133,7 +134,7 @@ class SwaggerValidationMiddleware(object):
                     tester.error,
                 )
 
-    def validate_request_body(self, request: HttpRequest) -> Optional[HttpResponse]:
+    def validate_request_body(self, request: HttpRequest, strict: bool = False) -> Optional[HttpResponse]:
         """
         Validates an incoming request body against the OpenAPI schema request body documentation.
 
@@ -142,7 +143,8 @@ class SwaggerValidationMiddleware(object):
         If the middleware settings `STRICT` is set to True, the middleware will also actively reject a bad
         incoming request completely, returning a 400 with the appropriate error message.
 
-        :param request: HTTP request
+        :param request: HTTP request.
+        :param strict: Whether the middleware should reject incoming requests if request body validation fails.
         """
         logger.info('Validating request body for %s request to %s', request.method, request.path)
 
@@ -153,14 +155,13 @@ class SwaggerValidationMiddleware(object):
             self.middleware_settings.LOGGER(
                 'Failed loading request body for %s request to %s. Error: %s', request.method, request.path, e
             )
-            return None  # todo: can we reject a request for this? I dont think so, but perhaps it could be setting-dependent
-
+            return None
         try:
             # Parse request body as the correct type
             value = json.loads(request.body)
         except JSONDecodeError:
             # Handle parsing failure
-            if self.middleware_settings.STRICT:
+            if strict:
                 # Return 400 if strict
                 return HttpResponse(content=b'Request body contains invalid JSON', status=400)
             else:
@@ -171,7 +172,7 @@ class SwaggerValidationMiddleware(object):
             tester = SchemaTester(request_body_schema, value)
             if tester.error:
                 # Handle bad request body error
-                if self.middleware_settings.STRICT:
+                if strict:
                     # Return 400 if strict
                     example = settings.LOADER_CLASS.get_request_body_example(request.path, request.method)
                     msg = f'Request body is invalid. The request body should have the following format: {example}'
