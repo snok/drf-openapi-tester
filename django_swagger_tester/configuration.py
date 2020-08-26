@@ -6,8 +6,6 @@ from typing import Callable, List
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.schema_loaders import _LoaderBase
-
 logger = logging.getLogger('django_swagger_tester')
 
 
@@ -213,6 +211,8 @@ class SwaggerTesterSettings(object):
         """
         Sets self.LOADER_CLASS and validates the setting.
         """
+        from django_swagger_tester.loaders import _LoaderBase
+
         addon = '. Please pass a loader class from django_swagger_tester.schema_loaders.'
         if self.SCHEMA_LOADER is None:
             raise ImproperlyConfigured(

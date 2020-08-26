@@ -6,23 +6,12 @@ from django_swagger_tester.exceptions import CaseError
 logger = logging.getLogger('django_swagger_tester')
 
 
-def _case_error_message(case: str, key: str) -> str:
-    """
-    Returns an appropriate error message.
-    """
-    return (
-        f'The property `{key}` is not properly {case}\n\n'
-        f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{key}\']` when to the '
-        f'`validate_response_schema` function call, or by adding the key to the CASE_WHITELIST in the SWAGGER_TESTER settings'
-    )
-
-
-def is_camel_case(key: str) -> None:
+def is_camel_case(key: str, origin: str) -> None:
     """
     Asserts that a value is camelCased.
 
-    :param key: str
-    :return: None
+    :param key: The key to be tested
+    :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly camel cased', key)
@@ -30,20 +19,20 @@ def is_camel_case(key: str) -> None:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('`%s` is not properly camel cased', key)
-        raise CaseError(_case_error_message(key=key, case='camelCased'))
+        raise CaseError(key=key, case='camelCased', origin=origin)
     else:
         camel_cased_key = key[0].lower() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), key[1:])
         if camel_cased_key != key:
             logger.error('`%s` is not properly camel cased', key)
-            raise CaseError(_case_error_message(key=key, case='camelCased'))
+            raise CaseError(key=key, case='camelCased', origin=origin)
 
 
-def is_snake_case(key: str) -> None:
+def is_snake_case(key: str, origin: str) -> None:
     """
     Asserts that a value is snake_cased.
 
-    :param key: str
-    :return: None
+    :param key: The key to be tested
+    :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly snake cased', key)
@@ -51,7 +40,7 @@ def is_snake_case(key: str) -> None:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('%s is not snake cased', key)
-        raise CaseError(_case_error_message(key=key, case='snake_cased'))
+        raise CaseError(key=key, case='snake_cased', origin=origin)
     snake_cased_key = (
         re.sub('([a-z0-9])([A-Z])', r'\1_\2', re.sub('(.)(-)([A-Z][a-z]+)', r'\1_\2', key))
         .lower()
@@ -60,15 +49,15 @@ def is_snake_case(key: str) -> None:
     )
     if snake_cased_key != key:
         logger.error('%s is not snake cased', key)
-        raise CaseError(_case_error_message(key=key, case='snake_cased'))
+        raise CaseError(key=key, case='snake_cased', origin=origin)
 
 
-def is_kebab_case(key: str) -> None:
+def is_kebab_case(key: str, origin: str) -> None:
     """
     Asserts that a value is kebab-cased.
 
-    :param key: str
-    :return: None
+    :param key: The key to be tested
+    :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly kebab cased', key)
@@ -76,7 +65,7 @@ def is_kebab_case(key: str) -> None:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
         logger.error('%s is not kebab cased', key)
-        raise CaseError(_case_error_message(key=key, case='kebab-cased'))
+        raise CaseError(key=key, case='kebab-cased', origin=origin)
     kebab_cased_key = (
         re.sub('([a-z0-9])([A-Z])', r'\1-\2', re.sub('(.)([A-Z][a-z]+)', r'\1-\2', key))
         .lower()
@@ -85,15 +74,15 @@ def is_kebab_case(key: str) -> None:
     )
     if kebab_cased_key != key:
         logger.error('%s is not kebab cased', key)
-        raise CaseError(_case_error_message(key=key, case='kebab-cased'))
+        raise CaseError(key=key, case='kebab-cased', origin=origin)
 
 
-def is_pascal_case(key: str) -> None:
+def is_pascal_case(key: str, origin: str) -> None:
     """
     Asserts that a value is PascalCased.
 
-    :param key: str
-    :return: None
+    :param key: The key to be tested
+    :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
     logger.debug('Verifying that `%s` is properly pascal cased', key)
@@ -101,8 +90,8 @@ def is_pascal_case(key: str) -> None:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.upper())):
         logger.error('%s is not pascal cased', key)
-        raise CaseError(_case_error_message(key=key, case='PascalCased'))
+        raise CaseError(key=key, case='PascalCased', origin=origin)
     pascal_cased_key = key[0].upper() + re.sub(r'[\-_.\s]([a-z])', lambda matched: matched.group(1).upper(), key[1:])
     if pascal_cased_key != key:
         logger.error('%s is not pascal cased', key)
-        raise CaseError(_case_error_message(key=key, case='PascalCased'))
+        raise CaseError(key=key, case='PascalCased', origin=origin)

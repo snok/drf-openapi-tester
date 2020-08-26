@@ -1,7 +1,7 @@
 import pytest
 
 from django_swagger_tester.exceptions import OpenAPISchemaError
-from django_swagger_tester.schema_validation.openapi import (
+from django_swagger_tester.validation.openapi import (
     read_items,
     list_types,
     read_type,

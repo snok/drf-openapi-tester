@@ -1,21 +1,17 @@
 import json
 import logging
-from functools import wraps
-from typing import Any, Callable
 
-from django.core.exceptions import ImproperlyConfigured
-from rest_framework.request import Request
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.schema_validation.schema_tester import SchemaTester
-from django_swagger_tester.schema_validation.utils import unpack_response
+from django_swagger_tester.exceptions import SwaggerDocumentationError, CaseError
+from django_swagger_tester.schema_tester import SchemaTester
+from django_swagger_tester.utils import format_response_tester_error, unpack_response, format_response_tester_case_error
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-def validate_response_schema(response: Response, method: str, route: str, **kwargs) -> None:
+def validate_response(response: Response, method: str, route: str, **kwargs) -> None:
     """
     Verifies that an OpenAPI schema definition matches an API response.
 
@@ -30,20 +26,21 @@ def validate_response_schema(response: Response, method: str, route: str, **kwar
     response_schema = settings.LOADER_CLASS.get_response_schema_section(
         route=route, status_code=status_code, method=method
     )
-    tester = SchemaTester(response_schema=response_schema, response_data=data, **kwargs)
-    if tester.error:
-        raise SwaggerDocumentationError(tester.error)
+    try:
+        SchemaTester(response_schema=response_schema, response_data=data, case_tester=settings.CASE_TESTER, **kwargs)
+    except SwaggerDocumentationError as e:
+        verbose_error_message = format_response_tester_error(e)
+        raise SwaggerDocumentationError(verbose_error_message)
+    except CaseError as e:
+        verbose_error_message = format_response_tester_case_error(e)
+        raise SwaggerDocumentationError(verbose_error_message)
 
 
-def drf_serializer_validate_request_body_schema(
-    serializer,  # noqa: F401, TYP001
-    method: str,
-    route: str,
-    camel_case_parser: bool = settings.CAMEL_CASE_PARSER,
-    **kwargs,
+def validate_input_serializer(
+    serializer, method: str, route: str, camel_case_parser: bool = settings.CAMEL_CASE_PARSER  # noqa: F401, TYP001
 ) -> None:
     """
-    Verifies that an OpenAPI schema request body definition is valid, according to the API view's input serializer.
+    Verifies that an OpenAPI schema request body definition is valid, according to an API view's input serializer.
 
     :param serializer: Serializer class used for input validation in your API view
     :param method: HTTP method ('get', 'put', 'post', ...)
@@ -52,7 +49,6 @@ def drf_serializer_validate_request_body_schema(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(route, method)
     example = settings.LOADER_CLASS.get_request_body_example(route, method)
 
     # Make camelCased input snake_cased so the serializer can read it
@@ -71,45 +67,3 @@ def drf_serializer_validate_request_body_schema(
             f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}\n\n'
             f'Note: If all your parameters are correct, you might need to change `camel_case_parser` to True or False.'
         )
-
-    # Check the example's case for inconsistencies
-    # SchemaCaseTester(request_body_schema, **kwargs)  # TODO
-
-
-def validate(request_body: bool = False, response: bool = False, **kwargs) -> Any:
-    """
-    Wrapper function to enable middleware-style validation, but for individual API views.
-
-    :param request_body: Whether to validate the request body
-    :param response: Whether to validate the response
-    """
-
-    def outer(fn: Callable) -> Any:
-        @wraps(fn)
-        def inner(*args, **kwargs) -> Any:
-            if not isinstance(args[0], Request):
-                raise ImproperlyConfigured('The first argument to a view needs to be a Request')
-
-            if request_body:
-                # input validation function here
-                print('Request body', args[0].data)
-
-            # ^ Code above this line happens before the view is run
-            output = fn(*args, **kwargs)
-
-            if response:
-                # response validation function here
-                try:
-                    validate_response_schema(response=output, method=args[0].method.upper(), route=args[0].path)
-                except SwaggerDocumentationError as e:
-                    # TODO: use e
-                    logger.error(
-                        'Response from <class name> (<route>) returned an incorrect response, '
-                        'with respect to the OpenAPI schema'
-                    )
-
-            return output
-
-        return inner
-
-    return outer

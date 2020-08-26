@@ -1,7 +1,7 @@
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.schema_loaders import _LoaderBase
-from django_swagger_tester.schema_validation.utils import get_endpoint_paths
+from django_swagger_tester.validation.utils import get_endpoint_paths
 
 
 def test_get_endpoint_paths():
@@ -38,9 +38,6 @@ def test_invalid_methods_raise():
             ImproperlyConfigured, match='is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.'
         ):
             _LoaderBase().validate_method(method=method)
-
-
-from django_swagger_tester.schema_validation.utils import unpack_response
 
 
 def test_successful_unpack():
@@ -82,7 +79,7 @@ def test_unsuccesful_unpack():
 
 import pytest
 
-from django_swagger_tester.schema_validation.utils import resolve_path
+from django_swagger_tester.validation.utils import resolve_path
 
 paths = ['/api/v1/cars/correct/', '/api/v1/trucks/correct/', '/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']
 

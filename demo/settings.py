@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import List
 
 from django_swagger_tester.case_testers import is_camel_case
-from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader
+from django_swagger_tester.loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 

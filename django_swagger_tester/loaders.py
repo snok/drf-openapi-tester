@@ -6,9 +6,7 @@ from typing import Optional, Any
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.exceptions import OpenAPISchemaError
-from django_swagger_tester.schema_validation.utils.openapi import index_schema, read_type, read_items
-from django_swagger_tester.schema_validation.utils import resolve_path
+from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -63,6 +61,8 @@ class _LoaderBase:
 
         This method was primarily implemented because drf-yasg has its own route style.
         """
+        from django_swagger_tester.utils import resolve_path
+
         return resolve_path(route)[0]
 
     def get_response_schema_section(self, route: str, method: str, status_code: int) -> dict:
@@ -74,6 +74,8 @@ class _LoaderBase:
         :param status_code: HTTP response code
         :return Response schema
         """
+        from django_swagger_tester.openapi import index_schema
+
         self.validate_method(method)
         self.validate_route(route)
         self.validate_status_code(status_code)
@@ -119,6 +121,8 @@ class _LoaderBase:
         :param route: Schema-compatible path
         :return: Request body schema
         """
+        from django_swagger_tester.openapi import index_schema
+
         self.validate_method(method)
         self.validate_route(route)
         route = self.get_route(route)
@@ -141,7 +145,7 @@ class _LoaderBase:
             )
         if 'in' not in parameter_schema or parameter_schema['in'] != 'body':
             logger.debug('Request body schema seems to be missing a request body section')
-            raise ImproperlyConfigured(
+            raise UndocumentedSchemaSectionError(
                 'Tried to test request body documentation, but the provided schema has no request body.'
             )
         return parameter_schema['schema']
@@ -243,6 +247,7 @@ class _LoaderBase:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
+        from django_swagger_tester.validation.utils.openapi import read_type, read_items
 
         def _iterate_schema_dict(d: dict) -> dict:
             x = {}
@@ -336,7 +341,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         and cutting them out of the generated openapi schema.
         For example, `/api/v1/example` might then just become `/example`
         """
-        from django_swagger_tester.schema_validation.utils import get_endpoint_paths
+        from django_swagger_tester.validation.utils import get_endpoint_paths
 
         return self.schema_generator.determine_path_prefix(get_endpoint_paths())
 
@@ -346,7 +351,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
         :param route: Django resolved route
         """
-        from django_swagger_tester.schema_validation.utils import resolve_path
+        from django_swagger_tester.validation.utils import resolve_path
 
         resolved_route = resolve_path(route)[0]
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
