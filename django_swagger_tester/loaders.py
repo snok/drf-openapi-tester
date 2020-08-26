@@ -247,7 +247,7 @@ class _LoaderBase:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
-        from django_swagger_tester.validation.utils.openapi import read_type, read_items
+        from django_swagger_tester.openapi import read_type, read_items
 
         def _iterate_schema_dict(d: dict) -> dict:
             x = {}
@@ -341,7 +341,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         and cutting them out of the generated openapi schema.
         For example, `/api/v1/example` might then just become `/example`
         """
-        from django_swagger_tester.validation.utils import get_endpoint_paths
+        from django_swagger_tester.utils import get_endpoint_paths
 
         return self.schema_generator.determine_path_prefix(get_endpoint_paths())
 
@@ -351,7 +351,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
         :param route: Django resolved route
         """
-        from django_swagger_tester.validation.utils import resolve_path
+        from django_swagger_tester.utils import resolve_path
 
         resolved_route = resolve_path(route)[0]
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'

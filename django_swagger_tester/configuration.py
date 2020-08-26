@@ -109,6 +109,7 @@ class MiddlewareSettings(object):
             )
 
 
+# noinspection PyAttributeOutsideInit
 class SwaggerTesterSettings(object):
     """
     Loads and validates the packages Django settings.

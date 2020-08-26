@@ -8,8 +8,6 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
-from django_swagger_tester.validation.schema_tester import SchemaTester
-from django_swagger_tester.validation.utils import get_endpoint_paths, resolve_path
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
@@ -19,6 +17,8 @@ from django_swagger_tester.exceptions import (
     CaseError,
     OpenAPISchemaError,
 )
+from django_swagger_tester.schema_tester import SchemaTester
+from django_swagger_tester.utils import get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
