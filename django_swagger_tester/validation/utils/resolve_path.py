@@ -1,19 +1,8 @@
 import difflib
 import logging
-from typing import List, Tuple
 
-from requests import Response
 
 logger = logging.getLogger('django_swagger_tester')
-
-
-def get_endpoint_paths() -> List[str]:
-    """
-    Returns a list of endpoint paths.
-    """
-    from rest_framework.schemas.generators import EndpointEnumerator
-
-    return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
 
 def resolve_path(endpoint_path: str) -> tuple:
@@ -45,6 +34,8 @@ def resolve_path(endpoint_path: str) -> tuple:
         return endpoint_path, resolved_route
 
     except Resolver404:
+        from django_swagger_tester.validation.utils import get_endpoint_paths
+
         logger.error(f'URL `%s` did not resolve successfully', endpoint_path)
         paths = get_endpoint_paths()
         closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
@@ -55,24 +46,3 @@ def resolve_path(endpoint_path: str) -> tuple:
                 f'value, and not the parameter pattern.'
             )
         raise ValueError(f'Could not resolve path `{endpoint_path}`')
-
-
-def unpack_response(response: Response) -> Tuple[dict, int]:
-    """
-    Unpacks HTTP response.
-    """
-    try:
-        status_code = response.status_code
-    except Exception as e:
-        logger.exception('Unable to open response object')
-        raise ValueError(
-            f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
-        )
-    if hasattr(response, 'json'):
-        return response.json(), status_code
-    else:
-        from django.core.exceptions import ImproperlyConfigured
-
-        raise ImproperlyConfigured(
-            'Response does not contain a JSON-formatted response and cannot be tested against a response schema.'
-        )

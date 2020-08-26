@@ -7,7 +7,7 @@ from typing import Optional, Any
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import OpenAPISchemaError
-from django_swagger_tester.schema_validation.openapi import index_schema, read_type, read_items
+from django_swagger_tester.schema_validation.utils.openapi import index_schema, read_type, read_items
 from django_swagger_tester.schema_validation.utils import resolve_path
 
 logger = logging.getLogger('django_swagger_tester')

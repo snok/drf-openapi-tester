@@ -10,7 +10,7 @@ Instead of raising unhandled errors, it is useful for us to raise appropriate ex
 import logging
 from typing import List
 
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -144,7 +144,7 @@ def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
         logger.debug('Indexing schema by `%s`', variable)
         return schema[f'{variable}']
     except KeyError:
-        raise IndexError(
+        raise UndocumentedSchemaSectionError(
             f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.'
             + error_addon
         )
