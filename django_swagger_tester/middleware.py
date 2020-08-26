@@ -22,34 +22,16 @@ from django_swagger_tester.utils import get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
-"""
-Note:
-
-The middleware should have two modes:
-
-- Default
-- Strict
-
-Default should log errors when one of the three validation types (response, uri param, request body) fail.
-Strict should reject incoming requests when uri param og request body validation fails.
-"""
-
 
 class SwaggerValidationMiddleware(object):
     """
-    # TODO: Verify or update before release
+    Middleware validates incoming request bodies and outgoing responses with respect to the apps OpenAPI schema.
 
-    This middleware performs three levels of validation:
+    With the default settings, an invalid schema, response, or request body, will log a message
+    at a setting-specified log level (the default log level is error).
 
-    - Request body validation, with respect to the documented request body from the OpenAPI schema
-    - URI parameter validation, with respect to the documented URI parameters in the OpenAPI schema
-    - Response validation, with respect to the documented responses in the OpenAPI schema
-
-    With the default settings, a failure in one of these levels of validation will log a message
-    at the specified log level (the default is to log as an error),
-
-    If strict validation is specified in the package settings, failures in request validation will
-    return a 400-response, indicating what went wrong.
+    If specified, the request body validation will reject invalid requests, returning a 400-response
+    with a description of what triggered the rejection.
     """
 
     def __init__(self, get_response: Callable) -> None:
@@ -64,18 +46,7 @@ class SwaggerValidationMiddleware(object):
 
     def __call__(self, request: HttpRequest) -> Union[HttpRequest, HttpResponse]:
         """
-        Method is called for every incoming request and outgoing response.
-
-        Validates
-
-            - incoming request bodies,
-            - incoming URI params, and
-            - outgoing responses
-
-        with respect to the application's OpenAPI schema.
-
-        :param request: HttpRequest from Django
-        :return: Passes on the request or response to the next middleware
+        Contains the middleware flow.
         """
         # Skip validation if the route is ignored in the settings
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
@@ -150,7 +121,7 @@ class SwaggerValidationMiddleware(object):
 
     def validate_request_body(self, request: HttpRequest, strict: bool = False) -> Optional[HttpResponse]:
         """
-        Validates an outgoing response object against the OpenAPI schema response documentation.
+        Validates an incoming request body against the OpenAPI schema request body documentation.
 
         In case of inconsistencies, a log is logged at a setting-specified log level.
 
