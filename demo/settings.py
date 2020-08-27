@@ -128,7 +128,7 @@ SWAGGER_TESTER = {
         'VALIDATION_EXEMPT_URLS': [],
         'VALIDATE_RESPONSE': True,  # Whether to validate an outgoing response or not
         'VALIDATE_REQUEST_BODY': True,
-        'REJECT_INVALID_REQUEST_BODIES': True,  # Strict-mode rejects incoming requests when request body validation fails, default logs
+        'REJECT_INVALID_REQUEST_BODIES': False,  # Strict-mode rejects incoming requests when request body validation fails, default logs
     },
     'CASE_TESTER': is_camel_case,  # Function responsible for checking schema casing
     'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled

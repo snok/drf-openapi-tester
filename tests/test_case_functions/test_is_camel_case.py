@@ -17,9 +17,9 @@ def test_camel_cased_words():
     Verifies that our camel case verification function actually works as expected.
     """
     for item in camel_case_test_data:
-        is_camel_case(item['correct'])
+        is_camel_case(item['correct'], 'test')
         with pytest.raises(CaseError):
-            is_camel_case(item['incorrect'])
+            is_camel_case(item['incorrect'], 'test')
 
 
 def test_less_than_two_chars():
@@ -27,12 +27,12 @@ def test_less_than_two_chars():
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
-    is_camel_case('')
+    is_camel_case('', 'test')
     with pytest.raises(CaseError):
-        is_camel_case(' ')
-        is_camel_case('-')
-        is_camel_case('_')
-        is_camel_case(None)
-        is_camel_case('%')
-        is_camel_case('R')
-    is_camel_case('s')
+        is_camel_case(' ', 'test')
+        is_camel_case('-', 'test')
+        is_camel_case('_', 'test')
+        is_camel_case(None, 'test')
+        is_camel_case('%', 'test')
+        is_camel_case('R', 'test')
+    is_camel_case('s', 'test')

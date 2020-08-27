@@ -2,7 +2,7 @@ import difflib
 import json
 import logging
 import sys
-from typing import Tuple, List, Union
+from typing import Tuple, List, Any
 
 from django.core.exceptions import ImproperlyConfigured
 from requests import Response
@@ -186,7 +186,7 @@ def resolve_path(endpoint_path: str) -> tuple:
         raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
 
-def type_placeholder_value(_type: str) -> Union[str, bool, float]:
+def type_placeholder_value(_type: str) -> Any:
     """
     Returns a placeholder example value for schema items without one.
     """

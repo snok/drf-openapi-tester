@@ -1,7 +1,8 @@
+import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.schema_loaders import _LoaderBase
-from django_swagger_tester.validation.utils import get_endpoint_paths
+from django_swagger_tester.loaders import _LoaderBase
+from django_swagger_tester.utils import get_endpoint_paths, unpack_response, resolve_path
 
 
 def test_get_endpoint_paths():
@@ -76,10 +77,6 @@ def test_unsuccesful_unpack():
     ):
         unpack_response(response)
 
-
-import pytest
-
-from django_swagger_tester.validation.utils import resolve_path
 
 paths = ['/api/v1/cars/correct/', '/api/v1/trucks/correct/', '/api/v1/cars/incorrect/', '/api/v1/trucks/incorrect/']
 
