@@ -35,9 +35,10 @@ def test_missing_settings(monkeypatch) -> None:
         SwaggerTesterSettings()
 
 
-def test_excess_settings_pass_silently(monkeypatch) -> None:
+def test_excess_settings_pass_silently(monkeypatch, caplog) -> None:
     """
     Excess settings are allowed at the top level, since some loader classes require extra settings.
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('bad_setting', 5))
     SwaggerTesterSettings()
+    assert any(['Received excess setting `bad_setting` with value `5`' in message for message in caplog.messages])

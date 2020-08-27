@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 logger = logging.getLogger('django_swagger_tester')
 
 
+# noinspection PyAttributeOutsideInit
 class MiddlewareSettings(object):
     """
     Holds middleware specific settings.
@@ -137,7 +138,7 @@ class SwaggerTesterSettings(object):
             else:
                 # Some loader classes will have extra settings passed to the loader class as kwargs
                 # Because of this, we cannot raise errors for extra settings
-                pass
+                logger.debug('Received excess setting `%s` with value `%s`', setting, value)
 
         # Load middleware settings as its own class
         middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
@@ -180,7 +181,8 @@ class SwaggerTesterSettings(object):
                 f'make your own, or pass `None` to skip case validation.'
             )
         elif self.CASE_TESTER is None:
-            # If None is passed, we want to do nothing when self.CASE_TESTER is called, so we just assign a lambda expression
+            # If None is passed, we want to do nothing when self.CASE_TESTER is called,
+            # so we just assign a lambda expression
             self.CASE_TESTER = lambda: None
 
     def validate_camel_case_parser_setting(self) -> None:
