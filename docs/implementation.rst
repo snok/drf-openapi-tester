@@ -195,14 +195,14 @@ Drf_yasg
 
 If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` input validator::
 
-    from django_swagger_tester.drf_yasg import validate_input
+    from django_swagger_tester.testing import validate_input_serializer
 
 Static Schema
 -------------
 
 If you render Swagger docs from a file (json or yaml), you should use the ``static_schema`` input validator::
 
-    from django_swagger_tester.static_schema import validate_input
+    from django_swagger_tester.static_schema import validate_input_serializer
 
 .. Note::
 
@@ -217,14 +217,14 @@ Example
 .. code-block:: python
 
     from myapp.api.serializers import MySerializer  # your custom serializer
-    from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
+    from django_swagger_tester.testing import validate_input_serializer  # or replace drf_yasg with `static_schema`
 
 
     def test_request_body_documentation(client):
         """
         Verifies that our request body documentation is representative of a valid request body.
         """
-        validate_input(serializer=MySerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+        validate_input_serializer(serializer=MySerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
 
 .. Note::
 
@@ -232,10 +232,10 @@ Example
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
     ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
 
-The ``validate_input`` Function
+The ``validate_input_serializer`` Function
 ----------------------------------
 
-The ``validate_input`` function takes three required inputs:
+The ``validate_input_serializer`` function takes three required inputs:
 
 * serializer
     **description**: The Serializer object used for validating API inputs.
@@ -282,7 +282,7 @@ However, input validation tests are also well suited to live separately from you
 This allows you to put all your input tests into one file. This enables you to very simply test a whole suite of endpoints with very little code::
 
     from django.test import SimpleTestCase
-    from django_swagger_tester.drf_yasg import validate_input
+    from django_swagger_tester.testing import validate_input_serializer
 
     from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ...
 
@@ -319,7 +319,7 @@ This allows you to put all your input tests into one file. This enables you to v
             for endpoint in self.endpoints:
                 for route, values in endpoint.items():
                     for method, serializer in values:
-                        validate_input(serializer=serializer, method=method, route=route)
+                        validate_input_serializer(serializer=serializer, method=method, route=route)
 
 
 Case checking

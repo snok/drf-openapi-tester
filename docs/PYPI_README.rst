@@ -148,7 +148,7 @@ Example:
 Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
 ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
 
-By settings this to True, example values constructed in the ``validate_input`` function will be snake cased before it's passed
+By settings this to True, example values constructed in the ``validate_input_serializer`` function will be snake cased before it's passed
 to a serializer. See the `function docs <https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#the-validate-input-function>`_ for more info.
 
 Example:
@@ -240,8 +240,8 @@ A pytest implementation of input validation might look like this::
         """
         Verifies that our request body documentation is representative of a valid request body.
         """
-        from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
-        validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+        from django_swagger_tester.testing import validate_input_serializer  # or replace drf_yasg with `static_schema`
+        validate_input_serializer(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
 
 
 The ``camel_case_parser`` argument should be set to ``True`` if you are using ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``

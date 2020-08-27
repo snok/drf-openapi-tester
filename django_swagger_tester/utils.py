@@ -2,8 +2,9 @@ import difflib
 import json
 import logging
 import sys
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
+from django.core.exceptions import ImproperlyConfigured
 from requests import Response
 
 from django_swagger_tester.configuration import settings
@@ -183,3 +184,21 @@ def resolve_path(endpoint_path: str) -> tuple:
                 f'value, and not the parameter pattern.'
             )
         raise ValueError(f'Could not resolve path `{endpoint_path}`')
+
+
+def type_placeholder_value(_type: str) -> Union[str, bool, float]:
+    """
+    Returns a placeholder example value for schema items without one.
+    """
+    if _type == 'string':
+        return 'string'
+    elif _type == 'number':
+        return 1.0
+    elif _type == 'integer':
+        return 1
+    elif _type == 'boolean':
+        return True
+    elif _type == 'file':
+        return 'string'
+    else:
+        raise ImproperlyConfigured(f'Cannot return placeholder value for {_type}')

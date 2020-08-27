@@ -122,7 +122,7 @@ LOGGING = {
 
 SWAGGER_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,  # Class responsible for loading the projects OpenAPI schema
-    'PATH': 'demo_project/openapi-schema.yml',
+    'PATH': 'demo/openapi-schema.yml',
     'MIDDLEWARE': {  # Middleware-specific settings
         'LOG_LEVEL': 'ERROR',  # Log level to log when validation fails
         'VALIDATION_EXEMPT_URLS': [],

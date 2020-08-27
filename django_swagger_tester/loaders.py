@@ -7,6 +7,8 @@ from typing import Optional, Any
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from django_swagger_tester.openapi import list_types, read_properties
+from django.apps import apps
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -18,7 +20,7 @@ class _LoaderBase:
     The base contains a template of methods that are required from a loader class.
     """
 
-    def __init__(self,) -> None:
+    def __init__(self) -> None:
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
 
@@ -239,56 +241,69 @@ class _LoaderBase:
         return find_and_replace_refs_recursively(schema, schema)
 
     def get_request_body_example(self, route: str, method: str,) -> Any:
+        logger.info('Fetching request body example for %s request to %s', method, route)
         request_body_schema = self.get_request_body_schema_section(route, method,)
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
-    @staticmethod
-    def create_dict_from_schema(schema: dict) -> Any:
+    def _iterate_schema_dict(self, d: dict) -> dict:
+        from django_swagger_tester.openapi import read_type
+        from django_swagger_tester.utils import type_placeholder_value
+
+        x = {}
+        for key, value in read_properties(d).items():
+            if read_type(value) == 'object':
+                x[key] = self._iterate_schema_dict(value)
+            elif read_type(value) == 'array':
+                x[key] = self._iterate_schema_list(value)  # type: ignore
+            elif 'example' in value:
+                x[key] = value['example']
+            elif 'type' in value and value['type'] in list_types():
+                logger.warning('Item `%s` is missing an explicit example value', value)
+                x[key] = type_placeholder_value(value['type'])
+            else:
+                raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {value}')
+        return x
+
+    def _iterate_schema_list(self, l: dict) -> list:
+
+        from django_swagger_tester.openapi import read_type, read_items
+        from django_swagger_tester.utils import type_placeholder_value
+
+        x = []
+        i = read_items(l)
+        if read_type(i) == 'object':
+            x.append(self._iterate_schema_dict(i))
+        elif read_type(i) == 'array':
+            x.append(self._iterate_schema_list(i))  # type: ignore
+        elif 'example' in i:
+            x.append(i['example'])
+        elif 'type' in i and i['type'] in list_types():
+            logger.warning('Item `%s` is missing an explicit example value', i)
+            x.append(type_placeholder_value(i['type']))
+        else:
+            raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {i}')
+        return x
+
+    def create_dict_from_schema(self, schema: dict) -> Any:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
-        from django_swagger_tester.openapi import read_type, read_items
-
-        def _iterate_schema_dict(d: dict) -> dict:
-            x = {}
-            for key, value in d['properties'].items():
-                if read_type(value) == 'object':
-                    x[key] = _iterate_schema_dict(value)
-                elif read_type(value) == 'array':
-                    x[key] = _iterate_schema_list(value)  # type: ignore
-                elif 'example' in value:
-                    x[key] = value['example']
-                else:
-                    raise ImproperlyConfigured(
-                        f'This schema item does not seem to have an example value. Item: {value}'
-                    )
-            return x
-
-        def _iterate_schema_list(l: dict) -> list:
-            x = []
-            i = read_items(l)
-            if read_type(i) == 'object':
-                x.append(_iterate_schema_dict(i))
-            elif read_type(i) == 'array':
-                x.append(_iterate_schema_list(i))  # type: ignore
-            elif 'example' in i:
-                x.append(i['example'])
-            else:
-                raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {i}')
-            return x
+        from django_swagger_tester.openapi import read_type
+        from django_swagger_tester.utils import type_placeholder_value
 
         if read_type(schema) == 'array' and schema['items']:
             logger.debug('--> list')
-            return _iterate_schema_list(schema)
+            return self._iterate_schema_list(schema)
         elif read_type(schema) == 'object':
             logger.debug('--> dict')
-            return _iterate_schema_dict(schema)
+            return self._iterate_schema_dict(schema)
         elif 'example' in schema:
             return schema['example']
+        elif 'type' in schema and schema['type'] in list_types():
+            logger.warning('Item `%s` is missing an explicit example value', schema)
+            return type_placeholder_value(schema['type'])
         else:
-            # TODO: Should we implement an UndocumentedError?
-            #  This is particularly relevant for static schemas, where this type of error must be more common
-            raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {schema}')
+            raise ImproperlyConfigured(f'Not able to construct an example from schema {schema}')
 
 
 class DrfYasgSchemaLoader(_LoaderBase):
@@ -316,7 +331,6 @@ class DrfYasgSchemaLoader(_LoaderBase):
             raise ImproperlyConfigured(
                 'The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.'
             )
-        from django.apps import apps
 
         if 'drf_yasg' not in apps.app_configs.keys():
             raise ImproperlyConfigured(

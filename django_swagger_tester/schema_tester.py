@@ -4,7 +4,7 @@ from typing import Any, Union, Callable, List
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.validation.utils.openapi import (
+from django_swagger_tester.openapi import (
     is_nullable,
     list_types,
     read_items,
@@ -88,7 +88,7 @@ class SchemaTester:
 
         # Check that the response and schema has the same number of keys
         if len(schema_keys) != len(response_keys):
-            logger.debug('The number of schema dict elements does not match the number of response dict elements')
+            logger.debug('The number of schema dict elements do not match the number of response dict elements')
             if len(set(response_keys)) > len(set(schema_keys)):
                 missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
                 raise SwaggerDocumentationError(
@@ -111,8 +111,14 @@ class SchemaTester:
         for schema_key, response_key in zip(schema_keys, response_keys):
 
             # Check the case of each key
-            self.case_tester(schema_key, 'schema')
-            self.case_tester(response_key, 'response')
+            if schema_key not in self.ignored_keys:
+                self.case_tester(schema_key, 'schema')
+            else:
+                logger.debug('Skipping case check for key `%s`', schema_key)
+            if response_key not in self.ignored_keys:
+                self.case_tester(response_key, 'response')
+            else:
+                logger.debug('Skipping case check for key `%s`', response_key)
 
             # Check that each element in the schema exists in the response, and vice versa
             if schema_key not in response_keys:

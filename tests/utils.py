@@ -16,3 +16,7 @@ def patch_middleware_settings(key, value) -> dict:
     settings = default_settings
     settings['MIDDLEWARE'] = patched_middleware_settings
     return settings
+
+
+yml_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.yml'
+json_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.json'

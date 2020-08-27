@@ -4,7 +4,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
-from django_swagger_tester.schema_loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+from django_swagger_tester.loaders import StaticSchemaLoader, DrfYasgSchemaLoader
 from tests.utils import patch_settings
 
 

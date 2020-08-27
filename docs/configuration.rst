@@ -74,7 +74,7 @@ Example:
 Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
 ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
 
-By settings this to True, example values constructed in the ``validate_input`` function will be snake cased before it's passed
+By settings this to True, example values constructed in the ``validate_input_serializer`` function will be snake cased before it's passed
 to a serializer. See the `function docs <implementation.html#input-validation>`_ for more info.
 
 Example:

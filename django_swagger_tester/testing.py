@@ -27,7 +27,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
         route=route, status_code=status_code, method=method
     )
     try:
-        SchemaTester(response_schema=response_schema, response_data=data, case_tester=settings.CASE_TESTER, **kwargs)
+        SchemaTester(schema=response_schema, data=data, case_tester=settings.CASE_TESTER, **kwargs)
     except SwaggerDocumentationError as e:
         verbose_error_message = format_response_tester_error(e)
         raise SwaggerDocumentationError(verbose_error_message)
