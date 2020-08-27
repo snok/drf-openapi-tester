@@ -39,6 +39,14 @@ bad_test_data = [
             {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
         ],
     },
+    {  # Bad case
+        'url': '/api/v1/trucks/incorrect/',
+        'expected_response': [
+            {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'},
+            {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
+            {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
+        ],
+    },
 ]
 
 
@@ -68,7 +76,7 @@ def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
         with pytest.raises(
             SwaggerDocumentationError, match='The following properties seem to be missing from your response body:'
         ):
-            validate_response(response, 'GET', item['url'])  # type: ignore
+            validate_response(response, 'GET', item['url'], verbose=True)  # type: ignore
 
 
 def test_bad_method(client, monkeypatch) -> None:  # noqa: TYP001
