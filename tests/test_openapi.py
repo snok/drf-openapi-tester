@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.exceptions import OpenAPISchemaError
+from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import (
     read_items,
     list_types,
@@ -8,7 +8,9 @@ from django_swagger_tester.openapi import (
     read_properties,
     is_nullable,
     read_additional_properties,
+    index_schema,
 )
+from tests.types import object_type, list_type
 
 
 def test_read_items():
@@ -101,3 +103,22 @@ def test_is_nullable():
     assert is_nullable(nullable_example['properties']['first_name']) == True
     for item in [2, '', None, -1, {'nullable': 'false'}]:
         assert is_nullable(item) == False
+
+
+def test_index_schema(caplog):
+    # Test normal indexing
+    index_schema(schema=list_type, variable='items', error_addon=None)
+    assert any(['Indexing schema by `items`' in message for message in caplog.messages])
+
+    # Fail with no addon
+    with pytest.raises(
+        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'
+    ):
+        index_schema(schema=object_type, variable='items', error_addon=None)
+
+    # Fail with addon
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match='Unsuccessfully tried to index the OpenAPI schema by `items`. This is a very specific string',
+    ):
+        index_schema(schema=object_type, variable='items', error_addon=' This is a very specific string')
