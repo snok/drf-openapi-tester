@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Union, Callable, List
+from typing import Any, Callable, KeysView, List, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -25,9 +25,8 @@ class SchemaTester:
         raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
-        self.ignored_keys: List[str] = []
-        if 'ignore_case' in kwargs:
-            self.ignored_keys = kwargs['ignore_case']
+        self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
+        self.camel_case_parser: bool = kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else False
 
         if '$ref' in str(schema):
             # `$ref`s should be replaced with values before the schema is passed here
@@ -82,9 +81,16 @@ class SchemaTester:
                 hint=hint,
             )
 
+        response_keys: KeysView
+        if self.camel_case_parser:
+            from djangorestframework_camel_case.util import camelize
+
+            response_keys = camelize(data).keys()
+        else:
+            response_keys = data.keys()
+
         properties = read_properties(schema)
         schema_keys = properties.keys()
-        response_keys = data.keys()
 
         # Check that the response and schema has the same number of keys
         if len(schema_keys) != len(response_keys):
@@ -110,7 +116,7 @@ class SchemaTester:
 
         for schema_key, response_key in zip(schema_keys, response_keys):
 
-            # Check the case of each key
+            # Case checks
             if schema_key not in self.ignored_keys:
                 self.case_tester(schema_key, 'schema')
             else:

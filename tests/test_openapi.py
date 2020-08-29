@@ -108,7 +108,7 @@ def test_is_nullable():
 def test_index_schema(caplog):
     # Test normal indexing
     index_schema(schema=list_type, variable='items', error_addon=None)
-    assert any(['Indexing schema by `items`' in message for message in caplog.messages])
+    assert any('Indexing schema by `items`' in message for message in caplog.messages)
 
     # Fail with no addon
     with pytest.raises(

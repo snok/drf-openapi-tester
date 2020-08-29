@@ -90,7 +90,16 @@ def post_item_auto_schema():
         request_body=Schema(type=TYPE_OBJECT, properties={'itemType': generic_string_schema('truck', 'type of item')}),
         responses={
             '201': Schema(
-                type=TYPE_OBJECT, properties={'success': generic_string_schema('this is a response', 'description')}
+                type=TYPE_OBJECT,
+                properties={
+                    'success': Schema(
+                        type=TYPE_OBJECT,
+                        properties={
+                            'id': generic_string_schema('14082c78-7a4d-451e-b41f-3ff8ab176939', 'unique id'),
+                            'itemType': generic_string_schema('truck', 'description'),
+                        },
+                    )
+                },
             ),
         },
     )

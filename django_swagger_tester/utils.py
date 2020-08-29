@@ -2,13 +2,13 @@ import difflib
 import json
 import logging
 import sys
-from typing import Tuple, List, Any
+from typing import Any, List, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
 from requests import Response
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import SwaggerDocumentationError, CaseError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -153,6 +153,8 @@ def resolve_path(endpoint_path: str) -> tuple:
 
     try:
         logger.debug('Resolving path.')
+        if '?' in endpoint_path:
+            endpoint_path = endpoint_path.split('?')[0]
         if endpoint_path == '' or endpoint_path[0] != '/':
             logger.debug('Adding leading `/` to provided path')
             endpoint_path = '/' + endpoint_path
@@ -190,15 +192,13 @@ def type_placeholder_value(_type: str) -> Any:
     """
     Returns a placeholder example value for schema items without one.
     """
-    if _type == 'string':
-        return 'string'
-    elif _type == 'number':
-        return 1.0
+    if _type == 'boolean':
+        return True
     elif _type == 'integer':
         return 1
-    elif _type == 'boolean':
-        return True
-    elif _type == 'file':
+    elif _type == 'number':
+        return 1.0
+    elif _type in ['string', 'file']:
         return 'string'
     else:
         raise ImproperlyConfigured(f'Cannot return placeholder value for {_type}')

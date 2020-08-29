@@ -21,12 +21,12 @@ class IsValidVehicleType(StringConverter):
 register_converter(IsValidVehicleType, 'vehicle_type')
 
 api_urlpatterns = [
-    path('api/v1/<vehicle_type:vehicle_type>/correct/', GoodCars.as_view(), name='correctly_documented_cars'),
-    path('api/v1/<vehicle_type:vehicle_type>/incorrect/', BadCars.as_view(), name='incorrectly_documented_cars'),
-    path('api/v1/trucks/correct/', GoodTrucks.as_view(), name='correctly_documented_trucks'),
-    path('api/v1/trucks/incorrect/', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
-    path('api/v1/vehicles/', Vehicles.as_view(), name='vehicles'),
-    path('api/v1/items/', Items.as_view(), name='items'),
+    path('api/v1/<vehicle_type:vehicle_type>/correct', GoodCars.as_view(), name='correctly_documented_cars'),
+    path('api/v1/<vehicle_type:vehicle_type>/incorrect', BadCars.as_view(), name='incorrectly_documented_cars'),
+    path('api/v1/trucks/correct', GoodTrucks.as_view(), name='correctly_documented_trucks'),
+    path('api/v1/trucks/incorrect', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
+    path('api/v1/vehicles', Vehicles.as_view(), name='vehicles'),
+    path('api/v1/items', Items.as_view(), name='items'),
 ]
 
 schema_view = get_schema_view(

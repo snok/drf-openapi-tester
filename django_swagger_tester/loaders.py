@@ -81,7 +81,7 @@ class _LoaderBase:
         self.validate_method(method)
         self.validate_route(route)
         self.validate_status_code(status_code)
-        route = self.get_route(route)
+        schema_route = self.get_route(route)
         schema = self.get_schema()
 
         # Index by paths
@@ -89,8 +89,11 @@ class _LoaderBase:
 
         # Index by route
         routes = ', '.join([key for key in paths_schema.keys()])
-        route_error = f'\n\nFor debugging purposes: valid routes include {routes}'
-        route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
+        route_error = (
+            f'\n\nFor debugging purposes: valid routes include {routes}.\n\nTo skip validation for this route '
+            f'you can add `^{route}$` to the VALIDATION_EXEMPT_URLS setting list.'
+        )
+        route_schema = index_schema(schema=paths_schema, variable=schema_route, error_addon=route_error)
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])

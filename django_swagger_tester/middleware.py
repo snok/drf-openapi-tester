@@ -1,5 +1,6 @@
 import json
 import logging
+from copy import deepcopy
 from json import JSONDecodeError
 from re import compile
 from typing import Callable, Optional, Union
@@ -12,13 +13,13 @@ from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import (
-    UndocumentedSchemaSectionError,
-    SwaggerDocumentationError,
     CaseError,
     OpenAPISchemaError,
+    SwaggerDocumentationError,
+    UndocumentedSchemaSectionError,
 )
 from django_swagger_tester.schema_tester import SchemaTester
-from django_swagger_tester.utils import get_endpoint_paths, resolve_path
+from django_swagger_tester.utils import format_response_tester_error, get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -79,9 +80,23 @@ class SwaggerValidationMiddleware(object):
         response = self.get_response(request)
 
         if self.middleware_settings.VALIDATE_RESPONSE:
-            logger.debug('Validating response')
-            self.validate_response(response, request)
-
+            content_type = response.get('Content-Type', '')
+            if content_type == 'application/json':
+                logger.debug('Validating response')
+                # By parsing the response data JSON we bypass problems like uuid's not having been converted to
+                # strings, which creates problems when comparing response data types to the documented schema types
+                # in the schema tester
+                content = response.content.decode(response.charset)
+                response_data = json.loads(content)
+                copied_response = deepcopy(response)
+                copied_response.data = response_data
+                self.validate_response(copied_response, request)
+            else:
+                logger.debug(
+                    'Validation skipped - response for %s request to %s has non-JSON content-type',
+                    request.method,
+                    request.path,
+                )
         return response
 
     def validate_response(self, response: Response, request: HttpRequest) -> None:
@@ -108,13 +123,19 @@ class SwaggerValidationMiddleware(object):
 
         # Validate response against schema
         try:
-            SchemaTester(schema=response_schema, data=response.data, case_tester=settings.CASE_TESTER)
+            SchemaTester(
+                schema=response_schema,
+                data=response.data,
+                case_tester=settings.CASE_TESTER,
+                camel_case_parser=settings.CAMEL_CASE_PARSER,
+            )
         except SwaggerDocumentationError as e:
+            long_message = format_response_tester_error(e)
             self.middleware_settings.LOGGER(
                 'Incorrect response template returned for %s request to %s. Swagger error: %s',
                 request.method,
                 request.path,
-                str(e),
+                str(long_message),
             )
         except CaseError as e:
             self.middleware_settings.LOGGER(f'Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
