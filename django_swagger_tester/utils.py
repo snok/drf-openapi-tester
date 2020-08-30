@@ -171,7 +171,7 @@ def resolve_path(endpoint_path: str) -> tuple:
             # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex regex
             # handling. However, its important not to freely use the .replace() function, as a {value} of `1` would
             # also cause the `1` in api/v1/ to be replaced
-            var_index = endpoint_path.rfind(value)
+            var_index = endpoint_path.rfind(str(value))
             endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(value) :]
         return endpoint_path, resolved_route
 

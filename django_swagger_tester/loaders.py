@@ -254,12 +254,12 @@ class _LoaderBase:
 
         x = {}
         for key, value in read_properties(d).items():
-            if read_type(value) == 'object':
+            if 'example' in value:
+                x[key] = value['example']
+            elif read_type(value) == 'object':
                 x[key] = self._iterate_schema_dict(value)
             elif read_type(value) == 'array':
                 x[key] = self._iterate_schema_list(value)  # type: ignore
-            elif 'example' in value:
-                x[key] = value['example']
             elif 'type' in value and value['type'] in list_types():
                 logger.warning('Item `%s` is missing an explicit example value', value)
                 x[key] = type_placeholder_value(value['type'])
@@ -274,12 +274,12 @@ class _LoaderBase:
 
         x = []
         i = read_items(l)
-        if read_type(i) == 'object':
+        if 'example' in i:
+            x.append(i['example'])
+        elif read_type(i) == 'object':
             x.append(self._iterate_schema_dict(i))
         elif read_type(i) == 'array':
             x.append(self._iterate_schema_list(i))  # type: ignore
-        elif 'example' in i:
-            x.append(i['example'])
         elif 'type' in i and i['type'] in list_types():
             logger.warning('Item `%s` is missing an explicit example value', i)
             x.append(type_placeholder_value(i['type']))
@@ -294,14 +294,14 @@ class _LoaderBase:
         from django_swagger_tester.openapi import read_type
         from django_swagger_tester.utils import type_placeholder_value
 
-        if read_type(schema) == 'array' and schema['items']:
+        if 'example' in schema:
+            return schema['example']
+        elif read_type(schema) == 'array' and schema['items']:
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
         elif read_type(schema) == 'object':
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
-        elif 'example' in schema:
-            return schema['example']
         elif 'type' in schema and schema['type'] in list_types():
             logger.warning('Item `%s` is missing an explicit example value', schema)
             return type_placeholder_value(schema['type'])

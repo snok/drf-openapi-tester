@@ -14,7 +14,7 @@ def is_camel_case(key: str, origin: str) -> None:
     :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
-    logger.debug('Verifying that `%s` is properly camel cased', key)
+    logger.debug('Verifying that %s key `%s` is properly camel cased', origin, key)
     if len(key) == 0:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
@@ -35,7 +35,7 @@ def is_snake_case(key: str, origin: str) -> None:
     :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
-    logger.debug('Verifying that `%s` is properly snake cased', key)
+    logger.debug('Verifying that %s key `%s` is properly snake cased', origin, key)
     if len(key) == 0:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
@@ -60,7 +60,7 @@ def is_kebab_case(key: str, origin: str) -> None:
     :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
-    logger.debug('Verifying that `%s` is properly kebab cased', key)
+    logger.debug('Verifying that %s key `%s` is properly kebab cased', origin, key)
     if len(key) == 0:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.casefold())):
@@ -85,7 +85,7 @@ def is_pascal_case(key: str, origin: str) -> None:
     :param origin: Where the key came from (e.g., response or schema)
     :raises: django_swagger_tester.exceptions.CaseError
     """
-    logger.debug('Verifying that `%s` is properly pascal cased', key)
+    logger.debug('Verifying that %s key `%s` is properly pascal cased', origin, key)
     if len(key) == 0:
         return
     if len(key) == 1 and (key.isalpha() is False or (key.isalpha() is True and key != key.upper())):

@@ -12,16 +12,4 @@ def test_request_with_no_correlation_id(client, caplog):
     dont break that logic.
     """
     response = client.post('/api/v1/items', data={'itemType': 'bicycle'})
-    print(response)
-    # expected = [
-    #     (
-    #         'Header `Correlation-ID` was not found in the incoming request. Generated new GUID: 704ae5472cae4f8daa8f2cc5a5a8mock',
-    #         None,
-    #     ),
-    #     ('This log message should have a GUID', '704ae5472cae4f8daa8f2cc5a5a8mock'),
-    #     ('Some warning in a function', '704ae5472cae4f8daa8f2cc5a5a8mock'),
-    #     ('Received signal `request_finished`', '704ae5472cae4f8daa8f2cc5a5a8mock'),
-    #     ('Deleting 704ae5472cae4f8daa8f2cc5a5a8mock from _guid', '704ae5472cae4f8daa8f2cc5a5a8mock'),
-    # ]
-    # assert [(x.message, x.correlation_id) for x in caplog.records] == expected
-    # assert response['Correlation-ID'] == '704ae5472cae4f8daa8f2cc5a5a8mock'
+    assert response.json() == {'success': {'id': 'fb67d42d-4e69-406d-ad30-723627cc63b5', 'itemType': ''}}

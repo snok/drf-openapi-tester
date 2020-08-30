@@ -207,11 +207,12 @@ class SwaggerValidationMiddleware(object):
             return False
         for route in self.endpoints:
             if deparameterized_path == route:
-                # Verify that the view has contains the method
-                if not hasattr(resolved_path.func.view_class, method.lower()):
-                    logger.debug('Validation skipped - %s request method does not exist in the view', method)
-                    return False
-                logger.debug('%s request to %s is an API request', method, path)
-                return True
+                if hasattr(resolved_path, 'func') and hasattr(resolved_path.func, 'view_class'):
+                    # Verify that the view has contains the method
+                    if hasattr(resolved_path.func.view_class, method.lower()):
+                        logger.debug('%s request to %s is an API request', method, path)
+                        return True
+                    else:
+                        logger.debug('%s request method does not exist in the view class', method)
         logger.debug('Validation skipped - %s request to %s was not found in API endpoints', method, path)
         return False

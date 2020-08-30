@@ -13,7 +13,7 @@ from demo.api.views.vehicles import Vehicles
 
 class IsValidVehicleType(StringConverter):
     def to_python(self, value: str) -> str:
-        if value == 'cars':
+        if value in ['cars', '2', 2]:
             return value
         raise ValueError
 
