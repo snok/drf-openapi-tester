@@ -3,7 +3,7 @@ import pytest
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.schema_tester import SchemaTester
 
-base = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None)
+base = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
 
 items = [
     {

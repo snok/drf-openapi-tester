@@ -1,8 +1,4 @@
-import pytest
-from django.core.exceptions import ImproperlyConfigured
-
-
-def test_request_with_no_correlation_id(client, caplog):
+def test_response_containing_uuid(client, caplog):
     """
     Makes sure that a response containing a uuid4 value doesn't throw a SwaggerDocumentationError when checked with
     the middleware.
@@ -12,4 +8,4 @@ def test_request_with_no_correlation_id(client, caplog):
     dont break that logic.
     """
     response = client.post('/api/v1/items', data={'itemType': 'bicycle'})
-    assert response.json() == {'success': {'id': 'fb67d42d-4e69-406d-ad30-723627cc63b5', 'itemType': ''}}
+    assert response.json()['success']['itemType'] == 'bicycle'

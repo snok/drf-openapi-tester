@@ -7,7 +7,13 @@ class SwaggerDocumentationError(Exception):
     """
 
     def __init__(
-        self, message: str, response: Any = None, schema: Optional[dict] = None, reference: str = '', hint: str = ''
+        self,
+        message: str,
+        response: Any = None,
+        schema: Optional[dict] = None,
+        reference: str = '',
+        response_hint: str = '',
+        request_hint: str = '',
     ) -> None:
         super(SwaggerDocumentationError, self).__init__(message)
         if schema is None:
@@ -16,7 +22,8 @@ class SwaggerDocumentationError(Exception):
         self.response = response
         self.schema = schema
         self.reference = reference
-        self.hint = hint
+        self.response_hint = response_hint
+        self.request_hint = request_hint
 
 
 class CaseError(Exception):

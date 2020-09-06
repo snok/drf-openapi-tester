@@ -12,4 +12,4 @@ class Items(APIView):
     def post(self, request):
         serializer = ItemSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({'success': {'id': uuid.uuid4(), 'itemType': serializer.data.get('itemType', '')}}, 201)
+        return Response({'success': {'id': uuid.uuid4(), 'itemType': serializer.data.get('item_type', '')}}, 201)

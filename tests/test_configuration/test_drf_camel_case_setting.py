@@ -31,7 +31,7 @@ def test_missing_camel_case_parser_setting(monkeypatch) -> None:
     """
     A non-boolean value should raise an exception.
     """
-    with pytest.raises(ImproperlyConfigured, match='\`CAMEL_CASE_PARSER\` needs to be True or False'):
+    with pytest.raises(ImproperlyConfigured, match='`CAMEL_CASE_PARSER` needs to be True or False'):
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CAMEL_CASE_PARSER', None))
         SwaggerTesterSettings()
 

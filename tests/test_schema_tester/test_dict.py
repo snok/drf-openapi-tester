@@ -17,7 +17,7 @@ schema = {
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
-tester = SchemaTester(schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None)
+tester = SchemaTester(schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test')
 
 
 def test_valid_dict() -> None:
@@ -32,7 +32,8 @@ def test_bad_data_type() -> None:
     Asserts that the appropriate exception is raised for a bad response data type.
     """
     with pytest.raises(
-        SwaggerDocumentationError, match="Expected response to be <class 'dict'> but found <class 'list'>."
+        SwaggerDocumentationError,
+        match="Mismatched types. Expected item to be <class 'dict'> but found <class 'list'>.",
     ):
         tester.test_dict(schema=schema, data=[data], reference='placeholder')
 
@@ -41,11 +42,11 @@ def test_unmatched_lengths() -> None:
     """
     Asserts that different dict lengths raises an exception.
     """
-    weird_data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
     with pytest.raises(
         SwaggerDocumentationError,
         match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`',
     ):
+        weird_data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
         tester.test_dict(schema=schema, data=weird_data, reference='placeholder')
 
 
@@ -56,7 +57,7 @@ def test_schema_key_not_in_response():
     bad_data = deepcopy(data)
     bad_data['names'] = bad_data['name']
     del bad_data['name']
-    with pytest.raises(SwaggerDocumentationError, match='Schema key `name` was not found in the API response.'):
+    with pytest.raises(SwaggerDocumentationError, match=r'Schema key `name` was not found in the test.'):
         tester.test_dict(schema=schema, data=bad_data, reference='placeholder')
 
 
@@ -67,7 +68,7 @@ def test_response_key_not_in_schema():
     bad_schema = deepcopy(schema)
     bad_schema['properties']['names'] = bad_schema['properties']['name']
     del bad_schema['properties']['name']
-    with pytest.raises(SwaggerDocumentationError, match='Response key `name` not found in the OpenAPI schema.'):
+    with pytest.raises(SwaggerDocumentationError, match=r'Key `name` not found in the OpenAPI schema.'):
         tester.test_dict(schema=bad_schema, data=data, reference='placeholder')
 
 
@@ -112,6 +113,6 @@ def test_bad_type():
     }
     custom_data = {'list': []}
     with pytest.raises(
-        Exception, match='Schema item has an invalid \`type\` attribute. The type `rarray` is not supported'
+        Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'
     ):
         assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None

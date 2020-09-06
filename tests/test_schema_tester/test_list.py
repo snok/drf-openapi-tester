@@ -15,7 +15,7 @@ from tests.types import (
     string_type,
 )
 
-tester = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None)
+tester = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
 
 
 def test_valid_list() -> None:

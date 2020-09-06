@@ -9,8 +9,6 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
-from rest_framework.response import Response
-
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import (
     CaseError,
@@ -20,6 +18,7 @@ from django_swagger_tester.exceptions import (
 )
 from django_swagger_tester.schema_tester import SchemaTester
 from django_swagger_tester.utils import format_response_tester_error, get_endpoint_paths, resolve_path
+from rest_framework.response import Response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -63,7 +62,7 @@ class SwaggerValidationMiddleware(object):
         if request.body and self.middleware_settings.VALIDATE_REQUEST_BODY:
             # Skip validation if the request has a non-JSON content type
             # - support for other content types could be added in the future
-            if request.headers['Content-Type'] != 'application/json':
+            if not request.headers['Content-Type'].startswith('application/json'):
                 logger.debug(
                     'Validation skipped - %s request to %s has non-JSON content-type', request.method, request.path
                 )
@@ -128,9 +127,11 @@ class SwaggerValidationMiddleware(object):
                 data=response.data,
                 case_tester=settings.CASE_TESTER,
                 camel_case_parser=settings.CAMEL_CASE_PARSER,
+                origin='response',
             )
+            logger.info('Response valid for %s request to %s', request.method, request.path)
         except SwaggerDocumentationError as e:
-            long_message = format_response_tester_error(e)
+            long_message = format_response_tester_error(e, hint=e.response_hint)
             self.middleware_settings.LOGGER(
                 'Incorrect response template returned for %s request to %s. Swagger error: %s',
                 request.method,
@@ -138,7 +139,7 @@ class SwaggerValidationMiddleware(object):
                 str(long_message),
             )
         except CaseError as e:
-            self.middleware_settings.LOGGER(f'Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
+            self.middleware_settings.LOGGER('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
 
     def validate_request_body(self, request: HttpRequest, strict: bool = False) -> Optional[HttpResponse]:
         """
@@ -172,20 +173,29 @@ class SwaggerValidationMiddleware(object):
 
         # Validate request body against schema
         try:
-            SchemaTester(schema=request_body_schema, data=value, case_tester=settings.CASE_TESTER)
-        except (SwaggerDocumentationError, CaseError) as e:
+            SchemaTester(
+                schema=request_body_schema,
+                data=value,
+                origin='request',
+                case_tester=settings.CASE_TESTER,
+                camel_case_parser=settings.CAMEL_CASE_PARSER,
+            )
+            logger.info('Request body valid for %s request to %s', request.method, request.path)
+        except CaseError as e:
+            # TODO: Do we need to do something here?
+            self.middleware_settings.LOGGER('Received incorrectly cased cased key, `%s` in %s', e.key, e.origin)
+        except SwaggerDocumentationError as e:
+            long_message = format_response_tester_error(e, hint=e.request_hint)
             self.middleware_settings.LOGGER(
                 'Received bad request body for %s request to %s. Swagger error: \n\n%s',
                 request.method,
                 request.path,
-                str(e),
+                long_message,
             )
             if strict:
                 example = settings.LOADER_CLASS.get_request_body_example(request.path, request.method)
-                msg = f'Request body is invalid. The request body should have the following format: {example}'
+                msg = f'Request body is invalid. The request body should have the following format: {example}.{" " + e.request_hint if e.request_hint else ""}'
                 return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
-
-        logger.debug('Response for %s request to %s is correctly documented', request.method, request.path)
 
     def path_in_endpoints(self, path: str, method: str) -> bool:
         """

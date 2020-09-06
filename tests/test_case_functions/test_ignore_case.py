@@ -5,7 +5,7 @@ def test_endpoints_dynamic_schema(client, caplog) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
-    response = client.get('/api/v1/trucks/correct/')
+    response = client.get('/api/v1/trucks/correct')
     validate_response(
         response=response, method='GET', route='/api/v1/trucks/correct/', ignore_case=['name', 'width', 'height']
     )

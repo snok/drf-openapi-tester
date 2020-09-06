@@ -5,10 +5,9 @@ import sys
 from typing import Any, List, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
-from requests import Response
-
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
+from requests import Response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -24,7 +23,7 @@ def format_response_tester_case_error(exception: CaseError) -> str:
     )
 
 
-def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs) -> str:
+def format_response_tester_error(exception: SwaggerDocumentationError, hint: str, **kwargs) -> str:
     """
     Formats and returns a standardized error message for easy debugging.
 
@@ -32,9 +31,6 @@ def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs)
     middleware logging.
     """
     logger.debug('Constructing error message')
-
-    if not hasattr(exception, 'hint'):
-        exception.hint = ''
 
     # Construct example dict/list from schema - this is useful to display comparable items
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
@@ -72,9 +68,9 @@ def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs)
 
         offset = longest_detailed_key + 4
         addon = ''.join(
-            [f'\nResponse details\n', f'{dotted_line}']
+            ['\nResponse details\n', f'{dotted_line}']
             + [item['key'].ljust(offset) + f'{item["value"]}\n' for item in data_items]
-            + [f'{dotted_line}\n', f'Schema\n', f'{dotted_line}']
+            + [f'{dotted_line}\n', 'Schema\n', f'{dotted_line}']
             + [item['key'].ljust(offset) + f'{item["value"]}\n' for item in schema_items]
             + [f'{dotted_line}']
         )
@@ -85,6 +81,8 @@ def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs)
             '\n', f'\n{tab}'
         )
     else:
+        # TODO: This cant show when displaying from the middleware, make addon a passable arg
+        # TODO: and verbose a boolean arg
         addon = '\n* If you need more details: set `verbose=True`'
 
     sys.stdout.flush()
@@ -92,9 +90,9 @@ def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs)
     # Construct error message
     offset = longest_key + 4
     message = [
-        f'Item is misspecified:\n\n'
+        'Item is misspecified:\n\n'
         # -- Summary table --
-        f'Summary',
+        'Summary',
         '\n' if not verbose else '',
         f'{dotted_line}',
         '\n',
@@ -104,7 +102,7 @@ def format_response_tester_error(exception: SwaggerDocumentationError, **kwargs)
         'Received:'.ljust(offset) + f'{response_string}\n',
         '\n',
         'Hint:'.ljust(offset)
-        + '\n'.ljust(offset + 1).join(exception.hint.split('\n'))
+        + '\n'.ljust(offset + 1).join(hint.split('\n'))
         + '\n',  # the join logic adds support for multi-line hints
         'Sequence:'.ljust(offset) + f'{exception.reference}\n',
         '\n' if not verbose else '',
@@ -158,14 +156,14 @@ def resolve_path(endpoint_path: str) -> tuple:
         if endpoint_path == '' or endpoint_path[0] != '/':
             logger.debug('Adding leading `/` to provided path')
             endpoint_path = '/' + endpoint_path
+        if len(endpoint_path) > 2 and endpoint_path[-1] == '/':
+            endpoint_path = endpoint_path[:-1]
         try:
             resolved_route = resolve(endpoint_path)
             logger.debug('Resolved %s successfully', endpoint_path)
         except Resolver404:
             resolved_route = resolve(endpoint_path + '/')
             endpoint_path += '/'
-            logger.warning('Endpoint path is missing a trailing slash: %s', endpoint_path)
-
         kwarg = resolved_route.kwargs
         for key, value in kwarg.items():
             # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex regex
@@ -176,7 +174,7 @@ def resolve_path(endpoint_path: str) -> tuple:
         return endpoint_path, resolved_route
 
     except Resolver404:
-        logger.error(f'URL `%s` did not resolve successfully', endpoint_path)
+        logger.error('URL `%s` did not resolve successfully', endpoint_path)
         paths = get_endpoint_paths()
         closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
         if closest_matches:

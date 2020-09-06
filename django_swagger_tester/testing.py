@@ -32,10 +32,11 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
             data=data,
             case_tester=settings.CASE_TESTER,
             camel_case_parser=settings.CAMEL_CASE_PARSER,
+            origin='response',
             **kwargs,
         )
     except SwaggerDocumentationError as e:
-        verbose_error_message = format_response_tester_error(e)
+        verbose_error_message = format_response_tester_error(e, hint=e.response_hint)
         raise SwaggerDocumentationError(verbose_error_message)
     except CaseError as e:
         verbose_error_message = format_response_tester_case_error(e)
