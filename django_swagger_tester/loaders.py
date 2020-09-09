@@ -2,13 +2,13 @@ import json
 import logging
 import os
 from json import dumps, loads
-from typing import Optional, Any
+from typing import Any, Optional, Union
 
+from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import list_types, read_properties
-from django.apps import apps
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -42,7 +42,9 @@ class _LoaderBase:
 
     # </ methods to be overwritten >
 
-    def get_schema(self,) -> dict:
+    def get_schema(
+        self,
+    ) -> dict:
         """
         Returns the OpenAPI schema as a dict.
         """
@@ -50,24 +52,30 @@ class _LoaderBase:
             self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
-    def set_schema(self, schema: dict,) -> None:
+    def set_schema(
+        self,
+        schema: dict,
+    ) -> None:
         """
         Sets self.schema as a cleaned version of the loaded schema
         """
-        self.schema = self.replace_refs(schema,)
+        self.schema = self.replace_refs(
+            schema,
+        )
         self.original_schema = schema
 
     def get_route(self, route: str) -> str:
         """
         Returns the appropriate route.
 
-        This method was primarily implemented because drf-yasg has its own route style.
+        This method was primarily implemented because drf-yasg has its own route style, and so this method
+        lets loader classes add custom route conversion logic if required.
         """
         from django_swagger_tester.utils import resolve_path
 
         return resolve_path(route)[0]
 
-    def get_response_schema_section(self, route: str, method: str, status_code: int) -> dict:
+    def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
         """
         Indexes schema by url, HTTP method, and status code to get the schema section related to a specific response.
 
@@ -89,25 +97,31 @@ class _LoaderBase:
 
         # Index by route
         routes = ', '.join([key for key in paths_schema.keys()])
-        route_error = (
-            f'\n\nFor debugging purposes: valid routes include {routes}.\n\nTo skip validation for this route '
-            f'you can add `^{route}$` to the VALIDATION_EXEMPT_URLS setting list.'
-        )
+        route_error = ''
+        if routes:
+            route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
+        if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
+            route_error += (
+                f'\n\nTo skip validation for this route you can add `^{route}$` '
+                f'to your VALIDATION_EXEMPT_URLS setting list in your SWAGGER_TESTER.MIDDLEWARE settings.'
+            )
         route_schema = index_schema(schema=paths_schema, variable=schema_route, error_addon=route_error)
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
-        method_error = f'\n\nAvailable methods include {joined_methods}.'
+        method_error = ''
+        if joined_methods:
+            method_error += f'\n\nAvailable methods include: {joined_methods}.'
         method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
 
         # Index by responses
         responses_schema = index_schema(schema=method_schema, variable='responses')
 
         # Index by status code
-        status_code_error = (
-            f'\n\nDocumented responses include(s) {", ".join([f"`{code}`" for code in responses_schema.keys()])}. '
-            f'Is the `{status_code}` response documented?'
-        )
+        responses = ', '.join([f'{code}' for code in responses_schema.keys()])
+        status_code_error = f' Is the `{status_code}` response documented?'
+        if responses:
+            status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
         status_code_schema = index_schema(
             schema=responses_schema, variable=str(status_code), error_addon=status_code_error
         )
@@ -118,7 +132,11 @@ class _LoaderBase:
 
         return index_schema(status_code_schema, 'schema')
 
-    def get_request_body_schema_section(self, route: str, method: str,) -> dict:
+    def get_request_body_schema_section(
+        self,
+        route: str,
+        method: str,
+    ) -> dict:
         """
         Indexes schema to get an endpoints request body.
 
@@ -134,24 +152,32 @@ class _LoaderBase:
         schema = self.get_schema()
 
         paths_schema = index_schema(schema=schema, variable='paths')
-        route_error = (
-            f'\n\nFor debugging purposes: valid routes include {", ".join([key for key in paths_schema.keys()])}'
-        )
+
+        # Index by route
+        routes = ', '.join([key for key in paths_schema.keys()])
+        route_error = ''
+        if routes:
+            route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
         route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
+
+        # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
-        method_error = f'\n\nAvailable methods include {joined_methods}.'
+        method_error = ''
+        if joined_methods:
+            method_error += f'\n\nAvailable methods include: {joined_methods}.'
         method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
+
         parameters_schema = index_schema(schema=method_schema, variable='parameters')
         try:
             parameter_schema = parameters_schema[0]
         except IndexError:
-            raise OpenAPISchemaError(
-                f'Request body does not seem to be documented. Schema parameters: {parameters_schema}'
+            raise UndocumentedSchemaSectionError(
+                f'Request body does not seem to be documented. `Parameters` is empty for path `{route}` and method `{method}`'
             )
         if 'in' not in parameter_schema or parameter_schema['in'] != 'body':
             logger.debug('Request body schema seems to be missing a request body section')
             raise UndocumentedSchemaSectionError(
-                'Tried to test request body documentation, but the provided schema has no request body.'
+                f'There is no in-body request body documented for route `{route}` and method `{method}`.'
             )
         return parameter_schema['schema']
 
@@ -185,20 +211,24 @@ class _LoaderBase:
         return method
 
     @staticmethod
-    def validate_status_code(status_code: int) -> None:
+    def validate_status_code(status_code: Union[int, str]) -> None:
         """
         Validates a status code, if the status code is not None.
 
         :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
         :raises: ImproperlyConfigured
         """
-        if not isinstance(status_code, int):
+        try:
+            status_code = int(status_code)
+        except Exception:
             raise ImproperlyConfigured('`status_code` should be an integer.')
         if not 100 <= status_code <= 505:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
     @staticmethod
-    def replace_refs(schema: dict,) -> dict:
+    def replace_refs(
+        schema: dict,
+    ) -> dict:
         """
         Finds all $ref sections in a schema and replaces them with the referenced content.
         This way we only have to worry about $refs once.
@@ -217,7 +247,7 @@ class _LoaderBase:
                 indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
                 temp_schema = s
                 for index in indices:
-                    logger.debug(f'Indexing schema by `%s`', index)
+                    logger.debug('Indexing schema by `%s`', index)
                     temp_schema = temp_schema[index]
                 return temp_schema
             for k, v in d.items():
@@ -227,7 +257,7 @@ class _LoaderBase:
                     d[k] = find_and_replace_refs_recursively(v, s)
             return d
 
-        def iterate_list(l: list, s: dict) -> list:
+        def iterate_list(l: list, s: dict) -> list:  # noqa: E741
             """
             Loves to iterate lists.
             """
@@ -243,9 +273,16 @@ class _LoaderBase:
 
         return find_and_replace_refs_recursively(schema, schema)
 
-    def get_request_body_example(self, route: str, method: str,) -> Any:
+    def get_request_body_example(
+        self,
+        route: str,
+        method: str,
+    ) -> Any:
         logger.info('Fetching request body example for %s request to %s', method, route)
-        request_body_schema = self.get_request_body_schema_section(route, method,)
+        request_body_schema = self.get_request_body_schema_section(
+            route,
+            method,
+        )
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
     def _iterate_schema_dict(self, d: dict) -> dict:
@@ -260,14 +297,14 @@ class _LoaderBase:
                 x[key] = self._iterate_schema_dict(value)
             elif read_type(value) == 'array':
                 x[key] = self._iterate_schema_list(value)  # type: ignore
-            elif 'type' in value and value['type'] in list_types():
+            elif 'type' in value and value['type'] in list_types(cut=['object', 'array']):
                 logger.warning('Item `%s` is missing an explicit example value', value)
                 x[key] = type_placeholder_value(value['type'])
             else:
                 raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {value}')
         return x
 
-    def _iterate_schema_list(self, l: dict) -> list:
+    def _iterate_schema_list(self, l: dict) -> list:  # noqa: E741
 
         from django_swagger_tester.openapi import read_type, read_items
         from django_swagger_tester.utils import type_placeholder_value
@@ -280,7 +317,7 @@ class _LoaderBase:
             x.append(self._iterate_schema_dict(i))
         elif read_type(i) == 'array':
             x.append(self._iterate_schema_list(i))  # type: ignore
-        elif 'type' in i and i['type'] in list_types():
+        elif 'type' in i and i['type'] in list_types(cut=['object', 'array']):
             logger.warning('Item `%s` is missing an explicit example value', i)
             x.append(type_placeholder_value(i['type']))
         else:
@@ -296,13 +333,13 @@ class _LoaderBase:
 
         if 'example' in schema:
             return schema['example']
-        elif read_type(schema) == 'array' and schema['items']:
+        elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
-        elif read_type(schema) == 'object':
+        elif read_type(schema) == 'object' and 'properties' in schema:
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
-        elif 'type' in schema and schema['type'] in list_types():
+        elif 'type' in schema and schema['type'] in list_types(cut=['object', 'array']):
             logger.warning('Item `%s` is missing an explicit example value', schema)
             return type_placeholder_value(schema['type'])
         else:
@@ -314,7 +351,9 @@ class DrfYasgSchemaLoader(_LoaderBase):
     Loads OpenAPI schema when schema is dynamically generated by drf_yasg.
     """
 
-    def __init__(self,) -> None:
+    def __init__(
+        self,
+    ) -> None:
         super().__init__()
         self.validation()
         from drf_yasg.openapi import Info
@@ -341,7 +380,9 @@ class DrfYasgSchemaLoader(_LoaderBase):
                 '`settings.py`, as it is required for this implementation'
             )
 
-    def load_schema(self,) -> dict:
+    def load_schema(
+        self,
+    ) -> dict:
         """
         Loads generated schema from drf-yasg and returns it as a dict.
         """
@@ -384,7 +425,9 @@ class StaticSchemaLoader(_LoaderBase):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(self,) -> None:
+    def __init__(
+        self,
+    ) -> None:
         super().__init__()
         self.path: str = ''
 
@@ -407,7 +450,7 @@ class StaticSchemaLoader(_LoaderBase):
         ):
             logger.error('PATH setting is not specified')
             raise ImproperlyConfigured(
-                f'PATH is required to load static OpenAPI schemas. Please add PATH to the SWAGGER_TESTER settings.'
+                'PATH is required to load static OpenAPI schemas. Please add PATH to the SWAGGER_TESTER settings.'
             )
         elif not isinstance(kwargs['package_settings']['PATH'], str):
             logger.error('PATH setting is not a string')

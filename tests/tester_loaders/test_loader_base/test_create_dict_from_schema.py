@@ -1,4 +1,6 @@
+import pytest
 import yaml
+from django.core.exceptions import ImproperlyConfigured
 
 from demo import settings
 from django_swagger_tester.configuration import settings as _settings
@@ -82,3 +84,10 @@ def test_iterate_schema_list(caplog):
 
     base._iterate_schema_list({'type': 'array', 'items': {'type': 'string'}})
     assert "Item `{'type': 'string'}` is missing an explicit example value" == caplog.records[-1].message
+
+
+def test_failed_creation(monkeypatch):
+    with pytest.raises(
+        ImproperlyConfigured, match="Not able to construct an example from schema {'type': 'array', 'items': False}"
+    ):
+        _LoaderBase().create_dict_from_schema({'type': 'array', 'items': False})

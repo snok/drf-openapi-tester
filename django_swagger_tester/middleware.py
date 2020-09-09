@@ -112,7 +112,10 @@ class SwaggerValidationMiddleware(object):
         # Get the section of the schema relevant for this request
         try:
             response_schema = settings.LOADER_CLASS.get_response_schema_section(
-                route=request.path, status_code=response.status_code, method=request.method
+                route=request.path,
+                status_code=response.status_code,
+                method=request.method,
+                skip_validation_warning=True,
             )
         except UndocumentedSchemaSectionError as e:
             self.middleware_settings.LOGGER(

@@ -8,7 +8,7 @@ in case we're ever dealt with an incorrect schema.
 Instead of raising unhandled errors, it is useful for us to raise appropriate exceptions.
 """
 import logging
-from typing import List
+from typing import List, Optional
 
 from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 
@@ -31,11 +31,14 @@ def read_items(array: dict) -> dict:
     return array['items']
 
 
-def list_types() -> List[str]:
+def list_types(cut: Optional[List[str]] = None) -> List[str]:
     """
     Returns supported item types.
     """
-    return ['string', 'boolean', 'integer', 'number', 'file', 'object', 'array']
+    supported_types = ['string', 'boolean', 'integer', 'number', 'file', 'object', 'array']
+    if cut:
+        supported_types = list(set(supported_types) - set(cut))
+    return supported_types
 
 
 def read_type(item: dict) -> str:
