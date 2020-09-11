@@ -9,6 +9,8 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
+from rest_framework.response import Response
+
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import (
     CaseError,
@@ -18,7 +20,6 @@ from django_swagger_tester.exceptions import (
 )
 from django_swagger_tester.schema_tester import SchemaTester
 from django_swagger_tester.utils import format_response_tester_error, get_endpoint_paths, resolve_path
-from rest_framework.response import Response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -134,7 +135,7 @@ class SwaggerValidationMiddleware(object):
             )
             logger.info('Response valid for %s request to %s', request.method, request.path)
         except SwaggerDocumentationError as e:
-            long_message = format_response_tester_error(e, hint=e.response_hint)
+            long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
             self.middleware_settings.LOGGER(
                 'Incorrect response template returned for %s request to %s. Swagger error: %s',
                 request.method,
@@ -188,7 +189,7 @@ class SwaggerValidationMiddleware(object):
             # TODO: Do we need to do something here?
             self.middleware_settings.LOGGER('Received incorrectly cased cased key, `%s` in %s', e.key, e.origin)
         except SwaggerDocumentationError as e:
-            long_message = format_response_tester_error(e, hint=e.request_hint)
+            long_message = format_response_tester_error(e, hint=e.request_hint, addon='')
             self.middleware_settings.LOGGER(
                 'Received bad request body for %s request to %s. Swagger error: \n\n%s',
                 request.method,

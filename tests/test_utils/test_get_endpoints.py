@@ -11,12 +11,13 @@ def test_get_endpoint_paths():
     """
     urls = list(set(get_endpoint_paths()))
     expected = [
-        '/api/v1/trucks/incorrect/',
-        '/api/v1/{vehicle_type}/correct/',
-        '/api/v1/{vehicle_type}/incorrect/',
-        '/api/v1/vehicles/',
-        '/api/v1/items/',
-        '/api/v1/trucks/correct/',
+        '/api/v1/trucks/incorrect',
+        '/api/v1/{vehicle_type}/correct',
+        '/api/v1/{vehicle_type}/incorrect',
+        '/api/v1/vehicles',
+        '/api/v1/items',
+        '/api/v1/trucks/correct',
+        '/api/v1/snake-case',
     ]
     assert [url in expected for url in urls]
     assert len(expected) == len(urls)

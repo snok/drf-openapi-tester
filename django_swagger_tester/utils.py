@@ -2,12 +2,12 @@ import difflib
 import json
 import logging
 import sys
-from typing import Any, List, Tuple
+from typing import Any, List, Optional, Tuple
 
-from django.core.exceptions import ImproperlyConfigured
+from requests import Response
+
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
-from requests import Response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -17,13 +17,15 @@ def format_response_tester_case_error(exception: CaseError) -> str:
     Returns an appropriate error message.
     """
     return (
-        f'The property `{exception.key}` is not properly {exception.case}\n\n'
+        f'The response key `{exception.key}` is not properly {exception.case}\n\n'
         f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{exception.key}\']` to the '
         f'`validate_response` function call, or by adding the key to the CASE_WHITELIST in the SWAGGER_TESTER settings'
     )
 
 
-def format_response_tester_error(exception: SwaggerDocumentationError, hint: str, **kwargs) -> str:
+def format_response_tester_error(
+    exception: SwaggerDocumentationError, hint: str, addon: Optional[str] = None, **kwargs
+) -> str:
     """
     Formats and returns a standardized error message for easy debugging.
 
@@ -31,6 +33,9 @@ def format_response_tester_error(exception: SwaggerDocumentationError, hint: str
     middleware logging.
     """
     logger.debug('Constructing error message')
+
+    if addon is None:
+        addon = '\n* If you need more details: set `verbose=True`'
 
     # Construct example dict/list from schema - this is useful to display comparable items
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
@@ -80,10 +85,6 @@ def format_response_tester_error(exception: SwaggerDocumentationError, hint: str
         response_string = f'\n{tab}' + json.dumps(exception.response, indent=4, sort_keys=True).replace(
             '\n', f'\n{tab}'
         )
-    else:
-        # TODO: This cant show when displaying from the middleware, make addon a passable arg
-        # TODO: and verbose a boolean arg
-        addon = '\n* If you need more details: set `verbose=True`'
 
     sys.stdout.flush()
 
@@ -92,8 +93,7 @@ def format_response_tester_error(exception: SwaggerDocumentationError, hint: str
     message = [
         'Item is misspecified:\n\n'
         # -- Summary table --
-        'Summary',
-        '\n' if not verbose else '',
+        'Summary\n',
         f'{dotted_line}',
         '\n',
         'Error:'.ljust(offset) + f'{str(exception)}\n',
@@ -120,10 +120,8 @@ def unpack_response(response: Response) -> Tuple[dict, int]:
     try:
         status_code = response.status_code
     except Exception as e:
-        logger.exception('Unable to open response object')
-        raise ValueError(
-            f'Unable to unpack response object. Make sure you are passing response, and not response.json(). Error: {e}'
-        )
+        logger.exception('Unable to open response object. Error %s', e)
+        raise ValueError('Response object does not contain a status code. Unable to unpack response object.')
     if hasattr(response, 'json'):
         return response.json(), status_code
     else:
@@ -199,4 +197,4 @@ def type_placeholder_value(_type: str) -> Any:
     elif _type in ['string', 'file']:
         return 'string'
     else:
-        raise ImproperlyConfigured(f'Cannot return placeholder value for {_type}')
+        raise TypeError(f'Cannot return placeholder value for {_type}')

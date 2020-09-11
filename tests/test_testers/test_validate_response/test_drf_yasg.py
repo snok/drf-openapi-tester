@@ -6,7 +6,7 @@ from django_swagger_tester.testing import validate_response
 
 good_test_data = [
     {
-        'url': '/api/v1/cars/correct/',
+        'url': '/api/v1/cars/correct',
         'expected_response': [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
@@ -14,7 +14,7 @@ good_test_data = [
         ],
     },
     {
-        'url': '/api/v1/trucks/correct/',
+        'url': '/api/v1/trucks/correct',
         'expected_response': [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
@@ -24,7 +24,7 @@ good_test_data = [
 ]
 bad_test_data = [
     {
-        'url': '/api/v1/cars/incorrect/',
+        'url': '/api/v1/cars/incorrect',
         'expected_response': [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'},
             {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
@@ -32,15 +32,15 @@ bad_test_data = [
         ],
     },
     {
-        'url': '/api/v1/trucks/incorrect/',
+        'url': '/api/v1/trucks/incorrect',
         'expected_response': [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'},
             {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
             {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
         ],
     },
-    {  # Bad case
-        'url': '/api/v1/trucks/incorrect/',
+    {
+        'url': '/api/v1/trucks/incorrect',
         'expected_response': [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'},
             {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},

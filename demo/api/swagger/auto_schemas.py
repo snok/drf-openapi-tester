@@ -103,3 +103,20 @@ def post_item_auto_schema():
             ),
         },
     )
+
+
+def get_snake_cased_response():
+    return swagger_auto_schema(
+        operation_id='get_snake_cased_response',
+        operation_summary='Returns a snake-cased response',
+        operation_description='..',
+        responses={
+            '200': Schema(
+                title='Success',
+                type=TYPE_OBJECT,
+                properties={
+                    'this_is_snake_case': generic_string_schema(example='test', description='test'),
+                },
+            ),
+        },
+    )

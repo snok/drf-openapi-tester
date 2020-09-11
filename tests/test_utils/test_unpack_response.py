@@ -23,7 +23,7 @@ def test_successful_unpack():
     assert status_code == 200
 
 
-def test_unsuccesful_unpack():
+def test_bad_json_method():
     """
     Verify that the appropriate error is raised when unpack fails.
     """
@@ -36,5 +36,22 @@ def test_unsuccesful_unpack():
     with pytest.raises(
         Exception,
         match='Response does not contain a JSON-formatted response and cannot be tested against a response schema.',
+    ):
+        unpack_response(response)
+
+
+def test_bad_status_code():
+    """
+    Verify that the appropriate error is raised when we cannot access status_code.
+    """
+
+    class NonJsonMockResponse:
+        pass
+
+    response = NonJsonMockResponse()
+
+    with pytest.raises(
+        Exception,
+        match='Response object does not contain a status code. Unable to unpack response object.',
     ):
         unpack_response(response)

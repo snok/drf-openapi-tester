@@ -7,6 +7,7 @@ from rest_framework import permissions
 from demo import views
 from demo.api.views.cars import BadCars, GoodCars
 from demo.api.views.items import Items
+from demo.api.views.snake_cased_response import SnakeCasedResponse
 from demo.api.views.trucks import BadTrucks, GoodTrucks
 from demo.api.views.vehicles import Vehicles
 
@@ -27,6 +28,7 @@ api_urlpatterns = [
     path('api/v1/trucks/incorrect', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
     path('api/v1/vehicles', Vehicles.as_view(), name='vehicles'),
     path('api/v1/items', Items.as_view(), name='items'),
+    path('api/v1/snake-case/', SnakeCasedResponse.as_view(), name='snake_case'),  # trailing slash is here on purpose
 ]
 
 schema_view = get_schema_view(
