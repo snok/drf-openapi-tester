@@ -3,8 +3,8 @@
 from warnings import warn
 
 warn(
-    'Importing validate_response from django_swagger_tester.static is deprecated as of version 2. '
-    'Replace it with `django_swagger_tester.testing`.'
+    'Importing validate_response from django_swagger_tester.static was deprecated in version 2. '
+    'Replace it with `from django_swagger_tester.testing import validate_response`.'
 )
 
 from django_swagger_tester.testing import validate_response  # noqa: F401, E402
