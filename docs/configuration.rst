@@ -7,8 +7,16 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, your first need to add a ``SWAGGER_TESTER``
-object to your ``settings.py``:
+To use Django Swagger Settings in your project, you first need to add a ``django_swagger_tester`` to your installed apps.
+
+.. code:: python
+
+    INSTALLED_APPS = [
+        ...
+        'django_swagger_tester',
+    ]
+
+Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your ``settings.py``:
 
 .. code:: python
 
@@ -19,8 +27,8 @@ object to your ``settings.py``:
         'SCHEMA_LOADER': StaticSchemaLoader,
         'PATH': './static/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
-        'CASE_WHITELIST': ['IP', 'DHCP'],
-        'CAMEL_CASE_PARSER': True,
+        'CASE_WHITELIST': [],
+        'CAMEL_CASE_PARSER': False,
     }
 
 .. Note::
