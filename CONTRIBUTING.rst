@@ -20,3 +20,4 @@ This package is open to contributions. To contribute, please follow these steps:
 Nice to know
 ------------
 - To build docs locally, simply cd into ``/docs`` and run ``make html``. You can then navigate to ``file:///<your path>/django-swagger-tester/docs/build/html/index.html`` to browse them.
+- Static files are gitignored, so to generate static assets locally, you should run ``manage.py collectstatic``.
