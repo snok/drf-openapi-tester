@@ -220,7 +220,7 @@ class SchemaTester:
                 )
                 request_hint = 'You passed a None value where we expected a list.'
             raise SwaggerDocumentationError(
-                message=f"Mismatched types. Expected response to be <class 'list'> but found {type(data)}.",
+                message=f"Mismatched types. Expected item to be <class 'list'> but found {type(data)}.",
                 response=data,
                 schema=schema,
                 reference=reference,
@@ -298,7 +298,7 @@ class SchemaTester:
             )
             request_hint = 'You passed a None value where we expected a list.'
             raise SwaggerDocumentationError(
-                message=f'Mismatched types. Expected response to be {type(type_placeholder_value(read_type(schema)))} but found {type(data)}.',
+                message=f'Mismatched types. Expected item to be {type(type_placeholder_value(read_type(schema)))} but found {type(data)}.',
                 response=data,
                 schema=schema,
                 reference=reference,

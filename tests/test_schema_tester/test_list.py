@@ -29,10 +29,16 @@ def test_bad_data_type() -> None:
     """
     Asserts that the appropriate exception is raised for a bad response data type.
     """
-    with pytest.raises(
-        SwaggerDocumentationError, match="Expected response to be <class 'list'> but found <class 'dict'>"
-    ):
+    with pytest.raises(SwaggerDocumentationError, match="Expected item to be <class 'list'> but found <class 'dict'>"):
         tester.test_list(schema=list_type, data={'test': list_data}, reference='placeholder')
+
+
+def test_empty_schema_list() -> None:
+    with pytest.raises(
+        SwaggerDocumentationError, match='Mismatched content. Response array contains data, when schema is empty.'
+    ):
+        l = {'title': 'list_type_title', 'type': 'array', 'items': {}}  # empty list
+        tester.test_list(schema=l, data=list_data, reference='placeholder')
 
 
 def test_empty_response_data_list() -> None:

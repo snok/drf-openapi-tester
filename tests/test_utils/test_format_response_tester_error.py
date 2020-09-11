@@ -1,3 +1,4 @@
+# fmt: off
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.utils import format_response_tester_error
 
@@ -76,3 +77,5 @@ properties    {'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryL
 ------------------------------------------------------------------------------------
 """
     assert format_response_tester_error(error, 'test', verbose=True) == expected
+
+# fmt: on

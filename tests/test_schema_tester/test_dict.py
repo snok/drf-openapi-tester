@@ -63,14 +63,41 @@ def test_nullable() -> None:
         ],
     }
 
+    # Test nullable values pass OK
     assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
 
+    # Test nullable items do not pass if not documented as nullable
+    d = deepcopy(data)
     with pytest.raises(
         SwaggerDocumentationError,
-        match="Mismatched types. Expected response to be <class \'int\'> but found <class \'NoneType\'>",
+        match="Mismatched types. Expected item to be <class \'int\'> but found <class \'NoneType\'>",
     ):
-        data['count'] = None
-        tester.test_dict(schema=response_schema, data=data, reference='placeholder')
+        d['count'] = None
+        tester.test_dict(schema=response_schema, data=d, reference='placeholder')
+
+    # Test non-nullable dict does not pass OK
+    with pytest.raises(
+        SwaggerDocumentationError,
+        match="Mismatched types. Expected item to be <class \'dict\'> but found <class \'NoneType\'>.",
+    ):
+        data['results'] = [None]
+        assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+
+    # Test nullable dict passes OK
+    response_schema['properties']['results']['items']['x-nullable'] = True
+    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+
+    # Test non-nullable list does not pass OK
+    with pytest.raises(
+        SwaggerDocumentationError,
+        match="Mismatched types. Expected item to be <class \'list\'> but found <class \'NoneType\'>.",
+    ):
+        data['results'] = None
+        assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+
+    # Test nullable list passes OK
+    response_schema['properties']['results']['x-nullable'] = True
+    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
 
 
 def test_bad_data_type() -> None:
