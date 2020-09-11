@@ -2,6 +2,7 @@ import logging
 from typing import Any, Callable, List, Union
 
 from django.core.exceptions import ImproperlyConfigured
+
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.openapi import (
     is_nullable,
@@ -10,6 +11,7 @@ from django_swagger_tester.openapi import (
     read_properties,
     read_type,
 )
+from django_swagger_tester.utils import type_placeholder_value
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -178,7 +180,7 @@ class SchemaTester:
                     data=response_value,
                     reference=f'{reference}.dict:key:{schema_key}',
                 )
-            elif read_type(schema_value) in list_types():  # This needs to come after array and object test_checks
+            elif read_type(schema_value) in list_types(cut=['array', 'object']):
                 logger.debug('test_dict --> test_item')
                 self.test_item(
                     schema=schema_value,
@@ -281,14 +283,28 @@ class SchemaTester:
                 and not (isinstance(data, str) and data.lower() in ['true', 'false']),
                 'type': "<class 'bool'>",
             },
-            'string': {'check': not isinstance(data, str) and data is not None, 'type': "<class 'str'>"},
-            'integer': {'check': not isinstance(data, int) and data is not None, 'type': "<class 'int'>"},
-            'number': {'check': not isinstance(data, float) and data is not None, 'type': "<class 'float'>"},
-            'file': {'check': not (isinstance(data, str) or data is None), 'type': "<class 'str'>"},
+            'string': {'check': not isinstance(data, str), 'type': "<class 'str'>"},
+            'integer': {'check': not isinstance(data, int), 'type': "<class 'int'>"},
+            'number': {'check': not isinstance(data, float), 'type': "<class 'float'>"},
+            'file': {'check': not (isinstance(data, str)), 'type': "<class 'str'>"},
         }
-
+        response_hint = ''
         if data is None and is_nullable(schema):
             pass
+        elif data is None and not is_nullable(schema):
+            response_hint += (
+                'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
+                '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
+            )
+            request_hint = 'You passed a None value where we expected a list.'
+            raise SwaggerDocumentationError(
+                message=f'Mismatched types. Expected response to be {type(type_placeholder_value(read_type(schema)))} but found {type(data)}.',
+                response=data,
+                schema=schema,
+                reference=reference,
+                response_hint=response_hint,
+                request_hint=request_hint,
+            )
         elif checks[schema['type']]['check']:
             raise SwaggerDocumentationError(
                 message='Mismatched types.',

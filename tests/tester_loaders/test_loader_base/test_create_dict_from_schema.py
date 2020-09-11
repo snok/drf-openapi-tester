@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 import yaml
 from django.core.exceptions import ImproperlyConfigured
@@ -5,6 +7,7 @@ from django.core.exceptions import ImproperlyConfigured
 from demo import settings
 from django_swagger_tester.configuration import settings as _settings
 from django_swagger_tester.loaders import _LoaderBase
+from tests.types import bool_type, integer_type, number_type, string_type
 
 
 def loader(path):
@@ -91,3 +94,14 @@ def test_failed_creation(monkeypatch):
         ImproperlyConfigured, match="Not able to construct an example from schema {'type': 'array', 'items': False}"
     ):
         _LoaderBase().create_dict_from_schema({'type': 'array', 'items': False})
+
+
+def test_item_without_example(monkeypatch):
+    for item, expected in [
+        (deepcopy(string_type), 'string'),
+        (deepcopy(integer_type), 1),
+        (deepcopy(number_type), 1.0),
+        (deepcopy(bool_type), True),
+    ]:
+        del item['example']
+        assert _LoaderBase().create_dict_from_schema(item) == expected

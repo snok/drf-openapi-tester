@@ -2,15 +2,15 @@ import pytest
 
 from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import (
-    read_items,
-    list_types,
-    read_type,
-    read_properties,
-    is_nullable,
-    read_additional_properties,
     index_schema,
+    is_nullable,
+    list_types,
+    read_additional_properties,
+    read_items,
+    read_properties,
+    read_type,
 )
-from tests.types import object_type, list_type
+from tests.types import list_type, object_type
 
 
 def test_read_items():
@@ -81,7 +81,12 @@ def test_additional_properties_validation():
 
 nullable_example = {
     'properties': {
-        'id': {'title': 'ID', 'type': 'integer', 'readOnly': 'true', 'x-nullable': 'true',},
+        'id': {
+            'title': 'ID',
+            'type': 'integer',
+            'readOnly': 'true',
+            'x-nullable': 'true',
+        },
         'first_name': {
             'title': 'First name',
             'type': 'string',
@@ -102,7 +107,7 @@ def test_is_nullable():
     assert is_nullable(nullable_example['properties']['id']) == True
     assert is_nullable(nullable_example['properties']['first_name']) == True
     for item in [2, '', None, -1, {'nullable': 'false'}]:
-        assert is_nullable(item) == False
+        assert is_nullable(item) is False
 
 
 def test_index_schema(caplog):

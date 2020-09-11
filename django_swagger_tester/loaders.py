@@ -297,11 +297,9 @@ class _LoaderBase:
                 x[key] = self._iterate_schema_dict(value)
             elif read_type(value) == 'array':
                 x[key] = self._iterate_schema_list(value)  # type: ignore
-            elif 'type' in value and value['type'] in list_types(cut=['object', 'array']):
+            else:
                 logger.warning('Item `%s` is missing an explicit example value', value)
                 x[key] = type_placeholder_value(value['type'])
-            else:
-                raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {value}')
         return x
 
     def _iterate_schema_list(self, l: dict) -> list:  # noqa: E741
@@ -317,11 +315,9 @@ class _LoaderBase:
             x.append(self._iterate_schema_dict(i))
         elif read_type(i) == 'array':
             x.append(self._iterate_schema_list(i))  # type: ignore
-        elif 'type' in i and i['type'] in list_types(cut=['object', 'array']):
+        else:
             logger.warning('Item `%s` is missing an explicit example value', i)
             x.append(type_placeholder_value(i['type']))
-        else:
-            raise ImproperlyConfigured(f'This schema item does not seem to have an example value. Item: {i}')
         return x
 
     def create_dict_from_schema(self, schema: dict) -> Any:
@@ -414,10 +410,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         resolved_route = resolve_path(route)[0]
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         logger.debug('Path prefix: %s', path_prefix)
-        if path_prefix != '/':
-            return resolved_route[len(path_prefix) :]
-        else:
-            return resolved_route
+        return resolved_route[len(path_prefix) :]
 
 
 class StaticSchemaLoader(_LoaderBase):

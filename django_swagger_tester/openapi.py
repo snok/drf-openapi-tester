@@ -125,8 +125,10 @@ def is_nullable(schema_item: dict) -> bool:
         schema_item
         and isinstance(schema_item, dict)
         and nullable_key in schema_item
-        and isinstance(schema_item[nullable_key], str)
-        and schema_item[nullable_key] == 'true'
+        and (
+            (isinstance(schema_item[nullable_key], bool) and schema_item)
+            or (isinstance(schema_item[nullable_key], str) and schema_item[nullable_key] == 'true')
+        )
         for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
     )
 

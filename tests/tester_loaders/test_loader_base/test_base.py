@@ -78,4 +78,11 @@ def test_call_validation():
 
 def test_get_route():
     base = _LoaderBase()
+    assert base.get_route('/api/v1/items/') == '/api/v1/items'
     assert base.get_route('/api/v1/items') == '/api/v1/items'
+    assert base.get_route('api/v1/items/') == '/api/v1/items'
+    assert base.get_route('api/v1/items') == '/api/v1/items'
+    assert base.get_route('/api/v1/snake-case/') == '/api/v1/snake-case/'
+    assert base.get_route('/api/v1/snake-case') == '/api/v1/snake-case/'
+    assert base.get_route('api/v1/snake-case/') == '/api/v1/snake-case/'
+    assert base.get_route('api/v1/snake-case') == '/api/v1/snake-case/'

@@ -1,9 +1,11 @@
+from copy import deepcopy
+
 import pytest
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from copy import deepcopy
-
+from django_swagger_tester.loaders import _LoaderBase
 from django_swagger_tester.schema_tester import SchemaTester
+from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {
     'type': 'object',
@@ -17,7 +19,9 @@ schema = {
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
-tester = SchemaTester(schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test')
+tester = SchemaTester(
+    schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response'
+)
 
 
 def test_valid_dict() -> None:
@@ -25,6 +29,48 @@ def test_valid_dict() -> None:
     Asserts that valid data passes successfully.
     """
     tester.test_dict(schema=schema, data=data, reference='placeholder')
+
+
+def test_nullable() -> None:
+    """
+    Asserts that valid data passes successfully.
+    """
+    schema = loader('/tests/drf_yasg_reference.yaml')
+    base = _LoaderBase()
+    base.set_schema(schema)
+    response_schema = base.schema['paths']['/articles/']['get']['responses']['200']['schema']
+    data = {
+        'count': 1,
+        'next': None,
+        'previous': 'nullable-string',
+        'results': [
+            {
+                'title': 'string',
+                'author': 1,
+                'body': 'string',
+                'slug': 'string',
+                'date_created': 'datetime',
+                'date_modified': 'datetime',
+                'read_only_nullable': None,
+                'references': {'': 'test'},
+                'uuid': 'test',
+                'cover': 'test',
+                'cover_name': 'test',
+                'article_type': None,  # can be 1
+                'group': 'string',
+                'original_group': 'string',
+            }
+        ],
+    }
+
+    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+
+    with pytest.raises(
+        SwaggerDocumentationError,
+        match="Mismatched types. Expected response to be <class \'int\'> but found <class \'NoneType\'>",
+    ):
+        data['count'] = None
+        tester.test_dict(schema=response_schema, data=data, reference='placeholder')
 
 
 def test_bad_data_type() -> None:
