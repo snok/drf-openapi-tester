@@ -14,7 +14,7 @@ class SwaggerTesterSettings(object):
     Loads and validates the packages Django settings.
     """
 
-    def __init__(self) -> None:  # sourcery skip: remove-redundant-pass
+    def __init__(self) -> None:
         """
         Initializes tester class with base settings.
         """
