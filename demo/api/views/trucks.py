@@ -34,7 +34,11 @@ class BadTrucks(APIView):
     @get_other_trucks_auto_schema()
     def get(request: Request) -> Response:
         trucks = [
-            {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height',},
+            {
+                'name': 'Saab',
+                'color': 'Yellow',
+                'height': 'Medium height',
+            },
             {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
             {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
         ]

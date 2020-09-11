@@ -5,7 +5,12 @@ bool_type = {'description': 'This is a boolean type', 'type': 'boolean', 'exampl
 object_type = {
     'title': 'object_type_title',
     'type': 'object',
-    'properties': {'string': string_type, 'integer': integer_type, 'number': number_type, 'bool': bool_type,},
+    'properties': {
+        'string': string_type,
+        'integer': integer_type,
+        'number': number_type,
+        'bool': bool_type,
+    },
 }
 list_type = {'title': 'list_type_title', 'type': 'array', 'items': object_type}
 
