@@ -15,3 +15,8 @@ This package is open to contributions. To contribute, please follow these steps:
 
 .. _poetry: https://python-poetry.org/
 .. _pre-commit: https://pre-commit.com/
+
+
+Nice to know
+------------
+- To build docs locally, simply cd into ``/docs`` and run ``make html``. You can then navigate to ``file:///<your path>/django-swagger-tester/docs/build/html/index.html`` to browse them.

@@ -73,7 +73,12 @@ TEMPLATES = [
     },
 ]
 WSGI_APPLICATION = 'demo.wsgi.application'
-DATABASES = {'default': {'ENGINE': 'django.db.backends.sqlite3', 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),}}
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -110,8 +115,15 @@ REST_FRAMEWORK = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {'simple': {'format': '%(levelname)s -- %(message)s'},},
-    'handlers': {'console': {'class': 'logging.StreamHandler', 'formatter': 'simple',},},
+    'formatters': {
+        'simple': {'format': '%(levelname)s -- %(message)s'},
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
     'loggers': {
         'django_swagger_tester': {
             'handlers': ['console'],

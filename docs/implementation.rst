@@ -19,30 +19,6 @@ This way, you *know* that your API responses match your documented responses.
 
 This makes it easy to catch and fix documentation errors proactively instead of reactively.
 
-Drf_yasg
---------
-
-If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` response validator::
-
-    from django_swagger_tester.testing import validate_response_schema
-
-
-Static Schema
--------------
-
-If you render Swagger docs from a file (json or yaml), you should use the ``static_schema`` response validator::
-
-    from django_swagger_tester.static_schema import validate_response
-
-.. Note::
-
-    When testing a static schema, you need to add a ``PATH`` setting, pointing to the schema file.
-
-    See `Configuration <configuration.html>`__ for more info.
-
-
-
-
 Examples
 --------
 
@@ -51,26 +27,31 @@ Pytest Implementation
 
 .. code:: python
 
-    def test_response_documentation(client):
-        response = client.get('api/v1/test/')
+    from django_swagger_tester.testing import validate_response
 
+    def test_200_response_documentation(client):
+        route = 'api/v1/test/1'
+        response = client.get(route)
         assert response.status_code == 200
         assert response.json() == expected_response
 
-        # Test Swagger documentation
-        validate_response(response=response, method='GET', route='api/v1/test/', ignore_case=[])
+        # test swagger documentation
+        validate_response(response=response, method='GET', route=route)
 
 Django Test Implementation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
+    from django_swagger_tester.testing import validate_response
+
     class MyApiTest(APITestCase):
+
+        path = '/api/v1/test/'
 
         def setUp(self) -> None:
             user, _ = User.objects.update_or_create(username='test_user')
             self.client.force_authenticate(user=user)
-            self.path = '/api/v1/test/'
 
         def test_get_200(self) -> None:
             """
@@ -82,19 +63,15 @@ Django Test Implementation
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), expected_response)
 
-            # Test Swagger documentation
+            # test swagger documentation
             validate_response(response=response, method='GET', route=self.path)
 
 .. Note::
 
-    It can be useful to test multiple responses at the same time::
+    It can be useful to test more than just successful responses::
 
-        def test_response_documentation(client):
+        def test_post_endpoint_responses(client):
             # 201 - Resource created
-            response = client.post(...)
-            validate_response(response=response, method='POST', route='api/v1/test/')
-
-            # 200 - if an object exists, return it with a 200 without creating a new resource
             response = client.post(...)
             validate_response(response=response, method='POST', route='api/v1/test/')
 
@@ -102,8 +79,19 @@ Django Test Implementation
             response = client.post(...)
             validate_response(response=response, method='POST', route='api/v1/test/')
 
-The ``validate_response`` Function
-----------------------------------
+        def test_get_endpoint_responses(client):
+            # 200 - Fetch resource
+            response = client.get(...)
+            validate_response(response=response, method='GET', route='api/v1/test/<id>')
+
+            # 404 - Bad ID
+            response = client.get(...)
+            validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
+
+
+
+validate_response
+-----------------
 
 The ``validate_response`` function takes three required inputs:
 
@@ -186,38 +174,17 @@ Input Validation
 ================
 
 As with your response documentation, it can be useful to test your
-request body documentation to ensure it is-, and remains, accurate.
+request body documentation to ensure it is, and remains, accurate.
 
-The current input validation function requires that you're using Django Rest Framework's ``Serializer`` for input validation.
-
-Drf_yasg
---------
-
-If you use `drf_yasg`_ to render your Swagger documentation, you should use the ``drf_yasg`` input validator::
-
-    from django_swagger_tester.testing import validate_input_serializer
-
-Static Schema
--------------
-
-If you render Swagger docs from a file (json or yaml), you should use the ``static_schema`` input validator::
-
-    from django_swagger_tester.static_schema import validate_input_serializer
-
-.. Note::
-
-    When testing a static schema, you need to add a ``PATH`` setting, pointing to the schema file.
-
-    See `Configuration <configuration.html>`__ for more info.
-
+To use the ``validate_input_serializer`` tester, you must be using Django Rest Framework's ``Serializer`` for input validation.
 
 Example
 -------
 
 .. code-block:: python
 
-    from myapp.api.serializers import MySerializer  # your custom serializer
-    from django_swagger_tester.testing import validate_input_serializer  # or replace drf_yasg with `static_schema`
+    from myapp.api.serializers import MySerializer
+    from django_swagger_tester.testing import validate_input_serializer
 
 
     def test_request_body_documentation(client):
@@ -232,8 +199,8 @@ Example
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
     ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
 
-The ``validate_input_serializer`` Function
-----------------------------------
+validate_input_serializer
+-------------------------
 
 The ``validate_input_serializer`` function takes three required inputs:
 
@@ -347,7 +314,7 @@ as it is*, you can pass a list of the names you would like to ignore using ``ign
 One example of this could be if you are camel casing your
 responses, but you prefer to keep an abbreviation fully capitalized::
 
-    from django_swgger_tester.drf_yasg import validate_response
+    from django_swgger_tester.testing import validate_response
 
     ...
 
