@@ -327,9 +327,9 @@ Input Validation
 
 To make sure your request body documentation is accurate, and will stay accurate, you can use endpoint serializers to validate your schema directly.
 
-``validate_input_serializer`` constructs an example representation of the documented request body, and passes it to the serializer given.
+``validate_input_serializer`` constructs an example representation of the documented request body, and passes it to the serializer it is given. This means it's only useful if you use serializers for validating your incoming request data.
 
-A pytest implementation of input validation might look like this:
+A Django test implementation of input validation for a whole project could be structured like this:
 
 .. code:: python
 
