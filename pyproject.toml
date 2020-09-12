@@ -55,7 +55,7 @@ sphinx_rtd_theme = "^0.4.3"
 ipython = "^7.16.1"
 
 [tool.black]
-line-length = 120
+line-length = 126
 skip-string-normalization = true
 target-version = ['py37']
 include = '\.pyi?$'
