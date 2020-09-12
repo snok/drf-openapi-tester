@@ -29,7 +29,7 @@ def test_invalid_route():
     """
     for route in [[], (1, 2), 2, 2.0, {}, None]:
         with pytest.raises(ImproperlyConfigured):
-            _LoaderBase().validate_route(route)
+            _LoaderBase().validate_string(route, 'route')
 
 
 def test_invalid_status_codes():
