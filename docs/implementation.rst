@@ -195,9 +195,9 @@ Example
 
 .. Note::
 
-    The ``camel_case_parser`` argument should be set to ``True`` if your DRF API uses
+    The ``camel_case_parser`` argument can be set to ``True`` if your DRF API uses
     `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-    ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``.
+    ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``. The ``camel_case_parser`` keyword argument defaults to False, unless you've set ```CAMEL_CASE_PARSER`` to True in the package setting.
 
 validate_input_serializer
 -------------------------

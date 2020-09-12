@@ -118,6 +118,7 @@ Example:
         'CASE_WHITELIST': ['IP', 'DHCP'],
     }
 
+**Default**: ``[]``
 
 *CAMEL_CASE_PARSER*
 ~~~~~~~~~~~~~~~~~~~
@@ -132,3 +133,5 @@ Example:
   SWAGGER_TESTER = {
       'CAMEL_CASE_PARSER': True,
   }
+
+**Default**: ``False``

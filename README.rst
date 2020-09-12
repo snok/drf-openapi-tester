@@ -215,6 +215,7 @@ Example:
         'CASE_WHITELIST': ['IP', 'DHCP'],
     }
 
+**Default**: ``[]``
 
 *CAMEL_CASE_PARSER*
 ~~~~~~~~~~~~~~~~~~~
@@ -230,6 +231,7 @@ Example:
       'CAMEL_CASE_PARSER': True,
   }
 
+**Default**: ``False``
 
 |
 |
@@ -247,8 +249,7 @@ Example:
         They are included to give you a quick indication of how the package functions.
     </p>
     <p align="center">
-        If you decide to implement Django Swagger Tester functions, it's better to read the full
-        <a href="https://django-swagger-tester.readthedocs.io/">documentation</a>.
+        If you decide to implement Django Swagger Tester functions, it's better to read the <a href="https://django-swagger-tester.readthedocs.io/">docs</a>.
     </p>
 
 --------------
@@ -258,8 +259,7 @@ Example:
 Response Validation
 ===================
 
-To verify that your API response documentation is correct, we test the
-generated documentation against actual API responses.
+To make sure your API response matches your documented response, the ``validate_response`` function compares the two at each level of depth.
 
 A pytest implementation might look like this:
 
