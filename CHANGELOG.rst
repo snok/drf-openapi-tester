@@ -4,6 +4,22 @@
 Changelog
 *********
 
+2.0.0 2020-09-14
+----------------
+
+**Breaking changes**
+
+* ``SCHEMA_LOADER`` has been added as a new required setting. This breaks backwards compatibility from version 1.
+* ``CASE`` setting has been reworked, and replaced by ``CASE_TESTER`` which now takes a callable from ``django_swagger_tester.case_testers``.
+
+**Improvements**
+
+* ``CASE_WHITELIST`` was added to settings, allowing projects to whitelist keys from case checking on a general basis.
+* Schema loader classes were added, making it easier to create new implementations
+* Performance has been improved by consolidating case checking, response checking, and response data checking into a single loop.
+* Upgraded demo project from Django 2.2.6 to Django 3.1
+
+
 1.0.4 2020-07-14
 ----------------
 
