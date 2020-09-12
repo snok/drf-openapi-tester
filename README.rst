@@ -291,9 +291,6 @@ A Django-test implementation might look like this:
             self.client.force_authenticate(user=user)
 
         def test_get_200(self) -> None:
-            """
-            Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
-            """
             response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
             expected_response = [...]
 
@@ -303,7 +300,7 @@ A Django-test implementation might look like this:
             # test swagger documentation
             validate_response(response=response, method='GET', route=self.path)
 
-You can also test more than a single response at the time:
+It is also possible to test more than a single response at the time:
 
 .. code:: python
 
@@ -328,10 +325,9 @@ You can also test more than a single response at the time:
 Input Validation
 ================
 
-To make sure your request body documentation is accurate, and will stay accurate, it can be useful to set up tests.
+To make sure your request body documentation is accurate, and will stay accurate, you can use endpoint serializers to validate your schema directly.
 
-Considering most APIs will use input serializers for input validation, it seems sensible to just run the
-example documentation on your serializer.
+``validate_input_serializer`` constructs an example representation of the documented request body, and passes it to the serializer given.
 
 A pytest implementation of input validation might look like this:
 
