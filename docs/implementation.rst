@@ -258,22 +258,15 @@ This allows you to put all your input tests into one file. This enables you to v
         endpoints = [
             {
                 'api/v1/orders/': [
-                    ('POST', ValidateOrderBody),
+                    ('POST', ValidatePostOrderBody),
                     ('PUT', ValidatePutOrderBody),
                     ('DELETE', ValidateDeleteOrderBody)
                 ]
             },
             {
-                'api/v1/orders/entries/': [
-                    ('POST', ValidateEntryBody),
+                'api/v1/orders/<id>/entries/': [
+                    ('POST', ValidatePostEntryBody),
                     ('PUT', ValidatePutEntryBody),
-                    ('DELETE', ValidateEntryDeleteBody)
-                ]
-            },
-            {
-                'api/v1/orders/directentries/': [
-                    ('POST', ValidateDirectEntriesBody),
-                    ('PUT', ValidatePutDirectEntriesBody),
                     ('DELETE', ValidateEntryDeleteBody)
                 ]
             },
