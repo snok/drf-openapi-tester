@@ -17,7 +17,8 @@ class _LoaderBase:
     """
     Base class for OpenAPI schema loading classes.
 
-    The base contains a template of methods that are required from a loader class.
+    Contains a template of methods that are required from a loader class, and a range of helper methods for interacting
+    with a loaded OpenAPI schema.
     """
 
     def __init__(self) -> None:
@@ -28,36 +29,31 @@ class _LoaderBase:
 
     def validation(self, *args, **kwargs) -> None:
         """
-        This method should hold class level validation logic to be called in the subclass' init method.
+        Put class level validation logic here.
 
-        For example, useful validation could include checking for schema-type specific dependencies and configurations.
+        For example, if you have specific dependencies for your loader class, you might want to check they're installed here.
         """
         pass
 
     def load_schema(self) -> dict:
         """
-        Loader function which must be overwritten by subclass.
+        Put logic required to load a schema and return it here.
         """
         raise ImproperlyConfigured('The `load_schema` method has to be overwritten.')
 
     # </ methods to be overwritten >
 
-    def get_schema(
-        self,
-    ) -> dict:
+    def get_schema(self) -> dict:
         """
-        Returns the OpenAPI schema as a dict.
+        Returns OpenAPI schema.
         """
         if self.schema is None:
             self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
-    def set_schema(
-        self,
-        schema: dict,
-    ) -> None:
+    def set_schema(self, schema: dict) -> None:
         """
-        Sets self.schema as a cleaned version of the loaded schema
+        Sets self.schema and self.original_schema.
         """
         self.schema = self.replace_refs(
             schema,
@@ -66,10 +62,10 @@ class _LoaderBase:
 
     def get_route(self, route: str) -> str:
         """
-        Returns the appropriate route.
+        Returns the appropriate endpoint route.
 
         This method was primarily implemented because drf-yasg has its own route style, and so this method
-        lets loader classes add custom route conversion logic if required.
+        lets loader classes overwrite and add custom route conversion logic if required.
         """
         from django_swagger_tester.utils import resolve_path
 
@@ -87,7 +83,7 @@ class _LoaderBase:
         from django_swagger_tester.openapi import index_schema
 
         self.validate_method(method)
-        self.validate_route(route)
+        self.validate_string(route, 'route')
         self.validate_status_code(status_code)
         schema_route = self.get_route(route)
         schema = self.get_schema()
@@ -132,11 +128,7 @@ class _LoaderBase:
 
         return index_schema(status_code_schema, 'schema')
 
-    def get_request_body_schema_section(
-        self,
-        route: str,
-        method: str,
-    ) -> dict:
+    def get_request_body_schema_section(self, route: str, method: str) -> dict:
         """
         Indexes schema to get an endpoints request body.
 
@@ -147,7 +139,7 @@ class _LoaderBase:
         from django_swagger_tester.openapi import index_schema
 
         self.validate_method(method)
-        self.validate_route(route)
+        self.validate_string(route, 'route')
         route = self.get_route(route)
         schema = self.get_schema()
 
@@ -182,15 +174,12 @@ class _LoaderBase:
         return parameter_schema['schema']
 
     @staticmethod
-    def validate_route(route: str) -> None:
+    def validate_string(string: str, name: str) -> None:
         """
-        Validates a route.
-
-        :param route: a django-resolved endpoint path
-        :raises: ImproperlyConfigured
+        Validates input as a string.
         """
-        if not isinstance(route, str):
-            raise ImproperlyConfigured('`route` is invalid.')
+        if not isinstance(string, str):
+            raise ImproperlyConfigured(f'`{name}` is invalid.')
 
     @staticmethod
     def validate_method(method: str) -> str:
@@ -226,9 +215,7 @@ class _LoaderBase:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
     @staticmethod
-    def replace_refs(
-        schema: dict,
-    ) -> dict:
+    def replace_refs(schema: dict) -> dict:
         """
         Finds all $ref sections in a schema and replaces them with the referenced content.
         This way we only have to worry about $refs once.
@@ -273,16 +260,9 @@ class _LoaderBase:
 
         return find_and_replace_refs_recursively(schema, schema)
 
-    def get_request_body_example(
-        self,
-        route: str,
-        method: str,
-    ) -> Any:
+    def get_request_body_example(self, route: str, method: str) -> Any:
         logger.info('Fetching request body example for %s request to %s', method, route)
-        request_body_schema = self.get_request_body_schema_section(
-            route,
-            method,
-        )
+        request_body_schema = self.get_request_body_schema_section(route, method)
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
     def _iterate_schema_dict(self, d: dict) -> dict:
@@ -347,9 +327,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
     Loads OpenAPI schema when schema is dynamically generated by drf_yasg.
     """
 
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.validation()
         from drf_yasg.openapi import Info
@@ -376,9 +354,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
                 '`settings.py`, as it is required for this implementation'
             )
 
-    def load_schema(
-        self,
-    ) -> dict:
+    def load_schema(self) -> dict:
         """
         Loads generated schema from drf-yasg and returns it as a dict.
         """
@@ -418,9 +394,7 @@ class StaticSchemaLoader(_LoaderBase):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(
-        self,
-    ) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.path: str = ''
 
