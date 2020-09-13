@@ -18,7 +18,7 @@ class _LoaderBase:
     Base class for OpenAPI schema loading classes.
 
     Contains a template of methods that are required from a loader class, and a range of helper methods for interacting
-    with a loaded OpenAPI schema.
+    with an OpenAPI schema.
     """
 
     def __init__(self) -> None:
@@ -182,7 +182,7 @@ class _LoaderBase:
     @staticmethod
     def validate_method(method: str) -> str:
         """
-        Validates a string as a HTTP method.
+        Validates a string as an HTTP method.
 
         :param method: HTTP method
         :raises: ImproperlyConfigured
@@ -198,7 +198,7 @@ class _LoaderBase:
     @staticmethod
     def validate_status_code(status_code: Union[int, str]) -> None:
         """
-        Validates a status code, if the status code is not None.
+        Validates a string or int as a valid HTTP response status code.
 
         :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
         :raises: ImproperlyConfigured
@@ -213,8 +213,10 @@ class _LoaderBase:
     @staticmethod
     def replace_refs(schema: dict) -> dict:
         """
-        Finds all $ref sections in a schema and replaces them with the referenced content.
-        This way we only have to worry about $refs once.
+        Finds all schema references ($ref sections) in an OpenAPI schema and inserts them back into in place of the refs.
+        This way we don't have to handle reference section when interacting with a loaded schema.
+
+        * This does add a performance overhead to interacting with a schema, so changing this in the future would be fine *
 
         :param schema: OpenAPI schema
         :return Adjusted OpenAPI schema
@@ -257,6 +259,11 @@ class _LoaderBase:
         return find_and_replace_refs_recursively(schema, schema)
 
     def get_request_body_example(self, route: str, method: str) -> Any:
+        """
+        Returns a request body example.
+
+        Does this either by returning a ready example from the schema, or by constructing an example manually.
+        """
         logger.info('Fetching request body example for %s request to %s', method, route)
         request_body_schema = self.get_request_body_schema_section(route, method)
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
@@ -325,7 +332,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
     def __init__(self) -> None:
         super().__init__()
-        self.validation()  # this has to run first
+        self.validation()  # this has to run before drf_yasg imports
         from drf_yasg.openapi import Info
         from drf_yasg.generators import OpenAPISchemaGenerator
 
