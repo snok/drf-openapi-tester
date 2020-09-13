@@ -136,5 +136,5 @@ SWAGGER_TESTER = {
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,  # Function responsible for checking schema casing
     'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled
-    'CASE_WHITELIST': [],
+    'CASE_PASSLIST': [],
 }

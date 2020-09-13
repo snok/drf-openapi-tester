@@ -130,7 +130,7 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
         'SCHEMA_LOADER': StaticSchemaLoader,
         'PATH': './static/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
-        'CASE_WHITELIST': [],
+        'CASE_PASSLIST': [],
         'CAMEL_CASE_PARSER': False,
     }
 
@@ -200,10 +200,10 @@ Example:
 
 **Default**: ``None``
 
-*CASE_WHITELIST*
+*CASE_PASSLIST*
 ~~~~~~~~~~~~~~~~
 
-List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_WHITELIST`` to avoid this being flagged as an error in your tests.
+List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
 
 Example:
 
@@ -212,7 +212,7 @@ Example:
     from django_swagger_tester.case_testers import is_camel_case
 
     SWAGGER_TESTER = {
-        'CASE_WHITELIST': ['IP', 'DHCP'],
+        'CASE_PASSLIST': ['IP', 'DHCP'],
     }
 
 **Default**: ``[]``

@@ -18,7 +18,7 @@ Specifically:
 
 **Non-breaking changes**
 
-* New optional setting, ``CASE_WHITELIST``, was added, allowing projects to exclude keys from case checking on a general basis.
+* New optional setting, ``CASE_PASSLIST``, was added, allowing projects to exclude keys from case checking on a general basis.
 * Excess schema iterations have been eliminated, and code made more consise by consolidating case checking, response checking, and response data checking into a single loop.
 * Shared schema loading logic consolidated in a schema loading base class, making it easy to create new loading classes for currently unsupported swagger implementations. This also allows us to unify the API for the ``validate_response`` function, rather than having separate import paths per implementation.
 * Upgraded demo project from Django 2.2.6 to Django 3.1

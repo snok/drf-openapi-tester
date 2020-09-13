@@ -27,7 +27,7 @@ class SwaggerTesterSettings(object):
         # Defaulted package settings
         self.CASE_TESTER: Callable = lambda: None
         self.CAMEL_CASE_PARSER = False
-        self.CASE_WHITELIST: List[str] = []
+        self.CASE_PASSLIST: List[str] = []
 
         # Overwrite defaults
         for setting, value in swagger_tester_settings.items():
@@ -128,12 +128,12 @@ class SwaggerTesterSettings(object):
         """
         Validates the case whitelist as a list of strings.
         """
-        if self.CASE_WHITELIST is None:
-            self.CASE_WHITELIST = []
-        if not isinstance(self.CASE_WHITELIST, list):
-            raise ImproperlyConfigured('The CASE_WHITELIST setting needs to be a list of strings')
-        elif any(not isinstance(item, str) for item in self.CASE_WHITELIST):
-            raise ImproperlyConfigured('The CASE_WHITELIST setting list can only contain strings')
+        if self.CASE_PASSLIST is None:
+            self.CASE_PASSLIST = []
+        if not isinstance(self.CASE_PASSLIST, list):
+            raise ImproperlyConfigured('The CASE_PASSLIST setting needs to be a list of strings')
+        elif any(not isinstance(item, str) for item in self.CASE_PASSLIST):
+            raise ImproperlyConfigured('The CASE_PASSLIST setting list can only contain strings')
 
 
 settings = SwaggerTesterSettings()

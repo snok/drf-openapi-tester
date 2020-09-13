@@ -46,9 +46,9 @@ def test_valid_case_whitelist(monkeypatch) -> None:
     The case whitelist should accept a list of strings or None (which defaults to an empty list)
     """
     for item, expected in [(None, []), (['IP', 'DHCP'], ['IP', 'DHCP'])]:
-        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_WHITELIST', item))
+        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_PASSLIST', item))
         settings = SwaggerTesterSettings()
-        assert settings.CASE_WHITELIST == expected
+        assert settings.CASE_PASSLIST == expected
 
 
 def test_invalid_case_whitelist(monkeypatch) -> None:
@@ -56,8 +56,8 @@ def test_invalid_case_whitelist(monkeypatch) -> None:
     The case whitelist validation should reject non-lists of strings
     """
     for item in [{'IP': None, 'DHCP': 2}, 2, -2]:
-        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_WHITELIST', item))
-        with pytest.raises(ImproperlyConfigured, match='The CASE_WHITELIST setting needs to be a list of strings'):
+        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_PASSLIST', item))
+        with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting needs to be a list of strings'):
             SwaggerTesterSettings()
 
 
@@ -65,6 +65,6 @@ def test_case_whitelist_contains_non_str(monkeypatch) -> None:
     """
     The case whitelist validation should reject non-lists of strings
     """
-    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_WHITELIST', ['item', 2]))
-    with pytest.raises(ImproperlyConfigured, match='The CASE_WHITELIST setting list can only contain strings'):
+    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_PASSLIST', ['item', 2]))
+    with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting list can only contain strings'):
         SwaggerTesterSettings()
