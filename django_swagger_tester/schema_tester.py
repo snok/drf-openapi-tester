@@ -19,54 +19,41 @@ logger = logging.getLogger('django_swagger_tester')
 class SchemaTester:
     def __init__(self, schema: dict, data: Any, case_tester: Callable, origin: str, **kwargs) -> None:
         """
-        Iterates through a schema and an actual API response/request to check that they match at every level.
+        Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
 
         :param schema: Response/request OpenAPI schema section
         :param data: API response/request data
-        raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
+        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
+        from django_swagger_tester.configuration import settings
+
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
-        self.camel_case_parser: bool = kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else False
+        self.ignored_keys += settings.CASE_WHITELIST
+        self.camel_case_parser: bool = (
+            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.CAMEL_CASE_PARSER
+        )
         self.origin = origin
 
         if '$ref' in str(schema):
-            # `$ref`s should be replaced with values before the schema is passed here
+            # `$ref`s should be replaced in the schema before passed to the class
             raise ImproperlyConfigured(
                 'Received invalid schema. You must replace $ref sections before passing a schema for validation.'
             )
 
         if read_type(schema) == 'object':
             logger.debug('init --> dict')
-            self.test_dict(
-                schema=schema,
-                data=data,
-                reference='init',
-            )
+            self.test_dict(schema=schema, data=data, reference='init')
         elif read_type(schema) == 'array':
             logger.debug('init --> list')
-            self.test_list(
-                schema=schema,
-                data=data,
-                reference='init',
-            )
-        # this should always be third, as list_types() also contains `array` and `object`
-        elif read_type(schema) in list_types():
+            self.test_list(schema=schema, data=data, reference='init')
+        elif read_type(schema) in list_types(cut=['array', 'object']):
             logger.debug('init --> item')
-            self.test_item(
-                schema=schema,
-                data=data,
-                reference='init',
-            )
+            self.test_item(schema=schema, data=data, reference='init')
 
-    def test_dict(
-        self,
-        schema: dict,
-        data: dict,
-        reference: str,
-    ) -> None:
+    def test_dict(self, schema: dict, data: dict, reference: str) -> None:
         """
-        Verifies that a schema dict matches a dict.
+        Verifies that an OpenAPI schema object matches a given dict.
 
         :param schema: OpenAPI schema
         :param data: Response/request data
@@ -168,34 +155,17 @@ class SchemaTester:
 
             if read_type(schema_value) == 'object':
                 logger.debug('test_dict --> test_dict')
-                self.test_dict(
-                    schema=schema_value,
-                    data=response_value,
-                    reference=f'{reference}.dict:key:{schema_key}',
-                )
+                self.test_dict(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
             elif read_type(schema_value) == 'array':
                 logger.debug('test_dict --> test_list')
-                self.test_list(
-                    schema=schema_value,
-                    data=response_value,
-                    reference=f'{reference}.dict:key:{schema_key}',
-                )
+                self.test_list(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
             elif read_type(schema_value) in list_types(cut=['array', 'object']):
                 logger.debug('test_dict --> test_item')
-                self.test_item(
-                    schema=schema_value,
-                    data=response_value,
-                    reference=f'{reference}.dict:key:{schema_key}',
-                )
+                self.test_item(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
 
-    def test_list(
-        self,
-        schema: dict,
-        data: Union[list, dict],
-        reference: str,
-    ) -> None:
+    def test_list(self, schema: dict, data: Union[list, dict], reference: str) -> None:
         """
-        Verifies that a schema array matches a response list.
+        Verifies that an OpenAPI schema array matches a given list.
 
         :param schema: OpenAPI schema
         :param data: Response data
@@ -241,36 +211,20 @@ class SchemaTester:
         for datum in data:
             if read_type(item) == 'object':
                 logger.debug('test_list --> test_dict')
-                self.test_dict(
-                    schema=item,
-                    data=datum,
-                    reference=f'{reference}.list',
-                )
+                self.test_dict(schema=item, data=datum, reference=f'{reference}.list')
 
             elif read_type(item) == 'array':
                 logger.debug('test_list --> test_dict')
-                self.test_list(
-                    schema=item,
-                    data=datum,
-                    reference=f'{reference}.list',
-                )
+                self.test_list(schema=item, data=datum, reference=f'{reference}.list')
 
-            elif read_type(item) in list_types():
+            elif read_type(item) in list_types(cut=['array', 'object']):
                 logger.debug('test_list --> test_item')
-                self.test_item(
-                    schema=item,
-                    data=datum,
-                    reference=f'{reference}.list',
-                )
+                self.test_item(schema=item, data=datum, reference=f'{reference}.list')
 
     @staticmethod
-    def test_item(
-        schema: dict,
-        data: Any,
-        reference: str,
-    ) -> None:
+    def test_item(schema: dict, data: Any, reference: str) -> None:
         """
-        Verifies that a response value matches the example value in the schema.
+        Verifies that an OpenAPI schema item matches a given item.
 
         :param schema: OpenAPI schema
         :param data: response data item
@@ -279,8 +233,7 @@ class SchemaTester:
         """
         checks = {
             'boolean': {
-                'check': not isinstance(data, bool)
-                and not (isinstance(data, str) and data.lower() in ['true', 'false']),
+                'check': not isinstance(data, bool) and not (isinstance(data, str) and data.lower() in ['true', 'false']),
                 'type': "<class 'bool'>",
             },
             'string': {'check': not isinstance(data, str), 'type': "<class 'str'>"},
@@ -290,7 +243,7 @@ class SchemaTester:
         }
         response_hint = ''
         if data is None and is_nullable(schema):
-            pass
+            pass  # this is fine
         elif data is None and not is_nullable(schema):
             response_hint += (
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
