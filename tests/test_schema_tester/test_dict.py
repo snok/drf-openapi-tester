@@ -19,9 +19,7 @@ schema = {
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
-tester = SchemaTester(
-    schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response'
-)
+tester = SchemaTester(schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response')
 
 
 def test_valid_dict() -> None:
@@ -62,6 +60,8 @@ def test_nullable() -> None:
             }
         ],
     }
+
+    tester.camel_case_parser = False
 
     # Test nullable values pass OK
     assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
@@ -185,7 +185,5 @@ def test_bad_type():
         },
     }
     custom_data = {'list': []}
-    with pytest.raises(
-        Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'
-    ):
+    with pytest.raises(Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'):
         assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None
