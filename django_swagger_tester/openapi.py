@@ -1,12 +1,3 @@
-"""
-This file should contain a collection of schema-parsing utility functions.
-
-While this package should never become an OpenAPI schema parser,
-it is useful for us to apply the rules of the schema specification
-in case we're ever dealt with an incorrect schema.
-
-Instead of raising unhandled errors, it is useful for us to raise appropriate exceptions.
-"""
 import logging
 from typing import List, Optional
 
@@ -79,9 +70,7 @@ def read_additional_properties(schema_object: dict) -> dict:
     :raises: django_swagger_tester.exceptions.OpenAPISchemaError
     """
     if 'additionalProperties' not in schema_object:
-        raise OpenAPISchemaError(
-            f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}'
-        )
+        raise OpenAPISchemaError(f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}')
     return schema_object['additionalProperties']
 
 

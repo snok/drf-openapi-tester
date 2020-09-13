@@ -11,7 +11,7 @@ logger = logging.getLogger('django_swagger_tester')
 # noinspection PyAttributeOutsideInit
 class SwaggerTesterSettings(object):
     """
-    Loads and validates the packages Django settings.
+    Loads and validates the django_swagger_tester settings.
     """
 
     def __init__(self) -> None:
@@ -112,9 +112,7 @@ class SwaggerTesterSettings(object):
 
         addon = '. Please pass a loader class from django_swagger_tester.schema_loaders.'
         if self.SCHEMA_LOADER is None:
-            raise ImproperlyConfigured(
-                'SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon
-            )
+            raise ImproperlyConfigured('SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon)
 
         if not inspect.isclass(self.SCHEMA_LOADER):
             raise ImproperlyConfigured('SCHEMA_LOADER must be a class' + addon)
