@@ -9,16 +9,20 @@ Changelog
 
 **Breaking changes**
 
+Version 2.0.0 introduces new required package settings, which means existing implementations will need to set up their ``SWAGGER_TESTER`` settings again before package functions will run.
+
+Specifically:
+
 * New required setting, ``SCHEMA_LOADER``, was added.
 * Existing setting, ``CASE``, was replaced by new setting, ``CASE_TESTER``, which now takes a callable case validation function rather than a string.
 
-**General improvements**
+**Non-breaking changes**
 
 * New optional setting, ``CASE_WHITELIST``, was added, allowing projects to exclude keys from case checking on a general basis.
 * Excess schema iterations have been eliminated, and code made more consise by consolidating case checking, response checking, and response data checking into a single loop.
 * Shared schema loading logic consolidated in a schema loading base class, making it easy to create new loading classes for currently unsupported swagger implementations. This also allows us to unify the API for the ``validate_response`` function, rather than having separate import paths per implementation.
 * Upgraded demo project from Django 2.2.6 to Django 3.1
-* Improved test suite, test coverage, and fixed a number of minor bugs
+* Improved test suite, test coverage, and fixed a number of minor bugs from v1
 
 1.0.4 2020-07-14
 ----------------
