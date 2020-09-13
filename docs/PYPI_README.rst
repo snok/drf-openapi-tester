@@ -278,6 +278,39 @@ It is also possible to test more than a single response at the time:
         response = client.get(...)
         validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
 
+Errors
+~~~~~~
+
+When found, errors will be raised in the following format:
+
+.. code-block:: shell
+
+    django_swagger_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+
+    Summary
+    -------------------------------------------------------------------------------------------
+
+    Error:      The following properties seem to be missing from your response body: length, width.
+
+    Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
+    Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
+
+    Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
+    Sequence:   init.list
+
+    -------------------------------------------------------------------------------------------
+
+    * If you need more details: set `verbose=True`
+
+``Expected`` describes the response data, and ``Received`` describes the schema. In this example, the response data is
+missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or
+that the OpenAPI schema should be corrected.
+
+Some errors will include hints to help you understand what actions to take, to rectify the error.
+
+Finally, all errors will include a ``Sequence`` string indicating how the response tester has iterated through the orignal data structure, before finding an error.
+
+
 Input Validation
 ================
 
