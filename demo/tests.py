@@ -21,14 +21,11 @@ class APITestBase(APITestCase):
         :return: response
         """
         self._authenticate()
-        response = self.client.get(path, headers={'Content-Type': 'application/json'})
-        return response
+        return self.client.get(path, headers={'Content-Type': 'application/json'})
 
 
 class TestCorrectlyDocumentedCars(APITestBase):
     def setUp(self) -> None:
-        from django.contrib.auth.models import User
-
         user, _ = User.objects.update_or_create(username='test_user')
         self.client.force_authenticate(user=user)
         self.path = '/api/v1/cars'
