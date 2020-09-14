@@ -8,7 +8,7 @@ from ..swagger.auto_schemas import get_trucks_auto_schema, get_other_trucks_auto
 class GoodTrucks(APIView):
     @staticmethod
     @get_trucks_auto_schema()
-    def get(request: Request) -> Response:
+    def get(request: Request, version: int) -> Response:
         trucks = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
@@ -32,7 +32,7 @@ class GoodTrucks(APIView):
 class BadTrucks(APIView):
     @staticmethod
     @get_other_trucks_auto_schema()
-    def get(request: Request) -> Response:
+    def get(request: Request, version: int) -> Response:
         trucks = [
             {
                 'name': 'Saab',
@@ -45,13 +45,13 @@ class BadTrucks(APIView):
         return Response(trucks, 200)
 
     @staticmethod
-    def put(request: Request) -> Response:
+    def put(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def post(request: Request) -> Response:
+    def post(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def delete(request: Request) -> Response:
+    def delete(request: Request, version: int) -> Response:
         pass

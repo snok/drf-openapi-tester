@@ -27,7 +27,7 @@ def test_successful_resolve_despite_missing_leading_slash():
 
 
 def test_resolve_when_missing_trailing_slash():
-    assert resolve_path('/api/v1/snake-case')[0] == '/api/v1/snake-case/'
+    assert resolve_path('/api/v1/snake-case')[0] == '/api/{version}/snake-case/'
 
 
 def test_successful_resolve_despite_missing_trailing_slash():

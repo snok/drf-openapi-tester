@@ -4,6 +4,7 @@ import pytest
 
 from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.loaders import _LoaderBase
+from tests.utils import MockRoute
 
 request_body = {
     'required': ['testParameter'],
@@ -15,9 +16,7 @@ simple_request_body_schema = {
     'paths': {
         'test-endpoint': {
             'post': {
-                'parameters': [
-                    {'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}
-                ],
+                'parameters': [{'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}],
                 'tags': ['v1'],
             },
             'parameters': [],
@@ -27,9 +26,7 @@ simple_request_body_schema = {
         'Test': {
             'required': ['testParameter'],
             'type': 'object',
-            'properties': {
-                'testParameter': {'title': 'Test parameter', 'type': 'string', 'maxLength': 10, 'minLength': 1}
-            },
+            'properties': {'testParameter': {'title': 'Test parameter', 'type': 'string', 'maxLength': 10, 'minLength': 1}},
             'example': {'testParameter': 'test'},
         }
     },
@@ -42,7 +39,7 @@ def test_successful_load(monkeypatch):
     """
     base = _LoaderBase()
     base.set_schema(simple_request_body_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     assert base.get_request_body_schema_section(route='test-endpoint', method='post') == request_body
 
 
@@ -51,10 +48,8 @@ def test_fail_indexing_paths(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
-    with pytest.raises(
-        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'
-    ):
+    monkeypatch.setattr(base, 'get_route', MockRoute)
+    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'):
         base.get_request_body_schema_section(route='test-endpoint', method='post')
 
 
@@ -63,7 +58,7 @@ def test_fail_indexing_route(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `test-endpoint`'
     ):
@@ -77,7 +72,7 @@ def test_fail_indexing_route_with_helper_text(monkeypatch):
     bad_schema['paths']['other-endpoint'] = {}
     bad_schema['paths']['third-endpoint'] = {}
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='For debugging purposes, other valid routes include: other-endpoint, third-endpoint',
@@ -90,17 +85,15 @@ def test_fail_indexing_method(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']['post']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
-    with pytest.raises(
-        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `post`.'
-    ):
+    monkeypatch.setattr(base, 'get_route', MockRoute)
+    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `post`.'):
         base.get_request_body_schema_section(route='test-endpoint', method='post')
 
 
 def test_fail_indexing_method_with_helper_text(monkeypatch):
     base = _LoaderBase()
     base.set_schema(simple_request_body_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(UndocumentedSchemaSectionError, match='Available methods include: POST.'):
         base.get_request_body_schema_section(route='test-endpoint', method='put')
 
@@ -110,7 +103,7 @@ def test_fail_indexing_parameters(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']['post']['parameters']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `parameters`.'
     ):
@@ -122,7 +115,7 @@ def test_fail_getting_parameter(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     bad_schema['paths']['test-endpoint']['post']['parameters'] = []
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='Request body does not seem to be documented. '
@@ -136,7 +129,7 @@ def test_no_request_body(monkeypatch):
     bad_schema = deepcopy(simple_request_body_schema)
     bad_schema['paths']['test-endpoint']['post']['parameters'][0]['in'] = 'path'
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='There is no in-body request body documented for route `test-endpoint` and method `post`',
@@ -149,7 +142,7 @@ def test_get_request_body_example(monkeypatch):
     Makes sure we're able to generate an example value for the documented request body, with or without example values.
     """
     base = _LoaderBase()
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     base.set_schema(simple_request_body_schema)
     assert base.get_request_body_example(route='test-endpoint', method='post') == {'testParameter': 'test'}
 

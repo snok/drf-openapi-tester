@@ -10,5 +10,5 @@ class SnakeCasedResponse(APIView):
     renderer_classes = [JSONRenderer]
 
     @get_snake_cased_response()
-    def get(self, request: Request, **kwargs) -> Response:
+    def get(self, request: Request, version: int, **kwargs) -> Response:
         return Response({'this_is_snake_case': 'test'}, 200)

@@ -8,6 +8,7 @@ from demo import settings
 from django_swagger_tester.configuration import settings as _settings
 from django_swagger_tester.loaders import _LoaderBase
 from tests.types import bool_type, integer_type, number_type, string_type
+from tests.utils import MockRoute
 
 
 def loader(path):
@@ -40,7 +41,7 @@ def test_create_dict_from_schema(monkeypatch):
         'group': 'string',
         'original_group': 'string',
     }
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     response_schema = base.get_response_schema_section(route='/articles/', method='POST', status_code=201)
     assert base.create_dict_from_schema(response_schema) == expected
 
@@ -60,9 +61,7 @@ def test_iterate_schema_dict(caplog):
 
     i = {
         'type': 'object',
-        'properties': {
-            'this is a': {'type': 'object', 'properties': {'nested': {'type': 'string', 'example': 'dict'}}}
-        },
+        'properties': {'this is a': {'type': 'object', 'properties': {'nested': {'type': 'string', 'example': 'dict'}}}},
     }
     assert base._iterate_schema_dict(i) == {'this is a': {'nested': 'dict'}}
 

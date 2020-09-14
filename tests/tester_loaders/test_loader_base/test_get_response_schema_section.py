@@ -4,6 +4,7 @@ import pytest
 
 from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.loaders import _LoaderBase
+from tests.utils import MockRoute
 
 response_200 = {
     'description': '',
@@ -30,9 +31,7 @@ response_400 = {
         'properties': {'error': {'description': 'Error response', 'type': 'string', 'example': 'Bad input'}},
     },
 }
-simple_response_schema = {
-    'paths': {'test-endpoint': {'get': {'responses': {'200': response_200, '400': response_400}}}}
-}
+simple_response_schema = {'paths': {'test-endpoint': {'get': {'responses': {'200': response_200, '400': response_400}}}}}
 
 
 def test_succesful_load(monkeypatch):
@@ -41,17 +40,10 @@ def test_succesful_load(monkeypatch):
     """
     base = _LoaderBase()
     base.set_schema(simple_response_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
-    assert (
-        base.get_response_schema_section(route='test-endpoint', method='get', status_code=200) == response_200['schema']
-    )
-    assert (
-        base.get_response_schema_section(route='test-endpoint', method='get', status_code='200')
-        == response_200['schema']
-    )
-    assert (
-        base.get_response_schema_section(route='test-endpoint', method='get', status_code=400) == response_400['schema']
-    )
+    monkeypatch.setattr(base, 'get_route', MockRoute)
+    assert base.get_response_schema_section(route='test-endpoint', method='get', status_code=200) == response_200['schema']
+    assert base.get_response_schema_section(route='test-endpoint', method='get', status_code='200') == response_200['schema']
+    assert base.get_response_schema_section(route='test-endpoint', method='get', status_code=400) == response_400['schema']
 
 
 def test_failed_index_paths(monkeypatch):
@@ -62,10 +54,8 @@ def test_failed_index_paths(monkeypatch):
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
-    with pytest.raises(
-        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'
-    ):
+    monkeypatch.setattr(base, 'get_route', MockRoute)
+    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'):
         base.get_response_schema_section(route='test-endpoint', method='get', status_code=200)
 
 
@@ -77,7 +67,7 @@ def test_failed_index_route(monkeypatch):
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `test-endpoint`'
     ):
@@ -93,7 +83,7 @@ def test_failed_index_route_with_helper_text(monkeypatch):
     del bad_schema['paths']['test-endpoint']
     bad_schema['paths']['other-endpoint'] = {}
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='For debugging purposes, other valid routes include: other-endpoint'
     ):
@@ -109,15 +99,13 @@ def test_failed_index_route_with_helper_text_and_middleware_warning(monkeypatch)
     del bad_schema['paths']['test-endpoint']
     bad_schema['paths']['other-endpoint'] = {}
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='To skip validation for this route you can add `\^test-endpoint\$` to your VALIDATION_EXEMPT_URLS setting '
         'list in your SWAGGER_TESTER.MIDDLEWARE settings.',
     ):
-        base.get_response_schema_section(
-            route='test-endpoint', method='get', status_code=200, skip_validation_warning=True
-        )
+        base.get_response_schema_section(route='test-endpoint', method='get', status_code=200, skip_validation_warning=True)
 
 
 def test_failed_index_method(monkeypatch):
@@ -128,10 +116,8 @@ def test_failed_index_method(monkeypatch):
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
-    with pytest.raises(
-        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `get`'
-    ):
+    monkeypatch.setattr(base, 'get_route', MockRoute)
+    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `get`'):
         base.get_response_schema_section(route='test-endpoint', method='get', status_code=200)
 
 
@@ -145,7 +131,7 @@ def test_failed_index_method_with_helper_text(monkeypatch):
     bad_schema['paths']['test-endpoint']['post'] = {}
     bad_schema['paths']['test-endpoint']['put'] = {}
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(UndocumentedSchemaSectionError, match='Available methods include: POST, PUT.'):
         base.get_response_schema_section(route='test-endpoint', method='get', status_code=200)
 
@@ -158,7 +144,7 @@ def test_failed_index_responses(monkeypatch):
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']['responses']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `responses`'
     ):
@@ -174,7 +160,7 @@ def test_failed_index_status(monkeypatch):
     del bad_schema['paths']['test-endpoint']['get']['responses']['200']
     del bad_schema['paths']['test-endpoint']['get']['responses']['400']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='Unsuccessfully tried to index the OpenAPI schema by `200`. Is the `200` response documented?',
@@ -190,7 +176,7 @@ def test_failed_index_status_with_helper_text(monkeypatch):
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']['responses']['200']
     base.set_schema(bad_schema)
-    monkeypatch.setattr(base, 'get_route', lambda x: x)
+    monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Documented responses include: 400.  Is the `200` response documented?'
     ):
