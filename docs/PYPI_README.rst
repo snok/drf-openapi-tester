@@ -17,8 +17,8 @@ Django Swagger Tester
     :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/sondrelg/django-swagger-tester
+.. image:: https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/snok/django-swagger-tester
 
 |
 
@@ -279,7 +279,7 @@ It is also possible to test more than a single response at the time:
         validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
 
 Errors
-~~~~~~
+------
 
 When found, errors will be raised in the following format:
 
