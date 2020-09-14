@@ -19,8 +19,8 @@
     <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
         <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
     </a>
-    <a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
-        <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
+    <a href="https://codecov.io/gh/snok/django-swagger-tester">
+        <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
     <a href="https://pypi.org/project/django-swagger-tester/">
         <img src="https://img.shields.io/pypi/pyversions/django-swagger-tester.svg" alt="Supported Python versions">
