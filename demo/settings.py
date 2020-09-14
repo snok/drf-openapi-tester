@@ -100,6 +100,8 @@ SWAGGER_SETTINGS = {
 }
 
 REST_FRAMEWORK = {
+    'DEFAULT_VERSION': 'v1',
+    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
     'DEFAULT_RENDERER_CLASSES': (
         'djangorestframework_camel_case.render.CamelCaseJSONRenderer',

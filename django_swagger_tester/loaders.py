@@ -9,6 +9,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import list_types, read_properties
+from django_swagger_tester.utils import Route
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -60,7 +61,7 @@ class _LoaderBase:
         )
         self.original_schema = schema
 
-    def get_route(self, route: str) -> str:
+    def get_route(self, route: str) -> Route:
         """
         Returns the appropriate endpoint route.
 
@@ -69,7 +70,8 @@ class _LoaderBase:
         """
         from django_swagger_tester.utils import resolve_path
 
-        return resolve_path(route)[0]
+        deparameterized_path, resolved_path = resolve_path(route)
+        return Route(deparameterized_path=deparameterized_path, resolved_path=resolved_path)
 
     def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
         """
@@ -85,7 +87,7 @@ class _LoaderBase:
         self.validate_method(method)
         self.validate_string(route, 'route')
         self.validate_status_code(status_code)
-        schema_route = self.get_route(route)
+        route_object = self.get_route(route)
         schema = self.get_schema()
 
         # Index by paths
@@ -101,7 +103,16 @@ class _LoaderBase:
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
                 f'to your VALIDATION_EXEMPT_URLS setting list in your SWAGGER_TESTER.MIDDLEWARE settings.'
             )
-        route_schema = index_schema(schema=paths_schema, variable=schema_route, error_addon=route_error)
+
+        error = None
+        for _ in range(len(route_object.parameters) + 1):
+            try:
+                route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
+                break
+            except UndocumentedSchemaSectionError as e:
+                error = e
+            except IndexError:
+                raise error  # type: ignore
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
@@ -138,7 +149,7 @@ class _LoaderBase:
 
         self.validate_method(method)
         self.validate_string(route, 'route')
-        route = self.get_route(route)
+        route = self.get_route(route).get_path()
         schema = self.get_schema()
 
         paths_schema = index_schema(schema=schema, variable='paths')
@@ -377,7 +388,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
         return self.schema_generator.determine_path_prefix(get_endpoint_paths())
 
-    def get_route(self, route: str) -> str:
+    def get_route(self, route: str) -> Route:
         """
         Returns a url that matches the urls found in a drf_yasg-generated schema.
 
@@ -385,10 +396,12 @@ class DrfYasgSchemaLoader(_LoaderBase):
         """
         from django_swagger_tester.utils import resolve_path
 
-        resolved_route = resolve_path(route)[0]
+        deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
+        if path_prefix == '/':
+            path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return resolved_route[len(path_prefix) :]
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class StaticSchemaLoader(_LoaderBase):

@@ -7,9 +7,7 @@ simple_ref_schema = {
     'paths': {
         'test-endpoint': {
             'post': {
-                'parameters': [
-                    {'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}
-                ]
+                'parameters': [{'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}]
             }
         }
     },
@@ -31,9 +29,7 @@ simple_ref_replaced_parameters = {
     'schema': {
         'required': ['testParameter'],
         'type': 'object',
-        'properties': {
-            'testParameter': {'title': 'This is a test ref', 'type': 'string', 'maxLength': 10, 'minLength': 1}
-        },
+        'properties': {'testParameter': {'title': 'This is a test ref', 'type': 'string', 'maxLength': 10, 'minLength': 1}},
         'example': {'testParameter': 'test value'},
     },
 }
@@ -78,11 +74,11 @@ def test_call_validation():
 
 def test_get_route():
     base = _LoaderBase()
-    assert base.get_route('/api/v1/items/') == '/api/v1/items'
-    assert base.get_route('/api/v1/items') == '/api/v1/items'
-    assert base.get_route('api/v1/items/') == '/api/v1/items'
-    assert base.get_route('api/v1/items') == '/api/v1/items'
-    assert base.get_route('/api/v1/snake-case/') == '/api/v1/snake-case/'
-    assert base.get_route('/api/v1/snake-case') == '/api/v1/snake-case/'
-    assert base.get_route('api/v1/snake-case/') == '/api/v1/snake-case/'
-    assert base.get_route('api/v1/snake-case') == '/api/v1/snake-case/'
+    assert base.get_route('/api/v1/items/').get_path() == '/api/{version}/items'
+    assert base.get_route('/api/v1/items').get_path() == '/api/{version}/items'
+    assert base.get_route('api/v1/items/').get_path() == '/api/{version}/items'
+    assert base.get_route('api/v1/items').get_path() == '/api/{version}/items'
+    assert base.get_route('/api/v1/snake-case/').get_path() == '/api/{version}/snake-case/'
+    assert base.get_route('/api/v1/snake-case').get_path() == '/api/{version}/snake-case/'
+    assert base.get_route('api/v1/snake-case/').get_path() == '/api/{version}/snake-case/'
+    assert base.get_route('api/v1/snake-case').get_path() == '/api/{version}/snake-case/'

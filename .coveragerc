@@ -9,6 +9,8 @@ source = django_swagger_tester/*
 
 omit =
     demo/*
+    django_swagger_tester/static.py,
+    django_swagger_tester/drf_yasg.py,
     docs/*
     tests/*
     */python38-32/*

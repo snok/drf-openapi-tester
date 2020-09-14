@@ -12,7 +12,7 @@ logger = logging.getLogger('django_swagger_tester')
 class GoodCars(APIView):
     @staticmethod
     @get_cars_auto_schema()
-    def get(request: Request, **kwargs) -> Response:
+    def get(request: Request, version: int, **kwargs) -> Response:
         cars = [
             {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
             {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
@@ -21,22 +21,22 @@ class GoodCars(APIView):
         return Response(cars, 200)
 
     @staticmethod
-    def put(request: Request) -> Response:
+    def put(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def post(request: Request) -> Response:
+    def post(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def delete(request: Request) -> Response:
+    def delete(request: Request, version: int) -> Response:
         pass
 
 
 class BadCars(APIView):
     @staticmethod
     @get_other_cars_auto_schema()
-    def get(request: Request, **kwargs) -> Response:
+    def get(request: Request, version: int, **kwargs) -> Response:
         cars = [
             {
                 'name': 'Saab',
@@ -49,13 +49,13 @@ class BadCars(APIView):
         return Response(cars, 200)
 
     @staticmethod
-    def put(request: Request) -> Response:
+    def put(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def post(request: Request) -> Response:
+    def post(request: Request, version: int) -> Response:
         pass
 
     @staticmethod
-    def delete(request: Request) -> Response:
+    def delete(request: Request, version: int) -> Response:
         pass

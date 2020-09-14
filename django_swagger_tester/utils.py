@@ -1,12 +1,13 @@
 import difflib
 import json
 import logging
+import re
 import sys
 from typing import Any, List, Optional, Tuple
 
+from django.urls import URLResolver
 from requests import Response
 
-from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 
 logger = logging.getLogger('django_swagger_tester')
@@ -38,6 +39,8 @@ def format_response_tester_error(
         addon = '\n* If you need more details: set `verbose=True`'
 
     # Construct example dict/list from schema - this is useful to display comparable items
+    from django_swagger_tester.configuration import settings
+
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
 
     def get_dotted_line(values: list) -> str:
@@ -178,6 +181,64 @@ def resolve_path(endpoint_path: str) -> tuple:
                 f'value, and not the parameter pattern.'
             )
         raise ValueError(f'Could not resolve path `{endpoint_path}`')
+
+
+class Route:
+    def __init__(self, deparameterized_path: str, resolved_path: URLResolver) -> None:
+        self.deparameterized_path = deparameterized_path
+        self.parameterized_path = deparameterized_path
+        self.resolved_path = resolved_path
+
+        # Used to create a next() type logic
+        self.counter = 0
+        self.parameters = self.get_parameters(self.deparameterized_path)
+
+    @staticmethod
+    def get_parameters(path: str) -> List[str]:
+        """
+        Returns a count of parameters in a string.
+        """
+        pattern = re.compile(r'(\{[\w]+\})')
+        return list(re.findall(pattern, path))
+
+    def get_path(self) -> str:
+        """
+        Given an original deparameterized path looking like this:
+
+            /api/{version}/{parameter1}/{parameter2}
+
+        This should return the path, with one parameter substituted every time it's called, until there are no more
+        parameters to insert. Like this:
+
+        > route.get_path()
+        >> /api/{version}/{parameter1}/{parameter2}
+
+        > route.get_path()
+        >> /api/v1/{parameter1}/{parameter2}
+
+        > route.get_path()
+        >> /api/v1/cars/{parameter2}
+
+        > route.get_path()
+        >> /api/v1/cars/correct
+
+        > route.get_path()
+        >> IndexError('No more parameters to insert')
+        """
+        if self.counter == 0:
+            self.counter += 1
+            return self.parameterized_path
+        if self.counter > len(self.parameters):
+            raise IndexError('No more parameters to insert')
+
+        path = self.parameterized_path
+        parameter = self.parameters[self.counter - 1]
+        parameter_name = parameter.replace('{', '').replace('}', '')
+        starting_index = path.find(parameter)
+        path = f'{path[:starting_index]}{self.resolved_path.kwargs[parameter_name]}{path[starting_index + len(parameter):]}'
+        self.parameterized_path = path
+        self.counter += 1
+        return path
 
 
 def type_placeholder_value(_type: str) -> Any:
