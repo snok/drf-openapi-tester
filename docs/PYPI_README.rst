@@ -17,8 +17,8 @@ Django Swagger Tester
     :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/sondrelg/django-swagger-tester
+.. image:: https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/snok/django-swagger-tester
 
 |
 
