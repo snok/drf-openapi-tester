@@ -66,7 +66,7 @@ The package has three main features:
 
 -  `Testing input documentation`_
 
--  `Ensuring your docs comply with a single parameter naming standard`_.
+-  `Ensuring your docs comply with a single parameter naming standard (case type)`_.
 
    Supported naming standards include ``camelCase``, ``snake_case``,
    ``kebab-case``, and ``PascalCase``.
@@ -75,10 +75,11 @@ The package has three main features:
 Implementations
 ---------------
 
-We currently support testing of:
+This package currently supports:
 
-- Dynamically rendered Swagger docs, using `drf_yasg`_
-- All implementations which render Swagger docs from a schema file (yaml or json)
+- Testing of dynamically rendered OpenAPI schemas using using `drf_yasg`_
+- Testing of any implementation which generates a static schema yaml or json file (e.g., like `DRF`_)
+
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
 
@@ -97,6 +98,7 @@ Contents
     changelog
 
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
+.. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
 .. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking

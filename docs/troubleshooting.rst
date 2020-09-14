@@ -31,7 +31,7 @@ Start ``manage.py runserver``  with the ``-Wd`` parameter to enable warnings tha
 
 Use the demo project as a reference
 -----------------------------------
-There is a simple demo project available in the ``demo_project`` folder. This can be considered a source of inspiration for something, though it's very minimal.
+There is a simple demo project available in the ``demo`` folder. This can be considered a source of inspiration for something, though it's very minimal.
 
 
 Ask for help

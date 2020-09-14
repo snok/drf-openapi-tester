@@ -37,14 +37,17 @@ ignore=
     # Line break before binary operator. W504 will be hit when this is excluded.
     W503
 
+    # Missing type annotation for *args
+    TYP002
+
 exclude =
     .git,
     .idea,
     __pycache__,
-    demo_project/*,
+    demo/*,
     tests/*,
     venv,
     manage.py,
 
 
-max-complexity = 15
+max-complexity = 16

@@ -56,7 +56,7 @@ The package has three main features:
 
 -  `Testing input documentation`_
 
--  `Ensuring your docs comply with a single parameter naming standard`_.
+-  and `ensuring your docs comply with a single parameter naming standard (case type)`_.
 
    Supported naming standards include ``camelCase``, ``snake_case``,
    ``kebab-case``, and ``PascalCase``.
@@ -65,10 +65,11 @@ The package has three main features:
 Implementations
 ---------------
 
-We currently support testing of:
+This package currently supports:
 
-- Dynamically rendered Swagger docs, using `drf_yasg`_
-- All implementations which render Swagger docs from a schema file (yaml or json)
+- Testing of dynamically rendered OpenAPI schemas using using `drf_yasg`_
+- Testing of any implementation which generates a static schema yaml or json file (e.g., like `DRF`_)
+
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
 
@@ -87,33 +88,81 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, your first need to add a ``SWAGGER_TESTER``
-object to your ``settings.py``:
+To use Django Swagger Settings in your project, you first need to add a ``django_swagger_tester`` to your installed apps.
 
 .. code:: python
 
-   SWAGGER_TESTER = {
-       'CASE': 'camel case',
-       'PATH': BASE_DIR + '/openapi-schema.yml'  # not required for drf_yasg implementations
-   }
+    INSTALLED_APPS = [
+        ...
+        'django_swagger_tester',
+    ]
+
+Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your ``settings.py``:
+
+.. code:: python
+
+    from django_swagger_tester.loaders import StaticSchemaLoader
+    from django_swagger_tester.case_testers import is_camel_case
+
+    SWAGGER_TESTER = {
+        'SCHEMA_LOADER': StaticSchemaLoader,
+        'PATH': './static/openapi-schema.yml',
+        'CASE_TESTER': is_camel_case,
+        'CASE_PASSLIST': [],
+        'CAMEL_CASE_PARSER': False,
+    }
 
 Parameters
 ----------
 
-*CASE*
+*SCHEMA_LOADER*
+~~~~~~~~~~~~~~~
+
+The loader class you use is dictated by how your OpenAPI schema is generated. If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
+
+Loader classes can be imported from ``django_swagger_tester.loaders`` and currently include:
+
+- ``StaticSchemaLoader``
+- ``DrfYasgSchemaLoader``
+
+Example:
+
+.. code:: python
+
+    from django_swagger_tester.loaders import DrfYasgSchemaLoader
+
+    SWAGGER_TESTER = {
+        'SCHEMA_LOADER': DrfYasgSchemaLoader,
+    }
+
+
+*PATH*
 ~~~~~~
 
-The parameter naming standard you wish to enforce for your documentation.
+Path takes the file path of your OpenAPI schema file. this is only required if you're using the ``StaticSchemaLoader`` loader class.
 
-Needs to be one of the following:
+Example:
+
+.. code:: python
+
+  SWAGGER_TESTER = {
+      'PATH': BASE_DIR / '/openapi-schema.yml',
+  }
+
+*CASE_TESTER*
+~~~~~~~~~~~~~
+
+The callable passed for this input decide the naming standard you wish to enforce for your documentation.
+
+There are currently four supported options:
 
 -  ``camel case``
 -  ``snake case``
 -  ``pascal case``
 -  ``kebab case``
--  ``None``
+- or you can pass ``None`` to skip case validation completely
 
-Your OpenAPI schema will be assessed to make sure all parameter names
+Your OpenAPI schema will be tested to make sure all parameter names
 are correctly cased according to this preference. If you do not wish
 to enforce this check, you can specify ``None`` to skip this feature.
 
@@ -121,35 +170,36 @@ Example:
 
 .. code:: python
 
-  SWAGGER_TESTER = {
-      'CASE': 'snake case',
-  }
+    from django_swagger_tester.case_testers import is_camel_case
 
-**Default**: ``camel case``
+    SWAGGER_TESTER = {
+        'CASE_TESTER': is_camel_case,
+    }
 
-*PATH*
-~~~~~~
+**Default**: ``None``
 
-The path to your OpenAPI specification.
+*CASE_PASSLIST*
+~~~~~~~~~~~~~~~~
+
+List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
 
 Example:
 
 .. code:: python
 
-  SWAGGER_TESTER = {
-      'PATH': BASE_DIR + '/openapi-schema.yml',
-  }
+    from django_swagger_tester.case_testers import is_camel_case
 
-*This setting is not required if your swagger docs are generated.*
+    SWAGGER_TESTER = {
+        'CASE_PASSLIST': ['IP', 'DHCP'],
+    }
+
+**Default**: ``[]``
 
 *CAMEL_CASE_PARSER*
 ~~~~~~~~~~~~~~~~~~~
 
 Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
 ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
-
-By settings this to True, example values constructed in the ``validate_input`` function will be snake cased before it's passed
-to a serializer. See the `function docs <https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#the-validate-input-function>`_ for more info.
 
 Example:
 
@@ -159,98 +209,157 @@ Example:
       'CAMEL_CASE_PARSER': True,
   }
 
+**Default**: ``False``
+
 
 Response Validation
 ===================
 
-To verify that your API response documentation is correct, we test the
-generated documentation against actual API responses.
+To make sure your API response matches your documented response, the ``validate_response`` function compares the two at each level of depth.
 
 A pytest implementation might look like this:
 
 .. code:: python
 
-   from django_swagger_tester.drf_yasg import validate_response  # or replace drf_yasg with `static_schema`
+    from django_swagger_tester.testing import validate_response
 
+    def test_200_response_documentation(client):
+        route = 'api/v1/test/1'
+        response = client.get(route)
+        assert response.status_code == 200
+        assert response.json() == expected_response
 
-   def test_response_documentation(client):
-       response = client.get('api/v1/test/')
-
-       assert response.status_code == 200
-       assert response.json() == expected_response
-
-       # Test Swagger documentation
-       validate_response(response=response, method='GET', route='api/v1/test/')
+        # test swagger documentation
+        validate_response(response=response, method='GET', route=route)
 
 A Django-test implementation might look like this:
 
+.. code-block:: python
+
+    from django_swagger_tester.testing import validate_response
+
+    class MyApiTest(APITestCase):
+
+        path = '/api/v1/test/'
+
+        def setUp(self) -> None:
+            user, _ = User.objects.update_or_create(username='test_user')
+            self.client.force_authenticate(user=user)
+
+        def test_get_200(self) -> None:
+            response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
+            expected_response = [...]
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected_response)
+
+            # test swagger documentation
+            validate_response(response=response, method='GET', route=self.path)
+
+It is also possible to test more than a single response at the time:
+
 .. code:: python
 
-   class MyApiTest(APITestCase):
-
-       def setUp(self) -> None:
-           user, _ = User.objects.update_or_create(username='test_user')
-           self.client.force_authenticate(user=user)
-           self.path = '/api/v1/test/'
-
-       def test_get_200(self) -> None:
-           """
-           Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
-           """
-           response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
-           expected_response = [...]
-
-           self.assertEqual(response.status_code, 200)
-           self.assertEqual(response.json(), expected_response)
-
-           # Test Swagger documentation
-           validate_response(response=response, method='GET', route=self.path)
-
-You can also test more than a single response at the time:
-
-.. code:: python
-
-    def test_response_documentation(client):
+    def test_post_endpoint_responses(client):
         # 201 - Resource created
-        response = client.post('api/v1/test/', data=...)
-        validate_response(response=response, method='POST', route='api/v1/test/')
-
-        # 200 - Idempotency --> if an object exists, return it with a 200 without creating a new resource
-        response = client.post('api/v1/test/', data=...)
+        response = client.post(...)
         validate_response(response=response, method='POST', route='api/v1/test/')
 
         # 400 - Bad data
-        response = client.post('api/v1/test/', data=bad_data)
+        response = client.post(...)
         validate_response(response=response, method='POST', route='api/v1/test/')
+
+    def test_get_endpoint_responses(client):
+        # 200 - Fetch resource
+        response = client.get(...)
+        validate_response(response=response, method='GET', route='api/v1/test/<id>')
+
+        # 404 - Bad ID
+        response = client.get(...)
+        validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
+
+Errors
+~~~~~~
+
+When found, errors will be raised in the following format:
+
+.. code-block:: shell
+
+    django_swagger_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+
+    Summary
+    -------------------------------------------------------------------------------------------
+
+    Error:      The following properties seem to be missing from your response body: length, width.
+
+    Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
+    Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
+
+    Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
+    Sequence:   init.list
+
+    -------------------------------------------------------------------------------------------
+
+    * If you need more details: set `verbose=True`
+
+``Expected`` describes the response data, and ``Received`` describes the schema. In this example, the response data is
+missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or
+that the OpenAPI schema should be corrected.
+
+Some errors will include hints to help you understand what actions to take, to rectify the error.
+
+Finally, all errors will include a ``Sequence`` string indicating how the response tester has iterated through the orignal data structure, before finding an error.
+
 
 Input Validation
 ================
 
-To make sure your request body documentation is accurate, and will stay accurate, it can be useful to set up tests.
+To make sure your request body documentation is accurate, and will stay accurate, you can use endpoint serializers to validate your schema directly.
 
-Considering most APIs will use input serializers for input validation, it seems sensible to just run the
-example documentation on your serializer.
+``validate_input_serializer`` constructs an example representation of the documented request body, and passes it to the serializer it is given. This means it's only useful if you use serializers for validating your incoming request data.
 
-A pytest implementation of input validation might look like this::
+A Django test implementation of input validation for a whole project could be structured like this:
 
-    from myapp.api.serializers import MyAPISerializer  # <-- your custom serializer
+.. code:: python
 
+    from django.test import SimpleTestCase
+    from django_swagger_tester.testing import validate_input_serializer
 
-    def test_request_body_documentation(client):
-        """
-        Verifies that our request body documentation is representative of a valid request body.
-        """
-        from django_swagger_tester.drf_yasg import validate_input  # or replace drf_yasg with `static_schema`
-        validate_input(serializer=MyAPISerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
+    from api.serializers.validation.request_bodies import ...
 
 
-The ``camel_case_parser`` argument should be set to ``True`` if you are using ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``
-from the `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_ package.
+    class TestSwaggerInput(SimpleTestCase):
+        endpoints = [
+            {
+                'api/v1/orders/': [
+                    ('POST', ValidatePostOrderBody),
+                    ('PUT', ValidatePutOrderBody),
+                    ('DELETE', ValidateDeleteOrderBody)
+                ]
+            },
+            {
+                'api/v1/orders/<id>/entries/': [
+                    ('POST', ValidatePostEntryBody),
+                    ('PUT', ValidatePutEntryBody),
+                    ('DELETE', ValidateEntryDeleteBody)
+                ]
+            },
+        ]
+
+        def test_swagger_input(self) -> None:
+            """
+            Verifies that the documented request bodies are valid.
+            """
+            for endpoint in self.endpoints:
+                for route, values in endpoint.items():
+                    for method, serializer in values:
+                        validate_input_serializer(serializer=serializer, method=method, route=route)
 
 .. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
 .. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
 .. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
 .. _documentation: https://django-swagger-tester.readthedocs.io/
 .. _docs: https://django-swagger-tester.readthedocs.io/
+.. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas

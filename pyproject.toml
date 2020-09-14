@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-swagger-tester"
-version = "1.0.5"  # Remember to also change in django_swagger_tester/__init__
+version = "2.0.0"  # Remember to also change in django_swagger_tester/__init__.py version
 description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"
@@ -10,12 +10,13 @@ repository = "https://github.com/sondrelg/django-swagger-tester"
 documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
 keywords = ['openapi', 'swagger', 'api', 'testing', 'django']
 classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Framework :: Pytest',
         'Framework :: Django',
         'Framework :: Django :: 2.2',
         'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Natural Language :: English',
@@ -24,6 +25,7 @@ classifiers = [
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
@@ -44,15 +46,16 @@ pre-commit = "1.21.0"
 drf-yasg = "1.17.0"
 pyYAML = "5.3"
 djangorestframework_camel_case = "1.1.2"
-pytest = "^5.2"
+pytest = "^5.4"
 pytest-cov = "2.8.1"
 pytest-django =  "3.8.0"
 flake8 = "*"
 sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
+ipython = "^7.16.1"
 
 [tool.black]
-line-length = 120
+line-length = 126
 skip-string-normalization = true
 target-version = ['py37']
 include = '\.pyi?$'
