@@ -18,6 +18,10 @@ json_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.json
 class MockRoute:
     def __init__(self, x):
         self.x = x
+        self.counter = 0
 
     def get_path(self):
+        self.counter += 1
+        if self.counter == 2:
+            raise IndexError
         return self.x
