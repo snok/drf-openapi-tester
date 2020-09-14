@@ -107,12 +107,17 @@ class _LoaderBase:
         error = None
         for _ in range(len(route_object.parameters) + 1):
             try:
+                # This is an unfortunate piece of logic, where we're attempting to insert path parameters
+                # one by one until the path works
+                # if it never works, we finally raise an UndocumentedSchemaSectionError
                 route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
                 break
             except UndocumentedSchemaSectionError as e:
                 error = e
             except IndexError:
                 raise error  # type: ignore
+        else:
+            raise error  # type: ignore
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
