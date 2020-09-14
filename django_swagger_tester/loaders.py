@@ -104,10 +104,15 @@ class _LoaderBase:
                 f'to your VALIDATION_EXEMPT_URLS setting list in your SWAGGER_TESTER.MIDDLEWARE settings.'
             )
 
-        try:
-            route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
-        except UndocumentedSchemaSectionError:
-            route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
+        error = None
+        while True:
+            try:
+                route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
+                break
+            except UndocumentedSchemaSectionError as e:
+                error = e
+            except IndexError:
+                raise error  # type: ignore
 
         # Index by method
         joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
