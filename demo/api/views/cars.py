@@ -1,12 +1,8 @@
-import logging
-
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_schema
-
-logger = logging.getLogger('django_swagger_tester')
 
 
 class GoodCars(APIView):
