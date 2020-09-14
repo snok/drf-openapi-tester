@@ -105,7 +105,7 @@ class _LoaderBase:
             )
 
         error = None
-        for _ in route_object.parameters:
+        for _ in range(len(route_object.parameters) + 1):
             try:
                 route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
                 break

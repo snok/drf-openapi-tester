@@ -19,6 +19,7 @@ class MockRoute:
     def __init__(self, x):
         self.x = x
         self.counter = 0
+        self.parameters = [2, 2]
 
     def get_path(self):
         self.counter += 1
