@@ -87,7 +87,7 @@ class SchemaTester:
         if self.camel_case_parser:
             from djangorestframework_camel_case.util import camelize
 
-            data = camelize(data)
+            data = dict(camelize(data))
 
         response_keys = data.keys()
         properties = read_properties(schema)
