@@ -132,9 +132,10 @@ class SwaggerTesterSettings(object):
             if hasattr(self, setting):
                 setattr(self, setting, value)
             else:
-                # Some loader classes will have extra settings passed to the loader class as kwargs
-                # Because of this, we cannot raise errors for extra settings
-                logger.debug('Received excess setting `%s` with value `%s`', setting, value)
+                if setting != 'MIDDLEWARE':
+                    # Some loader classes will have extra settings passed to the loader class as kwargs
+                    # Because of this, we cannot raise errors for extra settings
+                    logger.debug('Received excess setting `%s` with value `%s`', setting, value)
 
         # Load middleware settings as its own class
         middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})

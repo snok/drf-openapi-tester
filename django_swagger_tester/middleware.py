@@ -19,7 +19,7 @@ from django_swagger_tester.exceptions import (
     UndocumentedSchemaSectionError,
 )
 from django_swagger_tester.schema_tester import SchemaTester
-from django_swagger_tester.utils import format_response_tester_error, get_endpoint_paths, resolve_path
+from django_swagger_tester.utils import Route, format_response_tester_error, get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -42,30 +42,39 @@ class SwaggerValidationMiddleware(object):
     def __call__(self, request: HttpRequest) -> Union[HttpRequest, HttpResponse]:
         """
         Validates API requests not listed in VALIDATION_EXEMPT_URLS.
+
+        Can validate request body, response data, or both, depending on settings and the type of request.
         """
         method = request.method
         path = request.path
 
         # we skip validation if the route is ignored in the settings
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
-            logger.debug('Validation skipped - %s request to %s is in exempt urls', method, path)
+            logger.debug('Validation skipped: %s request to `%s` is in VALIDATION_EXEMPT_URLS', method, path)
             return self.get_response(request)
-        # ..or if the request path does not point at a valid endpoint
+        # ..or if the request path doesn't point to a valid endpoint
         elif not self.path_in_endpoints(path=path, method=method):
+            # note: this covers both non-endpoint routes, and any route that doesn't resolve
+            logger.debug('Validation skipped: `%s` is not a relevant endpoint', path)
             return self.get_response(request)
 
         # -- Request body validation --
-        if request.body and self.middleware_settings.VALIDATE_REQUEST_BODY:
-            # request body validation is only relevant when the request contains a request body
-            # furthermore, we're only interested in json content-types - this could change in the future
-            if not request.headers['Content-Type'].startswith('application/json'):
-                logger.debug('Validation skipped - %s request to %s has non-JSON content-type', method, path)
-            else:
-                logger.debug('Validating request body')
-                strict = self.middleware_settings.REJECT_INVALID_REQUEST_BODIES
-                potential_response = self.validate_request_body(request, strict=strict)
-                if potential_response is not None:
-                    return potential_response  # returns 400 if REJECT_INVALID_RESPONSES is True
+        if not self.middleware_settings.VALIDATE_REQUEST_BODY:
+            # skip validation if disabled in settings
+            logger.debug('Skipping request body validation: VALIDATE_REQUEST_BODY is False')
+        elif not request.body:
+            # skip validation if there's nothing to validate
+            logger.debug('Skipping request body validation: %s request to `%s` doesn\'t contain a request body', method, path)
+        elif not request.headers['Content-Type'].startswith('application/json'):
+            # skip validation if request body isn't json (might add support for other formats in the future if useful)
+            logger.debug('Skipping request body validation: %s request to `%s` has a non-JSON content type', method, path)
+        else:
+            # validate request body
+            logger.debug('Validating request body')
+            strict = self.middleware_settings.REJECT_INVALID_REQUEST_BODIES
+            potential_response = self.validate_request_body(request, strict=strict)
+            if potential_response is not None:
+                return potential_response  # returns 400 if REJECT_INVALID_RESPONSES is True
 
         # -- ^ Code above this line is executed before the view and later middleware --
         response = self.get_response(request)
@@ -86,6 +95,69 @@ class SwaggerValidationMiddleware(object):
             else:
                 logger.debug('Validation skipped - response for %s request to %s has non-JSON content-type', method, path)
         return response
+
+    def validate_request_body(self, request: HttpRequest, strict: bool = False) -> Optional[HttpResponse]:
+        """
+        Validates an incoming request body against the OpenAPI schema request body documentation.
+
+        In case of inconsistencies, a log is logged at a setting-specified log level.
+
+        :param request: HTTP request.
+        :param strict: Whether the middleware should reject incoming requests if request body validation fails or not.
+        """
+        logger.info('Validating request body for %s request to %s', request.method, request.path)
+
+        try:
+            # load the request body schema
+            request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(request.path, request.method)
+        except (UndocumentedSchemaSectionError, OpenAPISchemaError) as e:
+            self.middleware_settings.LOGGER(
+                'Failed accessing schema section for %s request to `%s`. Error: %s', request.method, request.path, e
+            )
+            return None
+
+        try:
+            # parse request body as json
+            value = json.loads(request.body)
+        except JSONDecodeError:
+            if strict:
+                # todo: not sure this is appropriate in all cases
+                return HttpResponse(content=b'Request body contains invalid JSON', status=400)
+            else:
+                self.middleware_settings.LOGGER('Failed to load incoming request body as JSON for %s request to %s')
+                return None
+
+        try:
+            # validate request body with respect to the request body schema
+            SchemaTester(
+                schema=request_body_schema,
+                data=value,
+                origin='request',
+                case_tester=settings.CASE_TESTER,
+                camel_case_parser=settings.CAMEL_CASE_PARSER,
+            )
+            logger.info('Request body valid for %s request to %s', request.method, request.path)
+        except SwaggerDocumentationError as e:
+            long_message = format_response_tester_error(e, hint=e.request_hint, addon='')
+            self.middleware_settings.LOGGER(
+                'Bad request body received for %s request to %s. Error: %s', request.method, request.path, long_message
+            )
+            if strict:
+                example = settings.LOADER_CLASS.get_request_body_example(request.path, request.method)
+                msg = f'Request body is invalid. The request body should have the following format: {example}.{" " + e.request_hint if e.request_hint else ""}'
+                return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
+        except CaseError as e:
+            # todo: what should happen here?
+            # for strict, rejecting the response seems fine, but for non-strict, what makes sense?
+            # - do we log incorrect cases,
+            # - do we let endpoint serializers correct errors,
+            # - or do we let endpoint validation handle it?
+            # all three seem appropriate depending on how the endpoint is set up
+            if strict:
+                msg = f'Request body is invalid. `{e.key}` is not cased correctly'
+                return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
+            else:
+                self.middleware_settings.LOGGER('Received badly cased cased key, `%s` in %s', e.key, e.origin)
 
     def validate_response(self, response: Response, request: HttpRequest) -> None:
         """
@@ -125,92 +197,43 @@ class SwaggerValidationMiddleware(object):
         except SwaggerDocumentationError as e:
             long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
             self.middleware_settings.LOGGER(
-                'Incorrect response template returned for %s request to %s. Swagger error: %s',
-                request.method,
-                request.path,
-                str(long_message),
+                'Bad response returned for %s request to %s. Error: %s', request.method, request.path, str(long_message)
             )
         except CaseError as e:
             self.middleware_settings.LOGGER('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
 
-    def validate_request_body(self, request: HttpRequest, strict: bool = False) -> Optional[HttpResponse]:
-        """
-        Validates an incoming request body against the OpenAPI schema request body documentation.
-        In case of inconsistencies, a log is logged at a setting-specified log level.
-        :param request: HTTP request.
-        :param strict: Whether the middleware should reject incoming requests if request body validation fails.
-        """
-        logger.info('Validating request body for %s request to %s', request.method, request.path)
-
-        # Get the section of the schema relevant for this request
-        try:
-            request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(request.path, request.method)
-        except (UndocumentedSchemaSectionError, OpenAPISchemaError) as e:
-            self.middleware_settings.LOGGER(
-                'Failed accessing schema section for %s request to `%s`. Error: %s', request.method, request.path, e
-            )
-            return None
-
-        # Parse request body
-        try:
-            value = json.loads(request.body)
-        except JSONDecodeError:
-            if strict:
-                return HttpResponse(content=b'Request body contains invalid JSON', status=400)
-            else:
-                self.middleware_settings.LOGGER('Failed loading incoming request body as JSON for %s request to %s')
-                return None
-
-        # Validate request body against schema
-        try:
-            SchemaTester(
-                schema=request_body_schema,
-                data=value,
-                origin='request',
-                case_tester=settings.CASE_TESTER,
-                camel_case_parser=settings.CAMEL_CASE_PARSER,
-            )
-            logger.info('Request body valid for %s request to %s', request.method, request.path)
-        except CaseError as e:
-            # TODO: Do we need to do something here?
-            self.middleware_settings.LOGGER('Received incorrectly cased cased key, `%s` in %s', e.key, e.origin)
-        except SwaggerDocumentationError as e:
-            long_message = format_response_tester_error(e, hint=e.request_hint, addon='')
-            self.middleware_settings.LOGGER(
-                'Received bad request body for %s request to %s. Swagger error: \n\n%s',
-                request.method,
-                request.path,
-                long_message,
-            )
-            if strict:
-                example = settings.LOADER_CLASS.get_request_body_example(request.path, request.method)
-                msg = f'Request body is invalid. The request body should have the following format: {example}.{" " + e.request_hint if e.request_hint else ""}'
-                return HttpResponse(content=bytes(msg, 'utf-8'), status=400)
-
     def path_in_endpoints(self, path: str, method: str) -> bool:
         """
-        Indicates whether the path belongs in an OpenAPI schema.
+        Indicates whether a path belongs in an OpenAPI schema or not.
+
         We're only interested in validating requests meant for documented API endpoints.
-        :param path: The request path
-        :param method: The request method
-        :return: Bool indicating whether the request should be handled
+
+        :param path: the request path
+        :param method: the request method
+        :return: boolean indicating whether the request should be handled or not
         """
         try:
-            deparameterized_path, resolved_path = resolve_path(path)
+            route_object = Route(*resolve_path(path))
         except ValueError:
             logger.debug('Validation skipped - %s request to %s failed to resolve', method, path)
             return False
         except Resolver404:
             logger.debug('Validation skipped - %s request to %s failed to resolve', method, path)
             return False
+
+        route_object.get_path()
+
         for route in self.endpoints:
-            if deparameterized_path == route:
-                if hasattr(resolved_path, 'func') and hasattr(resolved_path.func, 'view_class'):
-                    # Verify that the view has contains the method
-                    if hasattr(resolved_path.func.view_class, method.lower()):
-                        logger.debug('%s request to %s is an API request', method, path)
-                        return True
-                    else:
-                        logger.debug('%s request method does not exist in the view class', method)
+            if (
+                route_object.route_matches(route)
+                and hasattr(route_object.resolved_path, 'func')
+                and hasattr(route_object.resolved_path.func, 'view_class')
+            ):
+                # Verify that the view has contains the method
+                if hasattr(route_object.resolved_path.func.view_class, method.lower()):
+                    logger.debug('%s request to %s is an API request', method, path)
+                    return True
+                else:
+                    logger.debug('%s request method does not exist in the view class', method)
         logger.debug('Validation skipped - %s request to %s was not found in API endpoints', method, path)
         return False

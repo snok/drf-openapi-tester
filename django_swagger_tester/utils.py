@@ -240,6 +240,17 @@ class Route:
         self.counter += 1
         return path
 
+    def route_matches(self, route: str) -> bool:
+        """
+        Checks whether a route matches any version of get_path.
+        """
+        for _ in self.parameters:
+            if self.get_path() == route:
+                self.counter = 0
+                return True
+        self.counter = 0
+        return False
+
 
 def type_placeholder_value(_type: str) -> Any:
     """
