@@ -4,6 +4,12 @@
 Changelog
 *********
 
+2.0.1 2020-09-15
+----------------
+
+* Fixed bug causing ``received`` parameter in the ``validate_response`` error output to display as an OrderedDict.
+* Fixed bug causing error handling for undocumented paths to fail.
+
 2.0.0 2020-09-14
 ----------------
 
