@@ -1,11 +1,109 @@
 import inspect
 import logging
+from re import compile
 from types import FunctionType
 from typing import Callable, List
 
 from django.core.exceptions import ImproperlyConfigured
 
 logger = logging.getLogger('django_swagger_tester')
+
+
+# noinspection PyAttributeOutsideInit
+class MiddlewareSettings(object):
+    """
+    Holds middleware specific settings.
+    """
+
+    def __init__(self, middleware_settings: dict) -> None:
+        """
+        Initializes tester class with base settings.
+        """
+        # Define default values for middleware settings
+        self.LOG_LEVEL = 'ERROR'
+        self.REJECT_INVALID_REQUEST_BODIES = False
+        self.VALIDATE_RESPONSE = True
+        self.VALIDATE_REQUEST_BODY = True
+        self.VALIDATION_EXEMPT_URLS: List[str] = []
+
+        # Overwrite defaults
+        for setting, value in middleware_settings.items():
+            if hasattr(self, setting):
+                setattr(self, setting, value)
+            else:
+                raise ImproperlyConfigured(
+                    f'Received excess middleware setting, `{setting}`, for SWAGGER_TESTER. '
+                    f'Please correct or remove this from the middleware settings.'
+                )
+
+        self.validate_and_set_logger()
+        self.validate_bool(self.REJECT_INVALID_REQUEST_BODIES, 'REJECT_INVALID_REQUEST_BODIES')
+        self.validate_bool(self.VALIDATE_REQUEST_BODY, 'VALIDATE_REQUEST_BODY')
+        self.validate_bool(self.VALIDATE_RESPONSE, 'VALIDATE_RESPONSE')
+        self.validate_exempt_urls(self.VALIDATION_EXEMPT_URLS)
+        self.validate_validate_request_body()  # must be below bool validation of VALIDATE_REQUEST_BODY
+
+    def validate_and_set_logger(self) -> None:
+        """
+        Makes sure the LOG_LEVEL setting is the right type, and sets LOGGER.
+        Bad strings are handled in self.get_logger
+        """
+        if not isinstance(self.LOG_LEVEL, str):
+            raise ImproperlyConfigured('The SWAGGER_TESTER middleware setting `LOG_LEVEL` must be a string value')
+        self.LOGGER: Callable = self.get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
+
+    def validate_validate_request_body(self) -> None:
+        """
+        Makes sure the VALIDATE_REQUEST_BODY and REJECT_INVALID_REQUEST_BODIES settings are compatible.
+        """
+        if not self.VALIDATE_REQUEST_BODY and self.REJECT_INVALID_REQUEST_BODIES:
+            raise ImproperlyConfigured(
+                'REJECT_INVALID_REQUEST_BODIES middleware setting cannot be True if VALIDATE_REQUEST_BODY is False.'
+            )
+
+    @staticmethod
+    def validate_bool(value: bool, setting_name: str) -> None:
+        """
+        Validates a boolean setting.
+        """
+        if not isinstance(value, bool):
+            raise ImproperlyConfigured(f'The SWAGGER_TESTER middleware setting `{setting_name}` must be a boolean value')
+
+    @staticmethod
+    def validate_exempt_urls(values: List[str]) -> None:
+        """
+        Makes sure we're able to compile the input values as regular expressions.
+        """
+        try:
+            [compile(url_pattern) for url_pattern in values]
+        except Exception:
+            raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
+
+    @staticmethod
+    def get_logger(level: str, logger_name: str) -> Callable:
+        """
+        Return logger.
+        :param level: log level
+        :param logger_name: logger name
+        :return: logger
+        """
+        if level == 'DEBUG':
+            return logging.getLogger(logger_name).debug
+        elif level == 'INFO':
+            return logging.getLogger(logger_name).info
+        elif level == 'WARNING':
+            return logging.getLogger(logger_name).warning
+        elif level == 'ERROR':
+            return logging.getLogger(logger_name).error
+        elif level == 'EXCEPTION':
+            return logging.getLogger(logger_name).exception
+        elif level == 'CRITICAL':
+            return logging.getLogger(logger_name).critical
+        else:
+            raise ImproperlyConfigured(
+                f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+                f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
+            )
 
 
 # noinspection PyAttributeOutsideInit
@@ -37,6 +135,10 @@ class SwaggerTesterSettings(object):
                 # Some loader classes will have extra settings passed to the loader class as kwargs
                 # Because of this, we cannot raise errors for extra settings
                 logger.debug('Received excess setting `%s` with value `%s`', setting, value)
+
+        # Load middleware settings as its own class
+        middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
+        self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)
