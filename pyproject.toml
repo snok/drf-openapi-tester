@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "django-swagger-tester"
-version = "2.0.0"  # Remember to also change in django_swagger_tester/__init__.py version
+version = "2.0.1"  # Remember to also change in django_swagger_tester/__init__.py version
 description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"
@@ -64,6 +64,14 @@ exclude = '''
     (\.eggs|\.git|\.hg|\.mypy_cache|\.tox|\.venv|\venv|\.github|\docs|\tests|\__pycache__)
 )
 '''
+
+[tool.isort]
+line-length = 126
+multi_line_output = 3
+include_trailing_comma = true
+known_third_party = ["django", "drf_yasg", "pytest", "requests", "rest_framework", "yaml"]
+known_first_party = ["django_swagger_tester"]
+default_section = "THIRDPARTY"
 
 [build-system]
 requires = ["poetry>=0.12"]
