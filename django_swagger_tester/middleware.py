@@ -26,11 +26,7 @@ logger = logging.getLogger('django_swagger_tester')
 
 class SwaggerValidationMiddleware(object):
     """
-    Middleware validates incoming request bodies and outgoing responses with respect to the apps OpenAPI schema.
-    With the default settings, an invalid schema, response, or request body, will log a message
-    at a setting-specified log level (the default log level is error).
-    If specified, the request body validation will reject invalid requests, returning a 400-response
-    with a description of what triggered the rejection.
+    Middleware validates incoming request bodies and outgoing responses with respect to the app's OpenAPI schema.
     """
 
     def __init__(self, get_response: Callable) -> None:
@@ -45,67 +41,65 @@ class SwaggerValidationMiddleware(object):
 
     def __call__(self, request: HttpRequest) -> Union[HttpRequest, HttpResponse]:
         """
-        Contains the middleware flow.
+        Validates API requests not listed in VALIDATION_EXEMPT_URLS.
         """
-        # Skip validation if the route is ignored in the settings
+        method = request.method
+        path = request.path
+
+        # we skip validation if the route is ignored in the settings
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
-            logger.debug('Validation skipped - %s request to %s is in exempt urls', request.method, request.path)
+            logger.debug('Validation skipped - %s request to %s is in exempt urls', method, path)
+            return self.get_response(request)
+        # ..or if the request path does not point at a valid endpoint
+        elif not self.path_in_endpoints(path=path, method=method):
             return self.get_response(request)
 
-        # Skip validation if the request path is not a valid endpoint
-        elif not self.path_in_endpoints(path=request.path, method=request.method):
-            return self.get_response(request)
-
-        # Code below this line is handled by the middleware
-
+        # -- Request body validation --
         if request.body and self.middleware_settings.VALIDATE_REQUEST_BODY:
-            # Skip validation if the request has a non-JSON content type
-            # - support for other content types could be added in the future
+            # request body validation is only relevant when the request contains a request body
+            # furthermore, we're only interested in json content-types - this could change in the future
             if not request.headers['Content-Type'].startswith('application/json'):
-                logger.debug('Validation skipped - %s request to %s has non-JSON content-type', request.method, request.path)
+                logger.debug('Validation skipped - %s request to %s has non-JSON content-type', method, path)
             else:
                 logger.debug('Validating request body')
-                potential_response = self.validate_request_body(
-                    request, strict=self.middleware_settings.REJECT_INVALID_REQUEST_BODIES
-                )
-                # If validation function rejects the request, we return a 400 - only if strict is True
+                strict = self.middleware_settings.REJECT_INVALID_REQUEST_BODIES
+                potential_response = self.validate_request_body(request, strict=strict)
                 if potential_response is not None:
-                    return potential_response
+                    return potential_response  # returns 400 if REJECT_INVALID_RESPONSES is True
 
-        # ^ Code above this line is executed before the view and later middleware
+        # -- ^ Code above this line is executed before the view and later middleware --
         response = self.get_response(request)
 
+        # -- Response validation --
         if self.middleware_settings.VALIDATE_RESPONSE:
             content_type = response.get('Content-Type', '')
             if content_type == 'application/json':
                 logger.debug('Validating response')
                 # By parsing the response data JSON we bypass problems like uuid's not having been converted to
-                # strings, which creates problems when comparing response data types to the documented schema types
-                # in the schema tester
+                # strings yet, which otherwise would create problems when comparing response data types to the
+                # documented schema types in the schema tester
                 content = response.content.decode(response.charset)
                 response_data = json.loads(content)
                 copied_response = deepcopy(response)
-                copied_response.data = response_data
+                copied_response.data = response_data  # this can probably be done differently
                 self.validate_response(copied_response, request)
             else:
-                logger.debug(
-                    'Validation skipped - response for %s request to %s has non-JSON content-type',
-                    request.method,
-                    request.path,
-                )
+                logger.debug('Validation skipped - response for %s request to %s has non-JSON content-type', method, path)
         return response
 
     def validate_response(self, response: Response, request: HttpRequest) -> None:
         """
         Validates an outgoing response object against the OpenAPI schema response documentation.
+
         In case of inconsistencies, a log is logged at a setting-specified log level.
+
         :param response: HTTP response
         :param request: HTTP request
         """
         logger.info('Validating response for %s request to %s', request.method, request.path)
 
-        # Get the section of the schema relevant for this request
         try:
+            # load the response schema
             response_schema = settings.LOADER_CLASS.get_response_schema_section(
                 route=request.path,
                 status_code=response.status_code,
@@ -114,12 +108,12 @@ class SwaggerValidationMiddleware(object):
             )
         except UndocumentedSchemaSectionError as e:
             self.middleware_settings.LOGGER(
-                'Failed accessing schema section for %s request to `%s`. Error: %s', request.method, request.path, e
+                'Failed accessing response schema for %s request to `%s`. Error: %s', request.method, request.path, e
             )
             return
 
-        # Validate response against schema
         try:
+            # validate response data with respect to response schema
             SchemaTester(
                 schema=response_schema,
                 data=response.data,
