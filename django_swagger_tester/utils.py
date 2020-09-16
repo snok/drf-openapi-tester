@@ -6,6 +6,7 @@ import sys
 from typing import Any, List, Optional, Tuple
 
 from django.urls import URLResolver
+from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from requests import Response
 
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
@@ -275,3 +276,17 @@ def type_placeholder_value(_type: str) -> Any:
         return 'string'
     else:
         raise TypeError(f'Cannot return placeholder value for {_type}')
+
+
+def camelize(data: dict) -> dict:
+    """
+    Adapted djangorestframework.utils.camelize function for converting a snake_cased dict to camelCase.
+    """
+    new_dict = {}
+    for key, value in data.items():
+        if isinstance(key, str) and '_' in key:
+            new_key = re.sub(camelize_re, underscore_to_camel, key)
+        else:
+            new_key = key
+        new_dict[new_key] = value
+    return new_dict
