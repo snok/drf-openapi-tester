@@ -44,6 +44,14 @@ def format_response_tester_error(
 
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
 
+    # Make sure we're sorting both objects to make differences easier to spot
+    if isinstance(exception.response, dict):
+        example_item = dict(sorted(example_item.items()))
+        exception.response = dict(sorted(exception.response.items()))
+    elif isinstance(exception.response, list):
+        example_item = sorted(example_item)
+        exception.response = sorted(exception.response)
+
     def get_dotted_line(values: list) -> str:
         longest_value = max(len(f'{v}') for v in values)
         line_length = longest_value if longest_value < 91 else 91
@@ -168,7 +176,7 @@ def resolve_path(endpoint_path: str) -> tuple:
             # handling. However, its important not to freely use the .replace() function, as a {value} of `1` would
             # also cause the `1` in api/v1/ to be replaced
             var_index = endpoint_path.rfind(str(value))
-            endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(value) :]
+            endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(str(value)) :]
         return endpoint_path, resolved_route
 
     except Resolver404:

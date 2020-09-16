@@ -133,7 +133,7 @@ class SwaggerValidationMiddleware(object):
             SchemaTester(
                 schema=request_body_schema,
                 data=value,
-                origin='request',
+                origin='request body',
                 case_tester=settings.CASE_TESTER,
                 camel_case_parser=settings.CAMEL_CASE_PARSER,
             )
