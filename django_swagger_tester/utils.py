@@ -240,15 +240,24 @@ class Route:
         self.counter += 1
         return path
 
+    def reset(self) -> None:
+        """
+        Resets parameterized path and counter.
+        """
+        self.parameterized_path = self.deparameterized_path
+        self.counter = 0
+
     def route_matches(self, route: str) -> bool:
         """
         Checks whether a route matches any version of get_path.
         """
+        if len(self.parameters) == 0:
+            return self.deparameterized_path == route
         for _ in self.parameters:
             if self.get_path() == route:
-                self.counter = 0
+                self.reset()
                 return True
-        self.counter = 0
+        self.reset()
         return False
 
 

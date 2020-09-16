@@ -18,7 +18,6 @@ from django_swagger_tester.exceptions import (
     SwaggerDocumentationError,
     UndocumentedSchemaSectionError,
 )
-from django_swagger_tester.schema_tester import SchemaTester
 from django_swagger_tester.utils import Route, format_response_tester_error, get_endpoint_paths, resolve_path
 
 logger = logging.getLogger('django_swagger_tester')
@@ -129,6 +128,8 @@ class SwaggerValidationMiddleware(object):
 
         try:
             # validate request body with respect to the request body schema
+            from django_swagger_tester.schema_tester import SchemaTester
+
             SchemaTester(
                 schema=request_body_schema,
                 data=value,
@@ -186,6 +187,8 @@ class SwaggerValidationMiddleware(object):
 
         try:
             # validate response data with respect to response schema
+            from django_swagger_tester.schema_tester import SchemaTester
+
             SchemaTester(
                 schema=response_schema,
                 data=response.data,
@@ -220,8 +223,6 @@ class SwaggerValidationMiddleware(object):
         except Resolver404:
             logger.debug('Validation skipped - %s request to %s failed to resolve', method, path)
             return False
-
-        route_object.get_path()
 
         for route in self.endpoints:
             if (
