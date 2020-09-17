@@ -45,12 +45,21 @@ def format_response_tester_error(
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
 
     # Make sure we're sorting both objects to make differences easier to spot
+    # Make sure we're sorting both objects to make differences easier to spot
     if isinstance(exception.response, dict):
-        example_item = dict(sorted(example_item.items()))
         exception.response = dict(sorted(exception.response.items()))
     elif isinstance(exception.response, list):
-        example_item = sorted(example_item)
-        exception.response = sorted(exception.response)
+        try:
+            exception.response.sort()
+        except TypeError:
+            pass  # sorting a list of dicts doesnt work, but we don't know what the data looks like
+    if isinstance(example_item, dict):
+        example_item = dict(sorted(example_item.items()))
+    elif isinstance(example_item, list):
+        try:
+            example_item.sort()
+        except TypeError:
+            pass  # sorting a list of dicts doesnt work, but we don't know what the data looks like
 
     def get_dotted_line(values: list) -> str:
         longest_value = max(len(f'{v}') for v in values)

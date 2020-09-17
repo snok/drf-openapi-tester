@@ -106,6 +106,78 @@ class SwaggerValidationMiddleware(object):
         """
         logger.info('Validating request body for %s request to %s', request.method, request.path)
 
+        # TODO: Implement required logic
+        #
+        # "post": {
+        #     "operationId": "create_apd_ticket",
+        #     "summary": "Create a new app pkg ticket",
+        #     "description": "Create a new application packaging ticket.\nThe applicationName and dapUrl fields are optional",
+        #     "parameters": [
+        #         {
+        #             "name": "data",
+        #             "in": "body",
+        #             "required": true,
+        #             "schema": {
+        #                 "required": [
+        #                     "ticketId",
+        #                     "title",
+        #                     "applicationName",
+        #                     "owner",
+        #                     "action",
+        #                     "projectType",
+        #                     "scope"
+        #                 ],
+        #                 "type": "object",
+        #                 "properties": {
+        #                     "ticketId": {
+        #                         "title": "Ticket ID",
+        #                         "description": "Ticket ID for SuperOffice CS ticket",
+        #                         "type": "integer",
+        #                         "example": 2912233
+        #                     },
+        #                     "title": {
+        #                         "type": "string",
+        #                         "example": "CS Ticket title"
+        #                     },
+        #                     "applicationName": {
+        #                         "type": "string"
+        #                     },
+        #                     "dapUrl": {
+        #                         "type": "string"
+        #                     },
+        #                     "owner": {
+        #                         "title": "GUID",
+        #                         "description": "GUID of an object",
+        #                         "type": "string",
+        #                         "example": "5005f30e-95c5-a860-29dc-9aa8ead698e0"
+        #                     },
+        #                     "contact": {
+        #                         "title": "Username",
+        #                         "description": "The username of a user",
+        #                         "type": "string",
+        #                         "example": "aa502"
+        #                     },
+        #                     "action": {
+        #                         "type": "integer",
+        #                         "example": 1
+        #                     },
+        #                     "projectType": {
+        #                         "type": "integer",
+        #                         "example": 1
+        #                     },
+        #                     "scope": {
+        #                         "type": "integer",
+        #                         "example": 1
+        #                     },
+        #                     "priority": {
+        #                         "type": "integer",
+        #                         "default": 1,
+        #                         "example": 1
+        #                     }
+        #                 }
+        #             }
+        #         }
+        #     ],
         try:
             # load the request body schema
             request_body_schema = settings.LOADER_CLASS.get_request_body_schema_section(request.path, request.method)

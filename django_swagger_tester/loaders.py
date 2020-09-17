@@ -331,7 +331,7 @@ class _LoaderBase:
         elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
-        elif read_type(schema) == 'object' and 'properties' in schema:
+        elif read_type(schema) == 'object' and 'properties' in schema or 'additionalProperties' in schema:
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
         elif 'type' in schema and schema['type'] in list_types(cut=['object', 'array']):
