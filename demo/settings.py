@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_swagger_tester.middleware.SwaggerValidationMiddleware',
+    'django_swagger_tester.middleware.ResponseValidationMiddleware',
 ]
 
 ROOT_URLCONF = 'demo.urls'

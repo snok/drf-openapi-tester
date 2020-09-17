@@ -10,7 +10,7 @@ logger = logging.getLogger('django_swagger_tester')
 
 
 # noinspection PyAttributeOutsideInit
-class MiddlewareSettings(object):
+class ResponseValidationMiddlewareSettings(object):
     """
     Holds middleware specific settings.
     """
@@ -21,9 +21,6 @@ class MiddlewareSettings(object):
         """
         # Define default values for middleware settings
         self.LOG_LEVEL = 'ERROR'
-        self.REJECT_INVALID_REQUEST_BODIES = False
-        self.VALIDATE_RESPONSE = True
-        self.VALIDATE_REQUEST_BODY = True
         self.VALIDATION_EXEMPT_URLS: List[str] = []
 
         # Overwrite defaults
@@ -37,11 +34,7 @@ class MiddlewareSettings(object):
                 )
 
         self.validate_and_set_logger()
-        self.validate_bool(self.REJECT_INVALID_REQUEST_BODIES, 'REJECT_INVALID_REQUEST_BODIES')
-        self.validate_bool(self.VALIDATE_REQUEST_BODY, 'VALIDATE_REQUEST_BODY')
-        self.validate_bool(self.VALIDATE_RESPONSE, 'VALIDATE_RESPONSE')
         self.validate_exempt_urls(self.VALIDATION_EXEMPT_URLS)
-        self.validate_validate_request_body()  # must be below bool validation of VALIDATE_REQUEST_BODY
 
     def validate_and_set_logger(self) -> None:
         """
@@ -51,23 +44,6 @@ class MiddlewareSettings(object):
         if not isinstance(self.LOG_LEVEL, str):
             raise ImproperlyConfigured('The SWAGGER_TESTER middleware setting `LOG_LEVEL` must be a string value')
         self.LOGGER: Callable = self.get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
-
-    def validate_validate_request_body(self) -> None:
-        """
-        Makes sure the VALIDATE_REQUEST_BODY and REJECT_INVALID_REQUEST_BODIES settings are compatible.
-        """
-        if not self.VALIDATE_REQUEST_BODY and self.REJECT_INVALID_REQUEST_BODIES:
-            raise ImproperlyConfigured(
-                'REJECT_INVALID_REQUEST_BODIES middleware setting cannot be True if VALIDATE_REQUEST_BODY is False.'
-            )
-
-    @staticmethod
-    def validate_bool(value: bool, setting_name: str) -> None:
-        """
-        Validates a boolean setting.
-        """
-        if not isinstance(value, bool):
-            raise ImproperlyConfigured(f'The SWAGGER_TESTER middleware setting `{setting_name}` must be a boolean value')
 
     @staticmethod
     def validate_exempt_urls(values: List[str]) -> None:
@@ -138,8 +114,10 @@ class SwaggerTesterSettings(object):
                     logger.debug('Received excess setting `%s` with value `%s`', setting, value)
 
         # Load middleware settings as its own class
-        middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
-        self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
+        middleware_settings = swagger_tester_settings.get('RESPONSE_VALIDATION_MIDDLEWARE', {})
+        self.RESPONSE_VALIDATION_MIDDLEWARE = ResponseValidationMiddlewareSettings(
+            middleware_settings if middleware_settings is not None else {}
+        )
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)
