@@ -82,6 +82,7 @@ class ResponseValidationMiddlewareSettings(object):
             raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
 
 
+# noinspection PyAttributeOutsideInit
 class ResponseValidationWrapperSettings(object):
     """
     Holds middleware specific settings for the `validate_response` wrapper function.

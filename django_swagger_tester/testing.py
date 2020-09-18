@@ -4,9 +4,9 @@ import logging
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import SwaggerDocumentationError, CaseError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 from django_swagger_tester.schema_tester import SchemaTester
-from django_swagger_tester.utils import format_response_tester_error, unpack_response, format_response_tester_case_error
+from django_swagger_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -23,9 +23,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
-    response_schema = settings.LOADER_CLASS.get_response_schema_section(
-        route=route, status_code=status_code, method=method
-    )
+    response_schema = settings.LOADER_CLASS.get_response_schema_section(route=route, status_code=status_code, method=method)
     try:
         SchemaTester(
             schema=response_schema,

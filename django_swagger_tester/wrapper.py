@@ -6,7 +6,6 @@ from django.core.exceptions import ImproperlyConfigured
 from rest_framework.request import Request
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.middleware import copy_and_parse_response, validate_middleware_response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -19,6 +18,7 @@ def validate_response() -> Any:
     def outer(fn: Callable) -> Any:
         @wraps(fn)
         def inner(*args, **kwargs) -> Any:
+            from django_swagger_tester.middleware import copy_and_parse_response, validate_middleware_response
 
             if not isinstance(args[0], Request):
                 raise ImproperlyConfigured('The first argument to a view needs to be a Request')

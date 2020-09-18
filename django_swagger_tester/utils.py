@@ -3,13 +3,14 @@ import json
 import logging
 import re
 import sys
-from typing import Any, List, Optional, Tuple
+from copy import deepcopy
+from typing import Any, Callable, List, Optional, Tuple
 
-from django.urls import URLResolver
+from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
-from requests import Response
+from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -201,7 +202,7 @@ def resolve_path(endpoint_path: str) -> tuple:
 
 
 class Route:
-    def __init__(self, deparameterized_path: str, resolved_path: URLResolver) -> None:
+    def __init__(self, deparameterized_path: str, resolved_path: ResolverMatch) -> None:
         self.deparameterized_path = deparameterized_path
         self.parameterized_path = deparameterized_path
         self.resolved_path = resolved_path
@@ -215,7 +216,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'(\{[\w]+\})')
+        pattern = re.compile(r'({[\w]+\})')
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -308,3 +309,67 @@ def camelize(data: dict) -> dict:
             new_key = key
         new_dict[new_key] = value
     return new_dict
+
+
+def validate_middleware_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
+    """
+    Validates an outgoing response object against the OpenAPI schema response documentation.
+
+    In case of inconsistencies, a log is logged at a setting-specified log level.
+
+    Unlike the django_swagger_tester.testing validate_response function,
+    this function should *not* raise any errors during runtime.
+
+    :param response: HTTP response
+    :param path: The request path
+    :param method: The request method
+    :param func_logger: A logger callable
+    """
+    logger.info('Validating response for %s request to %s', method, path)
+    from django_swagger_tester.configuration import settings
+
+    try:
+        # load the response schema
+        response_schema = settings.LOADER_CLASS.get_response_schema_section(
+            route=path,
+            status_code=response.status_code,
+            method=method,
+            skip_validation_warning=True,
+        )
+    except UndocumentedSchemaSectionError as e:
+        func_logger('Failed accessing response schema for %s request to `%s`. Error: %s', method, path, e)
+        return
+
+    try:
+        # validate response data with respect to response schema
+        from django_swagger_tester.schema_tester import SchemaTester
+
+        # noinspection PyUnresolvedReferences
+        SchemaTester(
+            schema=response_schema,
+            data=response.data,
+            case_tester=settings.CASE_TESTER,
+            camel_case_parser=settings.CAMEL_CASE_PARSER,
+            origin='response',
+        )
+        logger.info('Response valid for %s request to %s', method, path)
+    except SwaggerDocumentationError as e:
+        long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
+        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message))
+    except CaseError as e:
+        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
+
+
+def copy_and_parse_response(response: Response) -> Response:
+    """
+    Loads response data as JSON and returns a copied response object.
+    """
+    # By parsing the response data JSON we bypass problems like uuid's not having been converted to
+    # strings yet, which otherwise would create problems when comparing response data types to the
+    # documented schema types in the schema tester
+    # noinspection PyUnresolvedReferences
+    content = response.content.decode(response.charset)
+    response_data = json.loads(content)
+    copied_response = deepcopy(response)
+    copied_response.data = response_data  # this can probably be done differently
+    return copied_response
