@@ -191,7 +191,7 @@ def resolve_path(endpoint_path: str) -> tuple:
     except Resolver404:
         logger.error('URL `%s` did not resolve successfully', endpoint_path)
         paths = get_endpoint_paths()
-        if (closest_matches := ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])) :
+        if closest_matches := ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)]):  # noqa: E999
             raise ValueError(
                 f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
                 f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
