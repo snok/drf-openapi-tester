@@ -9,13 +9,7 @@ from django.urls import Resolver404
 from django.utils.decorators import sync_only_middleware
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.utils import (
-    Route,
-    copy_and_parse_middleware_response,
-    get_endpoint_paths,
-    resolve_path,
-    validate_middleware_response,
-)
+from django_swagger_tester.utils import Route, get_endpoint_paths, resolve_path, copy_response, safe_validate_response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -61,8 +55,8 @@ class ResponseValidationMiddleware(object):
         # -- Response validation --
         if response.get('Content-Type', '') == 'application/json':
             logger.debug('Validating middleware response')
-            copied_response = copy_and_parse_middleware_response(response)
-            validate_middleware_response(
+            copied_response = copy_response(response)
+            safe_validate_response(
                 response=copied_response,
                 path=request.path,
                 method=request.method,

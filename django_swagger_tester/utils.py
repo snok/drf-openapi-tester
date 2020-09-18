@@ -311,7 +311,7 @@ def camelize(data: dict) -> dict:
     return new_dict
 
 
-def validate_middleware_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
+def safe_validate_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
     """
     Validates an outgoing response object against the OpenAPI schema response documentation.
 
@@ -331,10 +331,7 @@ def validate_middleware_response(response: Response, path: str, method: str, fun
     try:
         # load the response schema
         response_schema = settings.LOADER_CLASS.get_response_schema_section(
-            route=path,
-            status_code=response.status_code,
-            method=method,
-            skip_validation_warning=True,
+            route=path, status_code=response.status_code, method=method, skip_validation_warning=True,
         )
     except UndocumentedSchemaSectionError as e:
         func_logger(
@@ -364,7 +361,7 @@ def validate_middleware_response(response: Response, path: str, method: str, fun
         func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
 
 
-def copy_and_parse_middleware_response(response: Response) -> Response:
+def copy_response(response: Response) -> Response:
     """
     Loads response data as JSON and returns a copied response object.
     """
@@ -376,19 +373,3 @@ def copy_and_parse_middleware_response(response: Response) -> Response:
     copied_response = deepcopy(response)
     copied_response.data = response_data  # this can probably be done differently
     return copied_response
-
-
-def copy_wrapper_response(response: Response) -> Response:
-    """
-    Loads response data as JSON and returns a copied response object.
-    """
-
-    class FakeResponse:
-        def __init__(self, data: Any, status: int) -> None:
-            self.data = json.loads(json.dumps(str(data)))
-            self.status_code = status
-
-        def json(self) -> Any:
-            return self.data
-
-    return FakeResponse(response.data, response.status_code)  # type: ignore

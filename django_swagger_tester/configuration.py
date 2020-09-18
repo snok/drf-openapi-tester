@@ -12,6 +12,7 @@ logger = logging.getLogger('django_swagger_tester')
 def get_logger(level: str, logger_name: str) -> Callable:
     """
     Return logger.
+
     :param level: log level
     :param logger_name: logger name
     :return: logger
@@ -56,7 +57,7 @@ class ResponseValidationMiddlewareSettings(object):
             else:
                 raise ImproperlyConfigured(
                     f'Received excess middleware setting, `{setting}`, for the RESPONSE_VALIDATION middleware settings. '
-                    f'Please correct or remove this settings.'
+                    f'Please correct or remove this setting.'
                 )
 
         self.validate_and_set_logger()
@@ -83,9 +84,9 @@ class ResponseValidationMiddlewareSettings(object):
 
 
 # noinspection PyAttributeOutsideInit
-class ResponseValidationWrapperSettings(object):
+class ResponseValidationViewSettings(object):
     """
-    Holds middleware specific settings for the `validate_response` wrapper function.
+    Holds middleware specific settings for the `validate_response` view class.
     """
 
     def __init__(self, response_validation_settings: dict) -> None:
@@ -101,8 +102,8 @@ class ResponseValidationWrapperSettings(object):
                 setattr(self, setting, value)
             else:
                 raise ImproperlyConfigured(
-                    f'Received excess middleware setting, `{setting}`, for the RESPONSE_VALIDATION wrapper settings. '
-                    f'Please correct or remove this settings.'
+                    f'Received excess middleware setting, `{setting}`, for the RESPONSE_VALIDATION view settings. '
+                    f'Please correct or remove this setting.'
                 )
 
         self.validate_and_set_logger()
@@ -126,13 +127,13 @@ class MiddlewareSettings:
         self.RESPONSE_VALIDATION = ResponseValidationMiddlewareSettings(rvms if rvms is not None else {})
 
 
-class WrapperSettings:
+class ViewSettings:
     def __init__(self, wrapper_settings: dict) -> None:
         """
         Initializes tester class with base settings.
         """
-        rvws = wrapper_settings.get('RESPONSE_VALIDATION', {})
-        self.RESPONSE_VALIDATION = ResponseValidationWrapperSettings(rvws if rvws is not None else {})
+        rvvs = wrapper_settings.get('RESPONSE_VALIDATION', {})
+        self.RESPONSE_VALIDATION = ResponseValidationViewSettings(rvvs if rvvs is not None else {})
 
 
 # noinspection PyAttributeOutsideInit
@@ -156,13 +157,13 @@ class SwaggerTesterSettings(object):
         self.CAMEL_CASE_PARSER = False
         self.CASE_PASSLIST: List[str] = []
         self.MIDDLEWARE: MiddlewareSettings
-        self.WRAPPERS: WrapperSettings
+        self.VIEWS: ViewSettings
         # Overwrite defaults
         for setting, value in swagger_tester_settings.items():
             if hasattr(self, setting):
                 setattr(self, setting, value)
             else:
-                if setting not in ['MIDDLEWARE', 'WRAPPERS']:
+                if setting not in ['MIDDLEWARE', 'VIEWS']:
                     # Some loader classes will have extra settings passed to the loader class as kwargs
                     # Because of this, we cannot raise errors for extra settings
                     logger.debug('Received excess setting `%s` with value `%s`', setting, value)
@@ -172,8 +173,8 @@ class SwaggerTesterSettings(object):
         self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
 
         # Load wrapper function settings as its own class
-        wrapper_settings = swagger_tester_settings.get('WRAPPERS', {})
-        self.WRAPPERS = WrapperSettings(wrapper_settings if wrapper_settings is not None else {})
+        wrapper_settings = swagger_tester_settings.get('VIEWS', {})
+        self.VIEWS = ViewSettings(wrapper_settings if wrapper_settings is not None else {})
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)
