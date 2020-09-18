@@ -45,7 +45,6 @@ def format_response_tester_error(
     example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
 
     # Make sure we're sorting both objects to make differences easier to spot
-    # Make sure we're sorting both objects to make differences easier to spot
     if isinstance(exception.response, dict):
         exception.response = dict(sorted(exception.response.items()))
     elif isinstance(exception.response, list):
