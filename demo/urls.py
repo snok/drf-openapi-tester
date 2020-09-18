@@ -10,7 +10,7 @@ from demo.api.views.items import Items
 from demo.api.views.snake_cased_response import SnakeCasedResponse
 from demo.api.views.trucks import BadTrucks, GoodTrucks
 from demo.api.views.vehicles import Vehicles
-from demo.api.views.wrapped_endpoints import Animals
+from demo.api.views.animals import Animals
 
 
 class IsValidVehicleType(StringConverter):
@@ -51,10 +51,7 @@ swagger_info = openapi.Info(
     contact=openapi.Contact(email=''),
 )
 schema_view = get_schema_view(
-    swagger_info,
-    patterns=api_urlpatterns,
-    public=False,
-    permission_classes=(permissions.AllowAny,),
+    swagger_info, patterns=api_urlpatterns, public=False, permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
