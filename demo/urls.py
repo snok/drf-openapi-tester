@@ -10,6 +10,7 @@ from demo.api.views.items import Items
 from demo.api.views.snake_cased_response import SnakeCasedResponse
 from demo.api.views.trucks import BadTrucks, GoodTrucks
 from demo.api.views.vehicles import Vehicles
+from demo.api.views.wrapped_endpoints import Animals
 
 
 class IsValidVehicleType(StringConverter):
@@ -37,6 +38,7 @@ api_urlpatterns = [
     path('api/<version:version>/trucks/correct', GoodTrucks.as_view(), name='correctly_documented_trucks'),
     path('api/<version:version>/trucks/incorrect', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
     path('api/<version:version>/vehicles', Vehicles.as_view(), name='vehicles'),
+    path('api/<version:version>/animals', Animals.as_view(), name='animals'),
     path('api/<version:version>/items', Items.as_view(), name='items'),
     path('api/<version:version>/snake-case/', SnakeCasedResponse.as_view(), name='snake_case'),
     # ^trailing slash is here on purpose

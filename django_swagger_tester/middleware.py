@@ -11,7 +11,7 @@ from django.utils.decorators import sync_only_middleware
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.utils import (
     Route,
-    copy_and_parse_response,
+    copy_and_parse_middleware_response,
     get_endpoint_paths,
     resolve_path,
     validate_middleware_response,
@@ -60,8 +60,8 @@ class ResponseValidationMiddleware(object):
 
         # -- Response validation --
         if response.get('Content-Type', '') == 'application/json':
-            logger.debug('Validating response')
-            copied_response = copy_and_parse_response(response)
+            logger.debug('Validating middleware response')
+            copied_response = copy_and_parse_middleware_response(response)
             validate_middleware_response(
                 response=copied_response,
                 path=request.path,

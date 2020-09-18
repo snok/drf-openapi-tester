@@ -5,6 +5,11 @@ from django.conf import settings as django_settings
 default_settings = django_settings.SWAGGER_TESTER
 default_middleware_settings = default_settings['MIDDLEWARE']
 default_middleware_response_validation_settings = default_middleware_settings['RESPONSE_VALIDATION']
+default_project_middlewares = django_settings.MIDDLEWARE
+
+
+def remove_middleware():
+    return default_project_middlewares[:-1]
 
 
 def patch_settings(key, value) -> dict:

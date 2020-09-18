@@ -337,7 +337,12 @@ def validate_middleware_response(response: Response, path: str, method: str, fun
             skip_validation_warning=True,
         )
     except UndocumentedSchemaSectionError as e:
-        func_logger('Failed accessing response schema for %s request to `%s`. Error: %s', method, path, e)
+        func_logger(
+            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? ' 'Error: %s',
+            method,
+            path,
+            e,
+        )
         return
 
     try:
@@ -359,7 +364,7 @@ def validate_middleware_response(response: Response, path: str, method: str, fun
         func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
 
 
-def copy_and_parse_response(response: Response) -> Response:
+def copy_and_parse_middleware_response(response: Response) -> Response:
     """
     Loads response data as JSON and returns a copied response object.
     """
@@ -371,3 +376,19 @@ def copy_and_parse_response(response: Response) -> Response:
     copied_response = deepcopy(response)
     copied_response.data = response_data  # this can probably be done differently
     return copied_response
+
+
+def copy_wrapper_response(response: Response) -> Response:
+    """
+    Loads response data as JSON and returns a copied response object.
+    """
+
+    class FakeResponse:
+        def __init__(self, data: Any, status: int) -> None:
+            self.data = data
+            self.status_code = status
+
+        def json(self) -> Any:
+            return self.data
+
+    return FakeResponse(response.data, response.status_code)  # type: ignore
