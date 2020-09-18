@@ -3,7 +3,7 @@ from copy import deepcopy
 from django.conf import settings as django_settings
 
 default_settings = django_settings.SWAGGER_TESTER
-default_middleware_settings = default_settings['MIDDLEWARE']
+default_middleware_settings = default_settings['RESPONSE_VALIDATION_MIDDLEWARE']
 
 
 def patch_settings(key, value) -> dict:
@@ -12,11 +12,11 @@ def patch_settings(key, value) -> dict:
     return patched_settings
 
 
-def patch_middleware_settings(key, value) -> dict:
+def patch_response_middleware_settings(key, value) -> dict:
     patched_middleware_settings = deepcopy(default_middleware_settings)
     patched_middleware_settings[key] = value
     settings = deepcopy(default_settings)
-    settings['MIDDLEWARE'] = patched_middleware_settings
+    settings['RESPONSE_VALIDATION_MIDDLEWARE'] = patched_middleware_settings
     return settings
 
 

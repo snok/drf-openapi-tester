@@ -59,8 +59,7 @@ class ResponseValidationMiddleware(object):
         response = self.get_response(request)
 
         # -- Response validation --
-        content_type = response.get('Content-Type', '')
-        if content_type == 'application/json':
+        if response.get('Content-Type', '') == 'application/json':
             logger.debug('Validating response')
             # By parsing the response data JSON we bypass problems like uuid's not having been converted to
             # strings yet, which otherwise would create problems when comparing response data types to the

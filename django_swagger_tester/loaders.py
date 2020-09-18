@@ -70,8 +70,7 @@ class _LoaderBase:
         """
         from django_swagger_tester.utils import resolve_path
 
-        deparameterized_path, resolved_path = resolve_path(route)
-        return Route(deparameterized_path=deparameterized_path, resolved_path=resolved_path)
+        return Route(*resolve_path(route))
 
     def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
         """

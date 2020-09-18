@@ -102,6 +102,7 @@ class SwaggerTesterSettings(object):
         self.CASE_TESTER: Callable = lambda: None
         self.CAMEL_CASE_PARSER = False
         self.CASE_PASSLIST: List[str] = []
+        self.RESPONSE_VALIDATION_MIDDLEWARE: ResponseValidationMiddlewareSettings
 
         # Overwrite defaults
         for setting, value in swagger_tester_settings.items():
