@@ -344,7 +344,6 @@ def validate_middleware_response(response: Response, path: str, method: str, fun
         # validate response data with respect to response schema
         from django_swagger_tester.schema_tester import SchemaTester
 
-        # noinspection PyUnresolvedReferences
         SchemaTester(
             schema=response_schema,
             data=response.data,
@@ -367,7 +366,6 @@ def copy_and_parse_response(response: Response) -> Response:
     # By parsing the response data JSON we bypass problems like uuid's not having been converted to
     # strings yet, which otherwise would create problems when comparing response data types to the
     # documented schema types in the schema tester
-    # noinspection PyUnresolvedReferences
     content = response.content.decode(response.charset)
     response_data = json.loads(content)
     copied_response = deepcopy(response)
