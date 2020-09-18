@@ -385,7 +385,7 @@ def copy_wrapper_response(response: Response) -> Response:
 
     class FakeResponse:
         def __init__(self, data: Any, status: int) -> None:
-            self.data = data
+            self.data = json.loads(json.dumps(str(data)))
             self.status_code = status
 
         def json(self) -> Any:
