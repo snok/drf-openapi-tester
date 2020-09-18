@@ -122,12 +122,27 @@ LOGGING = {
     },
 }
 
+# fmt: off
+
 SWAGGER_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
-    'MIDDLEWARE': {'RESPONSE_VALIDATION': {'LOG_LEVEL': 'ERROR', 'VALIDATION_EXEMPT_URLS': [],}},
-    'VIEWS': {'RESPONSE_VALIDATION': {'LOG_LEVEL': 'ERROR'}},
+    'MIDDLEWARE': {
+        'RESPONSE_VALIDATION': {
+            'LOG_LEVEL': 'ERROR',
+            'DEBUG': True,
+            'VALIDATION_EXEMPT_URLS': [],
+        }
+    },
+    'VIEWS': {
+        'RESPONSE_VALIDATION': {
+            'LOG_LEVEL': 'ERROR',
+            'DEBUG': True,
+        }
+    },
 }
+
+# fmt: on

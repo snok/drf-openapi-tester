@@ -24,6 +24,7 @@ class ResponseValidationMiddlewareSettings(object):
         # Define default values for middleware settings
         self.LOG_LEVEL = 'ERROR'
         self.VALIDATION_EXEMPT_URLS: List[str] = []
+        self.DEBUG = True
 
         # Overwrite defaults
         for setting, value in response_validation_settings.items():
@@ -37,6 +38,7 @@ class ResponseValidationMiddlewareSettings(object):
 
         self.validate_and_set_logger()
         self.validate_exempt_urls(self.VALIDATION_EXEMPT_URLS)
+        self.validate_debug()
 
     def validate_and_set_logger(self) -> None:
         """
@@ -57,6 +59,13 @@ class ResponseValidationMiddlewareSettings(object):
         except Exception:
             raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
 
+    def validate_debug(self) -> None:
+        """
+        Makes sure debug is a boolean.
+        """
+        if not isinstance(self.DEBUG, bool):
+            raise ImproperlyConfigured('DEBUG has to be a boolean.')
+
 
 # noinspection PyAttributeOutsideInit
 class ResponseValidationViewSettings(object):
@@ -70,6 +79,7 @@ class ResponseValidationViewSettings(object):
         """
         # Define default values for middleware settings
         self.LOG_LEVEL = 'ERROR'
+        self.DEBUG = True
 
         # Overwrite defaults
         for setting, value in response_validation_settings.items():
@@ -82,6 +92,7 @@ class ResponseValidationViewSettings(object):
                 )
 
         self.validate_and_set_logger()
+        self.validate_debug()
 
     def validate_and_set_logger(self) -> None:
         """
@@ -91,6 +102,13 @@ class ResponseValidationViewSettings(object):
         if not isinstance(self.LOG_LEVEL, str):
             raise ImproperlyConfigured('The SWAGGER_TESTER wrapper setting `LOG_LEVEL` must be a string value')
         self.LOGGER: Callable = get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
+
+    def validate_debug(self) -> None:
+        """
+        Makes sure debug is a boolean.
+        """
+        if not isinstance(self.DEBUG, bool):
+            raise ImproperlyConfigured('DEBUG has to be a boolean.')
 
 
 class MiddlewareSettings:

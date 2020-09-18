@@ -40,6 +40,8 @@ class ResponseValidationMiddleware(object):
         path = request.path
 
         # we skip validation if the route is ignored in the settings
+        if not self.middleware_settings.DEBUG:
+            return self.get_response(request)
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
             logger.debug('Validation skipped: %s request to `%s` is in VALIDATION_EXEMPT_URLS', method, path)
             return self.get_response(request)
