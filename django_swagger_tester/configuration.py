@@ -6,34 +6,9 @@ from typing import Callable, List
 
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.utils import get_logger
+
 logger = logging.getLogger('django_swagger_tester')
-
-
-def get_logger(level: str, logger_name: str) -> Callable:
-    """
-    Return logger.
-
-    :param level: log level
-    :param logger_name: logger name
-    :return: logger
-    """
-    if level == 'DEBUG':
-        return logging.getLogger(logger_name).debug
-    elif level == 'INFO':
-        return logging.getLogger(logger_name).info
-    elif level == 'WARNING':
-        return logging.getLogger(logger_name).warning
-    elif level == 'ERROR':
-        return logging.getLogger(logger_name).error
-    elif level == 'EXCEPTION':
-        return logging.getLogger(logger_name).exception
-    elif level == 'CRITICAL':
-        return logging.getLogger(logger_name).critical
-    else:
-        raise ImproperlyConfigured(
-            f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
-            f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
-        )
 
 
 # noinspection PyAttributeOutsideInit

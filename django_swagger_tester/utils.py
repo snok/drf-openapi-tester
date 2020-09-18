@@ -6,6 +6,7 @@ import sys
 from copy import deepcopy
 from typing import Any, Callable, List, Optional, Tuple
 
+from django.core.exceptions import ImproperlyConfigured
 from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
@@ -373,3 +374,30 @@ def copy_response(response: Response) -> Response:
     copied_response = deepcopy(response)
     copied_response.data = response_data  # this can probably be done differently
     return copied_response
+
+
+def get_logger(level: str, logger_name: str) -> Callable:
+    """
+    Return logger.
+
+    :param level: log level
+    :param logger_name: logger name
+    :return: logger
+    """
+    if level == 'DEBUG':
+        return logging.getLogger(logger_name).debug
+    elif level == 'INFO':
+        return logging.getLogger(logger_name).info
+    elif level == 'WARNING':
+        return logging.getLogger(logger_name).warning
+    elif level == 'ERROR':
+        return logging.getLogger(logger_name).error
+    elif level == 'EXCEPTION':
+        return logging.getLogger(logger_name).exception
+    elif level == 'CRITICAL':
+        return logging.getLogger(logger_name).critical
+    else:
+        raise ImproperlyConfigured(
+            f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+            f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
+        )
