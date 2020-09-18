@@ -15,7 +15,7 @@ class ResponseValidationMiddlewareSettings(object):
     Holds middleware specific settings.
     """
 
-    def __init__(self, middleware_settings: dict) -> None:
+    def __init__(self, response_validation_settings: dict) -> None:
         """
         Initializes tester class with base settings.
         """
@@ -24,7 +24,7 @@ class ResponseValidationMiddlewareSettings(object):
         self.VALIDATION_EXEMPT_URLS: List[str] = []
 
         # Overwrite defaults
-        for setting, value in middleware_settings.items():
+        for setting, value in response_validation_settings.items():
             if hasattr(self, setting):
                 setattr(self, setting, value)
             else:
@@ -82,6 +82,15 @@ class ResponseValidationMiddlewareSettings(object):
             )
 
 
+class MiddlewareSettings:
+    def __init__(self, middleware_settings: dict) -> None:
+        """
+        Initializes tester class with base settings.
+        """
+        rvms = middleware_settings.get('RESPONSE_VALIDATION', {})
+        self.RESPONSE_VALIDATION = ResponseValidationMiddlewareSettings(rvms if rvms is not None else {})
+
+
 # noinspection PyAttributeOutsideInit
 class SwaggerTesterSettings(object):
     """
@@ -102,7 +111,7 @@ class SwaggerTesterSettings(object):
         self.CASE_TESTER: Callable = lambda: None
         self.CAMEL_CASE_PARSER = False
         self.CASE_PASSLIST: List[str] = []
-        self.RESPONSE_VALIDATION_MIDDLEWARE: ResponseValidationMiddlewareSettings
+        self.MIDDLEWARE: MiddlewareSettings
 
         # Overwrite defaults
         for setting, value in swagger_tester_settings.items():
@@ -115,10 +124,8 @@ class SwaggerTesterSettings(object):
                     logger.debug('Received excess setting `%s` with value `%s`', setting, value)
 
         # Load middleware settings as its own class
-        middleware_settings = swagger_tester_settings.get('RESPONSE_VALIDATION_MIDDLEWARE', {})
-        self.RESPONSE_VALIDATION_MIDDLEWARE = ResponseValidationMiddlewareSettings(
-            middleware_settings if middleware_settings is not None else {}
-        )
+        middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
+        self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)

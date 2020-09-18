@@ -270,8 +270,10 @@ class Route:
         """
         if len(self.parameters) == 0:
             return self.deparameterized_path == route
-        for _ in self.parameters:
-            if self.get_path() == route:
+
+        for _ in range(len(self.parameters) + 1):
+            x = self.get_path()
+            if x == route:
                 self.reset()
                 return True
         self.reset()

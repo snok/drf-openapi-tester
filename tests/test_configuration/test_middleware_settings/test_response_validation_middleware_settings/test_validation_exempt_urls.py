@@ -4,7 +4,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
-from tests.utils import patch_response_middleware_settings
+from tests.utils import patch_response_validation_middleware_settings
 
 
 def test_bad_regular_expressions(monkeypatch) -> None:
@@ -16,7 +16,9 @@ def test_bad_regular_expressions(monkeypatch) -> None:
             ImproperlyConfigured, match='Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions'
         ):
             monkeypatch.setattr(
-                django_settings, 'SWAGGER_TESTER', patch_response_middleware_settings('VALIDATION_EXEMPT_URLS', value)
+                django_settings,
+                'SWAGGER_TESTER',
+                patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', value),
             )
             SwaggerTesterSettings()
 
@@ -27,6 +29,6 @@ def test_accepted_regexp(monkeypatch) -> None:
     """
     for value in ['^api/v1/test$', '']:
         monkeypatch.setattr(
-            django_settings, 'SWAGGER_TESTER', patch_response_middleware_settings('VALIDATION_EXEMPT_URLS', value)
+            django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', value)
         )
         SwaggerTesterSettings()

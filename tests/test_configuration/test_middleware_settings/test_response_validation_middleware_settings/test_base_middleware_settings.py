@@ -4,7 +4,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
-from tests.utils import patch_response_middleware_settings, patch_settings
+from tests.utils import patch_response_validation_middleware_settings, patch_settings
 
 
 def test_missing_middleware_settings(monkeypatch) -> None:
@@ -22,5 +22,7 @@ def test_excess_setting_middleware_setting(monkeypatch) -> None:
         match='Received excess middleware setting, `EXTRA_SETTING`, for SWAGGER_TESTER. '
         'Please correct or remove this from the middleware settings.',
     ):
-        monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_response_middleware_settings('EXTRA_SETTING', 'test'))
+        monkeypatch.setattr(
+            django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('EXTRA_SETTING', 'test')
+        )
         SwaggerTesterSettings()

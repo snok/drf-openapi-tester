@@ -29,7 +29,7 @@ class ResponseValidationMiddleware(object):
     def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
         self.endpoints = get_endpoint_paths()
-        self.middleware_settings = settings.RESPONSE_VALIDATION_MIDDLEWARE
+        self.middleware_settings = settings.MIDDLEWARE.RESPONSE_VALIDATION
         self.exempt_urls = [compile(url_pattern) for url_pattern in self.middleware_settings.VALIDATION_EXEMPT_URLS]
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed

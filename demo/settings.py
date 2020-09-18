@@ -140,8 +140,10 @@ SWAGGER_TESTER = {
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
-    'RESPONSE_VALIDATION_MIDDLEWARE': {
-        'LOG_LEVEL': 'ERROR',
-        'VALIDATION_EXEMPT_URLS': [],
+    'MIDDLEWARE': {
+        'RESPONSE_VALIDATION': {
+            'LOG_LEVEL': 'ERROR',
+            'VALIDATION_EXEMPT_URLS': [],
+        }
     },
 }
