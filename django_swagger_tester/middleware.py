@@ -22,6 +22,67 @@ from django_swagger_tester.utils import Route, format_response_tester_error, get
 logger = logging.getLogger('django_swagger_tester')
 
 
+def validate_middleware_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
+    """
+    Validates an outgoing response object against the OpenAPI schema response documentation.
+
+    In case of inconsistencies, a log is logged at a setting-specified log level.
+
+    Unlike the django_swagger_tester.testing validate_response function,
+    this function should *not* raise any errors during runtime.
+
+    :param response: HTTP response
+    :param path: The request path
+    :param method: The request method
+    :param func_logger: A logger callable
+    """
+    logger.info('Validating response for %s request to %s', method, path)
+
+    try:
+        # load the response schema
+        response_schema = settings.LOADER_CLASS.get_response_schema_section(
+            route=path,
+            status_code=response.status_code,
+            method=method,
+            skip_validation_warning=True,
+        )
+    except UndocumentedSchemaSectionError as e:
+        func_logger('Failed accessing response schema for %s request to `%s`. Error: %s', method, path, e)
+        return
+
+    try:
+        # validate response data with respect to response schema
+        from django_swagger_tester.schema_tester import SchemaTester
+
+        SchemaTester(
+            schema=response_schema,
+            data=response.data,
+            case_tester=settings.CASE_TESTER,
+            camel_case_parser=settings.CAMEL_CASE_PARSER,
+            origin='response',
+        )
+        logger.info('Response valid for %s request to %s', method, path)
+    except SwaggerDocumentationError as e:
+        long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
+        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message))
+    except CaseError as e:
+        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
+
+
+def copy_and_parse_response(response: Response) -> Response:
+    """
+    Loads response data as JSON and returns a copied response object.
+    """
+    # By parsing the response data JSON we bypass problems like uuid's not having been converted to
+    # strings yet, which otherwise would create problems when comparing response data types to the
+    # documented schema types in the schema tester
+    content = response.content.decode(response.charset)
+    response_data = json.loads(content)
+    copied_response = deepcopy(response)
+    copied_response.data = response_data  # this can probably be done differently
+    return copied_response
+
+
 @sync_only_middleware
 class ResponseValidationMiddleware(object):
     """
@@ -63,63 +124,17 @@ class ResponseValidationMiddleware(object):
         # -- Response validation --
         if response.get('Content-Type', '') == 'application/json':
             logger.debug('Validating response')
-            # By parsing the response data JSON we bypass problems like uuid's not having been converted to
-            # strings yet, which otherwise would create problems when comparing response data types to the
-            # documented schema types in the schema tester
-            content = response.content.decode(response.charset)
-            response_data = json.loads(content)
-            copied_response = deepcopy(response)
-            copied_response.data = response_data  # this can probably be done differently
-            self.validate_response(copied_response, request)
+            copied_response = copy_and_parse_response(response)
+            validate_middleware_response(
+                response=copied_response,
+                path=request.path,
+                method=request.method,
+                func_logger=self.middleware_settings.LOGGER,
+            )
         else:
             logger.debug('Validation skipped - response for %s request to %s has non-JSON content-type', method, path)
 
         return response
-
-    def validate_response(self, response: Response, request: HttpRequest) -> None:
-        """
-        Validates an outgoing response object against the OpenAPI schema response documentation.
-
-        In case of inconsistencies, a log is logged at a setting-specified log level.
-
-        :param response: HTTP response
-        :param request: HTTP request
-        """
-        logger.info('Validating response for %s request to %s', request.method, request.path)
-
-        try:
-            # load the response schema
-            response_schema = settings.LOADER_CLASS.get_response_schema_section(
-                route=request.path,
-                status_code=response.status_code,
-                method=request.method,
-                skip_validation_warning=True,
-            )
-        except UndocumentedSchemaSectionError as e:
-            self.middleware_settings.LOGGER(
-                'Failed accessing response schema for %s request to `%s`. Error: %s', request.method, request.path, e
-            )
-            return
-
-        try:
-            # validate response data with respect to response schema
-            from django_swagger_tester.schema_tester import SchemaTester
-
-            SchemaTester(
-                schema=response_schema,
-                data=response.data,
-                case_tester=settings.CASE_TESTER,
-                camel_case_parser=settings.CAMEL_CASE_PARSER,
-                origin='response',
-            )
-            logger.info('Response valid for %s request to %s', request.method, request.path)
-        except SwaggerDocumentationError as e:
-            long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
-            self.middleware_settings.LOGGER(
-                'Bad response returned for %s request to %s. Error: %s', request.method, request.path, str(long_message)
-            )
-        except CaseError as e:
-            self.middleware_settings.LOGGER('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
 
     def path_in_endpoints(self, path: str, method: str) -> bool:
         """
@@ -152,5 +167,6 @@ class ResponseValidationMiddleware(object):
                     return True
                 else:
                     logger.debug('%s request method does not exist in the view class', method)
+
         logger.debug('Validation skipped - %s request to %s was not found in API endpoints', method, path)
         return False

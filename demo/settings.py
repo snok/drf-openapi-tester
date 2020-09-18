@@ -146,4 +146,5 @@ SWAGGER_TESTER = {
             'VALIDATION_EXEMPT_URLS': [],
         }
     },
+    'WRAPPERS': {'RESPONSE_VALIDATION': {'LOG_LEVEL': 'ERROR'}},
 }

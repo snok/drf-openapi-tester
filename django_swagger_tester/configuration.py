@@ -9,10 +9,36 @@ from django.core.exceptions import ImproperlyConfigured
 logger = logging.getLogger('django_swagger_tester')
 
 
+def get_logger(level: str, logger_name: str) -> Callable:
+    """
+    Return logger.
+    :param level: log level
+    :param logger_name: logger name
+    :return: logger
+    """
+    if level == 'DEBUG':
+        return logging.getLogger(logger_name).debug
+    elif level == 'INFO':
+        return logging.getLogger(logger_name).info
+    elif level == 'WARNING':
+        return logging.getLogger(logger_name).warning
+    elif level == 'ERROR':
+        return logging.getLogger(logger_name).error
+    elif level == 'EXCEPTION':
+        return logging.getLogger(logger_name).exception
+    elif level == 'CRITICAL':
+        return logging.getLogger(logger_name).critical
+    else:
+        raise ImproperlyConfigured(
+            f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+            f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
+        )
+
+
 # noinspection PyAttributeOutsideInit
 class ResponseValidationMiddlewareSettings(object):
     """
-    Holds middleware specific settings.
+    Holds middleware specific settings for the response validation middleware.
     """
 
     def __init__(self, response_validation_settings: dict) -> None:
@@ -29,8 +55,8 @@ class ResponseValidationMiddlewareSettings(object):
                 setattr(self, setting, value)
             else:
                 raise ImproperlyConfigured(
-                    f'Received excess middleware setting, `{setting}`, for SWAGGER_TESTER. '
-                    f'Please correct or remove this from the middleware settings.'
+                    f'Received excess middleware setting, `{setting}`, for the RESPONSE_VALIDATION middleware settings. '
+                    f'Please correct or remove this settings.'
                 )
 
         self.validate_and_set_logger()
@@ -43,7 +69,7 @@ class ResponseValidationMiddlewareSettings(object):
         """
         if not isinstance(self.LOG_LEVEL, str):
             raise ImproperlyConfigured('The SWAGGER_TESTER middleware setting `LOG_LEVEL` must be a string value')
-        self.LOGGER: Callable = self.get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
+        self.LOGGER: Callable = get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
 
     @staticmethod
     def validate_exempt_urls(values: List[str]) -> None:
@@ -55,31 +81,39 @@ class ResponseValidationMiddlewareSettings(object):
         except Exception:
             raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
 
-    @staticmethod
-    def get_logger(level: str, logger_name: str) -> Callable:
+
+class ResponseValidationWrapperSettings(object):
+    """
+    Holds middleware specific settings for the `validate_response` wrapper function.
+    """
+
+    def __init__(self, response_validation_settings: dict) -> None:
         """
-        Return logger.
-        :param level: log level
-        :param logger_name: logger name
-        :return: logger
+        Initializes tester class with base settings.
         """
-        if level == 'DEBUG':
-            return logging.getLogger(logger_name).debug
-        elif level == 'INFO':
-            return logging.getLogger(logger_name).info
-        elif level == 'WARNING':
-            return logging.getLogger(logger_name).warning
-        elif level == 'ERROR':
-            return logging.getLogger(logger_name).error
-        elif level == 'EXCEPTION':
-            return logging.getLogger(logger_name).exception
-        elif level == 'CRITICAL':
-            return logging.getLogger(logger_name).critical
-        else:
-            raise ImproperlyConfigured(
-                f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
-                f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
-            )
+        # Define default values for middleware settings
+        self.LOG_LEVEL = 'ERROR'
+
+        # Overwrite defaults
+        for setting, value in response_validation_settings.items():
+            if hasattr(self, setting):
+                setattr(self, setting, value)
+            else:
+                raise ImproperlyConfigured(
+                    f'Received excess middleware setting, `{setting}`, for the RESPONSE_VALIDATION wrapper settings. '
+                    f'Please correct or remove this settings.'
+                )
+
+        self.validate_and_set_logger()
+
+    def validate_and_set_logger(self) -> None:
+        """
+        Makes sure the LOG_LEVEL setting is the right type, and sets LOGGER.
+        Bad strings are handled in self.get_logger
+        """
+        if not isinstance(self.LOG_LEVEL, str):
+            raise ImproperlyConfigured('The SWAGGER_TESTER wrapper setting `LOG_LEVEL` must be a string value')
+        self.LOGGER: Callable = get_logger(self.LOG_LEVEL.upper(), 'django_swagger_tester')
 
 
 class MiddlewareSettings:
@@ -89,6 +123,15 @@ class MiddlewareSettings:
         """
         rvms = middleware_settings.get('RESPONSE_VALIDATION', {})
         self.RESPONSE_VALIDATION = ResponseValidationMiddlewareSettings(rvms if rvms is not None else {})
+
+
+class WrapperSettings:
+    def __init__(self, wrapper_settings: dict) -> None:
+        """
+        Initializes tester class with base settings.
+        """
+        rvws = wrapper_settings.get('RESPONSE_VALIDATION', {})
+        self.RESPONSE_VALIDATION = ResponseValidationWrapperSettings(rvws if rvws is not None else {})
 
 
 # noinspection PyAttributeOutsideInit
@@ -112,13 +155,13 @@ class SwaggerTesterSettings(object):
         self.CAMEL_CASE_PARSER = False
         self.CASE_PASSLIST: List[str] = []
         self.MIDDLEWARE: MiddlewareSettings
-
+        self.WRAPPERS: WrapperSettings
         # Overwrite defaults
         for setting, value in swagger_tester_settings.items():
             if hasattr(self, setting):
                 setattr(self, setting, value)
             else:
-                if setting != 'MIDDLEWARE':
+                if setting not in ['MIDDLEWARE', 'WRAPPERS']:
                     # Some loader classes will have extra settings passed to the loader class as kwargs
                     # Because of this, we cannot raise errors for extra settings
                     logger.debug('Received excess setting `%s` with value `%s`', setting, value)
@@ -126,6 +169,10 @@ class SwaggerTesterSettings(object):
         # Load middleware settings as its own class
         middleware_settings = swagger_tester_settings.get('MIDDLEWARE', {})
         self.MIDDLEWARE = MiddlewareSettings(middleware_settings if middleware_settings is not None else {})
+
+        # Load wrapper function settings as its own class
+        wrapper_settings = swagger_tester_settings.get('WRAPPERS', {})
+        self.WRAPPERS = WrapperSettings(wrapper_settings if wrapper_settings is not None else {})
 
         # Make sure schema loader was specified
         self.set_and_validate_schema_loader(swagger_tester_settings)

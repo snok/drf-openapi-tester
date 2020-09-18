@@ -1,57 +1,45 @@
-# import logging
-# from functools import wraps
-# from typing import Any, Callable
-#
-# from django.core.exceptions import ImproperlyConfigured
-# from rest_framework.request import Request
-#
-# from django_swagger_tester.configuration import settings
-# from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
-# from django_swagger_tester.testing import validate_response
-#
-# logger = logging.getLogger('django_swagger_tester')
-#
-#
-# def validate(request_body: bool = False, response: bool = False) -> Any:
-#     """
-#     Wrapper function to enable middleware-style validation, but for individual API views.
-#
-#     :param request_body: Whether to validate the request body
-#     :param response: Whether to validate the response
-#     """
-#
-#     def outer(fn: Callable) -> Any:
-#         @wraps(fn)
-#         def inner(*args, **kwargs) -> Any:
-#             if not isinstance(args[0], Request):
-#                 raise ImproperlyConfigured('The first argument to a view needs to be a Request')
-#
-#             if request_body:
-#                 # input validation function here
-#                 # print('Request body', args[0].data)
-#                 pass
-#
-#             # ^ Code above this line happens before the view is run
-#             output = fn(*args, **kwargs)
-#
-#             method = args[0].method.upper()
-#             path = args[0].path
-#
-#             if response:
-#                 # response validation function here
-#                 try:
-#                     validate_response(response=output, method=method, route=path)
-#                 except SwaggerDocumentationError as e:
-#                     settings.MIDDLEWARE.LOGGER(
-#                         'Incorrect response template returned for %s request to %s. Swagger error: %s',
-#                         method,
-#                         path,
-#                         str(e),
-#                     )
-#                 except CaseError as e:
-#                     settings.MIDDLEWARE.LOGGER(f'Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
-#             return output
-#
-#         return inner
-#
-#     return outer
+import logging
+from functools import wraps
+from typing import Any, Callable
+
+from django.core.exceptions import ImproperlyConfigured
+from rest_framework.request import Request
+
+from django_swagger_tester.configuration import settings
+from django_swagger_tester.middleware import copy_and_parse_response, validate_middleware_response
+
+logger = logging.getLogger('django_swagger_tester')
+
+
+def validate_response() -> Any:
+    """
+    Wrapper function to enable middleware-style validation, but for individual API views.
+    """
+
+    def outer(fn: Callable) -> Any:
+        @wraps(fn)
+        def inner(*args, **kwargs) -> Any:
+
+            if not isinstance(args[0], Request):
+                raise ImproperlyConfigured('The first argument to a view needs to be a Request')
+            else:
+                request = args[0]
+
+            response = fn(*args, **kwargs)
+
+            # code below this line is identical to the code we run in the middleware -
+
+            logger.debug('Validating response')
+            copied_response = copy_and_parse_response(response)
+            validate_middleware_response(
+                response=copied_response,
+                path=request.path,
+                method=request.method,
+                func_logger=settings.WRAPPERS.RESPONSE_VALIDATION.LOGGER,
+            )
+
+            return response
+
+        return inner
+
+    return outer
