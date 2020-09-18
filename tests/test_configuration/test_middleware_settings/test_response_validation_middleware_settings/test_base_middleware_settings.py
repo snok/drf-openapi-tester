@@ -19,7 +19,7 @@ def test_missing_middleware_settings(monkeypatch) -> None:
 def test_excess_setting_middleware_setting(monkeypatch) -> None:
     with pytest.raises(
         ImproperlyConfigured,
-        match='Received excess middleware setting, `EXTRA_SETTING`, for the RESPONSE_VALIDATION middleware settings. Please correct or remove this settings.',
+        match='Received excess middleware setting, `EXTRA_SETTING`, for the RESPONSE_VALIDATION middleware settings. Please correct or remove this setting.',
     ):
         monkeypatch.setattr(
             django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('EXTRA_SETTING', 'test')
