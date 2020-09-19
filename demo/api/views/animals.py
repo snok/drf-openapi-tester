@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
@@ -14,5 +16,6 @@ class Animals(ResponseValidationView):
             'monkey': 'very cool',
             'bird': 'mixed reviews',
             'spider': 'not cool',
+            'random_uuid': uuid4(),
         }
         return Response(animals, HTTP_200_OK)
