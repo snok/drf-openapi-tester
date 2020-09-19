@@ -1,12 +1,17 @@
+from drf_spectacular.utils import extend_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from ..serializers import CarSerializer
 from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_schema
 
 
 class GoodCars(APIView):
     @staticmethod
+    @extend_schema(
+        responses={200: CarSerializer(many=True)}
+    )
     @get_cars_auto_schema()
     def get(request: Request, version: int, **kwargs) -> Response:
         cars = [
