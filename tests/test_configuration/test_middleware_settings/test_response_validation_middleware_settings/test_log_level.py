@@ -4,7 +4,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
-from tests.utils import patch_response_validation_middleware_settings, patch_settings
+from tests.utils import patch_response_validation_middleware_settings
 
 
 def test_non_string_log_level(monkeypatch) -> None:
@@ -13,7 +13,8 @@ def test_non_string_log_level(monkeypatch) -> None:
     """
     for value in [None, {}, [], 2]:
         with pytest.raises(
-            ImproperlyConfigured, match='The SWAGGER_TESTER middleware setting `LOG_LEVEL` must be a string value'
+            ImproperlyConfigured,
+            match=f'is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.',
         ):
             monkeypatch.setattr(
                 django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('LOG_LEVEL', value)

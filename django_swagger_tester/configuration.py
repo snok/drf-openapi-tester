@@ -14,6 +14,8 @@ logger = logging.getLogger('django_swagger_tester')
 
 class ResponseValidationMiddlewareSettings(object):
     def __init__(self, response_validation_settings: dict) -> None:
+        if response_validation_settings is None:
+            response_validation_settings = {}
         self.settings = response_validation_settings
         self.validate()
 
@@ -42,18 +44,28 @@ class ResponseValidationMiddlewareSettings(object):
         if not isinstance(self.debug, bool):
             raise ImproperlyConfigured('DEBUG has to be a boolean.')
 
+        self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
+
 
 class MiddlewareSettings:
     def __init__(self, middleware_settings: dict) -> None:
+        if middleware_settings is None:
+            middleware_settings = {}
         self.settings = middleware_settings
+        self.validate()
 
     @property
     def response_validation(self):
         return ResponseValidationMiddlewareSettings(self.settings.get('RESPONSE_VALIDATION', {}))
 
+    def validate(self):
+        self.response_validation
+
 
 class ResponseValidationViewSettings(object):
     def __init__(self, response_validation_settings: dict) -> None:
+        if response_validation_settings is None:
+            response_validation_settings = {}
         self.settings = response_validation_settings
         self.validate()
 
@@ -73,14 +85,22 @@ class ResponseValidationViewSettings(object):
         if not isinstance(self.debug, bool):
             raise ImproperlyConfigured('DEBUG has to be a boolean.')
 
+        self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
+
 
 class ViewSettings:
     def __init__(self, view_settings: dict) -> None:
+        if view_settings is None:
+            view_settings = {}
         self.settings = view_settings
+        self.validate()
 
     @property
     def response_validation(self):
         return ResponseValidationViewSettings(self.settings.get('RESPONSE_VALIDATION', {}))
+
+    def validate(self):
+        self.response_validation
 
 
 class SwaggerTesterSettings(object):
@@ -88,9 +108,10 @@ class SwaggerTesterSettings(object):
         from django.conf import settings as django_settings
 
         if not hasattr(django_settings, 'SWAGGER_TESTER') or not django_settings.SWAGGER_TESTER:
-            raise ImproperlyConfigured('Please configure your SWAGGER_TESTER settings')
+            raise ImproperlyConfigured('SWAGGER_TESTER settings need to be configured')
 
         self.settings = django_settings.SWAGGER_TESTER
+        self.validate()
 
     @property
     def schema_loader(self):
@@ -119,7 +140,10 @@ class SwaggerTesterSettings(object):
     def validate(self):
         self.validate_case_tester_setting()
         self.validate_camel_case_parser_setting()
+        self.validate_case_passlist()
         self.set_and_validate_schema_loader()
+        self.middleware_settings
+        self.view_settings
 
     def validate_case_tester_setting(self) -> None:
         """

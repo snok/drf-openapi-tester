@@ -384,6 +384,14 @@ def get_logger(level: str, logger_name: str) -> Callable:
     :param logger_name: logger name
     :return: logger
     """
+    error = (
+        f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+        f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
+    )
+    if not isinstance(level, str):
+        raise ImproperlyConfigured(error)
+    else:
+        level = level.upper()
     if level == 'DEBUG':
         return logging.getLogger(logger_name).debug
     elif level == 'INFO':
@@ -397,7 +405,4 @@ def get_logger(level: str, logger_name: str) -> Callable:
     elif level == 'CRITICAL':
         return logging.getLogger(logger_name).critical
     else:
-        raise ImproperlyConfigured(
-            f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
-            f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
-        )
+        raise ImproperlyConfigured(error)
