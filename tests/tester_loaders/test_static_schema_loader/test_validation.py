@@ -13,7 +13,7 @@ def test_static_schema_loader_validation(monkeypatch):
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
     settings = SwaggerTesterSettings()
-    assert settings.LOADER_CLASS.path == yml_path
+    assert settings.loader_class.path == yml_path
 
 
 def test_drf_yasg_not_installed(monkeypatch):
@@ -29,8 +29,7 @@ def test_drf_yasg_not_installed(monkeypatch):
 
     with pytest.raises(
         ImproperlyConfigured,
-        match='The package `PyYAML` is required for parsing yaml files. '
-        'Please run `pip install PyYAML` to install it.',
+        match='The package `PyYAML` is required for parsing yaml files. ' 'Please run `pip install PyYAML` to install it.',
     ):
         SwaggerTesterSettings()
 

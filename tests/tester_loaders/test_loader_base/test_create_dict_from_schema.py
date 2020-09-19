@@ -13,7 +13,7 @@ from tests.utils import MockRoute
 
 def loader(path):
     with open(str(settings.BASE_DIR.parent) + path, 'r') as f:
-        return _settings.LOADER_CLASS.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return _settings.loader_class.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')

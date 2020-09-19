@@ -29,9 +29,9 @@ class SchemaTester:
 
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
-        self.ignored_keys += settings.CASE_PASSLIST
+        self.ignored_keys += settings.case_passlist
         self.camel_case_parser: bool = (
-            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.CAMEL_CASE_PARSER
+            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.camel_case_parser
         )
         self.origin = origin
 

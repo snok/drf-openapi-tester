@@ -44,7 +44,7 @@ def format_response_tester_error(
     # Construct example dict/list from schema - this is useful to display comparable items
     from django_swagger_tester.configuration import settings
 
-    example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
+    example_item = settings.loader_class.create_dict_from_schema(exception.schema)
 
     # Make sure we're sorting both objects to make differences easier to spot
     if isinstance(exception.response, dict):
@@ -331,7 +331,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
 
     try:
         # load the response schema
-        response_schema = settings.LOADER_CLASS.get_response_schema_section(
+        response_schema = settings.loader_class.get_response_schema_section(
             route=path, status_code=response.status_code, method=method, skip_validation_warning=True,
         )
     except UndocumentedSchemaSectionError as e:
@@ -350,8 +350,8 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         SchemaTester(
             schema=response_schema,
             data=response.data,
-            case_tester=settings.CASE_TESTER,
-            camel_case_parser=settings.CAMEL_CASE_PARSER,
+            case_tester=settings.case_tester,
+            camel_case_parser=settings.camel_case_parser,
             origin='response',
         )
         logger.info('Response valid for %s request to %s', method, path)
