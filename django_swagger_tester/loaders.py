@@ -457,7 +457,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
 
         return spectacular_settings.SCHEMA_PATH_PREFIX
 
-    def get_route(self, route: str) -> str:
+    def get_route(self, route: str) -> Route:
         """
         Returns a url that matches the urls found in a drf_spectacular-generated schema.
 
