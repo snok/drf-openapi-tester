@@ -12,13 +12,13 @@ class ResponseValidationView(APIView):
         Overwrites APIView finalize_response to validate response before returning the response.
         """
         response = super(ResponseValidationView, self).finalize_response(request, response, *args, **kwargs)
-        if settings.VIEWS.RESPONSE_VALIDATION.DEBUG:
+        if settings.view_settings.response_validation.debug:
             response.render()
             copied_response = copy_response(response)
             safe_validate_response(
                 response=copied_response,
                 path=request.path,
                 method=request.method,
-                func_logger=settings.VIEWS.RESPONSE_VALIDATION.LOGGER,
+                func_logger=settings.view_settings.response_validation.logger,
             )
         return response

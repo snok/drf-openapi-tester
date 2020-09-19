@@ -23,8 +23,8 @@ class ResponseValidationMiddleware(object):
     def __init__(self, get_response: Callable) -> None:
         self.get_response = get_response
         self.endpoints = get_endpoint_paths()
-        self.middleware_settings = settings.MIDDLEWARE.RESPONSE_VALIDATION
-        self.exempt_urls = [compile(url_pattern) for url_pattern in self.middleware_settings.VALIDATION_EXEMPT_URLS]
+        self.middleware_settings = settings.middleware_settings.response_validation
+        self.exempt_urls = [compile(url_pattern) for url_pattern in self.middleware_settings.validation_exempt_urls]
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed
         if not apps.is_installed('django_swagger_tester'):
@@ -40,7 +40,7 @@ class ResponseValidationMiddleware(object):
         path = request.path
 
         # we skip validation if the route is ignored in the settings
-        if not self.middleware_settings.DEBUG:
+        if not self.middleware_settings.debug:
             return self.get_response(request)
         if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
             logger.debug('Validation skipped: %s request to `%s` is in VALIDATION_EXEMPT_URLS', method, path)
@@ -62,7 +62,7 @@ class ResponseValidationMiddleware(object):
                 response=copied_response,
                 path=request.path,
                 method=request.method,
-                func_logger=self.middleware_settings.LOGGER,
+                func_logger=self.middleware_settings.logger,
             )
         else:
             logger.debug('Validation skipped - response for %s request to %s has non-JSON content-type', method, path)
