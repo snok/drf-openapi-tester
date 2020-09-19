@@ -9,7 +9,7 @@ from django_swagger_tester.utils import safe_validate_response, copy_response
 class ResponseValidationView(APIView):
     def finalize_response(self, request: HttpRequest, response: Response, *args, **kwargs) -> Response:
         """
-        Overwrites APIView finalize_response to validate response before returning the response.
+        Overwrites APIView's finalize_response so it validates response objects before returning them.
         """
         response = super(ResponseValidationView, self).finalize_response(request, response, *args, **kwargs)
         if settings.view_settings.response_validation.debug:
