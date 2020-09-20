@@ -363,10 +363,28 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         )
         logger.info('Response valid for %s request to %s', method, path)
     except SwaggerDocumentationError as e:
+        ext = {
+            # `dst` is added in front of the extra attrs to make the attribute names more unique,
+            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
+            # if the two colliding logs contain different variable types for the same attribute name
+            'dst_response_schema': str(response_schema),
+            'dst_response_data': str(response.data),
+            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
+            'dst_camel_case_parser': str(settings.camel_case_parser),
+        }
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
-        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message))
+        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message), extra=ext)
     except CaseError as e:
-        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
+        ext = {
+            # `dst` is added in front of the extra attrs to make the attribute names more unique,
+            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
+            # if the two colliding logs contain different variable types for the same attribute name
+            'dst_response_schema': str(response_schema),
+            'dst_response_data': str(response.data),
+            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
+            'dst_camel_case_parser': str(settings.camel_case_parser),
+        }
+        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin, extra=ext)
 
 
 def copy_response(response: Response) -> Response:
