@@ -11,7 +11,11 @@ from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
+from django_swagger_tester.exceptions import (
+    CaseError,
+    SwaggerDocumentationError,
+    UndocumentedSchemaSectionError,
+)
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -217,7 +221,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'({[\w]+\})')
+        pattern = re.compile(r'({[\w]+\})')  # noqa: FS003
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -332,7 +336,10 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
     try:
         # load the response schema
         response_schema = settings.loader_class.get_response_schema_section(
-            route=path, status_code=response.status_code, method=method, skip_validation_warning=True,
+            route=path,
+            status_code=response.status_code,
+            method=method,
+            skip_validation_warning=True,
         )
     except UndocumentedSchemaSectionError as e:
         func_logger(
@@ -390,6 +397,8 @@ def get_logger(level: str, logger_name: str) -> Callable:
     )
     if not isinstance(level, str):
         raise ImproperlyConfigured(error)
+    if not isinstance(logger_name, str):
+        raise ImproperlyConfigured('Logger name must be a string')
     else:
         level = level.upper()
     if level == 'DEBUG':

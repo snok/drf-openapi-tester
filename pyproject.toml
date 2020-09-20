@@ -70,7 +70,7 @@ exclude = '''
 line-length = 126
 multi_line_output = 3
 include_trailing_comma = true
-known_third_party = ["django", "drf_yasg", "pytest", "requests", "rest_framework", "yaml"]
+known_third_party = ["django", "djangorestframework_camel_case", "drf_spectacular", "drf_yasg", "pytest", "requests", "rest_framework", "yaml"]
 known_first_party = ["django_swagger_tester"]
 default_section = "THIRDPARTY"
 

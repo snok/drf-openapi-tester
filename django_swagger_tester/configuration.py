@@ -12,7 +12,7 @@ from django_swagger_tester.utils import get_logger
 logger = logging.getLogger('django_swagger_tester')
 
 
-class ResponseValidationMiddlewareSettings(object):
+class ResponseValidationMiddlewareSettings:
     def __init__(self, response_validation_settings: dict) -> None:
         if response_validation_settings is None:
             response_validation_settings = {}
@@ -24,6 +24,10 @@ class ResponseValidationMiddlewareSettings(object):
         return self.settings.get('LOG_LEVEL', 'ERROR')
 
     @property
+    def logger_name(self) -> str:
+        return self.settings.get('LOGGER_NAME', 'django_swagger_tester')
+
+    @property
     def debug(self) -> bool:
         return self.settings.get('DEBUG', True)
 
@@ -33,7 +37,7 @@ class ResponseValidationMiddlewareSettings(object):
 
     @property
     def logger(self) -> Callable:
-        return get_logger(self.log_level, 'django_swagger_tester')
+        return get_logger(self.log_level, self.logger_name)
 
     def validate(self) -> None:
         try:
@@ -42,7 +46,7 @@ class ResponseValidationMiddlewareSettings(object):
             raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
 
         if not isinstance(self.debug, bool):
-            raise ImproperlyConfigured('DEBUG has to be a boolean.')
+            raise ImproperlyConfigured('DEBUG must be a boolean.')
 
         self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
 
@@ -62,7 +66,7 @@ class MiddlewareSettings:
         self.response_validation
 
 
-class ResponseValidationViewSettings(object):
+class ResponseValidationViewSettings:
     def __init__(self, response_validation_settings: dict) -> None:
         if response_validation_settings is None:
             response_validation_settings = {}
@@ -74,16 +78,20 @@ class ResponseValidationViewSettings(object):
         return self.settings.get('LOG_LEVEL', 'ERROR')
 
     @property
+    def logger_name(self) -> str:
+        return self.settings.get('LOGGER_NAME', 'django_swagger_tester')
+
+    @property
     def debug(self) -> bool:
         return self.settings.get('DEBUG', True)
 
     @property
     def logger(self) -> Callable:
-        return get_logger(self.log_level, 'django_swagger_tester')
+        return get_logger(self.log_level, self.logger_name)
 
     def validate(self) -> None:
         if not isinstance(self.debug, bool):
-            raise ImproperlyConfigured('DEBUG has to be a boolean.')
+            raise ImproperlyConfigured('DEBUG must be a boolean')
 
         self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
 
@@ -103,7 +111,7 @@ class ViewSettings:
         self.response_validation
 
 
-class SwaggerTesterSettings(object):
+class SwaggerTesterSettings:
     def __init__(self) -> None:
         from django.conf import settings as django_settings
 
