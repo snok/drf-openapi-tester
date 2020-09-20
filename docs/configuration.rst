@@ -40,6 +40,7 @@ A complete example of the ``SWAGGER_TESTER`` settings might look like this:
         'MIDDLEWARE': {
             'RESPONSE_VALIDATION': {
                 'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'response_validation_middleware',
                 'DEBUG': True,
                 'VALIDATION_EXEMPT_URLS': ['^api/v1/special-endpoint$'],
             }
@@ -47,6 +48,7 @@ A complete example of the ``SWAGGER_TESTER`` settings might look like this:
         'VIEWS': {
             'RESPONSE_VALIDATION': {
                 'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'django_swagger_tester',
                 'DEBUG': True,
             }
         },
@@ -177,6 +179,12 @@ Log level sets the level for which errors found will be logged. The idea is that
 
 **Default**: ``ERROR``
 
+**LOGGER_NAME**
+
+Logger name lets you overwrite the default logger name to whatever you like.
+
+**Default**: ``django_swagger_tester``
+
 **DEBUG**
 
 When debug is ``True`` the middleware will validate responses. The setting exists to let you deactivate tests during ci/cd, during tests, or in any environment where you don't wish for responses to be validated.
@@ -220,6 +228,12 @@ These settings control how the response validation middleware behaves. Currently
 Log level sets the level for which errors found will be logged. The idea is that, instead of raising exceptions when a response is found to not match the documented OpenAPI schema, an error message will be logged, letting you act on it without interfering with the request/response flow.
 
 **Default**: ``ERROR``
+
+**LOGGER_NAME**
+
+Logger name lets you overwrite the default logger name to whatever you like.
+
+**Default**: ``django_swagger_tester``
 
 **DEBUG**
 
