@@ -397,7 +397,7 @@ def copy_response(response: Response) -> Response:
     content = response.content.decode(response.charset)
     response_data = json.loads(content)
     copied_response = deepcopy(response)
-    copied_response.data = response_data  # this can probably be done differently
+    copied_response.data = response_data
     return copied_response
 
 
