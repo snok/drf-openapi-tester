@@ -11,11 +11,7 @@ from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import (
-    CaseError,
-    SwaggerDocumentationError,
-    UndocumentedSchemaSectionError,
-)
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -343,7 +339,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         )
     except UndocumentedSchemaSectionError as e:
         func_logger(
-            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? ' 'Error: %s',
+            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s',
             method,
             path,
             e,
