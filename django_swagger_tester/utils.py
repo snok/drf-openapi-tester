@@ -391,7 +391,7 @@ def copy_response(response: Response) -> Response:
     # strings yet, which otherwise would create problems when comparing response data types to the
     # documented schema types in the schema tester
     content = response.content.decode(response.charset)
-    response_data = json.loads(content)
+    response_data = json.loads(content) if response.status_code != 204 and content else {}
     copied_response = deepcopy(response)
     copied_response.data = response_data
     return copied_response
