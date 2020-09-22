@@ -6,7 +6,6 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
-from django.utils.decorators import sync_only_middleware
 
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.utils import Route, copy_response, get_endpoint_paths, resolve_path, safe_validate_response
@@ -14,7 +13,6 @@ from django_swagger_tester.utils import Route, copy_response, get_endpoint_paths
 logger = logging.getLogger('django_swagger_tester')
 
 
-@sync_only_middleware
 class ResponseValidationMiddleware:
     """
     Middleware validates incoming request bodies and outgoing responses with respect to the app's OpenAPI schema.
