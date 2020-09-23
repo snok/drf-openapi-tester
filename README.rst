@@ -1,14 +1,12 @@
 .. raw:: html
 
     <p align="center">
-        <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="650px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
+        <h2 align='center'>🛠 Django Swagger Tester 🛠</h2>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
     </p>
 
-|
 
 .. raw:: html
 
@@ -19,14 +17,14 @@
     <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
         <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
     </a>
-    <a href="https://codecov.io/gh/snok/django-swagger-tester">
-        <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
+    <a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
+        <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
     <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/pypi/pyversions/django-swagger-tester.svg" alt="Supported Python versions">
+        <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
     <a href="https://pypi.python.org/pypi/django-swagger-tester">
-        <img src="https://img.shields.io/pypi/djversions/django-swagger-tester.svg" alt="Supported Django versions">
+        <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     </p>
     <p align="center">
@@ -52,22 +50,26 @@
 Django Swagger Tester
 =====================
 
-This package is a simple test utility for your Django Swagger documentation.
+Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
 
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger docs by
 comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
 
-By testing your documentation, you can guarantee that your Swagger/OpenAPI schema *actually* accurately describes your APIs.
+Support for other use cases could be added in the future, and contributions are welcome.
 
 Features
 --------
 
-The package currently has two primary features:
+The package has three main features:
 
 -  `Testing response documentation`_
--  `Testing input documentation`_
 
-Contributions towards expanding the scope of the package are welcome.
+-  `Testing request body documentation`_
+
+-  `Ensuring your docs comply with a single parameter naming standard (case type)`_.
+
+   Supported naming standards include ``camelCase``, ``snake_case``,
+   ``kebab-case``, and ``PascalCase``.
 
 Implementations
 ---------------
@@ -346,3 +348,4 @@ A Django test implementation of input validation for a whole project could be st
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
 .. _parameter docs: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
