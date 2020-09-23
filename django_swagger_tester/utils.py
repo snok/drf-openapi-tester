@@ -1,4 +1,5 @@
 import difflib
+import hashlib
 import json
 import logging
 import re
@@ -429,3 +430,38 @@ def get_logger(level: str, logger_name: str) -> Callable:
         return logging.getLogger(logger_name).critical
     else:
         raise ImproperlyConfigured(error)
+
+
+def hash_response(response: dict) -> int:
+    """
+    Function replaces all response values with type-specific placeholder values, and returns a hash value.
+
+    The idea is that we don't have to validate the same response twice, unless response types change.
+    """
+    types = {str: 0, int: 1, bool: 2, float: 3, type(None): 4}
+
+    def iterate_list(_list: list) -> list:
+        new_list = []
+        for item in _list:
+            if isinstance(item, dict):
+                new_list.append(iterate_dict(item))
+            elif isinstance(item, list):
+                new_list.append(iterate_list(item))  # type: ignore
+            elif isinstance(item, tuple(types)):
+                new_list.append(types[type(item)])  # type: ignore
+        return new_list
+
+    def iterate_dict(d: dict) -> dict:
+        new_dict = {}
+        for k, v in d.items():
+            if isinstance(v, dict):
+                new_dict[k] = iterate_dict(v)
+            elif isinstance(v, list):
+                new_dict[k] = iterate_list(v)  # type: ignore
+            elif isinstance(v, tuple(types)):
+                new_dict[k] = types[type(v)]  # type: ignore
+            else:
+                raise Exception('nonono')
+        return new_dict
+
+    return int(hashlib.sha1(bytes(str(iterate_dict(response)), 'utf-8')).hexdigest(), 16)
