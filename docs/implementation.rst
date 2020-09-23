@@ -4,7 +4,7 @@
 Implementing Django Swagger Tester
 **********************************
 
-This document contains an in-depth explanation on how the package works, and how to best implement it.
+This document contains a more in-depth explanation on how the package works, and how to implement it.
 
 Response Validation
 ===================
@@ -19,11 +19,23 @@ This way, you *know* that your API responses match your documented responses.
 
 This makes it easy to catch and fix documentation errors proactively instead of reactively.
 
-Examples
---------
+The package currently offers three alternative ways of achieving this:
 
-Pytest Implementation
-~~~~~~~~~~~~~~~~~~~~~
+- You can run response validation as a part of your test suite by manually writing tests
+- You can implement live testing for your entire project, using the ``ResponseValidationMiddleware``
+- You can implement live testing for a single API view, using the ``ResponseValidationView``
+
+Static testing
+--------------
+
+Writing tests is as easy as appending a single line to your (hopefully) existing API tests.
+
+Any inconsistencies between the API response received in the test, and the schema section that represents it, will raise an exception, causing the test to fail.
+
+Examples
+~~~~~~~~
+
+**Pytest example**
 
 .. code:: python
 
@@ -38,8 +50,7 @@ Pytest Implementation
         # test swagger documentation
         validate_response(response=response, method='GET', route=route)
 
-Django Test Implementation
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+**Django test example**
 
 .. code-block:: python
 
@@ -66,8 +77,8 @@ Django Test Implementation
             # test swagger documentation
             validate_response(response=response, method='GET', route=self.path)
 
-Errors
-~~~~~~
+Error messages
+~~~~~~~~~~~~~~
 
 When found, errors will be raised in the following format:
 
@@ -90,13 +101,12 @@ When found, errors will be raised in the following format:
 
     * If you need more details: set `verbose=True`
 
-``Expected`` describes the response data, and ``Received`` describes the schema. In this example, the response data is
-missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or
-that the OpenAPI schema should be corrected.
+- ``Expected`` describes the response data
+- ``Received`` describes the schema.
+- ``Hint`` will sometimes include a suggestion for what actions to take, to correct an error.
+- ``Sequence`` will indicate how the response tester iterated through the data structure, before finding the error.
 
-Some errors will include hints to help you understand what actions to take, to rectify the error.
-
-Finally, all errors will include a ``Sequence`` string indicating how the response tester has iterated through the orignal data structure, before finding an error.
+In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 .. Note::
 
@@ -122,8 +132,8 @@ Finally, all errors will include a ``Sequence`` string indicating how the respon
 
 
 
-validate_response
------------------
+The validate_response function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The ``validate_response`` function takes three required inputs:
 
@@ -171,8 +181,8 @@ In addition, the function also takes two optional inputs:
     **example**: ``verbose=True``
 
 
-Suggested Use
--------------
+Suggested use
+~~~~~~~~~~~~~
 
 The response validation function can be called from anywhere,
 but because the tests require a request client it generally makes sense to include
@@ -200,6 +210,83 @@ For example::
             validate_response(response=response, method='GET', route='api/v1/customers/')
 
         ...
+
+Live testing
+------------
+
+If you want to implement response validation for all outgoing API responses, you can use the ``ResponseValidationMiddleware``.
+
+The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
+
+Implementing the middleware
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Simply add the middleware to your settings.py
+
+.. code:: python
+
+    MIDDLEWARE = [
+        ...
+        'django_swagger_tester.middleware.ResponseValidationMiddleware',
+    ]
+
+
+Live testing individual views
+-----------------------------
+
+If you want to add live validation to an individual view, it is as simple as replacing your DRF ``APIView`` import with ``ResponseValidationView``.
+
+If you're not using ``APIView``, you can probably create your own response-validating view pretty easily.
+
+The view class
+~~~~~~~~~~~~~~
+
+To be clear, the only difference between the DRF ``APIView`` and our view is that we've overwritten the ``finalize_response`` method to include response validation before returning the response from the view.
+
+It's so simple we can show you the whole class here:
+
+.. code:: python
+
+    class ResponseValidationView(APIView):
+        def finalize_response(self, request, response, *args, **kwargs):
+            """
+            Adds response validation to the end of the original method.
+            """
+            response = super(ResponseValidationView, self).finalize_response(
+                request, response, *args, **kwargs
+            )
+            if settings.view_settings.response_validation.debug:
+                response.render()
+                copied_response = copy_response(response)
+                safe_validate_response(
+                    response=copied_response,
+                    path=request.path,
+                    method=request.method,
+                    func_logger=settings.view_settings.response_validation.logger,
+                )
+            return response
+
+Example
+~~~~~~~
+
+An example view could look like this:
+
+.. code:: python
+
+    from rest_framework.status import HTTP_200_OK
+
+    from django_swagger_tester.views import ResponseValidationView
+
+
+    class Animals(ResponseValidationView):  # <-- add the view class here here
+        def get(self, request, version: int):
+            animals = {
+                'dog': 'very cool',
+                'monkey': 'very cool',
+                'bird': 'mixed reviews',
+            }
+            return Response(animals, HTTP_200_OK)
+
 
 
 Input Validation

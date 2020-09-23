@@ -1,14 +1,13 @@
 .. raw:: html
 
     <p align="center">
-        <a href="https://django-swagger-tester.readthedocs.io/">
-        <img width="650px" src="https://raw.githubusercontent.com/sondrelg/django-swagger-tester/master/docs/img/package_logo.png" alt='logo'></a>
+        <h1 align="center">Django Swagger Tester</h1>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
     </p>
 
-|
+--------------
 
 .. raw:: html
 
@@ -23,10 +22,10 @@
         <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
     <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/pypi/pyversions/django-swagger-tester.svg" alt="Supported Python versions">
+        <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
     <a href="https://pypi.python.org/pypi/django-swagger-tester">
-        <img src="https://img.shields.io/pypi/djversions/django-swagger-tester.svg" alt="Supported Django versions">
+        <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     </p>
     <p align="center">
@@ -41,56 +40,150 @@
     </a>
     </p>
 
---------------
 
 **Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/sondrelg/django-swagger-tester <https://github.com/sondrelg/django-swagger-tester>`_
+**Repository**: `https://github.com/snok/django-swagger-tester <https://github.com/snok/django-swagger-tester>`_
 
 --------------
 
 Django Swagger Tester
 =====================
 
-This package is a simple test utility for your Django Swagger documentation.
+Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
 
-Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger docs by
-comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
+Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
+
+Given a test-example:
+
+.. code-block:: python
+
+    {
+      "id": 0,
+      "category": {
+        "id": 0,
+        "name": "string"
+      },
+      "name": "doggie",
+      "photoUrls": [
+        "string"
+      ],
+      "tags": [
+        {
+          "id": 0,
+          "name": "string"
+        }
+      ],
+      "status": "available"
+    }
+
+your brain shouldn't have to manually scan this response documentation for errors
+
+.. code-block:: python
+
+  "responses": {
+    "200": {
+      "description": "successful operation",
+      "schema": {
+        "type": "object",
+        "required": [
+          "name",
+          "photoUrls"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "category": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "xml": {
+              "name": "Category"
+            }
+          },
+          "name": {
+            "type": "string",
+            "example": "doggie"
+          },
+          "photoUrl": {
+            "type": "array",
+            "xml": {
+              "wrapped": true
+            },
+            "items": {
+              "type": "string",
+              "xml": {
+                "name": "photoUrl"
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "xml": {
+              "wrapped": true
+            },
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "xml": {
+                "name": "Tag"
+              }
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "pet status in the store",
+            "enum": [
+              "available",
+              "pending",
+              "sold"
+            ]
+          }
+        },
+        "xml": {
+          "name": "Pet"
+        }
+      }
+    }
+  }
+
+when automated tests can simply tell you that ``photoUrls`` is missing a letter.
 
 Features
 --------
 
-The package has three main features:
+The package has two primary features:
 
--  `Testing response documentation`_:
+-  `Testing response documentation`_
+-  `Testing request body documentation`_
 
-.. raw:: html
-
-    <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/response.png" alt='logo'></a>
-    </p>
-
--  `Testing input documentation`_:
-
-.. raw:: html
-
-    <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/input.png" alt='logo'></a>
-    </p>
-
-
--  and `ensuring your docs comply with a single parameter naming standard (case type)`_.
-
-   Supported naming standards include ``camelCase``, ``snake_case``,
-   ``kebab-case``, and ``PascalCase``.
+Support for other use cases could be added in the future, and contributions are welcome.
 
 Implementations
 ---------------
 
 This package currently supports:
 
-- Testing of dynamically rendered OpenAPI schemas using using `drf_yasg`_
-- Testing of any implementation which generates a static schema yaml or json file (e.g., like `DRF`_)
+- Testing of dynamically rendered OpenAPI schemas using `drf-yasg`_
+- Testing of dynamically rendered OpenAPI schemas using `drf-spectacular`_
+- Testing any implementation which generates a static yaml or json file (e.g., like `DRF`_)
 
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
@@ -123,115 +216,37 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
 
 .. code:: python
 
-    from django_swagger_tester.loaders import StaticSchemaLoader
+    from django_swagger_tester.loaders import DrfSpectacularSchemaLoader
     from django_swagger_tester.case_testers import is_camel_case
 
     SWAGGER_TESTER = {
-        'SCHEMA_LOADER': StaticSchemaLoader,
-        'PATH': './static/openapi-schema.yml',
+        'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
-        'CASE_PASSLIST': [],
-        'CAMEL_CASE_PARSER': False,
+        'CAMEL_CASE_PARSER': True,
+        'CASE_PASSLIST': ['IP', 'DHCP'],
+        'MIDDLEWARE': {
+            'RESPONSE_VALIDATION': {
+                'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'middleware_response_validation',
+                'DEBUG': True,
+                'VALIDATION_EXEMPT_URLS': ['^api/v1/exempt-endpoint$'],
+            }
+        },
+        'VIEWS': {
+            'RESPONSE_VALIDATION': {
+                'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'view_response_validation',
+                'DEBUG': True,
+            }
+        },
     }
+
+The only required setting, is the schema loader class.
 
 Parameters
 ----------
 
-*SCHEMA_LOADER*
-~~~~~~~~~~~~~~~
-
-The loader class you use is dictated by how your OpenAPI schema is generated. If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
-
-Loader classes can be imported from ``django_swagger_tester.loaders`` and currently include:
-
-- ``StaticSchemaLoader``
-- ``DrfYasgSchemaLoader``
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.loaders import DrfYasgSchemaLoader
-
-    SWAGGER_TESTER = {
-        'SCHEMA_LOADER': DrfYasgSchemaLoader,
-    }
-
-
-*PATH*
-~~~~~~
-
-Path takes the file path of your OpenAPI schema file. this is only required if you're using the ``StaticSchemaLoader`` loader class.
-
-Example:
-
-.. code:: python
-
-  SWAGGER_TESTER = {
-      'PATH': BASE_DIR / '/openapi-schema.yml',
-  }
-
-*CASE_TESTER*
-~~~~~~~~~~~~~
-
-The callable passed for this input decide the naming standard you wish to enforce for your documentation.
-
-There are currently four supported options:
-
--  ``camel case``
--  ``snake case``
--  ``pascal case``
--  ``kebab case``
-- or you can pass ``None`` to skip case validation completely
-
-Your OpenAPI schema will be tested to make sure all parameter names
-are correctly cased according to this preference. If you do not wish
-to enforce this check, you can specify ``None`` to skip this feature.
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.case_testers import is_camel_case
-
-    SWAGGER_TESTER = {
-        'CASE_TESTER': is_camel_case,
-    }
-
-**Default**: ``None``
-
-*CASE_PASSLIST*
-~~~~~~~~~~~~~~~~
-
-List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.case_testers import is_camel_case
-
-    SWAGGER_TESTER = {
-        'CASE_PASSLIST': ['IP', 'DHCP'],
-    }
-
-**Default**: ``[]``
-
-*CAMEL_CASE_PARSER*
-~~~~~~~~~~~~~~~~~~~
-
-Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
-
-Example:
-
-.. code:: python
-
-  SWAGGER_TESTER = {
-      'CAMEL_CASE_PARSER': True,
-  }
-
-**Default**: ``False``
+To learn more about setting parameters, see the `parameter docs`_.
 
 |
 |
@@ -259,7 +274,14 @@ Example:
 Response Validation
 ===================
 
-To make sure your API response matches your documented response, the ``validate_response`` function compares the two at each level of depth.
+There are three ways to verify that your API responses match your documented responses:
+
+1. Add static tests for each endpoint, method, and status code
+2. Implement live testing for your project (middleware)
+3. Implement live testing for individual views (inherit ResponseValidation in place of an APIView)
+
+Static testing
+--------------
 
 A pytest implementation might look like this:
 
@@ -322,8 +344,31 @@ It is also possible to test more than a single response at the time:
         response = client.get(...)
         validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
 
-Errors
-------
+Live testing with a middleware
+------------------------------
+
+If you want to implement response validation for all outgoing API responses, simply add the middleware to your settings.py:
+
+.. code:: python
+
+    MIDDLEWARE = [
+        ...
+        'django_swagger_tester.middleware.ResponseValidationMiddleware',
+    ]
+
+The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
+
+To avoid validating the same responses over and over, the results are cached to a database table, making sure we only validate a response once. Two responses from the same endpoint *can* trigger duplicate validation, but only if the response structure has changed, i.e., the type of a response attribute has changed.
+
+Live testing for a single view
+------------------------------
+
+If you're using DRF's ``APIView``, you can replace that with ``django_swagger_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
+
+If you're not using ``APIView``, but some closely related solution, you can very easily make your own response validation class. Just have a look at the ``ResposeValidationView`` for inspiration.
+
+Error messages
+--------------
 
 When found, errors will be raised in the following format:
 
@@ -346,13 +391,12 @@ When found, errors will be raised in the following format:
 
     * If you need more details: set `verbose=True`
 
-``Expected`` describes the response data, and ``Received`` describes the schema. In this example, the response data is
-missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or
-that the OpenAPI schema should be corrected.
+- ``Expected`` describes the response data
+- ``Received`` describes the schema.
+- ``Hint`` will sometimes include a suggestion for what actions to take, to correct an error.
+- ``Sequence`` will indicate how the response tester iterated through the data structure, before finding the error.
 
-Some errors will include hints to help you understand what actions to take, to rectify the error.
-
-Finally, all errors will include a ``Sequence`` string indicating how the response tester has iterated through the orignal data structure, before finding an error.
+In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 
 Input Validation
@@ -407,3 +451,7 @@ A Django test implementation of input validation for a whole project could be st
 .. _documentation: https://django-swagger-tester.readthedocs.io/
 .. _docs: https://django-swagger-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
+.. _drf-yasg: https://github.com/axnsan12/drf-yasg
+.. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
+.. _parameter docs: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation

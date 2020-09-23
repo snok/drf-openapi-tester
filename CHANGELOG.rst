@@ -4,6 +4,16 @@
 Changelog
 *********
 
+
+2.1.0 2020-09-24
+----------------
+
+**New Features**
+
+* Added DRF-spectacular implementation
+* Added response validation middleware
+* Added response validation APIView
+
 2.0.1 2020-09-15
 ----------------
 
