@@ -54,6 +54,95 @@ Django Swagger Tester is a simple test utility for validating your Django Swagge
 
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
 
+How else would you know that there's an error in this documentation
+
+.. code-block:: python
+
+  "responses": {
+    "200": {
+      "description": "successful operation",
+      "schema": {
+        "type": "object",
+        "required": [
+          "name",
+          "photoUrls"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "category": {
+            "$ref": "#/definitions/Category"
+          },
+          "name": {
+            "type": "string",
+            "example": "doggie"
+          },
+          "photoUrl": {
+            "type": "array",
+            "xml": {
+              "wrapped": true
+            },
+            "items": {
+              "type": "string",
+              "xml": {
+                "name": "photoUrl"
+              }
+            }
+          },
+          "tags": {
+            "type": "array",
+            "xml": {
+              "wrapped": true
+            },
+            "items": {
+              "xml": {
+                "name": "tag"
+              },
+              "$ref": "#/definitions/Tag"
+            }
+          },
+          "status": {
+            "type": "string",
+            "description": "pet status in the store",
+            "enum": [
+              "available",
+              "pending",
+              "sold"
+            ]
+          }
+        },
+        "xml": {
+          "name": "Pet"
+        }
+      }
+    }
+  }
+
+...when looking at your response
+
+.. code-block:: python
+
+    {
+      "id": 0,
+      "category": {
+        "id": 0,
+        "name": "string"
+      },
+      "name": "doggie",
+      "photoUrls": [
+        "string"
+      ],
+      "tags": [
+        {
+          "id": 0,
+          "name": "string"
+        }
+      ],
+      "status": "available"
+    }
+
 Features
 --------
 
