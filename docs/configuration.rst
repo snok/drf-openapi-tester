@@ -42,7 +42,10 @@ A complete example of the ``SWAGGER_TESTER`` settings might look like this:
                 'LOG_LEVEL': 'ERROR',
                 'LOGGER_NAME': 'response_validation_middleware',
                 'DEBUG': True,
-                'VALIDATION_EXEMPT_URLS': ['^api/v1/special-endpoint$'],
+                'VALIDATION_EXEMPT_URLS': [
+                    {'url': '^api/v1/special-endpoint$', 'status_codes': ['*']},
+                    {'url': '^api/v1/another-special-endpoint$', 'status_codes': [204]},
+                ],
             }
         },
         'VIEWS': {
@@ -53,7 +56,6 @@ A complete example of the ``SWAGGER_TESTER`` settings might look like this:
             }
         },
     }
-
 
 .. Note::
 
@@ -75,6 +77,8 @@ Loader classes can be imported from ``django_swagger_tester.loaders`` and curren
 - ``DrfYasgSchemaLoader``
 - ``DrfSpectacularSchemaLoader``
 
+The loader class is responsible for all logic related to loading and interacting with your OpenAPI schema.
+
 *Example*:
 
 .. code:: python
@@ -89,7 +93,7 @@ Loader classes can be imported from ``django_swagger_tester.loaders`` and curren
 PATH
 ~~~~
 
-Path takes the file path of your OpenAPI schema file. this is only required if you're using the ``StaticSchemaLoader`` loader class.
+The path parameter is only required if you're using the ``StaticSchemaLoader`` loader class, and just lets the loader class know where your schema is located in your project.
 
 *Example*:
 
@@ -102,7 +106,10 @@ Path takes the file path of your OpenAPI schema file. this is only required if y
 CASE_TESTER
 ~~~~~~~~~~~
 
-The callable passed for this input decide the naming standard you wish to enforce for your documentation.
+The case tester function lets you add case-checking as an extra dimension to your response validation. The idea is that
+most APIs should have a standard.
+
+The callable passed for this input decides the naming standard you wish to enforce for your documentation.
 
 There are currently four supported options:
 
@@ -110,11 +117,7 @@ There are currently four supported options:
 -  ``snake case``
 -  ``pascal case``
 -  ``kebab case``
-- or you can pass ``None`` to skip case validation completely
-
-Your OpenAPI schema will be tested to make sure all parameter names
-are correctly cased according to this preference. If you do not wish
-to enforce this check, you can specify ``None`` to skip this feature.
+- or you can not pass anything to skip this feature
 
 *Example*:
 
@@ -132,7 +135,9 @@ to enforce this check, you can specify ``None`` to skip this feature.
 CASE_PASSLIST
 ~~~~~~~~~~~~~
 
-List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
+This setting is only required if you've set a case tester.
+
+The case passlist can hold a list of strings which you do *not* wish to check for case-inconsistencies. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
 
 *Example*:
 
@@ -151,7 +156,7 @@ CAMEL_CASE_PARSER
 ~~~~~~~~~~~~~~~~~
 
 Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
+``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views. Otherwise, set it to False or leave it out of your settings.
 
 *Example*:
 
@@ -166,12 +171,12 @@ Should be set to ``True`` if you use `djangorestframework-camel-case <https://gi
 MIDDLEWARE
 ~~~~~~~~~~
 
-Middleware holds settings for specific middleware included in the package. There's currently only one middleware: ``ResponseValidationMiddleware``.
+Middleware holds settings for specific middlewares included in the package. There's currently only one middleware: ``ResponseValidationMiddleware``.
 
 RESPONSE_VALIDATION
 ===================
 
-These settings control how the response validation middleware behaves. Currently there are three settings to (optionally) configure.
+These settings control how the response validation middleware behaves. Currently there are four settings to (optionally) configure.
 
 **LOG_LEVEL**
 
@@ -187,13 +192,15 @@ Logger name lets you overwrite the default logger name to whatever you like.
 
 **DEBUG**
 
-When debug is ``True`` the middleware will validate responses. The setting exists to let you deactivate tests during ci/cd, during tests, or in any environment where you don't wish for responses to be validated.
+When debug is ``True`` the middleware will validate responses. The setting exists to let you deactivate tests during ci/cd, during tests, or in any environment where you don't wish for responses to be validated. For example, the middleware might not be of any value when you're running automated tests during CI.
 
 **Default**: ``True``
 
 **VALIDATION_EXEMPT_URLS**
 
-Takes a list of regex patterns for endpoint paths to ignore. If you have an undocumented endpoint, or any other valid use-case where you don't wish to validate responses from the endpoint, this can be useful.
+Takes a list of dicts. The dict should contain a ``url`` key with a regex patterns for an endpoint path to ignore and a ``status_codes`` list of status codes to ignore. If you wish to ignore all status codes you can pass ``"*"`` to the list.
+
+If you have an undocumented endpoint, an undocumented response code, or any other valid use-case where you don't wish to validate responses from the endpoint, this can be useful.
 
 **Default**: ``[]``
 
@@ -208,7 +215,9 @@ Takes a list of regex patterns for endpoint paths to ignore. If you have an undo
             'RESPONSE_VALIDATION': {
                 'LOG_LEVEL': 'ERROR',
                 'DEBUG': True,
-                'VALIDATION_EXEMPT_URLS': ['^api/v1/special-endpoint$'],
+                'VALIDATION_EXEMPT_URLS': [
+                    {'url': '^api/v1/special-endpoint$', 'status_codes': ['*']},
+                    {'url': '^api/v1/another-special-endpoint$', 'status_codes': [204]},
             }
         },
     }
@@ -255,3 +264,9 @@ When debug is ``True`` the view will validate responses. The setting exists to l
             }
         },
     }
+
+.. Note::
+
+    The response validation view settings do not have an ``exempt status codes`` setting, but you can configure this directly in your view class.
+
+    See the response validation view implementation section for more details.

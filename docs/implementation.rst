@@ -15,15 +15,15 @@ Response documentation in particular, is a combinatorial nightmare, as every API
 where each method has multiple possible responses.
 
 We suggest solving this problem by testing your response documentation against your actual API responses.
-This way, you *know* that your API responses match your documented responses.
-
-This makes it easy to catch and fix documentation errors proactively instead of reactively.
+This way, you can *know* that your API responses match your documented responses.
 
 The package currently offers three alternative ways of achieving this:
 
 - You can run response validation as a part of your test suite by manually writing tests
 - You can implement live testing for your entire project, using the ``ResponseValidationMiddleware``
 - You can implement live testing for a single API view, using the ``ResponseValidationView``
+
+The middleware and view class are new features and might need some tweaks in the coming versions after 2.1.0.
 
 Static testing
 --------------
@@ -216,7 +216,9 @@ Live testing
 
 If you want to implement response validation for all outgoing API responses, you can use the ``ResponseValidationMiddleware``.
 
-The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
+The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level. This makes it easy to find and correct errors without having to write a single test.
+
+We've also added a caching layer to prevent the validation from slowing down response times too much. Essentially, a response will only be validated once, and only when a response from the same endpoint has an attribute with a different type will it validate the same response again. In other words, if the response contains a key ``name`` which has a ``string`` value, the response will only be validated again if the value changes from a ``string`` to an ``integer``, ``NoneType``, ``boolean`` or some other type.
 
 Implementing the middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -236,7 +238,7 @@ Live testing individual views
 
 If you want to add live validation to an individual view, it is as simple as replacing your DRF ``APIView`` import with ``ResponseValidationView``.
 
-If you're not using ``APIView``, you can probably create your own response-validating view pretty easily.
+If you're not using ``APIView``, please use the ``ResponseValidationView`` as inspiration for creating your own response-validating view class.
 
 The view class
 ~~~~~~~~~~~~~~
@@ -248,6 +250,8 @@ It's so simple we can show you the whole class here:
 .. code:: python
 
     class ResponseValidationView(APIView):
+        ignored_status_codes: List[int] = []
+
         def finalize_response(self, request, response, *args, **kwargs):
             """
             Adds response validation to the end of the original method.
@@ -255,7 +259,7 @@ It's so simple we can show you the whole class here:
             response = super(ResponseValidationView, self).finalize_response(
                 request, response, *args, **kwargs
             )
-            if settings.view_settings.response_validation.debug:
+            if settings.view_settings.response_validation.debug and response.status_code not in self.ignored_status_codes:
                 response.render()
                 copied_response = copy_response(response)
                 safe_validate_response(
@@ -279,6 +283,10 @@ An example view could look like this:
 
 
     class Animals(ResponseValidationView):  # <-- add the view class here here
+        # if you haven't documented the 400 error code,
+        # the response validation will fail when receiving a 400 response
+        ignored_status_codes = [400]
+
         def get(self, request, version: int):
             animals = {
                 'dog': 'very cool',
