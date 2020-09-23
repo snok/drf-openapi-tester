@@ -43,6 +43,17 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         )
         return
 
+    # define extra parameters to add to error logs
+    logger_extra = {
+        # `dst` is added in front of the extra attrs to make the attribute names more unique,
+        # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
+        # if the two colliding logs contain different variable types for the same attribute name
+        'dst_response_schema': str(response_schema),
+        'dst_response_data': str(response.data),
+        'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
+        'dst_camel_case_parser': str(settings.camel_case_parser),
+    }
+
     # See if we've validated this response in the past
     response_hash = hash_response(response.data)
     try:
@@ -61,7 +72,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             # re-log the error if the response validation failed, and schema hasn't changed
             # this can "spam" a system with errors, but that can actually be quite useful for drawing attention to the problem
             # in solutions like Sentry
-            settings.view_settings.response_validation.logger(obj.error_message)
+            settings.view_settings.response_validation.logger(obj.error_message, extra=logger_extra)
             return
         else:
             # if object is valid, and the schema is unchanged, there is no reason to re-run validation
@@ -83,31 +94,13 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         )
         logger.info('Response valid for %s request to %s', method, path)
     except SwaggerDocumentationError as e:
-        ext = {
-            # `dst` is added in front of the extra attrs to make the attribute names more unique,
-            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
-            # if the two colliding logs contain different variable types for the same attribute name
-            'dst_response_schema': str(response_schema),
-            'dst_response_data': str(response.data),
-            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
-            'dst_camel_case_parser': str(settings.camel_case_parser),
-        }
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
         error_message = f'Bad response returned for {method} request to {path}. Error: {long_message}'
-        func_logger(error_message, extra=ext)
+        func_logger(error_message, extra=logger_extra)
         save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
     except CaseError as e:
-        ext = {
-            # `dst` is added in front of the extra attrs to make the attribute names more unique,
-            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
-            # if the two colliding logs contain different variable types for the same attribute name
-            'dst_response_schema': str(response_schema),
-            'dst_response_data': str(response.data),
-            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
-            'dst_camel_case_parser': str(settings.camel_case_parser),
-        }
         error_message = f'Found incorrectly cased cased key, `{e.key}` in {e.origin}'
-        func_logger(error_message, extra=ext)
+        func_logger(error_message, extra=logger_extra)
         save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
     else:
         save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)
