@@ -236,6 +236,8 @@ Live testing individual views
 
 If you want to add live validation to an individual view, it is as simple as replacing your DRF ``APIView`` import with ``ResponseValidationView``.
 
+If you're not using ``APIView``, you can probably create your own response-validating view pretty easily.
+
 The view class
 ~~~~~~~~~~~~~~
 
