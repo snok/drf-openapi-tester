@@ -18,8 +18,8 @@
     <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
         <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
     </a>
-    <a href="https://codecov.io/gh/sondrelg/django-swagger-tester">
-        <img src="https://codecov.io/gh/sondrelg/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
+    <a href="https://codecov.io/gh/snok/django-swagger-tester">
+        <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
     <a href="https://pypi.org/project/django-swagger-tester/">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
@@ -43,7 +43,7 @@
 
 **Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/sondrelg/django-swagger-tester <https://github.com/sondrelg/django-swagger-tester>`_
+**Repository**: `https://github.com/snok/django-swagger-tester <https://github.com/snok/django-swagger-tester>`_
 
 --------------
 
@@ -164,7 +164,7 @@ your brain shouldn't have to manually scan this response documentation for error
     }
   }
 
-when your test suite can simply tell you that ``photoUrl`` was misspelled.
+when automated tests can simply tell you that ``photoUrls`` is missing a letter.
 
 Features
 --------
