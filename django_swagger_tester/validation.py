@@ -39,10 +39,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         schema_hash = hash_schema(response_schema)
     except UndocumentedSchemaSectionError as e:
         func_logger(
-            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s',
-            method,
-            path,
-            e,
+            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s', method, path, e
         )
         return
 
@@ -51,15 +48,16 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
     try:
         obj = get_validated_response(path, method, str(response_hash))
         if obj.schema_hash.hash != schema_hash:
+            logger.info('Clearing cache for old schema hash')
             from django_swagger_tester.models import Schema
 
             # delete cache and re-run validation if the schema has changed
             obj.delete()
-
             schema_items = Schema.objects.filter(hash=schema_hash)
             for schema_item in schema_items:
                 schema_item.delete()
         elif not obj.valid:
+            logger.info('Logging error from cache')
             # re-log the error if the response validation failed, and schema hasn't changed
             # this can "spam" a system with errors, but that can actually be quite useful for drawing attention to the problem
             # in solutions like Sentry
