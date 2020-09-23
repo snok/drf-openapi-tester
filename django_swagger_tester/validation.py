@@ -38,8 +38,15 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         )
         schema_hash = hash_schema(response_schema)
     except UndocumentedSchemaSectionError as e:
+        if response.status_code == 204:
+            return
         func_logger(
-            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s', method, path, e
+            'Failed accessing response schema for %s request to `%s` with status %s. Is the endpoint '
+            'documented? Error: %s',
+            method,
+            path,
+            response.status_code,
+            e,
         )
         return
 
