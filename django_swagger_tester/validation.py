@@ -65,6 +65,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             return
         else:
             # if object is valid, and the schema is unchanged, there is no reason to re-run validation
+            logger.info('Response already validated')
             return
     except ObjectDoesNotExist:
         pass
@@ -94,7 +95,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
         error_message = f'Bad response returned for {method} request to {path}. Error: {long_message}'
         func_logger(error_message, extra=ext)
-        save_validated_response(path, method, str(response_hash), str(schema_hash), valid=False, error_message=error_message)
+        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
     except CaseError as e:
         ext = {
             # `dst` is added in front of the extra attrs to make the attribute names more unique,
@@ -107,6 +108,6 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         }
         error_message = f'Found incorrectly cased cased key, `{e.key}` in {e.origin}'
         func_logger(error_message, extra=ext)
-        save_validated_response(path, method, str(response_hash), str(schema_hash), valid=False, error_message=error_message)
+        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
     else:
-        save_validated_response(path, method, str(response_hash), str(schema_hash), valid=True, error_message=None)
+        save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)

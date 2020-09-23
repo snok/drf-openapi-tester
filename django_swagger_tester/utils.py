@@ -361,7 +361,7 @@ def get_logger(level: str, logger_name: str) -> Callable:
         raise ImproperlyConfigured(error)
 
 
-def hash_response(response: dict) -> int:
+def hash_response(response: dict) -> str:
     """
     Function replaces all response values with type-specific placeholder values, and returns a hash value.
 
@@ -378,8 +378,6 @@ def hash_response(response: dict) -> int:
                 new_list.append(iterate_list(item))  # type: ignore
             elif isinstance(item, tuple(types)):
                 new_list.append(types[type(item)])  # type: ignore
-            else:
-                raise Exception('nono')
         return new_list
 
     def iterate_dict(d: dict) -> dict:
@@ -391,8 +389,6 @@ def hash_response(response: dict) -> int:
                 new_dict[k] = iterate_list(v)  # type: ignore
             elif isinstance(v, tuple(types)):
                 new_dict[k] = types[type(v)]  # type: ignore
-            else:
-                raise Exception('nono')
         return new_dict
 
     if isinstance(response, dict):
@@ -401,13 +397,11 @@ def hash_response(response: dict) -> int:
         result = iterate_list(response)
     elif isinstance(response, tuple(types)):
         result = types[type(response)]
-    else:
-        raise Exception('nono')
 
-    return int(hashlib.sha1(bytes(str(result), 'utf-8')).hexdigest(), 16)
+    return str(int(hashlib.sha1(bytes(str(result), 'utf-8')).hexdigest(), 16))
 
 
-def hash_schema(o: dict) -> int:
+def hash_schema(o: dict) -> str:
     """
     Makes a hash out of anything that contains only list, dict and hashable types including string and numeric types.
 
@@ -423,4 +417,4 @@ def hash_schema(o: dict) -> int:
 
         return o
 
-    return hash(freeze(o))
+    return str(hash(freeze(o)))

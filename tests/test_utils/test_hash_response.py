@@ -33,7 +33,7 @@ x = {
         'a': '5005f30e-95c5-a860-29dc-9aa8ead698e0',
         'b': '5005f30e-95c5-a860-29dc-9aa8ead698e0',
         'c': {
-            'a': '5005f30e-95c5-a860-29dc-9aa8ead698e0',
+            'a': ['string', True, 1, 1.1, {}, None],
             'b': '5005f30e-95c5-a860-29dc-9aa8ead698e0',
             'c': 'name',
             'd': 'name2',
@@ -74,3 +74,11 @@ def test_hash_response():
     y = deepcopy(x)
     y['id'] = None
     assert hash_response(x) != hash_response(y)
+
+
+def test_hash_weird_response():
+    assert hash_response(True) == hash_response(True)
+    assert hash_response(1) == hash_response(1)
+    assert hash_response(1.1) == hash_response(1.1)
+    assert hash_response('string') == hash_response('string')
+    assert hash_response(None) == hash_response(None)
