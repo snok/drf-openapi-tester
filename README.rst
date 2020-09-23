@@ -57,13 +57,17 @@ This package is a simple test utility for your Django Swagger documentation.
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger docs by
 comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
 
+By testing your documentation, you can guarantee that your Swagger/OpenAPI schema *actually* accurately describes your APIs.
+
 Features
 --------
 
-The package has two primary features:
+The package currently has two primary features:
 
 -  `Testing response documentation`_
 -  `Testing input documentation`_
+
+Contributions towards expanding the scope of the package are welcome.
 
 Implementations
 ---------------
