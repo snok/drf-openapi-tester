@@ -96,7 +96,19 @@ your brain shouldn't have to manually scan this response documentation for error
             "format": "int64"
           },
           "category": {
-            "$ref": "#/definitions/Category"
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "xml": {
+              "name": "Category"
+            }
           },
           "name": {
             "type": "string",
@@ -120,10 +132,19 @@ your brain shouldn't have to manually scan this response documentation for error
               "wrapped": true
             },
             "items": {
-              "xml": {
-                "name": "tag"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "name": {
+                  "type": "string"
+                }
               },
-              "$ref": "#/definitions/Tag"
+              "xml": {
+                "name": "Tag"
+              }
             }
           },
           "status": {
