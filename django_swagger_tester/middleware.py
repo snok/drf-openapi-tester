@@ -23,7 +23,10 @@ class ResponseValidationMiddleware:
         self.get_response = get_response
         self.endpoints = get_endpoint_paths()
         self.middleware_settings = settings.middleware_settings.response_validation
-        self.exempt_urls = [compile(url_pattern) for url_pattern in self.middleware_settings.validation_exempt_urls]
+        self.exempt_urls = [
+            {'url': compile(exempt_route['url']), 'status_codes': exempt_route['status_codes']}
+            for exempt_route in self.middleware_settings.validation_exempt_urls
+        ]
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed
         if not apps.is_installed('django_swagger_tester'):
@@ -35,24 +38,31 @@ class ResponseValidationMiddleware:
 
         Can validate request body, response data, or both, depending on settings and the type of request.
         """
+        response = self.get_response(request)
         method = request.method
         path = request.path
 
         # skip validation if debug is False
         if not self.middleware_settings.debug:
-            return self.get_response(request)
+            return response
         # ..or if this particular route is ignored in the settings
-        if any(m.match(request.path_info.lstrip('/')) for m in self.exempt_urls):
-            logger.debug('Validation skipped: %s request to `%s` is in VALIDATION_EXEMPT_URLS', method, path)
-            return self.get_response(request)
+        if any(
+            m['url'].match(request.path_info.lstrip('/'))
+            and (response.status_code in m['status_codes'] or '*' in m['status_codes'])
+            for m in self.exempt_urls
+        ):
+            logger.debug(
+                'Validation skipped: %s request to `%s` with status code %s is in VALIDATION_EXEMPT_URLS',
+                method,
+                path,
+                response.status_code,
+            )
+            return response
         # ..or if the request path doesn't point to a valid endpoint
         elif not self.path_in_endpoints(path=path, method=method):
             # note: this covers both non-endpoint routes, and any route that doesn't resolve
             logger.debug('Validation skipped: `%s` is not a relevant endpoint', path)
-            return self.get_response(request)
-
-        # -- ^ Code above this line is executed before the view and later middleware --
-        response = self.get_response(request)
+            return response
 
         # -- Response validation --
         if response.get('Content-Type', '') == 'application/json':

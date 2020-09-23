@@ -5,12 +5,13 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from demo import views
+from demo.api.views.animals import Animals
 from demo.api.views.cars import BadCars, GoodCars
+from demo.api.views.exempt_endpoint import Exempt
 from demo.api.views.items import Items
 from demo.api.views.snake_cased_response import SnakeCasedResponse
 from demo.api.views.trucks import BadTrucks, GoodTrucks
 from demo.api.views.vehicles import Vehicles
-from demo.api.views.animals import Animals
 
 
 class IsValidVehicleType(StringConverter):
@@ -31,16 +32,15 @@ register_converter(IsValidVehicleType, 'vehicle_type')
 register_converter(IsValidVersion, 'version')
 
 api_urlpatterns = [
-    path('api/<version:version>/<vehicle_type:vehicle_type>/correct', GoodCars.as_view(), name='correctly_documented_cars'),
-    path(
-        'api/<version:version>/<vehicle_type:vehicle_type>/incorrect', BadCars.as_view(), name='incorrectly_documented_cars'
-    ),
-    path('api/<version:version>/trucks/correct', GoodTrucks.as_view(), name='correctly_documented_trucks'),
-    path('api/<version:version>/trucks/incorrect', BadTrucks.as_view(), name='incorrectly_documented_trucks'),
-    path('api/<version:version>/vehicles', Vehicles.as_view(), name='vehicles'),
-    path('api/<version:version>/animals', Animals.as_view(), name='animals'),
-    path('api/<version:version>/items', Items.as_view(), name='items'),
-    path('api/<version:version>/snake-case/', SnakeCasedResponse.as_view(), name='snake_case'),
+    path('api/<version:version>/<vehicle_type:vehicle_type>/correct', GoodCars.as_view()),
+    path('api/<version:version>/<vehicle_type:vehicle_type>/incorrect', BadCars.as_view()),
+    path('api/<version:version>/trucks/correct', GoodTrucks.as_view()),
+    path('api/<version:version>/trucks/incorrect', BadTrucks.as_view()),
+    path('api/<version:version>/vehicles', Vehicles.as_view()),
+    path('api/<version:version>/animals', Animals.as_view()),
+    path('api/<version:version>/items', Items.as_view()),
+    path('api/<version:version>/exempt-endpoint', Exempt.as_view()),
+    path('api/<version:version>/snake-case/', SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
 ]
 
@@ -51,7 +51,10 @@ swagger_info = openapi.Info(
     contact=openapi.Contact(email=''),
 )
 schema_view = get_schema_view(
-    swagger_info, patterns=api_urlpatterns, public=False, permission_classes=(permissions.AllowAny,),
+    swagger_info,
+    patterns=api_urlpatterns,
+    public=False,
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
