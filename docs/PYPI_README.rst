@@ -43,31 +43,28 @@ Django Swagger Tester
 Django Swagger Tester
 =====================
 
-This package is a simple test utility for your Django Swagger documentation.
+Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
 
-Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger docs by
-comparing documented responses to actual API responses, or validating documented request bodies using actual input serializers.
-
-By testing your documentation, you can guarantee that your Swagger/OpenAPI schema *actually* accurately describes your APIs.
+Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
 
 Features
 --------
 
-The package currently has two primary features:
+The package has two primary features:
 
 -  `Testing response documentation`_
--  `Testing input documentation`_
+-  `Testing request body documentation`_
 
-Contributions towards expanding the scope of the package are welcome.
+Support for other use cases could be added in the future, and contributions are welcome.
 
 Implementations
 ---------------
 
 This package currently supports:
 
-- Testing of dynamically rendered OpenAPI schemas using using `drf-yasg`_
-- Testing of dynamically rendered OpenAPI schemas using using `drf-spectacular`_
-- Testing of any implementation which generates a static yaml or json file (e.g., like `DRF`_)
+- Testing of dynamically rendered OpenAPI schemas using `drf-yasg`_
+- Testing of dynamically rendered OpenAPI schemas using `drf-spectacular`_
+- Testing any implementation which generates a static yaml or json file (e.g., like `DRF`_)
 
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
