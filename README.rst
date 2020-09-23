@@ -162,12 +162,11 @@ To learn more about setting parameters, see the `parameter docs`_.
 Response Validation
 ===================
 
-The primary function of this package (so far) is response validation. There are three ways you can go about making sure your documentation
-matches the actual responses you are returning to your users:
+There are three ways to verify that your API responses match your documented responses:
 
-1. Add static tests
-2. Add live testing for your project (middleware)
-3. Add live testing for individual views (inherit ResponseValidation in place of an APIView)
+1. Add static tests for each endpoint, method, and status code
+2. Implement live testing for your project (middleware)
+3. Implement live testing for individual views (inherit ResponseValidation in place of an APIView)
 
 Static testing
 --------------
