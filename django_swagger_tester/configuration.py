@@ -44,7 +44,7 @@ class ResponseValidationMiddlewareSettings:
             for item in self.validation_exempt_urls:
                 compile(item['url'])
                 for status_code in item['status_codes']:
-                    if isinstance(status_code, str) and status_code != '*' or not isinstance(status_code, int):
+                    if not isinstance(status_code, (int, str)) or (isinstance(status_code, str) and status_code != '*'):
                         raise ImproperlyConfigured(
                             'Received an invalid status code in the middleware exempt urls setting. Status codes must be integers, or "*".'
                         )
@@ -52,8 +52,8 @@ class ResponseValidationMiddlewareSettings:
                         raise ImproperlyConfigured(
                             'Received an invalid status code in the middleware exempt urls setting. Status codes must be between 100 and 598.'
                         )
-        except ValueError:
-            pass
+        except TypeError:
+            raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
         if not isinstance(self.debug, bool):
             raise ImproperlyConfigured('DEBUG must be a boolean.')
 

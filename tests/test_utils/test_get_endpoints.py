@@ -2,7 +2,7 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.loaders import _LoaderBase
-from django_swagger_tester.utils import get_endpoint_paths, unpack_response, resolve_path
+from django_swagger_tester.utils import get_endpoint_paths, resolve_path, unpack_response
 
 
 def test_get_endpoint_paths():
@@ -19,6 +19,7 @@ def test_get_endpoint_paths():
         '/api/v1/trucks/correct',
         '/api/v1/snake-case',
         '/api/v1/animals',
+        '/api/v1/exempt-endpoint',
     ]
     assert [url in expected for url in urls]
     assert len(expected) == len(urls)

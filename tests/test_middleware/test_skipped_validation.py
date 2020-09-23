@@ -12,12 +12,17 @@ def test_exempt_url(client, caplog, monkeypatch):
     monkeypatch.setattr(
         django_settings,
         'SWAGGER_TESTER',
-        patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', '^api/v1/test$'),
+        patch_response_validation_middleware_settings(
+            'VALIDATION_EXEMPT_URLS', [{'url': '^api/v1/cars/correct$', 'status_codes': ['*']}]
+        ),
     )
     settings = SwaggerTesterSettings()
     monkeypatch.setattr('django_swagger_tester.middleware.settings', settings)
     client.get('/api/v1/cars/correct')
-    assert 'Validation skipped: GET request to `/api/v1/cars/correct` is in VALIDATION_EXEMPT_URLS' in caplog.messages
+    assert (
+        'Validation skipped: GET request to `/api/v1/cars/correct` with status code 200 is in VALIDATION_EXEMPT_URLS'
+        in caplog.messages
+    )
 
 
 def test_non_endpoint_options_request(client, caplog):
