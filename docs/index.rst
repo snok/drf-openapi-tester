@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-        <h2 align='center'>🛠 Django Swagger Tester 🛠</h2>
+        <h2 align='center'>Django Swagger Tester</h2>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
@@ -62,7 +62,7 @@ The package has two primary features:
 -  `Testing response documentation`_
 -  `Testing request body documentation`_
 
-Support for other use cases could be added in the future, and contributions are welcome.
+Support for other use cases could be added in the future, and contributions made to expand the scope of the package are welcome.
 
 Implementations
 ---------------
