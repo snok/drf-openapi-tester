@@ -7,6 +7,7 @@
       <em>A Django test utility for validating Swagger documentation</em>
     </p>
 
+--------------
 
 .. raw:: html
 
