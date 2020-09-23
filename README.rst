@@ -89,8 +89,9 @@ Implementations
 
 This package currently supports:
 
-- Testing of dynamically rendered OpenAPI schemas using using `drf_yasg`_
-- Testing of any implementation which generates a static schema yaml or json file (e.g., like `DRF`_)
+- Testing of dynamically rendered OpenAPI schemas using using `drf-yasg`_
+- Testing of dynamically rendered OpenAPI schemas using using `drf-spectacular`_
+- Testing of any implementation which generates a static yaml or json file (e.g., like `DRF`_)
 
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
@@ -123,15 +124,29 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
 
 .. code:: python
 
-    from django_swagger_tester.loaders import StaticSchemaLoader
+    from django_swagger_tester.loaders import DrfSpectacularSchemaLoader
     from django_swagger_tester.case_testers import is_camel_case
 
     SWAGGER_TESTER = {
-        'SCHEMA_LOADER': StaticSchemaLoader,
-        'PATH': './static/openapi-schema.yml',
+        'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
-        'CASE_PASSLIST': [],
-        'CAMEL_CASE_PARSER': False,
+        'CAMEL_CASE_PARSER': True,
+        'CASE_PASSLIST': ['IP', 'DHCP'],
+        'MIDDLEWARE': {
+            'RESPONSE_VALIDATION': {
+                'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'middleware_response_validation',
+                'DEBUG': True,
+                'VALIDATION_EXEMPT_URLS': ['^api/v1/exempt-endpoint$'],
+            }
+        },
+        'VIEWS': {
+            'RESPONSE_VALIDATION': {
+                'LOG_LEVEL': 'ERROR',
+                'LOGGER_NAME': 'view_response_validation',
+                'DEBUG': True,
+            }
+        },
     }
 
 Parameters
@@ -407,3 +422,5 @@ A Django test implementation of input validation for a whole project could be st
 .. _documentation: https://django-swagger-tester.readthedocs.io/
 .. _docs: https://django-swagger-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
+.. _drf-yasg: https://github.com/axnsan12/drf-yasg
+.. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
