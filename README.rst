@@ -60,29 +60,10 @@ comparing documented responses to actual API responses, or validating documented
 Features
 --------
 
-The package has three main features:
+The package has two primary features:
 
--  `Testing response documentation`_:
-
-.. raw:: html
-
-    <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/response.png" alt='logo'></a>
-    </p>
-
--  `Testing input documentation`_:
-
-.. raw:: html
-
-    <p align="center">
-        <img width="750px" src="https://github.com/sondrelg/django-swagger-tester/blob/master/docs/img/input.png" alt='logo'></a>
-    </p>
-
-
--  and `ensuring your docs comply with a single parameter naming standard (case type)`_.
-
-   Supported naming standards include ``camelCase``, ``snake_case``,
-   ``kebab-case``, and ``PascalCase``.
+-  `Testing response documentation`_
+-  `Testing input documentation`_
 
 Implementations
 ---------------
