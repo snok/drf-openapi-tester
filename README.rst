@@ -1,7 +1,7 @@
 .. raw:: html
 
     <p align="center">
-        <b align='center'>Django Swagger Tester</b>
+        <h2 align='center' style="text-decoration:none">Django Swagger Tester</h2>
     </p>
     <p align="center">
       <em>A Django test utility for validating Swagger documentation</em>
