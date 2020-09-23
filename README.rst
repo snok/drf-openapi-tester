@@ -143,7 +143,7 @@ your brain shouldn't have to manually scan this response documentation for error
     }
   }
 
-when your test suit can simply tell you that ``photoUrl`` wasn't found in the response received from the API.
+when your test suite can simply tell you that ``photoUrl`` was misspelled.
 
 Features
 --------
