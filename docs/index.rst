@@ -62,7 +62,7 @@ The package has two primary features:
 -  `Testing response documentation`_
 -  `Testing request body documentation`_
 
-Support for other use cases could be added in the future, and contributions made to expand the scope of the package are welcome.
+Support for other use cases could be added in the future, and contributions made are appreciated.
 
 Implementations
 ---------------
