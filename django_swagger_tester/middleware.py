@@ -8,7 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.utils import Route, copy_response, get_endpoint_paths, resolve_path, safe_validate_response
+from django_swagger_tester.utils import Route, copy_response, get_endpoint_paths, resolve_path
+from django_swagger_tester.validation import safe_validate_response
 
 logger = logging.getLogger('django_swagger_tester')
 

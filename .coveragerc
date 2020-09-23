@@ -11,6 +11,7 @@ omit =
     demo/*
     django_swagger_tester/static.py,
     django_swagger_tester/drf_yasg.py,
+    django_swagger_tester/migrations/*,
     docs/*
     tests/*
     */python38-32/*

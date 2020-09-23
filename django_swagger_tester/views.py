@@ -3,7 +3,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.utils import safe_validate_response, copy_response
+from django_swagger_tester.utils import copy_response
+from django_swagger_tester.validation import safe_validate_response
 
 
 class ResponseValidationView(APIView):
@@ -11,7 +12,7 @@ class ResponseValidationView(APIView):
         """
         Overwrites APIView's finalize_response so it validates response objects before returning them.
         """
-        response = super(ResponseValidationView, self).finalize_response(request, response, *args, **kwargs)
+        response = super().finalize_response(request, response, *args, **kwargs)
         if settings.view_settings.response_validation.debug:
             response.render()
             copied_response = copy_response(response)

@@ -12,7 +12,7 @@ from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -313,77 +313,6 @@ def camelize(data: dict) -> dict:
     return new_dict
 
 
-def safe_validate_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
-    """
-    Validates an outgoing response object against the OpenAPI schema response documentation.
-
-    In case of inconsistencies, a log is logged at a setting-specified log level.
-
-    Unlike the django_swagger_tester.testing validate_response function,
-    this function should *not* raise any errors during runtime.
-
-    :param response: HTTP response
-    :param path: The request path
-    :param method: The request method
-    :param func_logger: A logger callable
-    """
-    logger.info('Validating response for %s request to %s', method, path)
-    from django_swagger_tester.configuration import settings
-
-    try:
-        # load the response schema
-        response_schema = settings.loader_class.get_response_schema_section(
-            route=path,
-            status_code=response.status_code,
-            method=method,
-            skip_validation_warning=True,
-        )
-    except UndocumentedSchemaSectionError as e:
-        func_logger(
-            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s',
-            method,
-            path,
-            e,
-        )
-        return
-
-    try:
-        # validate response data with respect to response schema
-        from django_swagger_tester.schema_tester import SchemaTester
-
-        SchemaTester(
-            schema=response_schema,
-            data=response.data,
-            case_tester=settings.case_tester,
-            camel_case_parser=settings.camel_case_parser,
-            origin='response',
-        )
-        logger.info('Response valid for %s request to %s', method, path)
-    except SwaggerDocumentationError as e:
-        ext = {
-            # `dst` is added in front of the extra attrs to make the attribute names more unique,
-            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
-            # if the two colliding logs contain different variable types for the same attribute name
-            'dst_response_schema': str(response_schema),
-            'dst_response_data': str(response.data),
-            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
-            'dst_camel_case_parser': str(settings.camel_case_parser),
-        }
-        long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
-        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message), extra=ext)
-    except CaseError as e:
-        ext = {
-            # `dst` is added in front of the extra attrs to make the attribute names more unique,
-            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
-            # if the two colliding logs contain different variable types for the same attribute name
-            'dst_response_schema': str(response_schema),
-            'dst_response_data': str(response.data),
-            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
-            'dst_camel_case_parser': str(settings.camel_case_parser),
-        }
-        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin, extra=ext)
-
-
 def copy_response(response: Response) -> Response:
     """
     Loads response data as JSON and returns a copied response object.
@@ -449,6 +378,8 @@ def hash_response(response: dict) -> int:
                 new_list.append(iterate_list(item))  # type: ignore
             elif isinstance(item, tuple(types)):
                 new_list.append(types[type(item)])  # type: ignore
+            else:
+                raise Exception('nono')
         return new_list
 
     def iterate_dict(d: dict) -> dict:
@@ -461,7 +392,35 @@ def hash_response(response: dict) -> int:
             elif isinstance(v, tuple(types)):
                 new_dict[k] = types[type(v)]  # type: ignore
             else:
-                raise Exception('nonono')
+                raise Exception('nono')
         return new_dict
 
-    return int(hashlib.sha1(bytes(str(iterate_dict(response)), 'utf-8')).hexdigest(), 16)
+    if isinstance(response, dict):
+        result = iterate_dict(response)
+    elif isinstance(response, list):
+        result = iterate_list(response)
+    elif isinstance(response, tuple(types)):
+        result = types[type(response)]
+    else:
+        raise Exception('nono')
+
+    return int(hashlib.sha1(bytes(str(result), 'utf-8')).hexdigest(), 16)
+
+
+def hash_schema(o: dict) -> int:
+    """
+    Makes a hash out of anything that contains only list, dict and hashable types including string and numeric types.
+
+    Stolen from https://stackoverflow.com/questions/5884066/hashing-a-dictionary
+    """
+
+    def freeze(o: Any) -> Any:
+        if isinstance(o, dict):
+            return frozenset({k: freeze(v) for k, v in o.items()}.items())
+
+        if isinstance(o, list):
+            return tuple(freeze(v) for v in o)
+
+        return o
+
+    return hash(freeze(o))
