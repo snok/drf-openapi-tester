@@ -18,7 +18,7 @@ def test_bad_regular_expressions(monkeypatch) -> None:
             monkeypatch.setattr(
                 django_settings,
                 'SWAGGER_TESTER',
-                patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', value),
+                patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', [{'url': value}]),
             )
             SwaggerTesterSettings()
 
@@ -29,6 +29,8 @@ def test_accepted_regexp(monkeypatch) -> None:
     """
     for value in ['^api/v1/test$', '']:
         monkeypatch.setattr(
-            django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', value)
+            django_settings,
+            'SWAGGER_TESTER',
+            patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', [{'url': value, 'status_codes': [200]}]),
         )
         SwaggerTesterSettings()
