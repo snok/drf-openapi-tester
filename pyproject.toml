@@ -10,31 +10,31 @@ repository = "https://github.com/snok/django-swagger-tester"
 documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
 keywords = ['openapi', 'swagger', 'api', 'testing', 'django']
 classifiers = [
-        'Development Status :: 5 - Production/Stable',
-        'Environment :: Web Environment',
-        'Framework :: Pytest',
-        'Framework :: Django',
-        'Framework :: Django :: 2.2',
-        'Framework :: Django :: 3.0',
-        'Framework :: Django :: 3.1',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Natural Language :: English',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
-        'Topic :: Software Development',
-        'Topic :: Software Development :: Libraries',
-        'Topic :: Software Development :: Libraries :: Application Frameworks',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Documentation',
-        'Topic :: Software Development :: Testing',
-        'Topic :: Software Development :: Testing :: Unit',
-    ]
-    include = ["CHANGELOG.rst"]
+    'Development Status :: 4 - Beta',
+    'Environment :: Web Environment',
+    'Framework :: Pytest',
+    'Framework :: Django',
+    'Framework :: Django :: 2.2',
+    'Framework :: Django :: 3.0',
+    'Framework :: Django :: 3.1',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: BSD License',
+    'Natural Language :: English',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3.6',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Topic :: Software Development',
+    'Topic :: Software Development :: Libraries',
+    'Topic :: Software Development :: Libraries :: Application Frameworks',
+    'Topic :: Software Development :: Libraries :: Python Modules',
+    'Topic :: Documentation',
+    'Topic :: Software Development :: Testing',
+    'Topic :: Software Development :: Testing :: Unit',
+]
+include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
@@ -48,7 +48,7 @@ pyYAML = "5.3"
 djangorestframework_camel_case = "1.1.2"
 pytest = "^5.4"
 pytest-cov = "2.8.1"
-pytest-django =  "3.8.0"
+pytest-django = "3.8.0"
 flake8 = "*"
 sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
