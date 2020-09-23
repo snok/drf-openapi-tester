@@ -149,104 +149,12 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
         },
     }
 
+The only required setting, is the schema loader class.
+
 Parameters
 ----------
 
-*SCHEMA_LOADER*
-~~~~~~~~~~~~~~~
-
-The loader class you use is dictated by how your OpenAPI schema is generated. If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
-
-Loader classes can be imported from ``django_swagger_tester.loaders`` and currently include:
-
-- ``StaticSchemaLoader``
-- ``DrfYasgSchemaLoader``
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.loaders import DrfYasgSchemaLoader
-
-    SWAGGER_TESTER = {
-        'SCHEMA_LOADER': DrfYasgSchemaLoader,
-    }
-
-
-*PATH*
-~~~~~~
-
-Path takes the file path of your OpenAPI schema file. this is only required if you're using the ``StaticSchemaLoader`` loader class.
-
-Example:
-
-.. code:: python
-
-  SWAGGER_TESTER = {
-      'PATH': BASE_DIR / '/openapi-schema.yml',
-  }
-
-*CASE_TESTER*
-~~~~~~~~~~~~~
-
-The callable passed for this input decide the naming standard you wish to enforce for your documentation.
-
-There are currently four supported options:
-
--  ``camel case``
--  ``snake case``
--  ``pascal case``
--  ``kebab case``
-- or you can pass ``None`` to skip case validation completely
-
-Your OpenAPI schema will be tested to make sure all parameter names
-are correctly cased according to this preference. If you do not wish
-to enforce this check, you can specify ``None`` to skip this feature.
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.case_testers import is_camel_case
-
-    SWAGGER_TESTER = {
-        'CASE_TESTER': is_camel_case,
-    }
-
-**Default**: ``None``
-
-*CASE_PASSLIST*
-~~~~~~~~~~~~~~~~
-
-List of string for ignoring exceptions from general case-testing. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
-
-Example:
-
-.. code:: python
-
-    from django_swagger_tester.case_testers import is_camel_case
-
-    SWAGGER_TESTER = {
-        'CASE_PASSLIST': ['IP', 'DHCP'],
-    }
-
-**Default**: ``[]``
-
-*CAMEL_CASE_PARSER*
-~~~~~~~~~~~~~~~~~~~
-
-Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
-
-Example:
-
-.. code:: python
-
-  SWAGGER_TESTER = {
-      'CAMEL_CASE_PARSER': True,
-  }
-
-**Default**: ``False``
+To learn more about setting parameters, see the `parameter docs`_.
 
 |
 |
@@ -274,7 +182,15 @@ Example:
 Response Validation
 ===================
 
-To make sure your API response matches your documented response, the ``validate_response`` function compares the two at each level of depth.
+The primary function of this package (so far) is response validation. There are three ways you can go about making sure your documentation
+matches the actual responses you are returning to your users:
+
+1. Add static tests
+2. Add live testing for your project (middleware)
+3. Add live testing for individual views (inherit ResponseValidation in place of an APIView)
+
+Static testing
+--------------
 
 A pytest implementation might look like this:
 
@@ -337,8 +253,29 @@ It is also possible to test more than a single response at the time:
         response = client.get(...)
         validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
 
-Errors
-------
+Live testing with a middleware
+------------------------------
+
+If you want to implement response validation for all outgoing API responses, simply add the middleware to your settings.py:
+
+.. code:: python
+
+    MIDDLEWARE = [
+        ...
+        'django_swagger_tester.middleware.ResponseValidationMiddleware',
+    ]
+
+The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
+
+To avoid validating the same responses over and over, the results are cached to a database table, making sure we only validate a response once. Two responses from the same endpoint *can* trigger duplicate validation, but only if the response structure has changed, i.e., the type of a response attribute has changed.
+
+Live testing with a modified APIView
+------------------------------------
+
+This works identically to the middleware, but limits the scope of testing to the methods contained in a single DRF APIView class.
+
+Error messages
+--------------
 
 When found, errors will be raised in the following format:
 
@@ -361,13 +298,12 @@ When found, errors will be raised in the following format:
 
     * If you need more details: set `verbose=True`
 
-``Expected`` describes the response data, and ``Received`` describes the schema. In this example, the response data is
-missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or
-that the OpenAPI schema should be corrected.
+- ``Expected`` describes the response data
+- ``Received`` describes the schema.
+- ``Hint`` will sometimes include a suggestion for what actions to take, to correct an error.
+- ``Sequence`` will indicate how the response tester iterated through the data structure, before finding the error.
 
-Some errors will include hints to help you understand what actions to take, to rectify the error.
-
-Finally, all errors will include a ``Sequence`` string indicating how the response tester has iterated through the orignal data structure, before finding an error.
+In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 
 Input Validation
@@ -424,3 +360,4 @@ A Django test implementation of input validation for a whole project could be st
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
+.. _parameter docs: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html#parameters

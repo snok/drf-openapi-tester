@@ -216,7 +216,7 @@ Live testing
 
 If you want to implement response validation for all outgoing API responses, you can use the ``ResponseValidationMiddleware``.
 
-The middleware validates all outgoing ``APIView`` responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
+The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
 
 Implementing the middleware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
