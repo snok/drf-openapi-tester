@@ -248,10 +248,12 @@ The middleware validates all outgoing responses with the ``application/json`` co
 
 To avoid validating the same responses over and over, the results are cached to a database table, making sure we only validate a response once. Two responses from the same endpoint *can* trigger duplicate validation, but only if the response structure has changed, i.e., the type of a response attribute has changed.
 
-Live testing with a modified APIView
-------------------------------------
+Live testing for a single view
+------------------------------
 
-This works identically to the middleware, but limits the scope of testing to the methods contained in a single DRF APIView class.
+If you're using DRF's ``APIView``, you can replace that with ``django_swagger_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
+
+If you're not using ``APIView``, but some closely related solution, you can very easily make your own response validation class. Just have a look at the ``ResposeValidationView`` for inspiration.
 
 Error messages
 --------------
