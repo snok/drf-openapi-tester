@@ -120,3 +120,28 @@ def get_snake_cased_response():
             ),
         },
     )
+
+
+def animals_auto_schema():
+    return swagger_auto_schema(
+        operation_id='get_animals',
+        operation_summary='List animals',
+        operation_description='Lists all animals',
+        responses={
+            '200': Schema(
+                title='Success',
+                type=TYPE_ARRAY,
+                items=Schema(
+                    title='Success',
+                    type=TYPE_OBJECT,
+                    properties={
+                        'test': generic_string_schema(example='test', description='test'),
+                        'test2': generic_string_schema(example='test2', description='test2'),
+                    },
+                ),
+            ),
+            '400': generic_error_response('Bad input. Error: {e}.'),
+            '401': generic_error_response('Bad credentials. Error: {e}.'),
+            '500': generic_error_response('Unexpected error raised when ...'),
+        },
+    )

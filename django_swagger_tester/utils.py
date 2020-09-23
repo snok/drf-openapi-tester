@@ -3,12 +3,15 @@ import json
 import logging
 import re
 import sys
-from typing import Any, List, Optional, Tuple
+from copy import deepcopy
+from typing import Any, Callable, List, Optional, Tuple
 
-from django.urls import URLResolver
-from requests import Response
+from django.core.exceptions import ImproperlyConfigured
+from django.urls import ResolverMatch
+from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
+from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -41,7 +44,23 @@ def format_response_tester_error(
     # Construct example dict/list from schema - this is useful to display comparable items
     from django_swagger_tester.configuration import settings
 
-    example_item = settings.LOADER_CLASS.create_dict_from_schema(exception.schema)
+    example_item = settings.loader_class.create_dict_from_schema(exception.schema)
+
+    # Make sure we're sorting both objects to make differences easier to spot
+    if isinstance(exception.response, dict):
+        exception.response = dict(sorted(exception.response.items()))
+    elif isinstance(exception.response, list):
+        try:
+            exception.response.sort()
+        except TypeError:
+            pass  # sorting a list of dicts doesnt work, but we don't know what the data looks like
+    if isinstance(example_item, dict):
+        example_item = dict(sorted(example_item.items()))
+    elif isinstance(example_item, list):
+        try:
+            example_item.sort()
+        except TypeError:
+            pass  # sorting a list of dicts doesnt work, but we don't know what the data looks like
 
     def get_dotted_line(values: list) -> str:
         longest_value = max(len(f'{v}') for v in values)
@@ -167,7 +186,7 @@ def resolve_path(endpoint_path: str) -> tuple:
             # handling. However, its important not to freely use the .replace() function, as a {value} of `1` would
             # also cause the `1` in api/v1/ to be replaced
             var_index = endpoint_path.rfind(str(value))
-            endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(value) :]
+            endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(str(value)) :]
         return endpoint_path, resolved_route
 
     except Resolver404:
@@ -184,7 +203,7 @@ def resolve_path(endpoint_path: str) -> tuple:
 
 
 class Route:
-    def __init__(self, deparameterized_path: str, resolved_path: URLResolver) -> None:
+    def __init__(self, deparameterized_path: str, resolved_path: ResolverMatch) -> None:
         self.deparameterized_path = deparameterized_path
         self.parameterized_path = deparameterized_path
         self.resolved_path = resolved_path
@@ -198,7 +217,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'(\{[\w]+\})')
+        pattern = re.compile(r'({[\w]+\})')  # noqa: FS003
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -240,6 +259,28 @@ class Route:
         self.counter += 1
         return path
 
+    def reset(self) -> None:
+        """
+        Resets parameterized path and counter.
+        """
+        self.parameterized_path = self.deparameterized_path
+        self.counter = 0
+
+    def route_matches(self, route: str) -> bool:
+        """
+        Checks whether a route matches any version of get_path.
+        """
+        if len(self.parameters) == 0:
+            return self.deparameterized_path == route
+
+        for _ in range(len(self.parameters) + 1):
+            x = self.get_path()
+            if x == route:
+                self.reset()
+                return True
+        self.reset()
+        return False
+
 
 def type_placeholder_value(_type: str) -> Any:
     """
@@ -255,3 +296,136 @@ def type_placeholder_value(_type: str) -> Any:
         return 'string'
     else:
         raise TypeError(f'Cannot return placeholder value for {_type}')
+
+
+def camelize(data: dict) -> dict:
+    """
+    Adapted djangorestframework.utils.camelize function for converting a snake_cased dict to camelCase.
+    """
+    new_dict = {}
+    for key, value in data.items():
+        if isinstance(key, str) and '_' in key:
+            new_key = re.sub(camelize_re, underscore_to_camel, key)
+        else:
+            new_key = key
+        new_dict[new_key] = value
+    return new_dict
+
+
+def safe_validate_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
+    """
+    Validates an outgoing response object against the OpenAPI schema response documentation.
+
+    In case of inconsistencies, a log is logged at a setting-specified log level.
+
+    Unlike the django_swagger_tester.testing validate_response function,
+    this function should *not* raise any errors during runtime.
+
+    :param response: HTTP response
+    :param path: The request path
+    :param method: The request method
+    :param func_logger: A logger callable
+    """
+    logger.info('Validating response for %s request to %s', method, path)
+    from django_swagger_tester.configuration import settings
+
+    try:
+        # load the response schema
+        response_schema = settings.loader_class.get_response_schema_section(
+            route=path,
+            status_code=response.status_code,
+            method=method,
+            skip_validation_warning=True,
+        )
+    except UndocumentedSchemaSectionError as e:
+        func_logger(
+            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? Error: %s',
+            method,
+            path,
+            e,
+        )
+        return
+
+    try:
+        # validate response data with respect to response schema
+        from django_swagger_tester.schema_tester import SchemaTester
+
+        SchemaTester(
+            schema=response_schema,
+            data=response.data,
+            case_tester=settings.case_tester,
+            camel_case_parser=settings.camel_case_parser,
+            origin='response',
+        )
+        logger.info('Response valid for %s request to %s', method, path)
+    except SwaggerDocumentationError as e:
+        ext = {
+            # `dst` is added in front of the extra attrs to make the attribute names more unique,
+            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
+            # if the two colliding logs contain different variable types for the same attribute name
+            'dst_response_schema': str(response_schema),
+            'dst_response_data': str(response.data),
+            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
+            'dst_camel_case_parser': str(settings.camel_case_parser),
+        }
+        long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
+        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message), extra=ext)
+    except CaseError as e:
+        ext = {
+            # `dst` is added in front of the extra attrs to make the attribute names more unique,
+            # to avoid naming collisions - naming collisions can be problematic in, e.g., elastic
+            # if the two colliding logs contain different variable types for the same attribute name
+            'dst_response_schema': str(response_schema),
+            'dst_response_data': str(response.data),
+            'dst_case_tester': settings.case_tester.__name__ if settings.case_tester.__name__ != '<lambda>' else 'n/a',
+            'dst_camel_case_parser': str(settings.camel_case_parser),
+        }
+        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin, extra=ext)
+
+
+def copy_response(response: Response) -> Response:
+    """
+    Loads response data as JSON and returns a copied response object.
+    """
+    # By parsing the response data JSON we bypass problems like uuid's not having been converted to
+    # strings yet, which otherwise would create problems when comparing response data types to the
+    # documented schema types in the schema tester
+    content = response.content.decode(response.charset)
+    response_data = json.loads(content) if response.status_code != 204 and content else {}
+    copied_response = deepcopy(response)
+    copied_response.data = response_data
+    return copied_response
+
+
+def get_logger(level: str, logger_name: str) -> Callable:
+    """
+    Return logger.
+
+    :param level: log level
+    :param logger_name: logger name
+    :return: logger
+    """
+    error = (
+        f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
+        f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
+    )
+    if not isinstance(level, str):
+        raise ImproperlyConfigured(error)
+    if not isinstance(logger_name, str):
+        raise ImproperlyConfigured('Logger name must be a string')
+    else:
+        level = level.upper()
+    if level == 'DEBUG':
+        return logging.getLogger(logger_name).debug
+    elif level == 'INFO':
+        return logging.getLogger(logger_name).info
+    elif level == 'WARNING':
+        return logging.getLogger(logger_name).warning
+    elif level == 'ERROR':
+        return logging.getLogger(logger_name).error
+    elif level == 'EXCEPTION':
+        return logging.getLogger(logger_name).exception
+    elif level == 'CRITICAL':
+        return logging.getLogger(logger_name).critical
+    else:
+        raise ImproperlyConfigured(error)

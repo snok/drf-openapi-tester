@@ -22,16 +22,16 @@ class GoodCars(APIView):
         return Response(cars, 200)
 
     @staticmethod
-    def put(request: Request, version: int) -> Response:
-        pass
+    def put(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})
 
     @staticmethod
-    def post(request: Request, version: int) -> Response:
-        pass
+    def post(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})
 
     @staticmethod
-    def delete(request: Request, version: int) -> Response:
-        pass
+    def delete(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})
 
 
 class BadCars(APIView):
@@ -50,13 +50,13 @@ class BadCars(APIView):
         return Response(cars, 200)
 
     @staticmethod
-    def put(request: Request, version: int) -> Response:
-        pass
+    def put(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})
 
     @staticmethod
-    def post(request: Request, version: int) -> Response:
-        pass
+    def post(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})
 
     @staticmethod
-    def delete(request: Request, version: int) -> Response:
-        pass
+    def delete(request: Request, version: int, vehicle_type: str) -> Response:
+        return Response({})

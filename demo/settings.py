@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_swagger_tester.middleware.ResponseValidationMiddleware',
 ]
 
 ROOT_URLCONF = 'demo.urls'
@@ -114,7 +115,6 @@ REST_FRAMEWORK = {
         'djangorestframework_camel_case.parser.CamelCaseJSONParser',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-
 }
 LOGGING = {
     'version': 1,
@@ -136,10 +136,29 @@ LOGGING = {
     },
 }
 
+# fmt: off
+
 SWAGGER_TESTER = {
-    'SCHEMA_LOADER': DrfYasgSchemaLoader,  # Class responsible for loading the projects OpenAPI schema
+    'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
-    'CASE_TESTER': is_camel_case,  # Function responsible for checking schema casing
-    'CAMEL_CASE_PARSER': True,  # Needs to be True if djangorestframework_camel_case is enabled
+    'CASE_TESTER': is_camel_case,
+    'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
+    'MIDDLEWARE': {
+        'RESPONSE_VALIDATION': {
+            'LOG_LEVEL': 'ERROR',
+            'DEBUG': True,
+            'VALIDATION_EXEMPT_URLS': [],
+            'LOGGER_NAME': 'django_swagger_tester',
+        }
+    },
+    'VIEWS': {
+        'RESPONSE_VALIDATION': {
+            'LOG_LEVEL': 'ERROR',
+            'DEBUG': True,
+            'LOGGER_NAME': 'django_swagger_tester',
+        }
+    },
 }
+
+# fmt: on

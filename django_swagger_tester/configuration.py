@@ -1,91 +1,181 @@
+# flake8: noqa: D102
 import inspect
 import logging
+from re import compile
 from types import FunctionType
 from typing import Callable, List
 
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.utils import get_logger
+
 logger = logging.getLogger('django_swagger_tester')
 
 
-# noinspection PyAttributeOutsideInit
-class SwaggerTesterSettings(object):
-    """
-    Loads and validates the django_swagger_tester settings.
-    """
+class ResponseValidationMiddlewareSettings:
+    def __init__(self, response_validation_settings: dict) -> None:
+        if response_validation_settings is None:
+            response_validation_settings = {}
+        self.settings = response_validation_settings
+        self.validate()
 
+    @property
+    def log_level(self) -> str:
+        return self.settings.get('LOG_LEVEL', 'ERROR')
+
+    @property
+    def logger_name(self) -> str:
+        return self.settings.get('LOGGER_NAME', 'django_swagger_tester')
+
+    @property
+    def debug(self) -> bool:
+        return self.settings.get('DEBUG', True)
+
+    @property
+    def validation_exempt_urls(self) -> List[str]:
+        return self.settings.get('VALIDATION_EXEMPT_URLS', [])
+
+    @property
+    def logger(self) -> Callable:
+        return get_logger(self.log_level, self.logger_name)
+
+    def validate(self) -> None:
+        try:
+            [compile(url_pattern) for url_pattern in self.validation_exempt_urls]
+        except Exception:
+            raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
+
+        if not isinstance(self.debug, bool):
+            raise ImproperlyConfigured('DEBUG must be a boolean.')
+
+        self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
+
+
+class MiddlewareSettings:
+    def __init__(self, middleware_settings: dict) -> None:
+        if middleware_settings is None:
+            middleware_settings = {}
+        self.settings = middleware_settings
+        self.validate()
+
+    @property
+    def response_validation(self):
+        return ResponseValidationMiddlewareSettings(self.settings.get('RESPONSE_VALIDATION', {}))
+
+    def validate(self):
+        self.response_validation
+
+
+class ResponseValidationViewSettings:
+    def __init__(self, response_validation_settings: dict) -> None:
+        if response_validation_settings is None:
+            response_validation_settings = {}
+        self.settings = response_validation_settings
+        self.validate()
+
+    @property
+    def log_level(self) -> str:
+        return self.settings.get('LOG_LEVEL', 'ERROR')
+
+    @property
+    def logger_name(self) -> str:
+        return self.settings.get('LOGGER_NAME', 'django_swagger_tester')
+
+    @property
+    def debug(self) -> bool:
+        return self.settings.get('DEBUG', True)
+
+    @property
+    def logger(self) -> Callable:
+        return get_logger(self.log_level, self.logger_name)
+
+    def validate(self) -> None:
+        if not isinstance(self.debug, bool):
+            raise ImproperlyConfigured('DEBUG must be a boolean')
+
+        self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
+
+
+class ViewSettings:
+    def __init__(self, view_settings: dict) -> None:
+        if view_settings is None:
+            view_settings = {}
+        self.settings = view_settings
+        self.validate()
+
+    @property
+    def response_validation(self):
+        return ResponseValidationViewSettings(self.settings.get('RESPONSE_VALIDATION', {}))
+
+    def validate(self):
+        self.response_validation
+
+
+class SwaggerTesterSettings:
     def __init__(self) -> None:
-        """
-        Initializes tester class with base settings.
-        """
-        # Get SWAGGER_TESTER settings
-        swagger_tester_settings = self.get_package_settings()
-
-        # Required package settings
-        self.SCHEMA_LOADER = None
-
-        # Defaulted package settings
-        self.CASE_TESTER: Callable = lambda: None
-        self.CAMEL_CASE_PARSER = False
-        self.CASE_PASSLIST: List[str] = []
-
-        # Overwrite defaults
-        for setting, value in swagger_tester_settings.items():
-            if hasattr(self, setting):
-                setattr(self, setting, value)
-            else:
-                # Some loader classes will have extra settings passed to the loader class as kwargs
-                # Because of this, we cannot raise errors for extra settings
-                logger.debug('Received excess setting `%s` with value `%s`', setting, value)
-
-        # Make sure schema loader was specified
-        self.set_and_validate_schema_loader(swagger_tester_settings)
-
-        # Validate other specified settings to make sure they are valid
-        self.validate_case_tester_setting()
-        self.validate_camel_case_parser_setting()
-        self.validate_case_whitelist()
-
-    @staticmethod
-    def get_package_settings() -> dict:
-        """
-        Loads the SWAGGER_TESTER settings from the Django application's settings.py
-        """
         from django.conf import settings as django_settings
 
-        if not hasattr(django_settings, 'SWAGGER_TESTER'):
-            raise ImproperlyConfigured(
-                'Please configure SWAGGER_TESTER in your settings or remove django-swagger-tester as a dependency'
-            )
+        if not hasattr(django_settings, 'SWAGGER_TESTER') or not django_settings.SWAGGER_TESTER:
+            raise ImproperlyConfigured('SWAGGER_TESTER settings need to be configured')
 
-        if not django_settings.SWAGGER_TESTER:
-            raise ImproperlyConfigured('Your SWAGGER_TESTER settings need to be configured')
+        self.settings = django_settings.SWAGGER_TESTER
+        self.validate()
 
-        return django_settings.SWAGGER_TESTER
+    @property
+    def schema_loader(self):
+        return self.settings.get('SCHEMA_LOADER', None)
+
+    @property
+    def case_tester(self) -> Callable:
+        return self.settings.get('CASE_TESTER', lambda: None)
+
+    @property
+    def camel_case_parser(self) -> bool:
+        return self.settings.get('CAMEL_CASE_PARSER', False)
+
+    @property
+    def case_passlist(self) -> List[str]:
+        return self.settings.get('CASE_PASSLIST', [])
+
+    @property
+    def middleware_settings(self) -> MiddlewareSettings:
+        return MiddlewareSettings(self.settings.get('MIDDLEWARE', {}))
+
+    @property
+    def view_settings(self) -> ViewSettings:
+        return ViewSettings(self.settings.get('VIEWS', {}))
+
+    def validate(self):
+        self.validate_case_tester_setting()
+        self.validate_camel_case_parser_setting()
+        self.validate_case_passlist()
+        self.set_and_validate_schema_loader()
+        self.middleware_settings
+        self.view_settings
 
     def validate_case_tester_setting(self) -> None:
         """
         Make sure we receive a callable or a None.
         """
-        if self.CASE_TESTER is not None and not isinstance(self.CASE_TESTER, FunctionType):
+        if self.case_tester is not None and not isinstance(self.case_tester, FunctionType):
             logger.error('CASE_TESTER setting is misspecified.')
             raise ImproperlyConfigured(
                 'The django-swagger-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from django_swagger_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
-        elif self.CASE_TESTER is None:
-            # If None is passed, we want to do nothing when self.CASE_TESTER is called,
-            # so we just assign a lambda expression
-            self.CASE_TESTER = lambda: None
+        elif self.case_tester is None:
+            raise ImproperlyConfigured(
+                'The django-swagger-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
+            )
 
     def validate_camel_case_parser_setting(self) -> None:
         """
         Make sure CAMEL_CASE_PARSER is a boolean, and that the required dependencies are installed if set to True.
         """
-        if not isinstance(self.CAMEL_CASE_PARSER, bool):
+        if not isinstance(self.camel_case_parser, bool):
             raise ImproperlyConfigured('`CAMEL_CASE_PARSER` needs to be True or False')
-        if self.CAMEL_CASE_PARSER:
+        if self.camel_case_parser:
             try:
                 import djangorestframework_camel_case  # noqa: F401
             except ImportError:
@@ -104,35 +194,37 @@ class SwaggerTesterSettings(object):
                     'but CAMEL_CASE_PARSER is not set to True'
                 )
 
-    def set_and_validate_schema_loader(self, package_settings: dict) -> None:
+    def set_and_validate_schema_loader(self) -> None:
         """
-        Sets self.LOADER_CLASS and validates the setting.
+        Sets self.loader_class and validates the setting.
         """
         from django_swagger_tester.loaders import _LoaderBase
 
         addon = '. Please pass a loader class from django_swagger_tester.schema_loaders.'
-        if self.SCHEMA_LOADER is None:
+        if self.schema_loader is None:
             raise ImproperlyConfigured('SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon)
 
-        if not inspect.isclass(self.SCHEMA_LOADER):
+        if not inspect.isclass(self.schema_loader):
             raise ImproperlyConfigured('SCHEMA_LOADER must be a class' + addon)
-        elif not issubclass(self.SCHEMA_LOADER, _LoaderBase):
+        elif not issubclass(self.schema_loader, _LoaderBase):
             raise ImproperlyConfigured(
-                'The supplied LOADER_CLASS must inherit django_swagger_tester.schema_loaders._LoaderBase' + addon
+                'The supplied loader_class must inherit django_swagger_tester.schema_loaders._LoaderBase' + addon
             )
 
-        self.LOADER_CLASS: _LoaderBase = self.SCHEMA_LOADER()
-        self.LOADER_CLASS.validation(package_settings=package_settings)
+        # noinspection PyAttributeOutsideInit
+        self.loader_class: _LoaderBase = self.schema_loader()
+        # here we run custom validation for each loader class
+        # for example, the drf-yasg loader class requires drf-yasg as an installed dependency
+        # that is checked at the class level
+        self.loader_class.validation(package_settings=self.settings)
 
-    def validate_case_whitelist(self) -> None:
+    def validate_case_passlist(self) -> None:
         """
         Validates the case whitelist as a list of strings.
         """
-        if self.CASE_PASSLIST is None:
-            self.CASE_PASSLIST = []
-        if not isinstance(self.CASE_PASSLIST, list):
+        if not isinstance(self.case_passlist, list):
             raise ImproperlyConfigured('The CASE_PASSLIST setting needs to be a list of strings')
-        elif any(not isinstance(item, str) for item in self.CASE_PASSLIST):
+        elif any(not isinstance(item, str) for item in self.case_passlist):
             raise ImproperlyConfigured('The CASE_PASSLIST setting list can only contain strings')
 
 

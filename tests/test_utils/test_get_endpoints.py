@@ -18,6 +18,7 @@ def test_get_endpoint_paths():
         '/api/v1/items',
         '/api/v1/trucks/correct',
         '/api/v1/snake-case',
+        '/api/v1/animals',
     ]
     assert [url in expected for url in urls]
     assert len(expected) == len(urls)

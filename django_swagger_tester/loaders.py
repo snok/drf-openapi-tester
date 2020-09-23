@@ -1,9 +1,8 @@
 import json
 import logging
 import os
-from typing import Any, Optional, Union
 from json import dumps, loads
-from typing import Optional
+from typing import Any, Optional, Union
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -71,8 +70,7 @@ class _LoaderBase:
         """
         from django_swagger_tester.utils import resolve_path
 
-        deparameterized_path, resolved_path = resolve_path(route)
-        return Route(deparameterized_path=deparameterized_path, resolved_path=resolved_path)
+        return Route(*resolve_path(route))
 
     def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
         """
@@ -95,7 +93,7 @@ class _LoaderBase:
         paths_schema = index_schema(schema=schema, variable='paths')
 
         # Index by route
-        routes = ', '.join([key for key in paths_schema.keys()])
+        routes = ', '.join(list(paths_schema))
         route_error = ''
         if routes:
             route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
@@ -111,8 +109,7 @@ class _LoaderBase:
                 # This is an unfortunate piece of logic, where we're attempting to insert path parameters
                 # one by one until the path works
                 # if it never works, we finally raise an UndocumentedSchemaSectionError
-                route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(),
-                                            error_addon=route_error)
+                route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
                 break
             except UndocumentedSchemaSectionError as e:
                 error = e
@@ -136,8 +133,7 @@ class _LoaderBase:
         status_code_error = f' Is the `{status_code}` response documented?'
         if responses:
             status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
-        status_code_schema = index_schema(schema=responses_schema, variable=str(status_code),
-                                          error_addon=status_code_error)
+        status_code_schema = index_schema(schema=responses_schema, variable=str(status_code), error_addon=status_code_error)
 
         # Not sure about this logic - this is what my static schema looks like, but not the drf_yasg dynamic schema
         if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
@@ -163,7 +159,7 @@ class _LoaderBase:
         paths_schema = index_schema(schema=schema, variable='paths')
 
         # Index by route
-        routes = ', '.join([key for key in paths_schema.keys()])
+        routes = ', '.join(list(paths_schema))
         route_error = ''
         if routes:
             route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
@@ -208,8 +204,7 @@ class _LoaderBase:
         """
         methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
         if not isinstance(method, str) or method.lower() not in methods:
-            logger.error('Method `%s` is invalid. Should be one of: %s.', method,
-                         ', '.join([i.upper() for i in methods]))
+            logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))
             raise ImproperlyConfigured(
                 f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.'
             )
@@ -249,7 +244,7 @@ class _LoaderBase:
             Iterates over a dictionary to look for pesky $refs.
             """
             if '$ref' in d:
-                indices = [i for i in d['$ref'][d['$ref'].index('#') + 1:].split('/') if i]
+                indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
                 temp_schema = s
                 for index in indices:
                     logger.debug('Indexing schema by `%s`', index)
@@ -307,7 +302,7 @@ class _LoaderBase:
 
     def _iterate_schema_list(self, l: dict) -> list:  # noqa: E741
 
-        from django_swagger_tester.openapi import read_type, read_items
+        from django_swagger_tester.openapi import read_items, read_type
         from django_swagger_tester.utils import type_placeholder_value
 
         x = []
@@ -335,7 +330,7 @@ class _LoaderBase:
         elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
-        elif read_type(schema) == 'object' and 'properties' in schema:
+        elif read_type(schema) == 'object' and 'properties' in schema or 'additionalProperties' in schema:
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
         elif 'type' in schema and schema['type'] in list_types(cut=['object', 'array']):
@@ -353,8 +348,8 @@ class DrfYasgSchemaLoader(_LoaderBase):
     def __init__(self) -> None:
         super().__init__()
         self.validation()  # this has to run before drf_yasg imports
-        from drf_yasg.openapi import Info
         from drf_yasg.generators import OpenAPISchemaGenerator
+        from drf_yasg.openapi import Info
 
         self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
@@ -368,8 +363,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         try:
             import drf_yasg  # noqa: F401
         except ModuleNotFoundError:
-            raise ImproperlyConfigured(
-                'The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.')
+            raise ImproperlyConfigured('The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.')
 
         if 'drf_yasg' not in apps.app_configs.keys():
             raise ImproperlyConfigured(
@@ -411,20 +405,22 @@ class DrfYasgSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class DrfSpectacularSchemaLoader(_LoaderBase):
     """
     Loads OpenAPI schema generated by drf_spectacular.
     """
+
     def __init__(self) -> None:
         super().__init__()
         self.validation()  # this has to run before drf_spectacular imports
         from drf_spectacular.generators import SchemaGenerator
+
         self.schema_generator = SchemaGenerator()
 
-    def validation(self) -> None:
+    def validation(self, *args, **kwargs) -> None:
         """
         For drf_spectacular-generated schemas, it's important that we verify:
         1. The package is installed
@@ -470,7 +466,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class StaticSchemaLoader(_LoaderBase):
@@ -495,9 +491,9 @@ class StaticSchemaLoader(_LoaderBase):
         - The right parsing library is installed (pyYAML for yaml, json is builtin)
         """
         if (
-                'package_settings' not in kwargs
-                or 'PATH' not in kwargs['package_settings']
-                or kwargs['package_settings']['PATH'] is None
+            'package_settings' not in kwargs
+            or 'PATH' not in kwargs['package_settings']
+            or kwargs['package_settings']['PATH'] is None
         ):
             logger.error('PATH setting is not specified')
             raise ImproperlyConfigured(
@@ -530,7 +526,7 @@ class StaticSchemaLoader(_LoaderBase):
             )
         try:
             logger.debug('Fetching static schema from %s', self.path)
-            with open(self.path, 'r') as f:
+            with open(self.path) as f:
                 content = f.read()
         except Exception as e:
             logger.exception('Exception raised when fetching OpenAPI schema from %s. Error: %s', self.path, e)

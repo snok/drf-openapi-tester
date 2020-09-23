@@ -4,9 +4,9 @@ import logging
 from rest_framework.response import Response
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import SwaggerDocumentationError, CaseError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 from django_swagger_tester.schema_tester import SchemaTester
-from django_swagger_tester.utils import format_response_tester_error, unpack_response, format_response_tester_case_error
+from django_swagger_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -23,15 +23,13 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
-    response_schema = settings.LOADER_CLASS.get_response_schema_section(
-        route=route, status_code=status_code, method=method
-    )
+    response_schema = settings.loader_class.get_response_schema_section(route=route, status_code=status_code, method=method)
     try:
         SchemaTester(
             schema=response_schema,
             data=data,
-            case_tester=settings.CASE_TESTER,
-            camel_case_parser=settings.CAMEL_CASE_PARSER,
+            case_tester=settings.case_tester,
+            camel_case_parser=settings.camel_case_parser,
             origin='response',
             **kwargs,
         )
@@ -44,7 +42,7 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
 
 
 def validate_input_serializer(
-    serializer, method: str, route: str, camel_case_parser: bool = settings.CAMEL_CASE_PARSER  # noqa: F401, TYP001
+    serializer, method: str, route: str, camel_case_parser: bool = settings.camel_case_parser  # noqa: F401, TYP001
 ) -> None:
     """
     Verifies that an OpenAPI schema request body definition is valid, according to an API view's input serializer.
@@ -56,7 +54,7 @@ def validate_input_serializer(
            djangorestframework-camel-case parses for your APIs.
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
-    example = settings.LOADER_CLASS.get_request_body_example(route, method)
+    example = settings.loader_class.get_request_body_example(route, method)
 
     # Make camelCased input snake_cased so the serializer can read it
     if camel_case_parser:

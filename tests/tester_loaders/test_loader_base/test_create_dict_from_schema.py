@@ -2,9 +2,9 @@ from copy import deepcopy
 
 import pytest
 import yaml
+from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from demo import settings
 from django_swagger_tester.configuration import settings as _settings
 from django_swagger_tester.loaders import _LoaderBase
 from tests.types import bool_type, integer_type, number_type, string_type
@@ -13,7 +13,7 @@ from tests.utils import MockRoute
 
 def loader(path):
     with open(str(settings.BASE_DIR.parent) + path, 'r') as f:
-        return _settings.LOADER_CLASS.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return _settings.loader_class.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')

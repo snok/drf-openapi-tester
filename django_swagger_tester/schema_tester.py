@@ -11,7 +11,7 @@ from django_swagger_tester.openapi import (
     read_properties,
     read_type,
 )
-from django_swagger_tester.utils import type_placeholder_value
+from django_swagger_tester.utils import camelize, type_placeholder_value
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -29,9 +29,9 @@ class SchemaTester:
 
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
-        self.ignored_keys += settings.CASE_PASSLIST
+        self.ignored_keys += settings.case_passlist
         self.camel_case_parser: bool = (
-            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.CAMEL_CASE_PARSER
+            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.camel_case_parser
         )
         self.origin = origin
 
@@ -85,9 +85,7 @@ class SchemaTester:
             )
 
         if self.camel_case_parser:
-            from djangorestframework_camel_case.util import camelize
-
-            data = dict(camelize(data))
+            data = camelize(data)
 
         response_keys = data.keys()
         properties = read_properties(schema)
