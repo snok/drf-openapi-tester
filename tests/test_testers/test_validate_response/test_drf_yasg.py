@@ -50,7 +50,7 @@ bad_test_data = [
 ]
 
 
-def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
+def test_endpoints_dynamic_schema(client, transactional_db) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
@@ -63,7 +63,7 @@ def test_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
         validate_response(response=response, method='GET', route=item['url'])  # type: ignore
 
 
-def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
+def test_bad_endpoints_dynamic_schema(client, transactional_db) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates incorrect schemas successfully.
     """
@@ -79,7 +79,7 @@ def test_bad_endpoints_dynamic_schema(client) -> None:  # noqa: TYP001
             validate_response(response, 'GET', item['url'], verbose=True)  # type: ignore
 
 
-def test_bad_method(client, monkeypatch) -> None:  # noqa: TYP001
+def test_bad_method(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
     """
     When we fail to index the schema by method, we need to raise an exception.
     """
@@ -96,7 +96,7 @@ def test_bad_method(client, monkeypatch) -> None:  # noqa: TYP001
             validate_response(response=response, method='gets', route=item['url'])  # type: ignore
 
 
-def test_missing_status_code_match(client, monkeypatch) -> None:  # noqa: TYP001
+def test_missing_status_code_match(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
     """
     When we fail to index the schema by status code, we need to raise an exception.
     """

@@ -1,7 +1,7 @@
 from django_swagger_tester.testing import validate_response
 
 
-def test_endpoints_dynamic_schema(client, caplog) -> None:  # noqa: TYP001
+def test_endpoints_dynamic_schema(client, caplog, transactional_db) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """

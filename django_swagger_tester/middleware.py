@@ -6,16 +6,15 @@ from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 from django.http import HttpRequest, HttpResponse
 from django.urls import Resolver404
-from django.utils.decorators import sync_only_middleware
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.utils import Route, get_endpoint_paths, resolve_path, copy_response, safe_validate_response
+from django_swagger_tester.utils import Route, copy_response, get_endpoint_paths, resolve_path
+from django_swagger_tester.validation import safe_validate_response
 
 logger = logging.getLogger('django_swagger_tester')
 
 
-@sync_only_middleware
-class ResponseValidationMiddleware(object):
+class ResponseValidationMiddleware:
     """
     Middleware validates incoming request bodies and outgoing responses with respect to the app's OpenAPI schema.
     """
@@ -96,7 +95,7 @@ class ResponseValidationMiddleware(object):
                 and hasattr(route_object.resolved_path.func, 'view_class')
             ):
                 # Verify that the view has contains the method
-                if hasattr(route_object.resolved_path.func.view_class, method.lower()):
+                if method.lower() in route_object.resolved_path.func.view_class.__dict__:
                     logger.debug('%s request to %s is an API request', method, path)
                     return True
                 else:

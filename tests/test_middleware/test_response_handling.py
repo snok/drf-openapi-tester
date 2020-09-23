@@ -1,4 +1,4 @@
-def test_response_containing_uuid(client, caplog):
+def test_response_containing_uuid(client, transactional_db):
     """
     Makes sure that a response containing a uuid4 value doesn't throw a SwaggerDocumentationError when checked with
     the middleware.

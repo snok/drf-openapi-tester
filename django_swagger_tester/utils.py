@@ -1,4 +1,5 @@
 import difflib
+import hashlib
 import json
 import logging
 import re
@@ -11,7 +12,7 @@ from django.urls import ResolverMatch
 from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
+from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
 
 logger = logging.getLogger('django_swagger_tester')
 
@@ -217,7 +218,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'({[\w]+\})')
+        pattern = re.compile(r'({[\w]+\})')  # noqa: FS003
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -312,56 +313,6 @@ def camelize(data: dict) -> dict:
     return new_dict
 
 
-def safe_validate_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
-    """
-    Validates an outgoing response object against the OpenAPI schema response documentation.
-
-    In case of inconsistencies, a log is logged at a setting-specified log level.
-
-    Unlike the django_swagger_tester.testing validate_response function,
-    this function should *not* raise any errors during runtime.
-
-    :param response: HTTP response
-    :param path: The request path
-    :param method: The request method
-    :param func_logger: A logger callable
-    """
-    logger.info('Validating response for %s request to %s', method, path)
-    from django_swagger_tester.configuration import settings
-
-    try:
-        # load the response schema
-        response_schema = settings.loader_class.get_response_schema_section(
-            route=path, status_code=response.status_code, method=method, skip_validation_warning=True,
-        )
-    except UndocumentedSchemaSectionError as e:
-        func_logger(
-            'Failed accessing response schema for %s request to `%s`; is the endpoint documented? ' 'Error: %s',
-            method,
-            path,
-            e,
-        )
-        return
-
-    try:
-        # validate response data with respect to response schema
-        from django_swagger_tester.schema_tester import SchemaTester
-
-        SchemaTester(
-            schema=response_schema,
-            data=response.data,
-            case_tester=settings.case_tester,
-            camel_case_parser=settings.camel_case_parser,
-            origin='response',
-        )
-        logger.info('Response valid for %s request to %s', method, path)
-    except SwaggerDocumentationError as e:
-        long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
-        func_logger('Bad response returned for %s request to %s. Error: %s', method, path, str(long_message))
-    except CaseError as e:
-        func_logger('Found incorrectly cased cased key, `%s` in %s', e.key, e.origin)
-
-
 def copy_response(response: Response) -> Response:
     """
     Loads response data as JSON and returns a copied response object.
@@ -370,9 +321,9 @@ def copy_response(response: Response) -> Response:
     # strings yet, which otherwise would create problems when comparing response data types to the
     # documented schema types in the schema tester
     content = response.content.decode(response.charset)
-    response_data = json.loads(content)
+    response_data = json.loads(content) if response.status_code != 204 and content else {}
     copied_response = deepcopy(response)
-    copied_response.data = response_data  # this can probably be done differently
+    copied_response.data = response_data
     return copied_response
 
 
@@ -390,6 +341,8 @@ def get_logger(level: str, logger_name: str) -> Callable:
     )
     if not isinstance(level, str):
         raise ImproperlyConfigured(error)
+    if not isinstance(logger_name, str):
+        raise ImproperlyConfigured('Logger name must be a string')
     else:
         level = level.upper()
     if level == 'DEBUG':
@@ -406,3 +359,62 @@ def get_logger(level: str, logger_name: str) -> Callable:
         return logging.getLogger(logger_name).critical
     else:
         raise ImproperlyConfigured(error)
+
+
+def hash_response(response: dict) -> str:
+    """
+    Function replaces all response values with type-specific placeholder values, and returns a hash value.
+
+    The idea is that we don't have to validate the same response twice, unless response types change.
+    """
+    types = {str: 0, int: 1, bool: 2, float: 3, type(None): 4}
+
+    def iterate_list(_list: list) -> list:
+        new_list = []
+        for item in _list:
+            if isinstance(item, dict):
+                new_list.append(iterate_dict(item))
+            elif isinstance(item, list):
+                new_list.append(iterate_list(item))  # type: ignore
+            elif isinstance(item, tuple(types)):
+                new_list.append(types[type(item)])  # type: ignore
+        return new_list
+
+    def iterate_dict(d: dict) -> dict:
+        new_dict = {}
+        for k, v in d.items():
+            if isinstance(v, dict):
+                new_dict[k] = iterate_dict(v)
+            elif isinstance(v, list):
+                new_dict[k] = iterate_list(v)  # type: ignore
+            elif isinstance(v, tuple(types)):
+                new_dict[k] = types[type(v)]  # type: ignore
+        return new_dict
+
+    if isinstance(response, dict):
+        result = iterate_dict(response)
+    elif isinstance(response, list):
+        result = iterate_list(response)
+    elif isinstance(response, tuple(types)):
+        result = types[type(response)]
+
+    return str(int(hashlib.sha1(bytes(str(result), 'utf-8')).hexdigest(), 16))
+
+
+def hash_schema(o: dict) -> str:
+    """
+    Makes a hash out of anything that contains only list, dict and hashable types including string and numeric types.
+
+    Stolen from https://stackoverflow.com/questions/5884066/hashing-a-dictionary
+    """
+
+    def freeze(o: Any) -> Any:
+        if isinstance(o, dict):
+            return frozenset({k: freeze(v) for k, v in o.items()}.items())
+
+        if isinstance(o, list):
+            return tuple(freeze(v) for v in o)
+
+        return o
+
+    return str(hash(freeze(o)))

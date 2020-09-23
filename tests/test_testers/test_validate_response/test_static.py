@@ -43,7 +43,7 @@ bad_test_data = [
 yml_path = str(django_settings.BASE_DIR) + '/openapi-schema.yml'
 
 
-def test_endpoints_static_schema(client, monkeypatch) -> None:  # noqa: TYP001
+def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
