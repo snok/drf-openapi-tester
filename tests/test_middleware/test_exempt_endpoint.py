@@ -69,6 +69,6 @@ def test_invalid_status_code(client, caplog, monkeypatch):
         )
         with pytest.raises(
             ImproperlyConfigured,
-            match='Received an invalid status code in the middleware exempt urls setting. Status codes must be integers, or "*".',
+            match='Received an invalid status code in the response validation middleware settings. Status codes must be integers, or "*".',
         ):
             SwaggerTesterSettings()

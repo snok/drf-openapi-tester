@@ -149,6 +149,7 @@ SWAGGER_TESTER = {
             'LOG_LEVEL': 'ERROR',
             'DEBUG': True,
             'VALIDATION_EXEMPT_URLS': [],
+            'VALIDATION_EXEMPT_STATUS_CODES': [401],
             'LOGGER_NAME': 'django_swagger_tester',
         }
     },

@@ -3,7 +3,7 @@ import inspect
 import logging
 from re import compile
 from types import FunctionType
-from typing import Callable, List
+from typing import Callable, List, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
@@ -36,6 +36,10 @@ class ResponseValidationMiddlewareSettings:
         return self.settings.get('VALIDATION_EXEMPT_URLS', [])
 
     @property
+    def validation_exempt_status_codes(self) -> List[Union[int, str]]:
+        return self.settings.get('VALIDATION_EXEMPT_STATUS_CODES', [])
+
+    @property
     def logger(self) -> Callable:
         return get_logger(self.log_level, self.logger_name)
 
@@ -44,20 +48,34 @@ class ResponseValidationMiddlewareSettings:
             for item in self.validation_exempt_urls:
                 compile(item['url'])
                 for status_code in item['status_codes']:
-                    if not isinstance(status_code, (int, str)) or (isinstance(status_code, str) and status_code != '*'):
-                        raise ImproperlyConfigured(
-                            'Received an invalid status code in the middleware exempt urls setting. Status codes must be integers, or "*".'
-                        )
-                    elif isinstance(status_code, int) and not 100 <= status_code <= 598:
-                        raise ImproperlyConfigured(
-                            'Received an invalid status code in the middleware exempt urls setting. Status codes must be between 100 and 598.'
-                        )
+                    self.validate_status_code(status_code, allow_wildcard=True)
         except TypeError:
             raise ImproperlyConfigured('Failed to compile the passed VALIDATION_EXEMPT_URLS as regular expressions')
+        for status_code in self.validation_exempt_status_codes:
+            self.validate_status_code(status_code)
         if not isinstance(self.debug, bool):
             raise ImproperlyConfigured('DEBUG must be a boolean.')
 
         self.logger  # method will raise ImproperlyConfigured if not correctly specified when called
+
+    @staticmethod
+    def validate_status_code(status_code: Union[int, str], allow_wildcard=False):
+        if isinstance(status_code, int):
+            if not 100 <= status_code <= 598:
+                raise ImproperlyConfigured(
+                    'Received an invalid status code in the response validation middleware settings. '
+                    'Status codes must range between 100 and 598.'
+                )
+            else:
+                return
+
+        if isinstance(status_code, str) and allow_wildcard and status_code == '*':
+            return
+
+        raise ImproperlyConfigured(
+            'Received an invalid status code in the response validation middleware settings. '
+            'Status codes must be integers, or "*".'
+        )
 
 
 class MiddlewareSettings:

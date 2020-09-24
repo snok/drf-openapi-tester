@@ -24,7 +24,10 @@ class ResponseValidationMiddleware:
         self.endpoints = get_endpoint_paths()
         self.middleware_settings = settings.middleware_settings.response_validation
         self.exempt_urls = [
-            {'url': compile(exempt_route['url']), 'status_codes': exempt_route['status_codes']}
+            {
+                'url': compile(exempt_route['url']),
+                'status_codes': exempt_route['status_codes'] + self.middleware_settings.validation_exempt_status_codes,
+            }
             for exempt_route in self.middleware_settings.validation_exempt_urls
         ]
 
