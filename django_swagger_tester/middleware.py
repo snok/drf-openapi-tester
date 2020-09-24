@@ -112,7 +112,8 @@ class ResponseValidationMiddleware:
                 elif hasattr(route_object.resolved_path, 'func') and hasattr(route_object.resolved_path.func, 'actions'):
                     method_dict = route_object.resolved_path.func.actions
                 else:
-                    logger.debug('Unable to find supported API methods for route `%s`', route_object.deparameterized_path)
+                    # Getting here probably means we need to add logic for other uncovered view classes
+                    logger.warning('Unable to find supported API methods for route `%s`', route_object.deparameterized_path)
                     return False
 
                 if method.lower() in method_dict:
