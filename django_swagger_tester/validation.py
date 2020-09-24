@@ -74,7 +74,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             ValidatedResponse.objects.all().delete()
             Schema.objects.all().delete()
         elif not obj.valid:
-            logger.info('Logging error from cache')
+            logger.info('Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.')
             # re-log the error if the response validation failed, and schema hasn't changed
             # this can "spam" a system with errors, but that can actually be quite useful for drawing attention to the problem
             # in solutions like Sentry
@@ -82,7 +82,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             return
         else:
             # if object is valid, and the schema is unchanged, there is no reason to re-run validation
-            logger.info('Response already validated')
+            logger.info('Found response hash in DB. Response already checked and is valid.')
             return
     except ObjectDoesNotExist:
         pass
