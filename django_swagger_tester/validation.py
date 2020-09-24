@@ -66,14 +66,13 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
     try:
         obj = get_validated_response(path, method, str(response_hash))
         if str(obj.schema_hash.hash) != str(schema_hash):
-            logger.info('Clearing cache for old schema hash')
-            from django_swagger_tester.models import Schema
+            logger.info('Clearing cache')
+            from django_swagger_tester.models import Schema, ValidatedResponse
 
             # delete cache and re-run validation if the schema has changed
-            obj.delete()
-            schema_items = Schema.objects.filter(hash=schema_hash)
-            for schema_item in schema_items:
-                schema_item.delete()
+            # no point in deleting method and urls
+            ValidatedResponse.objects.all().delete()
+            Schema.objects.all().delete()
         elif not obj.valid:
             logger.info('Logging error from cache')
             # re-log the error if the response validation failed, and schema hasn't changed
