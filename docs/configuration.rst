@@ -46,6 +46,7 @@ A complete example of the ``SWAGGER_TESTER`` settings might look like this:
                     {'url': '^api/v1/special-endpoint$', 'status_codes': ['*']},
                     {'url': '^api/v1/another-special-endpoint$', 'status_codes': [204]},
                 ],
+                'VALIDATION_EXEMPT_STATUS_CODES': [401],
             }
         },
         'VIEWS': {
@@ -204,6 +205,12 @@ If you have an undocumented endpoint, an undocumented response code, or any othe
 
 **Default**: ``[]``
 
+**VALIDATION_EXEMPT_STATUS_CODES**
+
+Takes a list of integer status codes for which middleware will skip validation. For instance, you may not want to document 401 responses in your schema. If that's the case, you can blanket ignore responses containing 401 status codes.
+
+**Default**: ``[]``
+
 ---------
 
 *Example*:
@@ -218,6 +225,8 @@ If you have an undocumented endpoint, an undocumented response code, or any othe
                 'VALIDATION_EXEMPT_URLS': [
                     {'url': '^api/v1/special-endpoint$', 'status_codes': ['*']},
                     {'url': '^api/v1/another-special-endpoint$', 'status_codes': [204]},
+                ],
+                'VALIDATION_EXEMPT_STATUS_CODES': [401, 500],
             }
         },
     }
