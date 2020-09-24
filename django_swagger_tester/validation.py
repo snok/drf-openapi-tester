@@ -65,7 +65,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
     response_hash = hash_response(response.data)
     try:
         obj = get_validated_response(path, method, str(response_hash))
-        if obj.schema_hash.hash != schema_hash:
+        if str(obj.schema_hash.hash) != str(schema_hash):
             logger.info('Clearing cache for old schema hash')
             from django_swagger_tester.models import Schema
 
@@ -100,6 +100,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             origin='response',
         )
         logger.info('Response valid for %s request to %s', method, path)
+        save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)
     except SwaggerDocumentationError as e:
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
         error_message = f'Bad response returned for {method} request to {path}. Error: {long_message}'
@@ -109,5 +110,3 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         error_message = f'Found incorrectly cased cased key, `{e.key}` in {e.origin}'
         func_logger(error_message, extra=logger_extra)
         save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
-    else:
-        save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)
