@@ -25,9 +25,7 @@ class Method(models.Model):
         ('PATCH', 'PATCH'),
         ('DELETE', 'DELETE'),
     ]
-
     method = models.CharField(max_length=6, choices=METHOD_CHOICES)
-    url = models.ForeignKey(Url, on_delete=models.CASCADE)
 
 
 class ValidatedResponse(models.Model):
@@ -35,6 +33,8 @@ class ValidatedResponse(models.Model):
     Holds response validation results for specific endpoints and methods.
     """
 
+    url = models.ForeignKey(Url, on_delete=models.CASCADE)
+    status_code = models.IntegerField()
     response_hash = models.CharField(max_length=50)
     schema_hash = models.ForeignKey(Schema, on_delete=models.CASCADE)
     method = models.ForeignKey(Method, on_delete=models.CASCADE)
