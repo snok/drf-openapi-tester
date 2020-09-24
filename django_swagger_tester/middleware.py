@@ -24,12 +24,10 @@ class ResponseValidationMiddleware:
         self.endpoints = get_endpoint_paths()
         self.middleware_settings = settings.middleware_settings.response_validation
         self.exempt_urls = [
-            {
-                'url': compile(exempt_route['url']),
-                'status_codes': exempt_route['status_codes'] + self.middleware_settings.validation_exempt_status_codes,
-            }
+            {'url': compile(exempt_route['url']), 'status_codes': exempt_route['status_codes']}
             for exempt_route in self.middleware_settings.validation_exempt_urls
         ]
+        self.exempt_status_codes = self.middleware_settings.validation_exempt_status_codes
 
         # This logic cannot be moved to configuration.py because apps are not yet initialized when that is executed
         if not apps.is_installed('django_swagger_tester'):
@@ -60,6 +58,9 @@ class ResponseValidationMiddleware:
                 path,
                 response.status_code,
             )
+            return response
+        if response.status_code in self.exempt_status_codes:
+            logger.debug('Validation skipped: status code %s is in VALIDATION_EXEMPT_STATUS_CODES', response.status_code)
             return response
         # ..or if the request path doesn't point to a valid endpoint
         elif not self.path_in_endpoints(path=path, method=method):
