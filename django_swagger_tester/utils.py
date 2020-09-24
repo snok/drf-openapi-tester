@@ -191,7 +191,7 @@ def resolve_path(endpoint_path: str) -> tuple:
         return endpoint_path, resolved_route
 
     except Resolver404:
-        logger.error('URL `%s` did not resolve successfully', endpoint_path)
+        logger.warning('URL `%s` did not resolve successfully', endpoint_path)
         paths = get_endpoint_paths()
         closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
         if closest_matches:
