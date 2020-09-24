@@ -99,13 +99,31 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             origin='response',
         )
         logger.info('Response valid for %s request to %s', method, path)
-        save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)
+        save_validated_response(
+            path, method, response_hash, schema_hash, valid=True, status_code=response.status_code, error_message=None
+        )
     except SwaggerDocumentationError as e:
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
         error_message = f'Bad response returned for {method} request to {path}. Error: {long_message}'
         func_logger(error_message, extra=logger_extra)
-        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
+        save_validated_response(
+            path,
+            method,
+            response_hash,
+            schema_hash,
+            valid=False,
+            status_code=response.status_code,
+            error_message=error_message,
+        )
     except CaseError as e:
         error_message = f'Found incorrectly cased cased key, `{e.key}` in {e.origin}'
         func_logger(error_message, extra=logger_extra)
-        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
+        save_validated_response(
+            path,
+            method,
+            response_hash,
+            schema_hash,
+            valid=False,
+            status_code=response.status_code,
+            error_message=error_message,
+        )

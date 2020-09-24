@@ -8,7 +8,13 @@ logger = logging.getLogger('django_swagger_tester')
 
 
 def save_validated_response(
-    path: str, method: str, response_hash: str, schema_hash: str, valid: bool, error_message: Optional[str] = None
+    path: str,
+    method: str,
+    response_hash: str,
+    schema_hash: str,
+    valid: bool,
+    status_code: int,
+    error_message: Optional[str] = None,
 ) -> ValidatedResponse:
     """
     Creates a ValidatedResponse object.
@@ -20,10 +26,16 @@ def save_validated_response(
 
     logger.info('Saving %s response from %s request to `%s`', 'valid' if valid else 'invalid', method, path)
     url, _ = Url.objects.get_or_create(url=deparameterized_path)
-    method, _ = Method.objects.get_or_create(url=url, method=method)
+    method, _ = Method.objects.get_or_create(method=method)
     schema, _ = Schema.objects.get_or_create(hash=str(schema_hash))
     return ValidatedResponse.objects.create(
-        method=method, schema_hash=schema, response_hash=str(response_hash), valid=valid, error_message=error_message
+        method=method,
+        url=url,
+        schema_hash=schema,
+        response_hash=str(response_hash),
+        valid=valid,
+        status_code=status_code,
+        error_message=error_message,
     )
 
 
@@ -33,5 +45,5 @@ def get_validated_response(path: str, method: str, response_hash: str) -> Valida
     """
     deparameterized_path, resolved_path = resolve_path(path)
     return ValidatedResponse.objects.prefetch_related('schema_hash').get(
-        method__url__url=deparameterized_path, method__method=method, response_hash=str(response_hash)
+        url__url=deparameterized_path, method__method=method, response_hash=str(response_hash)
     )
