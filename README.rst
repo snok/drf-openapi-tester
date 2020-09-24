@@ -228,8 +228,9 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
             'RESPONSE_VALIDATION': {
                 'LOG_LEVEL': 'ERROR',
                 'LOGGER_NAME': 'middleware_response_validation',
-                'DEBUG': True,
                 'VALIDATION_EXEMPT_URLS': ['^api/v1/exempt-endpoint$'],
+                'VALIDATION_EXEMPT_STATUS_CODES': [401],
+                'DEBUG': True,
             }
         },
         'VIEWS': {

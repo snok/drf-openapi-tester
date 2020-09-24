@@ -111,6 +111,7 @@ Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your 
                 'LOGGER_NAME': 'middleware_response_validation',
                 'DEBUG': True,
                 'VALIDATION_EXEMPT_URLS': ['^api/v1/exempt-endpoint$'],
+                'VALIDATION_EXEMPT_STATUS_CODES': [401],
             }
         },
         'VIEWS': {

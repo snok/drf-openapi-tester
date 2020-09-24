@@ -69,6 +69,18 @@ def test_invalid_status_code(client, caplog, monkeypatch):
         )
         with pytest.raises(
             ImproperlyConfigured,
-            match='Received an invalid status code in the middleware exempt urls setting. Status codes must be integers, or "*".',
+            match='Received an invalid status code in the response validation middleware settings. Status codes must be integers, or "*".',
         ):
             SwaggerTesterSettings()
+
+
+def test_exempt_status_code(client, caplog, monkeypatch):
+    monkeypatch.setattr(
+        django_settings,
+        'SWAGGER_TESTER',
+        patch_response_validation_middleware_settings('VALIDATION_EXEMPT_STATUS_CODES', [204]),
+    )
+    settings = SwaggerTesterSettings()
+    monkeypatch.setattr('django_swagger_tester.middleware.settings', settings)
+    client.get('/api/v1/exempt-endpoint')
+    assert 'Validation skipped: status code 204 is in VALIDATION_EXEMPT_STATUS_CODES' in caplog.messages

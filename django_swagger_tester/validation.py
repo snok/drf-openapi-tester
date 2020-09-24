@@ -65,17 +65,16 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
     response_hash = hash_response(response.data)
     try:
         obj = get_validated_response(path, method, str(response_hash))
-        if obj.schema_hash.hash != schema_hash:
-            logger.info('Clearing cache for old schema hash')
-            from django_swagger_tester.models import Schema
+        if str(obj.schema_hash.hash) != str(schema_hash):
+            logger.info('Clearing cache')
+            from django_swagger_tester.models import Schema, ValidatedResponse
 
             # delete cache and re-run validation if the schema has changed
-            obj.delete()
-            schema_items = Schema.objects.filter(hash=schema_hash)
-            for schema_item in schema_items:
-                schema_item.delete()
+            # no point in deleting method and urls
+            ValidatedResponse.objects.all().delete()
+            Schema.objects.all().delete()
         elif not obj.valid:
-            logger.info('Logging error from cache')
+            logger.info('Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.')
             # re-log the error if the response validation failed, and schema hasn't changed
             # this can "spam" a system with errors, but that can actually be quite useful for drawing attention to the problem
             # in solutions like Sentry
@@ -83,7 +82,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             return
         else:
             # if object is valid, and the schema is unchanged, there is no reason to re-run validation
-            logger.info('Response already validated')
+            logger.info('Found response hash in DB. Response already checked and is valid.')
             return
     except ObjectDoesNotExist:
         pass
@@ -100,14 +99,31 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             origin='response',
         )
         logger.info('Response valid for %s request to %s', method, path)
+        save_validated_response(
+            path, method, response_hash, schema_hash, valid=True, status_code=response.status_code, error_message=None
+        )
     except SwaggerDocumentationError as e:
         long_message = format_response_tester_error(e, hint=e.response_hint, addon='')
         error_message = f'Bad response returned for {method} request to {path}. Error: {long_message}'
         func_logger(error_message, extra=logger_extra)
-        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
+        save_validated_response(
+            path,
+            method,
+            response_hash,
+            schema_hash,
+            valid=False,
+            status_code=response.status_code,
+            error_message=error_message,
+        )
     except CaseError as e:
         error_message = f'Found incorrectly cased cased key, `{e.key}` in {e.origin}'
         func_logger(error_message, extra=logger_extra)
-        save_validated_response(path, method, response_hash, schema_hash, valid=False, error_message=error_message)
-    else:
-        save_validated_response(path, method, response_hash, schema_hash, valid=True, error_message=None)
+        save_validated_response(
+            path,
+            method,
+            response_hash,
+            schema_hash,
+            valid=False,
+            status_code=response.status_code,
+            error_message=error_message,
+        )
