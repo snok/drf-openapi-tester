@@ -7,7 +7,6 @@
       <em>A Django test utility for validating Swagger documentation</em>
     </p>
 
---------------
 
 .. raw:: html
 
@@ -39,6 +38,8 @@
         <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="Pre-commit enabled">
     </a>
     </p>
+
+--------------
 
 
 **Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
