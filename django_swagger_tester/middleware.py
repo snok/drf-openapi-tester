@@ -103,13 +103,19 @@ class ResponseValidationMiddleware:
             return False
 
         for route in self.endpoints:
-            if (
-                route_object.route_matches(route)
-                and hasattr(route_object.resolved_path, 'func')
-                and hasattr(route_object.resolved_path.func, 'view_class')
-            ):
-                # Verify that the view has contains the method
-                if method.lower() in route_object.resolved_path.func.view_class.__dict__:
+            if route_object.route_matches(route):
+                # APIView
+                if hasattr(route_object.resolved_path, 'func') and hasattr(route_object.resolved_path.func, 'view_class'):
+                    # Verify that the view has contains the method
+                    method_dict = route_object.resolved_path.func.view_class.__dict__
+                # ViewSet
+                elif hasattr(route_object.resolved_path, 'func') and hasattr(route_object.resolved_path.func, 'actions'):
+                    method_dict = route_object.resolved_path.func.actions
+                else:
+                    logger.debug('Unable to find supported API methods for route `%s`', route_object.deparameterized_path)
+                    return False
+
+                if method.lower() in method_dict:
                     logger.debug('%s request to %s is an API request', method, path)
                     return True
                 else:
