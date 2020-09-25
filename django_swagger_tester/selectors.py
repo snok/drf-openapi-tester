@@ -1,6 +1,8 @@
 import logging
 from typing import Optional
 
+from django.core.exceptions import MultipleObjectsReturned
+
 from django_swagger_tester.models import Method, Schema, Url, ValidatedResponse
 from django_swagger_tester.utils import resolve_path
 
@@ -27,7 +29,10 @@ def save_validated_response(
     logger.info('Saving %s response from %s request to `%s`', 'valid' if valid else 'invalid', method, path)
     url, _ = Url.objects.get_or_create(url=deparameterized_path)
     method, _ = Method.objects.get_or_create(method=method)
-    schema, _ = Schema.objects.get_or_create(hash=str(schema_hash))
+    try:
+        schema, _ = Schema.objects.get_or_create(hash=str(schema_hash))
+    except MultipleObjectsReturned:
+        schema = Schema.objects.filter(hash=str(schema_hash)).first()
     return ValidatedResponse.objects.create(
         method=method,
         url=url,

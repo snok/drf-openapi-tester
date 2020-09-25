@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Schema(models.Model):
-    hash = models.CharField(max_length=50)
+    hash = models.CharField(max_length=50, unique=True)
 
 
 class Url(models.Model):
