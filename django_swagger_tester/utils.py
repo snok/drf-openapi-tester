@@ -9,7 +9,6 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import ResolverMatch
-from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
@@ -303,6 +302,8 @@ def camelize(data: dict) -> dict:
     """
     Adapted djangorestframework.utils.camelize function for converting a snake_cased dict to camelCase.
     """
+    from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
+
     new_dict = {}
     for key, value in data.items():
         if isinstance(key, str) and '_' in key:
