@@ -11,6 +11,16 @@ from django_swagger_tester.utils import format_response_tester_error, hash_respo
 logger = logging.getLogger('django_swagger_tester')
 
 
+def clear_cache() -> None:
+    """
+    Deletes all cached responses and response schemas.
+    """
+    from django_swagger_tester.models import Schema, ValidatedResponse
+
+    ValidatedResponse.objects.all().delete()
+    Schema.objects.all().delete()
+
+
 def safe_validate_response(response: Response, path: str, method: str, func_logger: Callable) -> None:
     """
     Validates an outgoing response object against the OpenAPI schema response documentation.
@@ -67,12 +77,7 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
         obj = get_validated_response(path, method, str(response_hash))
         if str(obj.schema_hash.hash) != str(schema_hash):
             logger.info('Clearing cache')
-            from django_swagger_tester.models import Schema, ValidatedResponse
-
-            # delete cache and re-run validation if the schema has changed
-            # no point in deleting method and urls
-            ValidatedResponse.objects.all().delete()
-            Schema.objects.all().delete()
+            clear_cache()
         elif not obj.valid:
             logger.info('Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.')
             # re-log the error if the response validation failed, and schema hasn't changed
@@ -126,4 +131,10 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             valid=False,
             status_code=response.status_code,
             error_message=error_message,
+        )
+    except Exception as e:
+        logger.error(
+            'Error raised unexpectedly. If this happens, please report it here: '
+            '`https://github.com/snok/django-swagger-tester/issues/new`. Error: %s',
+            e,
         )
