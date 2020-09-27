@@ -5,6 +5,14 @@ Changelog
 *********
 
 
+2.1.1 2020-09-27
+----------------
+
+**Improvements**
+
+* Fixed djangorestframework-camel-case hard dependency
+* Fixed cache bug
+
 2.1.0 2020-09-24
 ----------------
 
