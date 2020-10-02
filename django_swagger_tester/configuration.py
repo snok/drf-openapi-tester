@@ -154,7 +154,7 @@ class SwaggerTesterSettings:
 
     @property
     def case_tester(self) -> Callable:
-        return self.settings.get('CASE_TESTER', lambda: None)
+        return self.settings.get('CASE_TESTER', lambda *args: None)
 
     @property
     def camel_case_parser(self) -> bool:
