@@ -16,7 +16,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-linting-pip-
       - name: Install dependencies
         run: pip install black flake8 isort
         if: steps.cached-linting-dependencies.outputs.cache-hit != 'true'
@@ -45,7 +45,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip-
+            ${{ runner.os }}-project-pip-
       - name: Install dependencies
         run: poetry install
         if: steps.cached-project-dependencies.outputs.cache-hit != 'true'
