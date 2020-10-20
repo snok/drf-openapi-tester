@@ -34,9 +34,9 @@ jobs:
       - uses: dschep/install-poetry-action@v1.3
       - name: linting
         run: |
-          poetry run flake8 .
-          poetry run black . --check
-          poetry run isort .
+          flake8 .
+          black . --check
+          isort .
 #  test:
 #    needs: build
 #    runs-on: ubuntu-latest
