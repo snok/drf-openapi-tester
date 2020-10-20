@@ -22,12 +22,20 @@ jobs:
         run: |
           poetry install
         if: steps.cached-deps.outputs.cache-hit != 'true'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dependencies
+          path: ~/.cache/pip
+        if: steps.cached-deps.outputs.cache-hit != 'true'
   linting:
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: dschep/install-poetry-action@v1.3
+      - uses: actions/download-artifact@v2
+        with:
+          name: dependencies
+          path: ~/.cache/pip
       - name: linting
         run: |
           flake8 .
