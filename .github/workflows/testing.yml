@@ -20,7 +20,10 @@ jobs:
         key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
         restore-keys: |
           ${{ runner.os }}-venv
-    - run: poetry install && poetry config virtualenvs.in-project true && . ./.venv/bin/activate
+    - run: |
+      poetry install
+      poetry config virtualenvs.in-project true
+      . .venv/bin/activate
       if: steps.cache-venv.outputs.cache-hit != 'true'
   test:
     needs: build
