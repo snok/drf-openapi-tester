@@ -22,9 +22,9 @@ jobs:
             ${{ runner.os }}-venv
       - name: Install dependencies
         run: |
-        poetry install
-        poetry config virtualenvs.in-project true
-        source .venv/bin/activate
+          poetry install
+          poetry config virtualenvs.in-project true
+          source .venv/bin/activate
         if: steps.cache-venv.outputs.cache-hit != 'true'
   test:
     needs: build
