@@ -40,7 +40,7 @@ class _LoaderBase:
         """
         Put logic required to load a schema and return it here.
         """
-        raise ImproperlyConfigured('The `load_schema` method has to be overwritten.')
+        raise NotImplementedError('The `load_schema` method has to be overwritten.')
 
     # </ methods to be overwritten >
 
