@@ -4,7 +4,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
-from django_swagger_tester.loaders import StaticSchemaLoader, DrfYasgSchemaLoader
+from django_swagger_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 from tests.utils import patch_settings
 
 
@@ -40,6 +40,7 @@ def test_invalid_base_class(monkeypatch) -> None:
 
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('SCHEMA_LOADER', BadClass))
     with pytest.raises(
-        ImproperlyConfigured, match='The supplied loader_class must inherit django_swagger_tester.schema_loaders._LoaderBase',
+        ImproperlyConfigured,
+        match='The supplied loader_class must inherit django_swagger_tester.schema_loaders._LoaderBase',
     ):
         SwaggerTesterSettings()

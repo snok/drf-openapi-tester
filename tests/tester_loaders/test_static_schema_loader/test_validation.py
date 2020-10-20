@@ -2,8 +2,8 @@ import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.loaders import StaticSchemaLoader
 from django_swagger_tester.configuration import SwaggerTesterSettings
+from django_swagger_tester.loaders import StaticSchemaLoader
 from tests.utils import yml_path
 
 

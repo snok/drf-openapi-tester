@@ -1,4 +1,4 @@
-from drf_yasg.openapi import Schema, TYPE_ARRAY, TYPE_OBJECT
+from drf_yasg.openapi import TYPE_ARRAY, TYPE_OBJECT, Schema
 from drf_yasg.utils import swagger_auto_schema
 
 from demo.api.serializers import VehicleSerializer

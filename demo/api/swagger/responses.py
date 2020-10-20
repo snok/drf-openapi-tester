@@ -1,4 +1,4 @@
-from drf_yasg.openapi import Schema, TYPE_ARRAY, TYPE_OBJECT
+from drf_yasg.openapi import TYPE_ARRAY, TYPE_OBJECT, Schema
 
 from .schemas import generic_string_schema
 

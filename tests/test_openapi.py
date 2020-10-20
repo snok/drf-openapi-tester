@@ -116,9 +116,7 @@ def test_index_schema(caplog):
     assert any('Indexing schema by `items`' in message for message in caplog.messages)
 
     # Fail with no addon
-    with pytest.raises(
-        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'
-    ):
+    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'):
         index_schema(schema=object_type, variable='items', error_addon=None)
 
     # Fail with addon
