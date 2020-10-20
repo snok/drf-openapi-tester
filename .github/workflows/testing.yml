@@ -13,19 +13,18 @@ jobs:
           python-version: "3.9"
       - name: install poetry
         uses: dschep/install-poetry-action@v1.3
+      # cache installed packages
       - uses: actions/cache@v2
         id: cached-venv
         with:
-          path: ./.venv/
+          path: .cache/pip
           key: venv-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             venv
+      # installed dependencies if they have changed
       - name: Install dependencies
         run: |
-          poetry config virtualenvs.create true
-          poetry config virtualenvs.in-project true
           poetry install
-          ls -la
         if: steps.cache-venv.outputs.cache-hit != 'true'
   linting:
     needs: build
@@ -35,8 +34,6 @@ jobs:
       - uses: dschep/install-poetry-action@v1.3
       - name: linting
         run: |
-          ls -la
-          . ./.venv/bin/activate
           poetry run flake8 .
           poetry run black . --check
           poetry run isort .
