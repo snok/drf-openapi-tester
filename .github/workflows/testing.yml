@@ -17,14 +17,15 @@ jobs:
         id: cached-venv
         with:
           path: ./.venv/
-          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ hashFiles('**/poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-venv
       - name: Install dependencies
         run: |
           poetry install
           poetry config virtualenvs.in-project true
-          source .venv/bin/activate
+          ls
+          source ./.venv/bin/activate
         if: steps.cache-venv.outputs.cache-hit != 'true'
   test:
     needs: build
