@@ -29,6 +29,7 @@ jobs:
           flake8 .
           black . --check
           isort .
+
   test:
     needs: linting
     runs-on: ubuntu-latest
