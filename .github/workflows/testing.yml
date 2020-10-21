@@ -15,8 +15,7 @@ jobs:
         id: linting-deps
         with:
           path: |
-            /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
-            ~/.cache/pip
+            /home/runner/.cache/*
           key: ${{ runner.os }}-pip-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip2-
@@ -25,8 +24,9 @@ jobs:
         run: pip install black flake8 isort
         if: steps.linting-deps.outputs.cache-hit != 'true'
       - run: |
+          ls /home/runner/.cache/*
           ls ~/.cache/pip/
-          /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
+          ls /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
       - run: pip freeze
       - name: linting
         run: |
