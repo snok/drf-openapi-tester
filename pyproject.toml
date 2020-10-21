@@ -38,7 +38,7 @@ include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-djangorestframework = "*"
+djangorestframework = "3.11"
 django = "^2.2 || ^3.0"
 
 [tool.poetry.dev-dependencies]

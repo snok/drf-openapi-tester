@@ -60,7 +60,7 @@ def test_get_schema_when_no_schema_has_been_loaded():
     so for the base-class this should raise an error.
     """
     base = _LoaderBase()
-    with pytest.raises(ImproperlyConfigured, match='The `load_schema` method has to be overwritten.'):
+    with pytest.raises(NotImplementedError, match='The `load_schema` method has to be overwritten.'):
         base.get_schema()
 
 
