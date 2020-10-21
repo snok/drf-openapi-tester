@@ -1,30 +1,58 @@
 name: test
 
-on: [push]
+on: push
 
 jobs:
-  build:
+  linting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
+      - uses: actions/cache@v2
+        id: linting-deps
+        with:
+          path: ~/.cache/pip
+          key: black-flake8-isort2
+          restore-keys: |
+            ${{ runner.os }}-linting-pip-
+      - name: Install dependencies
+        run: pip install black flake8 isort
+        if: steps.linting-deps.outputs.cache-hit != 'true'
+      - name: linting
+        run: |
+          flake8 .
+          black . --check
+          isort .
+  test:
+    needs: linting
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      fail-fast: false
       matrix:
-        python-version: [3.6, 3.7, 3.8]
+        python-version: [ "3.6", "3.7", "3.8", "3.9" ]
+        django-version: [ "2.2", "3.0", "3.1" ]
     steps:
-      - uses: actions/checkout@v1
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v2
+      - name: set up python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - uses: Gr1N/setup-poetry@v4
+      - uses: actions/cache@v2
+        with:
+          id: cached-poetry-dependencies
+          path: ~/.cache/pypoetry/virtualenvs
+          key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install poetry
-          poetry install
-      - name: Lint with flake8
-        run: |
-          poetry run flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          poetry run flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-      - name: Test with pytest
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+      - name: install django ${{ matrix.django-version }}
+        run: poetry run pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
+      - name: test
         run: |
           poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
           poetry run coverage report
