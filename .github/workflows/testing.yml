@@ -15,10 +15,8 @@ jobs:
         id: linting-deps
         with:
           path: |
+            /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
             ~/.cache/pip
-            ~/cache
-            ~/Library/Caches/pip
-            ~\AppData\Local\pip\Cache
           key: ${{ runner.os }}-pip-${{ hashFiles('poetry.lock') }}
           restore-keys: |
             ${{ runner.os }}-pip2-
@@ -26,13 +24,15 @@ jobs:
       - name: Install dependencies
         run: pip install black flake8 isort
         if: steps.linting-deps.outputs.cache-hit != 'true'
+      - run: |
+          ls ~/.cache/pip/
+          /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
       - run: pip freeze
       - name: linting
         run: |
           flake8 .
           black . --check
           isort .
-
   test:
     needs: linting
     runs-on: ubuntu-latest
