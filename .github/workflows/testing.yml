@@ -23,10 +23,6 @@ jobs:
       - name: Install dependencies
         run: pip install black flake8 isort
         if: steps.linting-deps.outputs.cache-hit != 'true'
-      - run: |
-          ls /home/runner/.cache/*
-          ls ~/.cache/pip/
-          ls /opt/hostedtoolcache/Python/3.9.0/x64/lib/python3.7/site-packages/*
       - run: pip freeze
       - name: linting
         run: |
