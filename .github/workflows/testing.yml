@@ -51,8 +51,8 @@ jobs:
         run: poetry install
 #        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: install django ${{ matrix.django-version }}
-        run: pip install "Django~=${{ matrix.django-version }}.0" --upgrade --force-reinstall
+        run: poetry run pip install "Django~=${{ matrix.django-version }}.0" --upgrade --force-reinstall
       - name: test
         run: |
-          pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
-          coverage report
+          poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
+          poetry run coverage report
