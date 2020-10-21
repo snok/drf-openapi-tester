@@ -41,8 +41,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - uses: Gr1N/setup-poetry@v4
       - uses: actions/cache@v2
+        id: cached-poetry-dependencies
         with:
-          id: cached-poetry-dependencies
           path: ~/.cache/pypoetry/virtualenvs
           key: ${{ runner.os }}-poetry-${{ hashFiles('poetry.lock') }}
           restore-keys: |
