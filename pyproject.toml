@@ -54,6 +54,8 @@ sphinx = "^2.4.4"
 sphinx_rtd_theme = "^0.4.3"
 drf-spectacular = "^0.9.13"
 ipython = "^7.16.1"
+black = "^20.8b1"
+isort = "^5.6.4"
 
 [tool.black]
 line-length = 126

@@ -2,7 +2,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..swagger.auto_schemas import get_trucks_auto_schema, get_other_trucks_auto_schema
+from ..swagger.auto_schemas import get_other_trucks_auto_schema, get_trucks_auto_schema
 
 
 class GoodTrucks(APIView):

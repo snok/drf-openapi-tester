@@ -11,9 +11,7 @@ def test_valid_input_validation(client):
     from demo.api.swagger.auto_schemas import VehicleSerializer
     from django_swagger_tester.testing import validate_input_serializer
 
-    validate_input_serializer(
-        serializer=VehicleSerializer, method='POST', route='api/v1/vehicles/', camel_case_parser=True
-    )
+    validate_input_serializer(serializer=VehicleSerializer, method='POST', route='api/v1/vehicles/', camel_case_parser=True)
     validate_input_serializer(serializer=ItemSerializer, method='POST', route='api/v1/items/', camel_case_parser=True)
 
 

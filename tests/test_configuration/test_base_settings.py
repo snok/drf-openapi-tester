@@ -28,6 +28,7 @@ def test_missing_settings(monkeypatch) -> None:
     """
     monkeypatch.delattr(django_settings, 'SWAGGER_TESTER')
     with pytest.raises(
-        ImproperlyConfigured, match='SWAGGER_TESTER settings need to be configured',
+        ImproperlyConfigured,
+        match='SWAGGER_TESTER settings need to be configured',
     ):
         SwaggerTesterSettings()
