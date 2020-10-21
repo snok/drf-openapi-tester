@@ -15,9 +15,10 @@ jobs:
         id: linting-deps
         with:
           path: ~/.cache/pip
-          key: black-flake8-isort
-          restore-keys: |
-            ${{ runner.os }}-linting-pip-
+          key: ${{ runner.os }}-pip-${{ hashFiles('poetry.lock') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-
+              ${{ runner.os }}-
       - run: pip freeze
       - name: Install dependencies
         run: pip install black flake8 isort
