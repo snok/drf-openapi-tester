@@ -23,6 +23,7 @@ jobs:
       - name: Install dependencies
         run: pip install black flake8 isort
         if: steps.linting-deps.outputs.cache-hit != 'true'
+      - run: pip freeze
       - name: linting
         run: |
           flake8 .
