@@ -16,9 +16,10 @@ jobs:
         with:
           path: |
             /home/runner/.cache/*
-          key: ${{ runner.os }}-pip-${{ hashFiles('poetry.lock') }}
+            ~/.cache/pip
+          key: ${{ runner.os }}-pip3-${{ hashFiles('poetry.lock') }}
           restore-keys: |
-            ${{ runner.os }}-pip2-
+            ${{ runner.os }}-pip3-
       - run: pip freeze
       - name: Install dependencies
         run: pip install black flake8 isort
