@@ -14,7 +14,7 @@ jobs:
         id: linting-deps
         with:
           path: ~/.cache/pip
-          key: black-flake8-isort2
+          key: black-flake8-isort
           restore-keys: |
             ${{ runner.os }}-linting-pip-
       - name: Install dependencies
