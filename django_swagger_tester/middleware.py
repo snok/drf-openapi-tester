@@ -60,7 +60,9 @@ class ResponseValidationMiddleware:
             )
             return response
         if response.status_code in self.exempt_status_codes:
-            logger.debug('Validation skipped: status code %s is in VALIDATION_EXEMPT_STATUS_CODES', response.status_code)
+            logger.debug(
+                'Validation skipped: status code %s is in VALIDATION_EXEMPT_STATUS_CODES', response.status_code
+            )
             return response
         # ..or if the request path doesn't point to a valid endpoint
         elif not self.path_in_endpoints(path=path, method=method):
@@ -105,15 +107,21 @@ class ResponseValidationMiddleware:
         for route in self.endpoints:
             if route_object.route_matches(route):
                 # APIView
-                if hasattr(route_object.resolved_path, 'func') and hasattr(route_object.resolved_path.func, 'view_class'):
+                if hasattr(route_object.resolved_path, 'func') and hasattr(
+                    route_object.resolved_path.func, 'view_class'
+                ):
                     # Verify that the view has contains the method
                     method_dict = route_object.resolved_path.func.view_class.__dict__
                 # ViewSet
-                elif hasattr(route_object.resolved_path, 'func') and hasattr(route_object.resolved_path.func, 'actions'):
+                elif hasattr(route_object.resolved_path, 'func') and hasattr(
+                    route_object.resolved_path.func, 'actions'
+                ):
                     method_dict = route_object.resolved_path.func.actions
                 else:
                     # Getting here probably means we need to add logic for other uncovered view classes
-                    logger.warning('Unable to find supported API methods for route `%s`', route_object.deparameterized_path)
+                    logger.warning(
+                        'Unable to find supported API methods for route `%s`', route_object.deparameterized_path
+                    )
                     return False
 
                 if method.lower() in method_dict:

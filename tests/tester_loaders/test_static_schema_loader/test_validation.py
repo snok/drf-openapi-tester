@@ -1,10 +1,11 @@
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
+import pytest
+from tests.utils import yml_path
+
 from django_swagger_tester.configuration import SwaggerTesterSettings
 from django_swagger_tester.loaders import StaticSchemaLoader
-from tests.utils import yml_path
 
 
 def test_static_schema_loader_validation(monkeypatch):
@@ -29,7 +30,8 @@ def test_drf_yasg_not_installed(monkeypatch):
 
     with pytest.raises(
         ImproperlyConfigured,
-        match='The package `PyYAML` is required for parsing yaml files. ' 'Please run `pip install PyYAML` to install it.',
+        match='The package `PyYAML` is required for parsing yaml files. '
+        'Please run `pip install PyYAML` to install it.',
     ):
         SwaggerTesterSettings()
 

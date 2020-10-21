@@ -1,10 +1,11 @@
 # noqa: TYP001
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+import pytest
 from tests.utils import patch_response_validation_middleware_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_non_string_log_level(monkeypatch) -> None:
@@ -43,6 +44,8 @@ def test_valid_log_level_names(monkeypatch) -> None:
     for value in ['debug', 'info', 'warning', 'error', 'critical', 'exception']:
         for method in [str.lower, str.upper]:
             monkeypatch.setattr(
-                django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('LOG_LEVEL', method(value))
+                django_settings,
+                'SWAGGER_TESTER',
+                patch_response_validation_middleware_settings('LOG_LEVEL', method(value)),
             )
             SwaggerTesterSettings()

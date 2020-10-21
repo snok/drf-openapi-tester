@@ -225,7 +225,8 @@ class SchemaTester:
         """
         checks = {
             'boolean': {
-                'check': not isinstance(data, bool) and not (isinstance(data, str) and data.lower() in ['true', 'false']),
+                'check': not isinstance(data, bool)
+                and not (isinstance(data, str) and data.lower() in ['true', 'false']),
                 'type': "<class 'bool'>",
             },
             'string': {'check': not isinstance(data, str), 'type': "<class 'str'>"},

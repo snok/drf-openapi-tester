@@ -1,10 +1,11 @@
 # noqa: TYP001
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+import pytest
 from tests.utils import patch_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_enable_camel_case(monkeypatch) -> None:

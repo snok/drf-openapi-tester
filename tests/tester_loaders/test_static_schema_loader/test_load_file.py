@@ -1,8 +1,9 @@
-import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.loaders import StaticSchemaLoader
+import pytest
 from tests.utils import json_path, yml_path
+
+from django_swagger_tester.loaders import StaticSchemaLoader
 
 
 def test_successful_yml_fetch(monkeypatch) -> None:
@@ -65,5 +66,7 @@ def test_bad_filetype(monkeypatch) -> None:
 
     base = StaticSchemaLoader()
     base.set_path(str(django_settings.BASE_DIR) + '/settings.py')  # must be a real file
-    with pytest.raises(ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'):
+    with pytest.raises(
+        ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'
+    ):
         base.get_schema()

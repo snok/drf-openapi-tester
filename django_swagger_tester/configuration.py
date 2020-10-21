@@ -229,7 +229,9 @@ class SwaggerTesterSettings:
 
         addon = '. Please pass a loader class from django_swagger_tester.schema_loaders.'
         if self.schema_loader is None:
-            raise ImproperlyConfigured('SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon)
+            raise ImproperlyConfigured(
+                'SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon
+            )
 
         if not inspect.isclass(self.schema_loader):
             raise ImproperlyConfigured('SCHEMA_LOADER must be a class' + addon)

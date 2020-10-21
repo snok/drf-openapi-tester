@@ -1,7 +1,4 @@
 import pytest
-
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.schema_tester import SchemaTester
 from tests.types import (
     bool_data,
     bool_type,
@@ -14,6 +11,9 @@ from tests.types import (
     string_data,
     string_type,
 )
+
+from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_swagger_tester.schema_tester import SchemaTester
 
 tester = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
 
@@ -98,5 +98,7 @@ def test_bad_type():
         'items': {'description': 'How long the car is.', 'type': 'stringo', 'example': '2 meters'},
     }
     custom_data = ['test']
-    with pytest.raises(Exception, match='Schema item has an invalid `type` attribute. The type `stringo` is not supported.'):
+    with pytest.raises(
+        Exception, match='Schema item has an invalid `type` attribute. The type `stringo` is not supported.'
+    ):
         assert tester.test_list(schema=custom_schema, data=custom_data, reference='placeholder') is None

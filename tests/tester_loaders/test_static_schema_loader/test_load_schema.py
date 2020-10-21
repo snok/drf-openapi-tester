@@ -1,13 +1,14 @@
-import pytest
-import yaml
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.loaders import StaticSchemaLoader
+import pytest
+import yaml
 from tests.utils import yml_path
+
+from django_swagger_tester.loaders import StaticSchemaLoader
 
 
 def ret_schema(*args, **kwargs):
-    with open(yml_path, 'r') as f:
+    with open(yml_path) as f:
         content = f.read()
     return yaml.load(content, Loader=yaml.FullLoader)
 
@@ -89,7 +90,7 @@ def test_method_missing_from_schema(monkeypatch) -> None:
     base.set_path(yml_path)
     with pytest.raises(
         ImproperlyConfigured,
-        match='Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.',
+        match=r'Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.',
     ):
         base.get_response_schema_section(route='api/v1/trucks/correct', method='gets', status_code=200)
 

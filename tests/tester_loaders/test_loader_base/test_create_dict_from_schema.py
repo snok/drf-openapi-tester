@@ -1,18 +1,19 @@
 from copy import deepcopy
 
-import pytest
-import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import settings as _settings
-from django_swagger_tester.loaders import _LoaderBase
+import pytest
+import yaml
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
 
+from django_swagger_tester.configuration import settings as _settings
+from django_swagger_tester.loaders import _LoaderBase
+
 
 def loader(path):
-    with open(str(settings.BASE_DIR.parent) + path, 'r') as f:
+    with open(str(settings.BASE_DIR.parent) + path) as f:
         return _settings.loader_class.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
 
 
@@ -61,7 +62,9 @@ def test_iterate_schema_dict(caplog):
 
     i = {
         'type': 'object',
-        'properties': {'this is a': {'type': 'object', 'properties': {'nested': {'type': 'string', 'example': 'dict'}}}},
+        'properties': {
+            'this is a': {'type': 'object', 'properties': {'nested': {'type': 'string', 'example': 'dict'}}}
+        },
     }
     assert base._iterate_schema_dict(i) == {'this is a': {'nested': 'dict'}}
 

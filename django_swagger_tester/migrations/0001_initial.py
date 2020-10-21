@@ -18,7 +18,13 @@ class Migration(migrations.Migration):
                 (
                     'method',
                     models.CharField(
-                        choices=[('GET', 'GET'), ('POST', 'POST'), ('PUT', 'PUT'), ('PATCH', 'PATCH'), ('DELETE', 'DELETE')],
+                        choices=[
+                            ('GET', 'GET'),
+                            ('POST', 'POST'),
+                            ('PUT', 'PUT'),
+                            ('PATCH', 'PATCH'),
+                            ('DELETE', 'DELETE'),
+                        ],
                         max_length=6,
                     ),
                 ),
@@ -46,7 +52,10 @@ class Migration(migrations.Migration):
                 ('response_hash', models.CharField(max_length=50)),
                 ('valid', models.BooleanField()),
                 ('error_message', models.TextField(null=True)),
-                ('method', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='django_swagger_tester.method')),
+                (
+                    'method',
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='django_swagger_tester.method'),
+                ),
                 (
                     'schema_hash',
                     models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='django_swagger_tester.schema'),

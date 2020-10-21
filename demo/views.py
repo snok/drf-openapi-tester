@@ -1,5 +1,6 @@
 # flake8: noqa: U100
 from django.shortcuts import redirect
+
 from rest_framework.request import Request
 
 

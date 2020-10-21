@@ -1,9 +1,10 @@
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+import pytest
 from tests.utils import patch_response_validation_middleware_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_improperly_configured_if_not_in_installed_apps(client, monkeypatch):
@@ -16,7 +17,9 @@ def test_improperly_configured_if_not_in_installed_apps(client, monkeypatch):
 
 
 def test_debug_false(client, caplog, monkeypatch):
-    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('DEBUG', False))
+    monkeypatch.setattr(
+        django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('DEBUG', False)
+    )
     settings = SwaggerTesterSettings()
     monkeypatch.setattr('django_swagger_tester.middleware.settings', settings)
     client.get('/api/v1/cars/correct')

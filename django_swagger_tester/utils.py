@@ -9,6 +9,7 @@ from typing import Any, Callable, List, Optional, Tuple
 
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import ResolverMatch
+
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
@@ -89,7 +90,9 @@ def format_response_tester_error(
         ]
 
         # Find length of items
-        longest_detailed_key = max(len(f'{item["key"]}') for item_list in [schema_items, data_items] for item in item_list)
+        longest_detailed_key = max(
+            len(f'{item["key"]}') for item_list in [schema_items, data_items] for item in item_list
+        )
 
         offset = longest_detailed_key + 4
         addon = ''.join(
@@ -102,7 +105,9 @@ def format_response_tester_error(
 
         # Then - For a detailed view, we change `example item` and `data` to expanded versions of themselves
         example_item_string = f'\n{tab}' + json.dumps(example_item, indent=4, sort_keys=True).replace('\n', f'\n{tab}')
-        response_string = f'\n{tab}' + json.dumps(exception.response, indent=4, sort_keys=True).replace('\n', f'\n{tab}')
+        response_string = f'\n{tab}' + json.dumps(exception.response, indent=4, sort_keys=True).replace(
+            '\n', f'\n{tab}'
+        )
 
     sys.stdout.flush()
 

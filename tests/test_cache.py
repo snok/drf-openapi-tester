@@ -2,7 +2,8 @@ def test_cache_is_used_for_errors(client, transactional_db, caplog):
     client.get('/api/v1/cars/incorrect')
     client.get('/api/v1/cars/incorrect')
     assert (
-        'Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.' in caplog.messages
+        'Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.'
+        in caplog.messages
     )
 
 

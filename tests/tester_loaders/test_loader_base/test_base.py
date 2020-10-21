@@ -1,5 +1,6 @@
-import pytest
 from django.core.exceptions import ImproperlyConfigured
+
+import pytest
 
 from django_swagger_tester.loaders import _LoaderBase
 
@@ -7,7 +8,9 @@ simple_ref_schema = {
     'paths': {
         'test-endpoint': {
             'post': {
-                'parameters': [{'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}]
+                'parameters': [
+                    {'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}
+                ]
             }
         }
     },
@@ -29,7 +32,9 @@ simple_ref_replaced_parameters = {
     'schema': {
         'required': ['testParameter'],
         'type': 'object',
-        'properties': {'testParameter': {'title': 'This is a test ref', 'type': 'string', 'maxLength': 10, 'minLength': 1}},
+        'properties': {
+            'testParameter': {'title': 'This is a test ref', 'type': 'string', 'maxLength': 10, 'minLength': 1}
+        },
         'example': {'testParameter': 'test value'},
     },
 }

@@ -1,10 +1,10 @@
 from copy import deepcopy
 
 import pytest
+from tests.utils import MockRoute
 
 from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.loaders import _LoaderBase
-from tests.utils import MockRoute
 
 request_body = {
     'required': ['testParameter'],
@@ -16,7 +16,9 @@ simple_request_body_schema = {
     'paths': {
         'test-endpoint': {
             'post': {
-                'parameters': [{'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}],
+                'parameters': [
+                    {'name': 'data', 'in': 'body', 'required': True, 'schema': {'$ref': '#/definitions/Test'}}
+                ],
                 'tags': ['v1'],
             },
             'parameters': [],
@@ -26,7 +28,9 @@ simple_request_body_schema = {
         'Test': {
             'required': ['testParameter'],
             'type': 'object',
-            'properties': {'testParameter': {'title': 'Test parameter', 'type': 'string', 'maxLength': 10, 'minLength': 1}},
+            'properties': {
+                'testParameter': {'title': 'Test parameter', 'type': 'string', 'maxLength': 10, 'minLength': 1}
+            },
             'example': {'testParameter': 'test'},
         }
     },
@@ -49,7 +53,9 @@ def test_fail_indexing_paths(monkeypatch):
     del bad_schema['paths']
     base.set_schema(bad_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
-    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'):
+    with pytest.raises(
+        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `paths`'
+    ):
         base.get_request_body_schema_section(route='test-endpoint', method='post')
 
 
@@ -86,7 +92,9 @@ def test_fail_indexing_method(monkeypatch):
     del bad_schema['paths']['test-endpoint']['post']
     base.set_schema(bad_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
-    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `post`.'):
+    with pytest.raises(
+        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `post`.'
+    ):
         base.get_request_body_schema_section(route='test-endpoint', method='post')
 
 

@@ -1,4 +1,5 @@
 import pytest
+from tests.types import list_type, object_type
 
 from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import (
@@ -10,7 +11,6 @@ from django_swagger_tester.openapi import (
     read_properties,
     read_type,
 )
-from tests.types import list_type, object_type
 
 
 def test_read_items():
@@ -116,7 +116,9 @@ def test_index_schema(caplog):
     assert any('Indexing schema by `items`' in message for message in caplog.messages)
 
     # Fail with no addon
-    with pytest.raises(UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'):
+    with pytest.raises(
+        UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'
+    ):
         index_schema(schema=object_type, variable='items', error_addon=None)
 
     # Fail with addon
