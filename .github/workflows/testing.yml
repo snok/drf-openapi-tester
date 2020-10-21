@@ -19,7 +19,7 @@ jobs:
             ${{ runner.os }}-linting-pip-
       - name: Install dependencies
         run: pip install black flake8 isort
-        if: steps.cached-linting-dependencies.outputs.cache-hit != 'true'
+#        if: steps.cached-linting-dependencies.outputs.cache-hit != 'true'
       - name: linting
         run: |
           flake8 .
