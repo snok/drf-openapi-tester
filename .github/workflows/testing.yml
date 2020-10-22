@@ -20,7 +20,6 @@ jobs:
           echo "::set-output name=dir::$(pip cache dir)"
           echo "::set-output
       - name: Get pip cache dir
-        id: pip-cache
         run: |
           echo "::set-output name=dir::$(pip cache dir)"
           echo "::set-output name=dir::$(pip cache dir)"
