@@ -9,9 +9,7 @@ from ..swagger.auto_schemas import get_cars_auto_schema, get_other_cars_auto_sch
 
 class GoodCars(APIView):
     @staticmethod
-    @extend_schema(
-        responses={200: CarSerializer(many=True)}
-    )
+    @extend_schema(responses={200: CarSerializer(many=True)})
     @get_cars_auto_schema()
     def get(request: Request, version: int, **kwargs) -> Response:
         cars = [

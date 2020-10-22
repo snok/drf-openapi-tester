@@ -1,7 +1,8 @@
 # noqa: TYP001
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
+
+import pytest
 
 from django_swagger_tester.configuration import SwaggerTesterSettings
 
@@ -28,6 +29,7 @@ def test_missing_settings(monkeypatch) -> None:
     """
     monkeypatch.delattr(django_settings, 'SWAGGER_TESTER')
     with pytest.raises(
-        ImproperlyConfigured, match='SWAGGER_TESTER settings need to be configured',
+        ImproperlyConfigured,
+        match='SWAGGER_TESTER settings need to be configured',
     ):
         SwaggerTesterSettings()

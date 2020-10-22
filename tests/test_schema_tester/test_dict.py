@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 import pytest
+from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.loaders import _LoaderBase
 from django_swagger_tester.schema_tester import SchemaTester
-from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {
     'type': 'object',
@@ -19,7 +19,9 @@ schema = {
 }
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
-tester = SchemaTester(schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response')
+tester = SchemaTester(
+    schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response'
+)
 
 
 def test_valid_dict() -> None:
@@ -185,5 +187,7 @@ def test_bad_type():
         },
     }
     custom_data = {'list': []}
-    with pytest.raises(Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'):
+    with pytest.raises(
+        Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'
+    ):
         assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None

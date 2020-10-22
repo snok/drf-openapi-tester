@@ -1,9 +1,10 @@
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+import pytest
 from tests.utils import patch_response_validation_middleware_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_endpoint_in_exempt_but_status_code_is_not(client, caplog, monkeypatch):

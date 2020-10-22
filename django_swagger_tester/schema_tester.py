@@ -4,13 +4,7 @@ from typing import Any, Callable, List, Union
 from django.core.exceptions import ImproperlyConfigured
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.openapi import (
-    is_nullable,
-    list_types,
-    read_items,
-    read_properties,
-    read_type,
-)
+from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
 from django_swagger_tester.utils import camelize, type_placeholder_value
 
 logger = logging.getLogger('django_swagger_tester')
@@ -231,7 +225,8 @@ class SchemaTester:
         """
         checks = {
             'boolean': {
-                'check': not isinstance(data, bool) and not (isinstance(data, str) and data.lower() in ['true', 'false']),
+                'check': not isinstance(data, bool)
+                and not (isinstance(data, str) and data.lower() in ['true', 'false']),
                 'type': "<class 'bool'>",
             },
             'string': {'check': not isinstance(data, str), 'type': "<class 'str'>"},

@@ -1,10 +1,11 @@
 # noqa: TYP001
-import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+import pytest
 from tests.utils import patch_response_validation_middleware_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_bad_regular_expressions(monkeypatch) -> None:
@@ -31,6 +32,8 @@ def test_accepted_regexp(monkeypatch) -> None:
         monkeypatch.setattr(
             django_settings,
             'SWAGGER_TESTER',
-            patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', [{'url': value, 'status_codes': [200]}]),
+            patch_response_validation_middleware_settings(
+                'VALIDATION_EXEMPT_URLS', [{'url': value, 'status_codes': [200]}]
+            ),
         )
         SwaggerTesterSettings()

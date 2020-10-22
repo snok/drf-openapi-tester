@@ -70,7 +70,9 @@ def read_additional_properties(schema_object: dict) -> dict:
     :raises: django_swagger_tester.exceptions.OpenAPISchemaError
     """
     if 'additionalProperties' not in schema_object:
-        raise OpenAPISchemaError(f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}')
+        raise OpenAPISchemaError(
+            f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}'
+        )
     return schema_object['additionalProperties']
 
 

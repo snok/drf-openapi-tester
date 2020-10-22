@@ -1,8 +1,9 @@
-import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.loaders import StaticSchemaLoader
+import pytest
 from tests.utils import json_path, yml_path
+
+from django_swagger_tester.loaders import StaticSchemaLoader
 
 
 def test_successful_yml_fetch(monkeypatch) -> None:

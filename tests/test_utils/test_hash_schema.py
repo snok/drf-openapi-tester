@@ -1,6 +1,7 @@
+from tests.utils import yml_path
+
 from django_swagger_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from django_swagger_tester.utils import hash_schema
-from tests.utils import yml_path
 
 
 def test_drf_spectacular_schema_hash():

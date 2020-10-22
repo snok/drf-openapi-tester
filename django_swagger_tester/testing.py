@@ -23,7 +23,9 @@ def validate_response(response: Response, method: str, route: str, **kwargs) -> 
     :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or django_swagger_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
-    response_schema = settings.loader_class.get_response_schema_section(route=route, status_code=status_code, method=method)
+    response_schema = settings.loader_class.get_response_schema_section(
+        route=route, status_code=status_code, method=method
+    )
     try:
         SchemaTester(
             schema=response_schema,

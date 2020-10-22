@@ -1,5 +1,6 @@
-import pytest
 from django.core.exceptions import ImproperlyConfigured
+
+import pytest
 
 from django_swagger_tester.exceptions import SwaggerDocumentationError
 from django_swagger_tester.testing import validate_response

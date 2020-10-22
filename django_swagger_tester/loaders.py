@@ -109,7 +109,9 @@ class _LoaderBase:
                 # This is an unfortunate piece of logic, where we're attempting to insert path parameters
                 # one by one until the path works
                 # if it never works, we finally raise an UndocumentedSchemaSectionError
-                route_schema = index_schema(schema=paths_schema, variable=route_object.get_path(), error_addon=route_error)
+                route_schema = index_schema(
+                    schema=paths_schema, variable=route_object.get_path(), error_addon=route_error
+                )
                 break
             except UndocumentedSchemaSectionError as e:
                 error = e
@@ -133,7 +135,9 @@ class _LoaderBase:
         status_code_error = f' Is the `{status_code}` response documented?'
         if responses:
             status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
-        status_code_schema = index_schema(schema=responses_schema, variable=str(status_code), error_addon=status_code_error)
+        status_code_schema = index_schema(
+            schema=responses_schema, variable=str(status_code), error_addon=status_code_error
+        )
 
         # Not sure about this logic - this is what my static schema looks like, but not the drf_yasg dynamic schema
         if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
@@ -204,7 +208,9 @@ class _LoaderBase:
         """
         methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
         if not isinstance(method, str) or method.lower() not in methods:
-            logger.error('Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods]))
+            logger.error(
+                'Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods])
+            )
             raise ImproperlyConfigured(
                 f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.'
             )
@@ -363,7 +369,9 @@ class DrfYasgSchemaLoader(_LoaderBase):
         try:
             import drf_yasg  # noqa: F401
         except ModuleNotFoundError:
-            raise ImproperlyConfigured('The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.')
+            raise ImproperlyConfigured(
+                'The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.'
+            )
 
         if 'drf_yasg' not in apps.app_configs.keys():
             raise ImproperlyConfigured(

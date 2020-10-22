@@ -2,6 +2,7 @@ import logging
 from typing import Callable
 
 from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework.response import Response
 
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError, UndocumentedSchemaSectionError
@@ -79,7 +80,9 @@ def safe_validate_response(response: Response, path: str, method: str, func_logg
             logger.info('Clearing cache')
             clear_cache()
         elif not obj.valid:
-            logger.info('Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.')
+            logger.info(
+                'Found response hash in DB. Response already checked and is invalid. Re-logging error from cache.'
+            )
             # re-log the error if the response validation failed, and schema hasn't changed
             # this can "spam" a system with errors, but that can actually be quite useful for drawing attention to the problem
             # in solutions like Sentry

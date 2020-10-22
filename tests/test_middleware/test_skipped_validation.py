@@ -4,8 +4,9 @@ Requests in these tests should not be handled by the middleware.
 
 from django.conf import settings as django_settings
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
 from tests.utils import patch_response_validation_middleware_settings
+
+from django_swagger_tester.configuration import SwaggerTesterSettings
 
 
 def test_exempt_url(client, caplog, monkeypatch):

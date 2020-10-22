@@ -1,4 +1,5 @@
 import pytest
+from tests.types import list_type, object_type
 
 from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import (
@@ -10,7 +11,6 @@ from django_swagger_tester.openapi import (
     read_properties,
     read_type,
 )
-from tests.types import list_type, object_type
 
 
 def test_read_items():

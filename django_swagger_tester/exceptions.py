@@ -15,7 +15,7 @@ class SwaggerDocumentationError(Exception):
         response_hint: str = '',
         request_hint: str = '',
     ) -> None:
-        super(SwaggerDocumentationError, self).__init__(message)
+        super().__init__(message)
         if schema is None:
             schema = {}
         self.message = message

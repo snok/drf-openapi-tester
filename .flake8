@@ -53,6 +53,7 @@ exclude =
     tests/*,
     venv,
     manage.py,
+    .venv
 
 
 max-complexity = 16
