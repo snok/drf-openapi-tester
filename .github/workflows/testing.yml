@@ -31,8 +31,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.6", "3.7", "3.8", "3.9" ]
-        django-version: [ "2.2", "3.0", "3.1" ]
+        python-version: [ "3.6", "3.7",] #  "3.8", "3.9"
+        django-version: [ "3.1" ] #"2.2", "3.0",
     steps:
       - uses: actions/checkout@v2
       - name: set up python ${{ matrix.python-version }}
@@ -49,10 +49,13 @@ jobs:
             ${{ runner.os }}-poetry-
       - name: Install dependencies
         run: poetry install
+        # Install new dependencies if our previous venv wasn't cached
+        # or (more likely) our dependencies changed, triggering a new build
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: install django ${{ matrix.django-version }}
         run: poetry run pip install "Django~=${{ matrix.django-version }}.0" --upgrade --force-reinstall
       - name: test
         run: |
-          poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
-          poetry run coverage report
+          poetry env use python
+          pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
+          coverage report
