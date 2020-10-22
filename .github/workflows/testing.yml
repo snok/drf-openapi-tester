@@ -51,17 +51,13 @@ jobs:
         run: |
           poetry env use python
           poetry install
+          poetry env use python
         # Install new dependencies if our previous venv wasn't cached
         # or (more likely) our dependencies changed, triggering a new build
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: install django ${{ matrix.django-version }}
-        run: |
-          poetry env use python
-          python -m pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
+        run: python -m pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
       - name: test
         run: |
-          pip freeze
-          poetry env use python
-          pip freeze
-          pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain
+          pytest --cov=django_swagger_tester --verbose --assert=plain
           coverage report
