@@ -39,25 +39,27 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: Gr1N/setup-poetry@v4
-      - uses: actions/cache@v2
-        id: cached-poetry-dependencies
+      - uses: dschep/install-poetry-action@v1.3
         with:
-          path: ~/.cache/pypoetry/virtualenvs
-          key: ${{ runner.os }}-poetry2-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-poetry-
-      - name: Install dependencies
+          create_virtualenvs: true
+      - run: poetry config virtualenvs.in-project true
+      - name: Set up cache
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+      - name: install dependencies
         run: |
-          poetry env use python
+          source $HOME/.poetry/env
           poetry install
-          poetry env use python
-        # Install new dependencies if our previous venv wasn't cached
-        # or (more likely) our dependencies changed, triggering a new build
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: install django ${{ matrix.django-version }}
-        run: python -m pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
+        run: |
+          source $HOME/.poetry/env
+          python -m pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
       - name: test
         run: |
-          pytest --cov=django_swagger_tester --verbose --assert=plain
-          coverage report
+          source $HOME/.poetry/env
+          poetry run pytest --cov=django_swagger_tester --verbose --assert=plain
+          poetry run coverage report
