@@ -262,7 +262,7 @@ uritemplate = ">=2.0.0"
 
 [[package]]
 name = "drf-yasg"
-version = "1.17.0"
+version = "1.17.1"
 description = "Automated generation of real Swagger/OpenAPI 2.0 schemas from Django Rest Framework code."
 category = "dev"
 optional = false
@@ -1008,7 +1008,7 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "cb0ac5733a3bb0dddcb74300572deedb3dafed30b892c6a56edce5370408df57"
+content-hash = "c4d3b2471b0ea3345a5d62e0a481209e6c24a5c7fa6967144e70defd93ac8311"
 
 [metadata.files]
 alabaster = [
@@ -1142,8 +1142,8 @@ drf-spectacular = [
     {file = "drf_spectacular-0.10.0-py2.py3-none-any.whl", hash = "sha256:afe644c893e1c35540e32ecb6bc1ce335516f581b5db60cb03837b78c12200ef"},
 ]
 drf-yasg = [
-    {file = "drf-yasg-1.17.0.tar.gz", hash = "sha256:504cce09035cf1bace63b84d9d778b772f86bb37d8a71ed6f723346362e633b2"},
-    {file = "drf_yasg-1.17.0-py2.py3-none-any.whl", hash = "sha256:4cfec631880ae527a91ec7cd3241aea2f82189f59e2f089119aa687761afb227"},
+    {file = "drf-yasg-1.17.1.tar.gz", hash = "sha256:5572e9d5baab9f6b49318169df9789f7399d0e3c7bdac8fdb8dfccf1d5d2b1ca"},
+    {file = "drf_yasg-1.17.1-py2.py3-none-any.whl", hash = "sha256:7d7af27ad16e18507e9392b2afd6b218fbffc432ec8dbea053099a2241e184ff"},
 ]
 flake8 = [
     {file = "flake8-3.8.3-py2.py3-none-any.whl", hash = "sha256:15e351d19611c887e482fb960eae4d44845013cc142d42896e9862f775d8cf5c"},
