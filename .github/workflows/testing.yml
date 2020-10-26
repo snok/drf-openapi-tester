@@ -42,18 +42,17 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       # install poetry
-      - uses: dschep/install-poetry-action@v1.3
+      - name: Use Poetry
+        uses: sondrelg/install-poetry@v0.2.0
         with:
-          create_virtualenvs: true
-      # config poetry to create venv in project
-      - run: poetry config virtualenvs.in-project true
+          virtualenvs-create: true
       # cache whole venv, not wheels - this way we can skip installs next time
       - name: Set up cache
         id: cached-poetry-dependencies
         uses: actions/cache@v2
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-2
       # install dependencies with poetry *if* cache was invalidated
       - name: Install dependencies
         run: |
