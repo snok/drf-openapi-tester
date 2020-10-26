@@ -43,7 +43,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       # install poetry
       - name: Use Poetry
-        uses: sondrelg/install-poetry@0.1.0
+        uses: sondrelg/install-poetry@v0.2.0
         with:
           virtualenvs-create: true
       # cache whole venv, not wheels - this way we can skip installs next time
