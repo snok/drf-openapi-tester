@@ -66,6 +66,7 @@ jobs:
           python -m pip install "Django==${{ matrix.django-version }}" --upgrade --force-reinstall
       - name: Run tests
         run: |
+          poetry config --list
           source $HOME/.poetry/env
           poetry run pytest --cov=django_swagger_tester --verbose --assert=plain
           poetry run coverage report
