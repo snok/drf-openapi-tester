@@ -230,7 +230,7 @@ django = ">=1.11"
 
 [[package]]
 name = "djangorestframework-camel-case"
-version = "1.1.2"
+version = "1.2.0"
 description = "Camel case JSON support for Django REST framework."
 category = "dev"
 optional = false
@@ -1007,7 +1007,7 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "491ee0015aa5fc6d5a73083471dc26ec61a4b3b71c00e804a2b3a597aa25fd8d"
+content-hash = "6675ebfd67a20afcebe270911fb3ec14c07e00c5ca3113c33aeffd94b7812e8b"
 
 [metadata.files]
 alabaster = [
@@ -1130,7 +1130,7 @@ djangorestframework = [
     {file = "djangorestframework-3.11.1.tar.gz", hash = "sha256:6dd02d5a4bd2516fb93f80360673bf540c3b6641fec8766b1da2870a5aa00b32"},
 ]
 djangorestframework-camel-case = [
-    {file = "djangorestframework-camel-case-1.1.2.tar.gz", hash = "sha256:9eba4a2f959e1e46b7d0f6136baf950552b2a4a695d4bb3cfb0c37be25294574"},
+    {file = "djangorestframework-camel-case-1.2.0.tar.gz", hash = "sha256:9714d43fba5bb654057c29501649684d3d9f11a92319ae417fd4d65e80d1159d"},
 ]
 docutils = [
     {file = "docutils-0.16-py2.py3-none-any.whl", hash = "sha256:0c5b78adfbf7762415433f5515cd5c9e762339e23369dbe8000d84a4bf4ab3af"},
