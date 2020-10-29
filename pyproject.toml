@@ -43,7 +43,7 @@ django = "^2.2 || ^3.0"
 
 [tool.poetry.dev-dependencies]
 pre-commit = "2.1.1"
-drf-yasg = "1.20.0"
+drf-yasg = "^1.17.1"
 pyYAML = "5.3.1"
 djangorestframework_camel_case = "1.2.0"
 pytest = "^5.4"
