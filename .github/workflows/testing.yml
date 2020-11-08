@@ -5,9 +5,6 @@ on: push
 jobs:
   linting:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -32,9 +29,6 @@ jobs:
     # ---------------------------------------------------
     needs: linting
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash
     strategy:
       fail-fast: false
       matrix:
