@@ -12,13 +12,16 @@ jobs:
     #      https://github.com/snok/install-poetry
     # ---------------------------------------------------
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
         python-version: 3.9
     - name: Install poetry
-      uses: snok/install-poetry@v1.0.0
+      uses: snok/install-poetry@v1.1.0rcN
       with:
         virtualenvs-create: true
         virtualenvs-in-project: true
