@@ -60,14 +60,11 @@ jobs:
         run: poetry install
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       - name: Install django ${{ matrix.django-version }}
-        run: |
-          source $VENV
-          pip install "Django==${{ matrix.django-version }}"
+        run: poetry add "Django==${{ matrix.django-version }}"
       - name: Install DRF 3.11 on Django 2.2
         if: matrix.django-version == '2.2'
         run: poetry add "djangorestframework==3.11.1"
       - name: Run tests
         run: |
-          source $VENV
-          pytest --cov=django_swagger_tester --verbose --assert=plain
-          coverage report
+          poetry run pytest --cov=django_swagger_tester --verbose --assert=plain
+          poetry run coverage report
