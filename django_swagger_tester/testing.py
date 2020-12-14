@@ -79,7 +79,8 @@ def validate_input_serializer(
 
 class OpenAPITestCase(APITestCase):
     """ Extended Test Case with OpenAPI assertions"""
-    def assertResponse(self, response: Response, **kwargs: Any) -> None:
+    @staticmethod
+    def assertResponse(response: Response, **kwargs: Any) -> None:
         """ Assert response match OpenAPI spec """
         route = kwargs.pop('route', response.request['PATH_INFO'])
         method = kwargs.pop('method', response.request['REQUEST_METHOD'])
