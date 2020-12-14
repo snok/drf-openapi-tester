@@ -1,7 +1,9 @@
 from django.conf import settings as django_settings
+
+from tests.test_testers.test_validate_response import GOOD_TEST_DATA
+
 from django_swagger_tester.loaders import StaticSchemaLoader
 from django_swagger_tester.testing import validate_response
-from tests.test_testers.test_validate_response import GOOD_TEST_DATA
 
 yml_path = str(django_settings.BASE_DIR) + '/openapi-schema.yml'
 
@@ -17,5 +19,3 @@ def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:
         assert response.status_code == 200
         assert response.json() == item['expected_response']
         validate_response(response=response, method='GET', route=route)
-
-

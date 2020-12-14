@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Any
+
 from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
@@ -79,8 +80,8 @@ def validate_input_serializer(
 
 class OpenAPITestCase(APITestCase):
     """ Extended Test Case with OpenAPI assertions"""
-    @staticmethod
-    def assertResponse(response: Response, **kwargs: Any) -> None:
+
+    def assertResponse(self, response: Response, **kwargs: Any) -> None:
         """ Assert response match OpenAPI spec """
         route = kwargs.pop('route', response.request['PATH_INFO'])
         method = kwargs.pop('method', response.request['REQUEST_METHOD'])
