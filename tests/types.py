@@ -12,7 +12,7 @@ object_type = {
         'bool': bool_type,
     },
 }
-list_type = {'title': 'list_type_title', 'type': 'array', 'items': object_type}
+list_type = {'title': 'list_type_title', 'type': 'array', 'items': [object_type]}
 
 string_data = 'string'
 integer_data = 2

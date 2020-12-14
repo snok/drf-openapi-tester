@@ -19,6 +19,8 @@ def read_items(array: dict) -> dict:
     """
     if 'items' not in array:
         raise OpenAPISchemaError(f'Array is missing an `items` attribute.\n\nArray schema: {array}')
+    if isinstance(array['items'], list):
+        return array['items'][0]
     return array['items']
 
 

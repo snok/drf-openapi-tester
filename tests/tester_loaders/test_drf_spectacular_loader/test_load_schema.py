@@ -1,7 +1,7 @@
 from django_swagger_tester.loaders import DrfSpectacularSchemaLoader
 
 
-def test_successful_parse_documented_endpoints(monkeypatch) -> None:
+def test_successful_parse_documented_endpoints() -> None:
     """
     Asserts that a schema section is returned successfully.
     """
