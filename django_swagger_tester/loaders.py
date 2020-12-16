@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from json import dumps, loads
-from typing import Any, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
@@ -56,9 +56,7 @@ class _LoaderBase:
         """
         Sets self.schema and self.original_schema.
         """
-        self.schema = self.replace_refs(
-            schema, self
-        )
+        self.schema = self.replace_refs(schema, loader=self)
         self.original_schema = schema
 
     def get_route(self, route: str) -> Route:
@@ -240,36 +238,43 @@ class _LoaderBase:
         * This does add a performance overhead to interacting with a schema, so changing this in the future would be fine *
 
         :param schema: OpenAPI schema
-        :param loader: current loader
+        :param loader: Current loader
         :return Adjusted OpenAPI schema
         """
         if '$ref' not in str(schema):
             return schema
 
-        schemas_cache = {}
+        schemas_cache: Dict[str, dict] = {}
 
         def find_and_replace_refs_recursively(d: dict, s: dict) -> dict:
             """
             Iterates over a dictionary to look for pesky $refs.
             """
             if '$ref' in d:
-                index_file, _sep, index_path = d['$ref'].partition('#')
-
+                index_file, _, index_path = d['$ref'].partition('#')
+                # index_path looks like `/GoodTrucksList`
+                # index_file looks like `openapi-schema-split-datastructures.yaml` and will
+                # be blank unless the openapi schema is split into several sections
+                temp_schema: dict
                 if not index_file:
+                    # If index-file is empty, use local
                     temp_schema = s
                 elif loader:
+                    # If index-file is provided, look in the cache
                     full_path = os.path.join(os.path.dirname(loader.path), index_file)
-                    temp_schema = schemas_cache.get(full_path)
-
-                    if temp_schema is None:
+                    schema_from_cache: Optional[dict] = schemas_cache.get(full_path)
+                    if schema_from_cache is not None:
+                        temp_schema = schema_from_cache
+                    else:
+                        # If we cannot find our reference in the cache load external defs
                         external_loader = loader.__class__()
                         external_loader.set_path(full_path)
                         temp_schema = external_loader.get_schema()
                         schemas_cache[full_path] = temp_schema
                 else:
-                    raise RuntimeError("loader is required for external references")
+                    raise RuntimeError('loader is required for external references')
 
-                indices = [i for i in index_path.split("/") if i]
+                indices = [i for i in index_path.split('/') if i]
                 for index in indices:
                     logger.debug('Indexing schema by `%s`', index)
                     temp_schema = temp_schema[index]
