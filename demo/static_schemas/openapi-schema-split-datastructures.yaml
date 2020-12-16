@@ -1,0 +1,13 @@
+ToolsList:
+  type: array
+  items:
+    $ref: '#/Tool'
+Tool:
+  type: object
+  properties:
+    id:
+      type: integer
+      example: 1
+    name:
+      type: string
+      example: Hammer
