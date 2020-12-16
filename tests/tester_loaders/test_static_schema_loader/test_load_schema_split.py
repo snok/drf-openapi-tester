@@ -1,5 +1,3 @@
-import pytest
-
 from tests.utils import yml_split_path
 
 from django_swagger_tester.loaders import StaticSchemaLoader
@@ -12,7 +10,7 @@ def test_successful_parse_reference(monkeypatch) -> None:
     base = StaticSchemaLoader()
     base.set_path(yml_split_path)
 
-    item = base.get_response_schema_section(route="/api/v1/cars/correct", method="GET", status_code=200)
+    item = base.get_response_schema_section(route='/api/v1/cars/correct', method='GET', status_code=200)
     assert item == {
         'title': 'Success',
         'type': 'array',
@@ -37,7 +35,7 @@ def test_successful_parse_external_reference(monkeypatch) -> None:
     base = StaticSchemaLoader()
     base.set_path(yml_split_path)
 
-    item = base.get_response_schema_section(route="/api/v1/trucks/correct", method="GET", status_code=200)
+    item = base.get_response_schema_section(route='/api/v1/trucks/correct', method='GET', status_code=200)
     assert item == {
         'title': 'Success',
         'type': 'array',
