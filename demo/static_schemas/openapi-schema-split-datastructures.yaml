@@ -22,7 +22,7 @@ GoodTruck:
     width:
       description: 'How wide the truck is.'
       type: string
-      example: 'Very wide',
+      example: 'Very wide'
     length:
       description: 'How long the truck is.'
       type: string
