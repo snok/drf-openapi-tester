@@ -1,0 +1,47 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+
+paths:
+  /api/v1/{vehicle_type}/correct:
+    get:
+      operationId: listGoodCars
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                title: 'Success'
+                type: array
+                items:
+                  $ref: '#/components/schemas/GoodCar'
+          description: ''
+components:
+  schemas:
+    GoodCar:
+      title: 'Success'
+      type: 'object'
+      properties:
+        name:
+          description: 'A swedish car?'
+          type: 'string'
+          example: 'Saab'
+        color:
+          description: 'The color of the car.'
+          type: 'string'
+          example: 'Yellow'
+        height:
+          description: 'How tall the car is.'
+          type: 'string'
+          example: 'Medium height'
+        width:
+          description: 'How wide the car is.'
+          type: 'string'
+          example: 'Very wide'
+        length:
+          description: 'How long the car is.'
+          type: 'string'
+          example: '2 meters'
