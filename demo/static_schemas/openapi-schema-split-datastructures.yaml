@@ -1,0 +1,29 @@
+GoodTrucksList:
+  title: 'Success'
+  type: array
+  items:
+    $ref: '#/GoodTruck'
+
+GoodTruck:
+  type: object
+  properties:
+    name:
+      description: 'A swedish truck?'
+      type: string
+      example: Saab
+    color:
+      description: 'The color of the truck.'
+      type: string
+      example: 'Yellow'
+    height:
+      description: 'How tall the truck is.'
+      type: string
+      example: 'Medium height'
+    width:
+      description: 'How wide the truck is.'
+      type: string
+      example: 'Very wide'
+    length:
+      description: 'How long the truck is.'
+      type: string
+      example: '2 meters'
