@@ -250,7 +250,12 @@ class _LoaderBase:
             Iterates over a dictionary to look for pesky $refs.
             """
             if '$ref' in d:
-                indices = [i for i in d['$ref'][d['$ref'].index('#') + 1 :].split('/') if i]
+                index_file, _sep, index_path = d['$ref'].partition('#')
+
+                if index_file:
+                    raise NotImplementedError
+
+                indices = [i for i in index_path.split("/") if i]
                 temp_schema = s
                 for index in indices:
                     logger.debug('Indexing schema by `%s`', index)

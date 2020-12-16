@@ -19,6 +19,18 @@ paths:
                 items:
                   $ref: '#/components/schemas/GoodCar'
           description: ''
+  /api/v1/trucks/correct:
+    get:
+      operationId: listGoodTrucks
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: 'openapi-schema-split-datastructures.yaml#/GoodTrucksList'
+          description: ''
 components:
   schemas:
     GoodCar:

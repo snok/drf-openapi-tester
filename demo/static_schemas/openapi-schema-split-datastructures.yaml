@@ -1,13 +1,29 @@
-ToolsList:
+GoodTrucksList:
+  title: 'Success'
   type: array
   items:
-    $ref: '#/Tool'
-Tool:
+    $ref: '#/GoodTruck'
+
+GoodTruck:
   type: object
   properties:
-    id:
-      type: integer
-      example: 1
     name:
+      description: 'A swedish truck?'
       type: string
-      example: Hammer
+      example: Saab
+    color:
+      description: 'The color of the truck.'
+      type: string
+      example: 'Yellow'
+    height:
+      description: 'How tall the truck is.'
+      type: string
+      example: 'Medium height'
+    width:
+      description: 'How wide the truck is.'
+      type: string
+      example: 'Very wide',
+    length:
+      description: 'How long the truck is.'
+      type: string
+      example: '2 meters'
