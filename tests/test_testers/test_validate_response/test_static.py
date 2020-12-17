@@ -20,6 +20,20 @@ good_test_data = [
             {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ],
     },
+    {
+        'url': '/i18n',
+        'lang': 'en',
+        'expected_response': {
+            'languages': ['French', 'Spanish', 'Greek', 'Italian', 'Portuguese'],
+        },
+    },
+    {
+        'url': '/i18n',
+        'lang': 'de',
+        'expected_response': {
+            'languages': ['Französisch', 'Spanisch', 'Griechisch', 'Italienisch', 'Portugiesisch'],
+        },
+    },
 ]
 
 bad_test_data = [
@@ -40,7 +54,7 @@ bad_test_data = [
         ],
     },
 ]
-yml_path = str(django_settings.BASE_DIR) + '/openapi-schema.yml'
+yml_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.yml'
 
 
 def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
@@ -49,7 +63,9 @@ def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
     for item in good_test_data:
-        response = client.get('/api/v1' + item['url'])  # type: ignore
+        lang_prefix = '/' + item['lang'] if 'lang' in item else ''
+        url = lang_prefix + '/api/v1' + item['url']
+        response = client.get(url)
         assert response.status_code == 200
         assert response.json() == item['expected_response']
-        validate_response(response=response, method='GET', route='/api/v1' + item['url'])  # type: ignore
+        validate_response(response=response, method='GET', route=url)

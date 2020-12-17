@@ -167,7 +167,7 @@ def languages_auto_schema():
                 title='Success',
                 type=TYPE_OBJECT,
                 properties={
-                    'Languages': Schema(
+                    'languages': Schema(
                         title='Success',
                         type=TYPE_ARRAY,
                         items=generic_string_schema(example='test', description='test'),
