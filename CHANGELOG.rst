@@ -4,6 +4,14 @@
 Changelog
 *********
 
+2.1.2 2020-12-18
+----------------
+
+**Improvements**
+
+* Support added for split files in the StaticSchemaLoader class by @askoretskiy
+* Django APITestCase class added by @Goldziher
+
 2.1.2 2020-10-06
 ----------------
 

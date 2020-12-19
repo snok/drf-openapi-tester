@@ -1,7 +1,9 @@
 import json
 import logging
+from typing import Any
 
 from rest_framework.response import Response
+from rest_framework.test import APITestCase
 
 from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
@@ -74,3 +76,20 @@ def validate_input_serializer(
             f'\n\nSerializer error:\n\n\t{json.dumps(serializer.errors)}\n\n'
             f'Note: If all your parameters are correct, you might need to change `camel_case_parser` to True or False.'
         )
+
+
+class OpenAPITestCase(APITestCase):
+    """
+    Extends APITestCase with OpenAPI assertions.
+    """
+
+    def assertResponse(self, response: Response, **kwargs: Any) -> None:
+        """
+        Assert response matches the OpenAPI spec.
+        """
+        route = kwargs.pop('route', response.request['PATH_INFO'])
+        method = kwargs.pop('method', response.request['REQUEST_METHOD'])
+        try:
+            validate_response(response=response, method=method, route=route, **kwargs)
+        except (SwaggerDocumentationError, CaseError) as e:
+            raise self.failureException from e

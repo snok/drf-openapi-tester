@@ -48,14 +48,11 @@
 
 --------------
 
-Django Swagger Tester
-=====================
-
 Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
 
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
 
-Given a test-example:
+Given a response
 
 .. code-block:: python
 
@@ -78,7 +75,7 @@ Given a test-example:
       "status": "available"
     }
 
-your brain shouldn't have to manually scan this response documentation for errors
+your brain shouldn't have to manually scan this OpenAPI response schema for errors
 
 .. code-block:: python
 
@@ -165,7 +162,7 @@ your brain shouldn't have to manually scan this response documentation for error
     }
   }
 
-when automated tests can simply tell you that ``photoUrls`` is missing a letter.
+when automated tests can simply tell you that ``photoUrls`` is missing an ``s``.
 
 Features
 --------
