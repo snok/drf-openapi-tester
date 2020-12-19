@@ -225,3 +225,20 @@ paths:
       responses:
         '204':
           description: ''
+  /{lang}/api/v1/i18n:
+    get:
+      operationId: listLanguages
+      description: ''
+      parameters:
+        - name: lang
+          in: path
+          enum: [en, de]
+          description: 'The response content language.'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
