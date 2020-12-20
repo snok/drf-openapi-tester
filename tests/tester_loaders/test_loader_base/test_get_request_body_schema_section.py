@@ -82,9 +82,9 @@ def test_fail_indexing_route_with_helper_text(monkeypatch):
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='Failed indexing schema.\n\nError: Unsuccessfully tried to index'
-              ' the OpenAPI schema by `test-endpoint`.\n\nFor debugging purpose'
-              's, other valid routes include: \n\n\t• other-endpoint,\n\t• '
-              'third-endpoint',
+        ' the OpenAPI schema by `test-endpoint`.\n\nFor debugging purpose'
+        's, other valid routes include: \n\n\t• other-endpoint,\n\t• '
+        'third-endpoint',
     ):
         base.get_request_body_schema_section(route='test-endpoint', method='post')
 
