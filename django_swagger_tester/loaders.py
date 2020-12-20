@@ -7,6 +7,7 @@ from typing import Any, Dict, Optional, Union
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
+from django_swagger_tester.configuration import settings
 from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import list_types, read_properties
 from django_swagger_tester.utils import Route
@@ -94,7 +95,18 @@ class _LoaderBase:
         routes = ', '.join(list(paths_schema))
         route_error = ''
         if routes:
-            route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
+            # TODO: Make into a function and consolidate with line 195
+            pretty_routes = '\n\t• '.join(routes.split())
+
+            if settings.parameterized_i18n_name:
+                route_error += (
+                    '\n\nDid you specify the correct i18n parameter name? '
+                    f'Your project settings specify `{settings.parameterized_i18n_name}` '
+                    f'as the name of your parameterized language, meaning a path like `/api/en/items` '
+                    f'will be indexed as `/api/{{{settings.parameterized_i18n_name}}}/items`.'
+                )
+            route_error += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
+
         if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
             route_error += (
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
@@ -119,7 +131,8 @@ class _LoaderBase:
             raise error  # type: ignore
 
         # Index by method
-        joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
+        joined_methods = ', '.join(method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS')
+
         method_error = ''
         if joined_methods:
             method_error += f'\n\nAvailable methods include: {joined_methods}.'
@@ -129,7 +142,7 @@ class _LoaderBase:
         responses_schema = index_schema(schema=method_schema, variable='responses')
 
         # Index by status code
-        responses = ', '.join([f'{code}' for code in responses_schema.keys()])
+        responses = ', '.join(f'{code}' for code in responses_schema.keys())
         status_code_error = f' Is the `{status_code}` response documented?'
         if responses:
             status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
@@ -164,11 +177,21 @@ class _LoaderBase:
         routes = ', '.join(list(paths_schema))
         route_error = ''
         if routes:
-            route_error += f'\n\nFor debugging purposes, other valid routes include: {routes}.'
+            pretty_routes = '\n\t• '.join(routes.split())
+
+            if settings.parameterized_i18n_name:
+                route_error += (
+                    '\n\nDid you specify the correct i18n parameter name? '
+                    f'Your project settings specify `{settings.parameterized_i18n_name}` '
+                    f'as the name of your parameterized language, meaning a path like `/api/en/items` '
+                    f'will be indexed as `/api/{{{settings.parameterized_i18n_name}}}/items`.'
+                )
+            route_error += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
         route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
 
         # Index by method
-        joined_methods = ', '.join([method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS'])
+        joined_methods = ', '.join(method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS')
+
         method_error = ''
         if joined_methods:
             method_error += f'\n\nAvailable methods include: {joined_methods}.'
@@ -380,6 +403,8 @@ class DrfYasgSchemaLoader(_LoaderBase):
         from drf_yasg.generators import OpenAPISchemaGenerator
         from drf_yasg.openapi import Info
 
+        logger.debug('Initialized drf-yasg loader schema')
+
         self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
     def validation(self, *args, **kwargs) -> None:
@@ -450,6 +475,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
         from drf_spectacular.generators import SchemaGenerator
 
         self.schema_generator = SchemaGenerator()
+        logger.debug('Initialized drf-spectacular loader schema')
 
     def validation(self, *args, **kwargs) -> None:
         """
@@ -508,6 +534,7 @@ class StaticSchemaLoader(_LoaderBase):
     def __init__(self) -> None:
         super().__init__()
         self.path: str = ''
+        logger.debug('Initialized static loader schema')
 
     def set_path(self, path: str) -> None:
         """

@@ -48,7 +48,7 @@ api_urlpatterns = [
 ]
 
 internationalised_urlpatterns = i18n_patterns(
-    path('api/v1/i18n', Languages.as_view())
+    path('api/<version:version>/i18n', Languages.as_view()),
 )
 
 

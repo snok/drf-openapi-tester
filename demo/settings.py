@@ -92,11 +92,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 LANGUAGES = [
-  ('de', _('German')),
-  ('en', _('English')),
+    ('de', _('German')),
+    ('en', _('English')),
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
@@ -152,6 +152,7 @@ SWAGGER_TESTER = {
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
+    'PARAMETERIZED_I18N_NAME': 'language',
     'MIDDLEWARE': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',
