@@ -14,4 +14,4 @@ def test_invalid_logger_name(monkeypatch):
             django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('LOGGER_NAME', value)
         )
         with pytest.raises(ImproperlyConfigured, match='Logger name must be a string'):
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()

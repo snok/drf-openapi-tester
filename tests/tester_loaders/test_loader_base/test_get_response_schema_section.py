@@ -96,7 +96,7 @@ def test_failed_index_route_with_helper_text(monkeypatch):
     base.set_schema(bad_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(
-        UndocumentedSchemaSectionError, match='For debugging purposes, other valid routes include: other-endpoint'
+        UndocumentedSchemaSectionError, match='Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `test-endpoint`.\n\nFor debugging purposes, other valid routes include: \n\n\t• other-endpoint'
     ):
         base.get_response_schema_section(route='test-endpoint', method='get', status_code=200)
 

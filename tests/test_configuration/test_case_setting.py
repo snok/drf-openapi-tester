@@ -21,7 +21,7 @@ def test_valid_cases(monkeypatch) -> None:  # noqa: TYP001
         lambda x: x * 2,  # custom callable
     ]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_TESTER', case))
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_none(monkeypatch) -> None:
@@ -30,7 +30,7 @@ def test_none(monkeypatch) -> None:
         ImproperlyConfigured,
         match=('The django-swagger-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'),
     ):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_invalid_cases(monkeypatch) -> None:
@@ -47,7 +47,7 @@ def test_invalid_cases(monkeypatch) -> None:
                 'make your own, or pass `None` to skip case validation.'
             ),
         ):
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_valid_case_whitelist(monkeypatch) -> None:
@@ -67,7 +67,7 @@ def test_invalid_case_whitelist(monkeypatch) -> None:
     for item in [{'IP': None, 'DHCP': 2}, 2, -2, (None, [])]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_PASSLIST', item))
         with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting needs to be a list of strings'):
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_case_whitelist_contains_non_str(monkeypatch) -> None:
@@ -76,4 +76,4 @@ def test_case_whitelist_contains_non_str(monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('CASE_PASSLIST', ['item', 2]))
     with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting list can only contain strings'):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()

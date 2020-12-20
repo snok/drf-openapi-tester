@@ -15,7 +15,7 @@ def test_valid_loader_classes(monkeypatch) -> None:
     """
     for case in [DrfYasgSchemaLoader, StaticSchemaLoader]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('SCHEMA_LOADER', case))
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_missing_loader_class(monkeypatch) -> None:
@@ -26,13 +26,13 @@ def test_missing_loader_class(monkeypatch) -> None:
         'and is required. '
         'Please pass a loader class from django_swagger_tester.schema_loaders',
     ):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_invalid_invalid_callable(monkeypatch) -> None:
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('SCHEMA_LOADER', lambda x: x))
     with pytest.raises(ImproperlyConfigured, match='SCHEMA_LOADER must be a class'):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_invalid_base_class(monkeypatch) -> None:
@@ -44,4 +44,4 @@ def test_invalid_base_class(monkeypatch) -> None:
         ImproperlyConfigured,
         match='The supplied loader_class must inherit django_swagger_tester.schema_loaders._LoaderBase',
     ):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()

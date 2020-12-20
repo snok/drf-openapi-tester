@@ -152,7 +152,7 @@ SWAGGER_TESTER = {
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
-    'PARAMETERIZED_I18N_NAME': 'language',
+    'PARAMETERIZED_I18N_NAME': '',
     'MIDDLEWARE': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',
