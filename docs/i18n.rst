@@ -36,7 +36,7 @@ to generalising the i18n component of the path and removing the need for duplica
       parameters:
         - name: language
           in: path
-          enum: [en, de]
+          enum: [en, de, es, fr]
           description: 'The response content language.'
       responses:
         '200':
