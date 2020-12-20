@@ -300,7 +300,10 @@ class Route:
 
             /{language}/api/v1/items
 
-        *If* PARAMETERIZED_I18N_NAME == 'language'
+        If PARAMETERIZED_I18N_NAME == 'language'. If it was 'lang', the route
+        would become
+
+            /{lang}/api/v1/items
         """
         from django.utils import translation
 

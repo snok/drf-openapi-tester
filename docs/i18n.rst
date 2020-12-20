@@ -1,0 +1,55 @@
+.. _i18n:
+
+****
+i18n
+****
+
+If you're maintaining a static schema file, with internationalized routes,
+and you would like to document them by substituting the i18n component
+with a general parameter, this is supported. Simply set the ``PARAMETERIZED_I18N_NAME`` setting in you ``SWAGGER_TESTER``
+settings.
+
+When the ``PARAMETERIZED_I18N_NAME`` is set as any string other than a blank string, we will replace
+the i18n component of your paths with ``'{PARAMETERIZED_I18N_NAME}'``, meaning that with a value of ``"language"``, the path, ``/en/api/v1/items`` becomes ``/{language}/api/v1/items``.
+
+This should enable you to move having to duplicate your documentation ``n`` times, where ``n`` is the number of languages you support
+
+.. code:: yaml
+
+  /en/api/v1/i18n:
+    ...
+  /de/api/v1/i18n:
+    ...
+  /es/api/v1/i18n:
+    ...
+  /fr/api/v1/i18n:
+    ...
+
+to generalising the i18n component of the path and removing the need for duplication:
+
+.. code:: yaml
+
+  /{language}/api/v1/i18n:
+    get:
+      operationId: listLanguages
+      description: ''
+      parameters:
+        - name: language
+          in: path
+          enum: [en, de]
+          description: 'The response content language.'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  languages:
+                    type: array
+                    items:
+                      description: "French language"
+                      type: "string"
+                      example: "French"
+
+This is a bit of an experimental feature, and contributions are welcome if you want to change or improve this.

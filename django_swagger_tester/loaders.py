@@ -95,7 +95,6 @@ class _LoaderBase:
         routes = ', '.join(list(paths_schema))
         route_error = ''
         if routes:
-            # TODO: Make into a function and consolidate with line 195
             pretty_routes = '\n\t• '.join(routes.split())
 
             if settings.parameterized_i18n_name:
