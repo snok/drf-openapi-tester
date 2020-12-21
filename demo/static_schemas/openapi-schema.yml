@@ -232,7 +232,10 @@ paths:
       parameters:
         - name: language
           in: path
-          enum: [en, de]
+          required: true
+          schema:
+            type: string
+            enum: [en, de]
           description: 'The response content language.'
       responses:
         '200':
