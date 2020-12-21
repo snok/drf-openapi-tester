@@ -239,6 +239,7 @@ paths:
           description: 'The response content language.'
       responses:
         '200':
+          description: ''
           content:
             application/json:
               schema:
