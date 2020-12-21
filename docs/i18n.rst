@@ -43,6 +43,7 @@ to generalising the i18n component of the path and removing the need for duplica
           description: 'The response content language.'
       responses:
         '200':
+          description: ''
           content:
             application/json:
               schema:
