@@ -85,6 +85,7 @@ Contents
     installation
     configuration
     implementation
+    i18n
     troubleshooting
     contributing
     publish

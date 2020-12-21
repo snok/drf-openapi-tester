@@ -17,6 +17,23 @@ GOOD_TEST_DATA = [
     },
 ]
 
+I18N_DATA = [
+    {
+        'url': '/i18n',
+        'lang': 'en',
+        'expected_response': {
+            'languages': ['French', 'Spanish', 'Greek', 'Italian', 'Portuguese'],
+        },
+    },
+    {
+        'url': '/i18n',
+        'lang': 'de',
+        'expected_response': {
+            'languages': ['Französisch', 'Spanisch', 'Griechisch', 'Italienisch', 'Portugiesisch'],
+        },
+    },
+]
+
 BAD_TEST_DATA = [
     {
         'url': '/cars/incorrect',

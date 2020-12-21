@@ -105,6 +105,7 @@ class ResponseValidationMiddleware:
             return False
 
         for route in self.endpoints:
+            route = Route.replace_i18n_parameter(route)
             if route_object.route_matches(route):
                 # APIView
                 if hasattr(route_object.resolved_path, 'func') and hasattr(

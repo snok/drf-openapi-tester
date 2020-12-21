@@ -11,7 +11,7 @@ def test_valid_settings() -> None:
     """
     Assert that the default settings in the demo project pass without errors.
     """
-    SwaggerTesterSettings()
+    SwaggerTesterSettings().validate()
 
 
 def test_empty_settings(monkeypatch) -> None:
@@ -20,7 +20,7 @@ def test_empty_settings(monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {})
     with pytest.raises(ImproperlyConfigured, match='SWAGGER_TESTER settings need to be configured'):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_missing_settings(monkeypatch) -> None:
@@ -32,4 +32,4 @@ def test_missing_settings(monkeypatch) -> None:
         ImproperlyConfigured,
         match='SWAGGER_TESTER settings need to be configured',
     ):
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()

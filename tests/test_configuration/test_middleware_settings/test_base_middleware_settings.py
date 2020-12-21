@@ -14,4 +14,4 @@ def test_missing_middleware_settings(monkeypatch) -> None:
     """
     for value in [None, {}]:
         monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', patch_settings('MIDDLEWARE', value))
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()

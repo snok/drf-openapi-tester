@@ -21,7 +21,7 @@ def test_bad_regular_expressions(monkeypatch) -> None:
                 'SWAGGER_TESTER',
                 patch_response_validation_middleware_settings('VALIDATION_EXEMPT_URLS', [{'url': value}]),
             )
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_accepted_regexp(monkeypatch) -> None:
@@ -36,4 +36,4 @@ def test_accepted_regexp(monkeypatch) -> None:
                 'VALIDATION_EXEMPT_URLS', [{'url': value, 'status_codes': [200]}]
             ),
         )
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()

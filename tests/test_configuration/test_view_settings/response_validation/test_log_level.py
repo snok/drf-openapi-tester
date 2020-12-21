@@ -20,7 +20,7 @@ def test_non_string_log_level(monkeypatch) -> None:
             monkeypatch.setattr(
                 django_settings, 'SWAGGER_TESTER', patch_response_validation_view_settings('LOG_LEVEL', value)
             )
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_bad_log_level_name(monkeypatch) -> None:
@@ -34,7 +34,7 @@ def test_bad_log_level_name(monkeypatch) -> None:
             monkeypatch.setattr(
                 django_settings, 'SWAGGER_TESTER', patch_response_validation_view_settings('LOG_LEVEL', value)
             )
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_valid_log_level_names(monkeypatch) -> None:
@@ -46,4 +46,4 @@ def test_valid_log_level_names(monkeypatch) -> None:
             monkeypatch.setattr(
                 django_settings, 'SWAGGER_TESTER', patch_response_validation_view_settings('LOG_LEVEL', method(value))
             )
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()

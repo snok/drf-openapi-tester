@@ -72,7 +72,7 @@ def test_invalid_status_code(client, caplog, monkeypatch):
             ImproperlyConfigured,
             match='Received an invalid status code in the response validation middleware settings. Status codes must be integers, or "*".',
         ):
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()
 
 
 def test_exempt_status_code(client, caplog, monkeypatch):

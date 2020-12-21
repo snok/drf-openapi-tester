@@ -145,3 +145,24 @@ def animals_auto_schema():
             '500': generic_error_response('Unexpected error raised when ...'),
         },
     )
+
+
+def languages_auto_schema():
+    return swagger_auto_schema(
+        operation_id='list_languages',
+        operation_summary='List languages',
+        operation_description='Lists all supported languages',
+        responses={
+            '200': Schema(
+                title='Success',
+                type=TYPE_OBJECT,
+                properties={
+                    'languages': Schema(
+                        title='Success',
+                        type=TYPE_ARRAY,
+                        items=generic_string_schema(example='French', description='French language'),
+                    )
+                },
+            ),
+        },
+    )

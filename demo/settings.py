@@ -12,11 +12,12 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 from typing import List
+
 
 from django_swagger_tester.case_testers import is_camel_case
 from django_swagger_tester.loaders import DrfYasgSchemaLoader
+from django.utils.translation import gettext_lazy as _, get_language_from_path
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
@@ -46,8 +47,10 @@ INSTALLED_APPS = [
     'django_swagger_tester',
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,7 +91,12 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGES = [
+    ('de', _('German')),
+    ('en', _('English')),
+]
+
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
@@ -144,6 +152,7 @@ SWAGGER_TESTER = {
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': True,
     'CASE_PASSLIST': [],
+    'PARAMETERIZED_I18N_NAME': '',
     'MIDDLEWARE': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',

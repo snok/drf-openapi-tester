@@ -16,7 +16,7 @@ def test_valid_debug(monkeypatch) -> None:
         monkeypatch.setattr(
             django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('DEBUG', value)
         )
-        SwaggerTesterSettings()
+        SwaggerTesterSettings().validate()
 
 
 def test_invalid_debug(monkeypatch) -> None:
@@ -25,4 +25,4 @@ def test_invalid_debug(monkeypatch) -> None:
             django_settings, 'SWAGGER_TESTER', patch_response_validation_middleware_settings('DEBUG', value)
         )
         with pytest.raises(ImproperlyConfigured, match='DEBUG must be a boolean'):
-            SwaggerTesterSettings()
+            SwaggerTesterSettings().validate()

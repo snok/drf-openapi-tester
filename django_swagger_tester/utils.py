@@ -197,7 +197,7 @@ def resolve_path(endpoint_path: str) -> tuple:
     except Resolver404:
         logger.warning('URL `%s` did not resolve successfully', endpoint_path)
         paths = get_endpoint_paths()
-        closest_matches = ''.join([f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths)])
+        closest_matches = ''.join(f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths))
         if closest_matches:
             raise ValueError(
                 f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
@@ -217,12 +217,11 @@ class Route:
         self.counter = 0
         self.parameters = self.get_parameters(self.deparameterized_path)
 
-    @staticmethod
-    def get_parameters(path: str) -> List[str]:
+    def get_parameters(self, path: str) -> List[str]:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'({[\w]+\})')  # noqa: FS003
+        pattern = re.compile(r'({[\w]+})')  # noqa: FS003
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -251,7 +250,7 @@ class Route:
         """
         if self.counter == 0:
             self.counter += 1
-            return self.parameterized_path
+            return self.replace_i18n_parameter(self.parameterized_path)
         if self.counter > len(self.parameters):
             raise IndexError('No more parameters to insert')
 
@@ -262,7 +261,8 @@ class Route:
         path = f'{path[:starting_index]}{self.resolved_path.kwargs[parameter_name]}{path[starting_index + len(parameter):]}'
         self.parameterized_path = path
         self.counter += 1
-        return path
+
+        return self.replace_i18n_parameter(path)
 
     def reset(self) -> None:
         """
@@ -285,6 +285,36 @@ class Route:
                 return True
         self.reset()
         return False
+
+    @staticmethod
+    def replace_i18n_parameter(route: str):
+        """
+        If PARAMETERIZED_I18N_NAME is set in the package settings,
+        this function will replace a route with a parameter value.
+
+        In short, this route
+
+            /en/api/v1/items
+
+        Would become
+
+            /{language}/api/v1/items
+
+        If PARAMETERIZED_I18N_NAME == 'language'. If it was 'lang', the route
+        would become
+
+            /{lang}/api/v1/items
+        """
+        from django.utils import translation
+
+        from django_swagger_tester.configuration import settings
+
+        if settings.parameterized_i18n_name:
+            parameter = f'{{{settings.parameterized_i18n_name}}}'
+            language = translation.get_language()
+            route = route.replace(f'/{language}/', f'/{parameter}/')
+
+        return route
 
 
 def type_placeholder_value(_type: str) -> Any:
