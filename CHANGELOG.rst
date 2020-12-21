@@ -4,7 +4,14 @@
 Changelog
 *********
 
-2.1.2 2020-12-18
+2.2.0 2020-12-18
+----------------
+
+**New Features**
+
+* Added ``PARAMETERIZED_I18N_NAME`` package setting.
+
+2.1.3 2020-12-18
 ----------------
 
 **Improvements**
