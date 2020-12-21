@@ -250,7 +250,7 @@ class Route:
         """
         if self.counter == 0:
             self.counter += 1
-            return self.parameterized_path
+            return self.replace_i18n_parameter(self.parameterized_path)
         if self.counter > len(self.parameters):
             raise IndexError('No more parameters to insert')
 
