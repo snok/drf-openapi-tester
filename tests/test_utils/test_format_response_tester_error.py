@@ -1,7 +1,7 @@
 # flake8: noqa
 # fmt: off
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.utils import format_response_tester_error
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.utils import format_response_tester_error
 
 error = SwaggerDocumentationError(
     message='This is a message',

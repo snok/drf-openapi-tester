@@ -3,9 +3,9 @@ from copy import deepcopy
 import pytest
 from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.loaders import _LoaderBase
-from django_swagger_tester.schema_tester import SchemaTester
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.loaders import _LoaderBase
+from django_openapi_response_tester.schema_tester import SchemaTester
 
 schema = {
     'type': 'object',

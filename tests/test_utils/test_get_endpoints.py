@@ -2,8 +2,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_swagger_tester.loaders import _LoaderBase
-from django_swagger_tester.utils import get_endpoint_paths, resolve_path, unpack_response
+from django_openapi_response_tester.loaders import _LoaderBase
+from django_openapi_response_tester.utils import get_endpoint_paths, resolve_path, unpack_response
 
 
 def test_get_endpoint_paths():
@@ -23,5 +23,9 @@ def test_get_endpoint_paths():
         '/api/{version}/exempt-endpoint',
         '/en/api/{version}/i18n',
     ]
-    assert all(url in expected for url in urls)
+    for url in urls:
+        if url not in expected:
+            print(url)
+
+    assert all(url in expected for url in urls), f'{urls} not in {expected}'
     assert len(expected) == len(urls)

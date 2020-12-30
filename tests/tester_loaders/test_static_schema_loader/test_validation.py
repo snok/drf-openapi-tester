@@ -5,8 +5,8 @@ from django.test import override_settings
 import pytest
 from tests.utils import yml_path
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
-from django_swagger_tester.loaders import StaticSchemaLoader
+from django_openapi_response_tester.configuration import SwaggerTesterSettings
+from django_openapi_response_tester.loaders import StaticSchemaLoader
 
 
 def test_static_schema_loader_validation(monkeypatch):

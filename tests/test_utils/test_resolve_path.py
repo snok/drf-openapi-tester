@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.utils import resolve_path
+from django_openapi_response_tester.utils import resolve_path
 
 paths = [
     '/api/v1/cars/correct/',

@@ -11,13 +11,12 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
 from pathlib import Path
-
 from typing import List
 
+from django.utils.translation import get_language_from_path, gettext_lazy as _
 
-from django_swagger_tester.case_testers import is_camel_case
-from django_swagger_tester.loaders import DrfYasgSchemaLoader
-from django.utils.translation import gettext_lazy as _, get_language_from_path
+from django_openapi_response_tester.case_testers import is_camel_case
+from django_openapi_response_tester.loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
@@ -44,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'django_swagger_tester',
+    'django_openapi_response_tester',
 ]
 
 
@@ -57,7 +56,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_swagger_tester.middleware.ResponseValidationMiddleware',
 ]
 
 ROOT_URLCONF = 'demo.urls'
@@ -137,9 +135,9 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django_swagger_tester': {
+        'django_openapi_response_tester': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from django_swagger_tester
+            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from django_openapi_response_tester
         }
     },
 }
@@ -159,14 +157,14 @@ SWAGGER_TESTER = {
             'DEBUG': True,
             'VALIDATION_EXEMPT_URLS': [],
             'VALIDATION_EXEMPT_STATUS_CODES': [401],
-            'LOGGER_NAME': 'django_swagger_tester',
+            'LOGGER_NAME': 'django_openapi_response_tester',
         }
     },
     'VIEWS': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',
             'DEBUG': True,
-            'LOGGER_NAME': 'django_swagger_tester',
+            'LOGGER_NAME': 'django_openapi_response_tester',
         }
     },
 }

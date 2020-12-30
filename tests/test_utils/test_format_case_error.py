@@ -1,5 +1,5 @@
-from django_swagger_tester.exceptions import CaseError
-from django_swagger_tester.utils import format_response_tester_case_error
+from django_openapi_response_tester.exceptions import CaseError
+from django_openapi_response_tester.utils import format_response_tester_case_error
 
 case_error = CaseError(key='IP', case='camel case', origin='middleware')
 

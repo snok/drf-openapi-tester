@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "django-swagger-tester"
-version = "2.2.0"  # Remember to also change in django_swagger_tester/__init__.py version
+name = "django-openapi-response-tester"
+version = "3.0.0"  # Remember to also change in the  src/__init__.py
 description = "Django test utility for validating Swagger documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
 license = "BSD-4-Clause"
@@ -38,8 +38,10 @@ include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
-djangorestframework = "*"
 django = "^2.2 || ^3.0"
+
+# Optional dependencies
+djangorestframework = { version = "*", optional = true }
 
 [tool.poetry.dev-dependencies]
 pre-commit = "2.1.1"
@@ -70,7 +72,7 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-src_paths = ["django_swagger_tester"]
+src_paths = ["django_openapi_response_tester"]
 combine_as_imports = true
 line_length = 120
 sections = [

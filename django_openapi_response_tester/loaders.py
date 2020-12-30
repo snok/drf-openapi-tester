@@ -7,12 +7,12 @@ from typing import Any, Dict, Optional, Union
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
-from django_swagger_tester.openapi import list_types, read_properties
-from django_swagger_tester.utils import Route
+from django_openapi_response_tester.configuration import settings
+from django_openapi_response_tester.exceptions import UndocumentedSchemaSectionError
+from django_openapi_response_tester.openapi import list_types, read_properties
+from django_openapi_response_tester.utils import Route
 
-logger = logging.getLogger('django_swagger_tester')
+logger = logging.getLogger('django_openapi_response_tester')
 
 
 class _LoaderBase:
@@ -67,7 +67,7 @@ class _LoaderBase:
         This method was primarily implemented because drf-yasg has its own route style, and so this method
         lets loader classes overwrite and add custom route conversion logic if required.
         """
-        from django_swagger_tester.utils import resolve_path
+        from django_openapi_response_tester.utils import resolve_path
 
         return Route(*resolve_path(route))
 
@@ -80,7 +80,7 @@ class _LoaderBase:
         :param status_code: HTTP response code
         :return Response schema
         """
-        from django_swagger_tester.openapi import index_schema
+        from django_openapi_response_tester.openapi import index_schema
 
         self.validate_method(method)
         self.validate_string(route, 'route')
@@ -163,7 +163,7 @@ class _LoaderBase:
         :param route: Schema-compatible path
         :return: Request body schema
         """
-        from django_swagger_tester.openapi import index_schema
+        from django_openapi_response_tester.openapi import index_schema
 
         self.validate_method(method)
         self.validate_string(route, 'route')
@@ -335,8 +335,8 @@ class _LoaderBase:
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
     def _iterate_schema_dict(self, d: dict) -> dict:
-        from django_swagger_tester.openapi import read_type
-        from django_swagger_tester.utils import type_placeholder_value
+        from django_openapi_response_tester.openapi import read_type
+        from django_openapi_response_tester.utils import type_placeholder_value
 
         x = {}
         for key, value in read_properties(d).items():
@@ -353,8 +353,8 @@ class _LoaderBase:
 
     def _iterate_schema_list(self, l: dict) -> list:  # noqa: E741
 
-        from django_swagger_tester.openapi import read_items, read_type
-        from django_swagger_tester.utils import type_placeholder_value
+        from django_openapi_response_tester.openapi import read_items, read_type
+        from django_openapi_response_tester.utils import type_placeholder_value
 
         x = []
         i = read_items(l)
@@ -373,8 +373,8 @@ class _LoaderBase:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
-        from django_swagger_tester.openapi import read_type
-        from django_swagger_tester.utils import type_placeholder_value
+        from django_openapi_response_tester.openapi import read_type
+        from django_openapi_response_tester.utils import type_placeholder_value
 
         if 'example' in schema:
             return schema['example']
@@ -443,7 +443,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         and cutting them out of the generated openapi schema.
         For example, `/api/v1/example` might then just become `/example`
         """
-        from django_swagger_tester.utils import get_endpoint_paths
+        from django_openapi_response_tester.utils import get_endpoint_paths
 
         return self.schema_generator.determine_path_prefix(get_endpoint_paths())
 
@@ -453,7 +453,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
         :param route: Django resolved route
         """
-        from django_swagger_tester.utils import resolve_path
+        from django_openapi_response_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
@@ -515,7 +515,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
 
         :param route: Django resolved route
         """
-        from django_swagger_tester.utils import resolve_path
+        from django_openapi_response_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'

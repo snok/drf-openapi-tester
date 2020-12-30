@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.utils import type_placeholder_value
+from django_openapi_response_tester.utils import type_placeholder_value
 
 
 def test_type_placeholder_value():

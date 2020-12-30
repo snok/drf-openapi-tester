@@ -4,8 +4,8 @@ import pytest
 from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
 from tests.test_testers.test_validate_response.test_static import yml_path
 
-from django_swagger_tester.loaders import StaticSchemaLoader
-from django_swagger_tester.testing import OpenAPITestCase
+from django_openapi_response_tester.loaders import StaticSchemaLoader
+from django_openapi_response_tester.testing import OpenAPITestCase
 
 
 def test_django_test_case(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001

@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_swagger_tester.loaders import _LoaderBase
+from django_openapi_response_tester.loaders import _LoaderBase
 
 simple_ref_schema = {
     'paths': {

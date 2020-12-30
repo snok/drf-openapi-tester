@@ -5,8 +5,8 @@ from django.core.exceptions import ImproperlyConfigured
 import pytest
 from tests.utils import patch_settings
 
-from django_swagger_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
-from django_swagger_tester.configuration import SwaggerTesterSettings
+from django_openapi_response_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
+from django_openapi_response_tester.configuration import SwaggerTesterSettings
 
 
 def test_valid_cases(monkeypatch) -> None:  # noqa: TYP001
@@ -43,7 +43,7 @@ def test_invalid_cases(monkeypatch) -> None:
             ImproperlyConfigured,
             match=(
                 'The django-swagger-tester CASE_TESTER setting is misspecified. '
-                'Please pass a case tester callable from django_swagger_tester.case_testers, '
+                'Please pass a case tester callable from django_openapi_response_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             ),
         ):

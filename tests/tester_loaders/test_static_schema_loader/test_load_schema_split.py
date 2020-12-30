@@ -1,6 +1,6 @@
 from tests.utils import yml_split_path
 
-from django_swagger_tester.loaders import StaticSchemaLoader
+from django_openapi_response_tester.loaders import StaticSchemaLoader
 
 
 def test_successful_parse_reference(monkeypatch) -> None:

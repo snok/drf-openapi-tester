@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.utils import unpack_response
+from django_openapi_response_tester.utils import unpack_response
 
 
 def test_successful_unpack():

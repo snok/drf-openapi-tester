@@ -1,4 +1,4 @@
-from django_swagger_tester.loaders import DrfSpectacularSchemaLoader
+from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
 
 
 def test_successful_parse_documented_endpoints(monkeypatch) -> None:

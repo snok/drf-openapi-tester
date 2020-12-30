@@ -3,11 +3,11 @@ from typing import Any, Callable, List, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
-from django_swagger_tester.utils import camelize, type_placeholder_value
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
+from django_openapi_response_tester.utils import camelize, type_placeholder_value
 
-logger = logging.getLogger('django_swagger_tester')
+logger = logging.getLogger('django_openapi_response_tester')
 
 
 class SchemaTester:
@@ -17,9 +17,9 @@ class SchemaTester:
 
         :param schema: Response/request OpenAPI schema section
         :param data: API response/request data
-        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
+        :raises: django_openapi_response_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
         """
-        from django_swagger_tester.configuration import settings
+        from django_openapi_response_tester.configuration import settings
 
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
@@ -52,7 +52,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response/request data
         :param reference: string reference pointing to function caller
-        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+        :raises: django_openapi_response_tester.exceptions.SwaggerDocumentationError
         """
         if not isinstance(data, dict):
             request_hint, response_hint = '', ''
@@ -89,7 +89,8 @@ class SchemaTester:
         if len(schema_keys) != len(response_keys):
             logger.debug('The number of schema elements do not match the number of data elements')
             if len(set(response_keys)) > len(set(schema_keys)):
-                missing_keys = ', '.join([f'`{key}`' for key in list(set(response_keys) - set(schema_keys))])
+                missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_keys)))
+
                 raise SwaggerDocumentationError(
                     message=f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
                     response=data,
@@ -99,7 +100,8 @@ class SchemaTester:
                     request_hint='Remove the excess key(s) from your request body.',
                 )
             else:
-                missing_keys = ', '.join([f'{key}' for key in list(set(schema_keys) - set(response_keys))])
+                missing_keys = ', '.join(f'{key}' for key in list(set(schema_keys) - set(response_keys)))
+
                 raise SwaggerDocumentationError(
                     message=f'The following properties seem to be missing from your {self.origin} body: {missing_keys}.',
                     response=data,
@@ -162,7 +164,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response data
         :param reference: string reference pointing to function caller
-        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+        :raises: django_openapi_response_tester.exceptions.SwaggerDocumentationError
         """
         if not isinstance(data, list):
             request_hint, response_hint = '', ''
@@ -221,7 +223,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: response data item
         :param reference: string reference pointing to function caller
-        :raises: django_swagger_tester.exceptions.SwaggerDocumentationError
+        :raises: django_openapi_response_tester.exceptions.SwaggerDocumentationError
         """
         checks = {
             'boolean': {

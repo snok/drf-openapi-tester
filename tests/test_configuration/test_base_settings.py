@@ -4,7 +4,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_swagger_tester.configuration import SwaggerTesterSettings
+from django_openapi_response_tester.configuration import SwaggerTesterSettings
 
 
 def test_valid_settings() -> None:

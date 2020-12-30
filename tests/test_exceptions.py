@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
 
 
 def test_specification_error():

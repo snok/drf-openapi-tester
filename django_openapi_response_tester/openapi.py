@@ -1,9 +1,9 @@
 import logging
 from typing import List, Optional
 
-from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from django_openapi_response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 
-logger = logging.getLogger('django_swagger_tester')
+logger = logging.getLogger('django_openapi_response_tester')
 
 
 def read_items(array: dict) -> dict:
@@ -15,7 +15,7 @@ def read_items(array: dict) -> dict:
 
     :param array: schema array
     :return: array items
-    :raises: django_swagger_tester.exceptions.OpenAPISchemaError
+    :raises: django_openapi_response_tester.exceptions.OpenAPISchemaError
     """
     if 'items' not in array:
         raise OpenAPISchemaError(f'Array is missing an `items` attribute.\n\nArray schema: {array}')
@@ -41,7 +41,7 @@ def read_type(item: dict) -> str:
 
     :param item: schema item
     :return: schema item type
-    :raises: django_swagger_tester.exceptions.OpenAPISchemaError
+    :raises: django_openapi_response_tester.exceptions.OpenAPISchemaError
     """
     if (
         item is None
@@ -67,7 +67,7 @@ def read_additional_properties(schema_object: dict) -> dict:
 
     :param schema_object: schema object (dict)
     :return: schema object additional properties
-    :raises: django_swagger_tester.exceptions.OpenAPISchemaError
+    :raises: django_openapi_response_tester.exceptions.OpenAPISchemaError
     """
     if 'additionalProperties' not in schema_object:
         raise OpenAPISchemaError(
@@ -82,7 +82,7 @@ def read_properties(schema_object: dict) -> dict:
 
     :param schema_object: schema object (dict)
     :return: schema object properties
-    :raises: django_swagger_tester.exceptions.OpenAPISchemaError
+    :raises: django_openapi_response_tester.exceptions.OpenAPISchemaError
     """
     if 'properties' not in schema_object:
         if 'additionalProperties' in schema_object:

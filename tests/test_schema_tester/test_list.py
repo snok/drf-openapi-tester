@@ -12,8 +12,8 @@ from tests.types import (
     string_type,
 )
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.schema_tester import SchemaTester
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.schema_tester import SchemaTester
 
 tester = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
 

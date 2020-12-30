@@ -1,4 +1,4 @@
-.. _testing_with_django_swagger_tester:
+.. _testing_with_django_openapi_response_tester:
 
 **********************************
 Implementing Django Swagger Tester
@@ -39,7 +39,7 @@ Examples
 
 .. code:: python
 
-    from django_swagger_tester.testing import validate_response
+    from django_openapi_response_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
@@ -54,7 +54,7 @@ Examples
 
 .. code-block:: python
 
-    from django_swagger_tester.testing import validate_response
+    from django_openapi_response_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
 
@@ -84,7 +84,7 @@ When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    django_swagger_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+    django_openapi_response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------
@@ -229,7 +229,7 @@ Simply add the middleware to your settings.py
 
     MIDDLEWARE = [
         ...
-        'django_swagger_tester.middleware.ResponseValidationMiddleware',
+        'django_openapi_response_tester.middleware.ResponseValidationMiddleware',
     ]
 
 
@@ -279,7 +279,7 @@ An example view could look like this:
 
     from rest_framework.status import HTTP_200_OK
 
-    from django_swagger_tester.views import ResponseValidationView
+    from django_openapi_response_tester.views import ResponseValidationView
 
 
     class Animals(ResponseValidationView):  # <-- add the view class here here
@@ -294,119 +294,6 @@ An example view could look like this:
                 'bird': 'mixed reviews',
             }
             return Response(animals, HTTP_200_OK)
-
-
-
-Input Validation
-================
-
-As with your response documentation, it can be useful to test your
-request body documentation to ensure it is, and remains, accurate.
-
-To use the ``validate_input_serializer`` tester, you must be using Django Rest Framework's ``Serializer`` for input validation.
-
-Example
--------
-
-.. code-block:: python
-
-    from myapp.api.serializers import MySerializer
-    from django_swagger_tester.testing import validate_input_serializer
-
-
-    def test_request_body_documentation(client):
-        """
-        Verifies that our request body documentation is representative of a valid request body.
-        """
-        validate_input_serializer(serializer=MySerializer, method='POST', route='api/v1/test/', camel_case_parser=True)
-
-.. Note::
-
-    The ``camel_case_parser`` argument can be set to ``True`` if your DRF API uses
-    `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-    ``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer``. The ``camel_case_parser`` keyword argument defaults to False, unless you've set ```CAMEL_CASE_PARSER`` to True in the package setting.
-
-validate_input_serializer
--------------------------
-
-The ``validate_input_serializer`` function takes three required inputs:
-
-* serializer
-    **description**: The Serializer object used for validating API inputs.
-
-    **type**: rest_framework.serializer.Serializer
-
-* method
-    **description**: The HTTP method used to get the response.
-
-    **type**: string
-
-    **example**: ``method='GET'``
-
-* route
-    **description**: The resolvable path of your API.
-
-    **type**: string
-
-    **example**: ``route='api/v1/test'``
-
-
-In addition, the function also takes one optional input:
-
-* camel_case_parser
-    **description**: Whether or not to convert a camel-cased example to snake case before passing it to your serializer.
-
-    **type**: boolean
-
-    **example**: ``camel_case_parser=True``
-
-.. Note::
-
-    The ``CAMEL_CASE_PARSER`` project setting lets you specify a project-wide default for the ``camel_case_parser`` argument.
-
-    See `configuration <configuration.html#camel-case-parser>`_ for more info.
-
-
-Suggested Use
--------------
-
-If you have a file for tests related to each view, input validation tests can be added to each file individually, like we would reccomend you do with response validation tests.
-However, input validation tests are also well suited to live separately from your API view tests, because they do not require a database or a request client.
-
-This allows you to put all your input tests into one file. This enables you to very simply test a whole suite of endpoints with very little code::
-
-    from django.test import SimpleTestCase
-    from django_swagger_tester.testing import validate_input_serializer
-
-    from api.serializers.validation.request_bodies import ValidateDeleteOrderBody, ...
-
-
-    class TestSwaggerInput(SimpleTestCase):
-        endpoints = [
-            {
-                'api/v1/orders/': [
-                    ('POST', ValidatePostOrderBody),
-                    ('PUT', ValidatePutOrderBody),
-                    ('DELETE', ValidateDeleteOrderBody)
-                ]
-            },
-            {
-                'api/v1/orders/<id>/entries/': [
-                    ('POST', ValidatePostEntryBody),
-                    ('PUT', ValidatePutEntryBody),
-                    ('DELETE', ValidateEntryDeleteBody)
-                ]
-            },
-        ]
-
-        def test_swagger_input(self) -> None:
-            """
-            Verifies that the documented request bodies are valid.
-            """
-            for endpoint in self.endpoints:
-                for route, values in endpoint.items():
-                    for method, serializer in values:
-                        validate_input_serializer(serializer=serializer, method=method, route=route)
 
 
 Case checking

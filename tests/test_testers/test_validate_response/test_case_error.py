@@ -1,7 +1,7 @@
 import pytest
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.testing import validate_response
+from django_openapi_response_tester.exceptions import SwaggerDocumentationError
+from django_openapi_response_tester.testing import validate_response
 
 
 def test_endpoints_bad_case(client, transactional_db) -> None:  # noqa: TYP001

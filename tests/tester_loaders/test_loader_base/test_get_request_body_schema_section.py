@@ -3,8 +3,8 @@ from copy import deepcopy
 import pytest
 from tests.utils import MockRoute
 
-from django_swagger_tester.exceptions import UndocumentedSchemaSectionError
-from django_swagger_tester.loaders import _LoaderBase
+from django_openapi_response_tester.exceptions import UndocumentedSchemaSectionError
+from django_openapi_response_tester.loaders import _LoaderBase
 
 request_body = {
     'required': ['testParameter'],
