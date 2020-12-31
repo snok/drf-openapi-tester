@@ -109,7 +109,7 @@ class _LoaderBase:
         if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
             route_error += (
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
-                f'to your VALIDATION_EXEMPT_URLS setting list in your SWAGGER_TESTER.MIDDLEWARE settings.'
+                f'to your VALIDATION_EXEMPT_URLS setting list in your OPENAPI_RESPONSE_TESTER.MIDDLEWARE settings.'
             )
 
         error = None
@@ -554,11 +554,11 @@ class StaticSchemaLoader(_LoaderBase):
         ):
             logger.error('PATH setting is not specified')
             raise ImproperlyConfigured(
-                'PATH is required to load static OpenAPI schemas. Please add PATH to the SWAGGER_TESTER settings.'
+                'PATH is required to load static OpenAPI schemas. Please add PATH to the OPENAPI_RESPONSE_TESTER settings.'
             )
         elif not isinstance(kwargs['package_settings']['PATH'], str):
             logger.error('PATH setting is not a string')
-            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your SWAGGER_TESTER settings.')
+            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_RESPONSE_TESTER settings.')
         if '.yml' in kwargs['package_settings']['PATH'] or '.yaml' in kwargs['package_settings']['PATH']:
             try:
                 import yaml  # noqa: F401

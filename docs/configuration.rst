@@ -7,35 +7,28 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, you first need to add ``django_openapi_response_tester`` to your installed apps.
-
-.. code:: python
-
-    INSTALLED_APPS = [
-        ...
-        'django_openapi_response_tester',
-    ]
-
-Second, you need to configure the ``SWAGGER_TESTER`` package settings in your ``settings.py``. At minimum you need to specify which schema loader class to use to load your OpenAPI schema when testing it:
+To use the test-utility in your project, you need to configure the
+``OPENAPI_RESPONSE_TESTER`` package settings in your ``settings.py``.
+At minimum you need to specify which schema loader class to use to load your
+OpenAPI schema when testing it:
 
 .. code:: python
 
     from django_openapi_response_tester.loaders import StaticSchemaLoader
     from django_openapi_response_tester.case_testers import is_camel_case
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
     }
 
-A complete example of the ``SWAGGER_TESTER`` settings might look like this:
+A complete example of the ``OPENAPI_RESPONSE_TESTER`` settings might look like this:
 
 .. code:: python
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         'SCHEMA_LOADER': StaticSchemaLoader,
         'PATH': 'demo/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
-        'CAMEL_CASE_PARSER': True,
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }
 
@@ -51,7 +44,8 @@ Parameters
 SCHEMA_LOADER
 ~~~~~~~~~~~~~
 
-The loader class you use is dictated by how your OpenAPI schema is generated. If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
+The loader class you use is dictated by how your OpenAPI schema is generated.
+If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
 
 Loader classes can be imported from ``django_openapi_response_tester.loaders`` and currently include:
 
@@ -67,7 +61,7 @@ The loader class is responsible for all logic related to loading and interacting
 
     from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         ...
     }
@@ -75,21 +69,23 @@ The loader class is responsible for all logic related to loading and interacting
 PATH
 ~~~~
 
-The path parameter is only required if you're using the ``StaticSchemaLoader`` loader class, and just lets the loader class know where your schema is located in your project.
+The path parameter is only required if you're using the ``StaticSchemaLoader``
+loader class, and just lets the loader class know where your schema is located in your project.
 
 *Example*:
 
 .. code:: python
 
-  SWAGGER_TESTER = {
+  OPENAPI_RESPONSE_TESTER = {
       'PATH': BASE_DIR / '/openapi-schema.yml',
   }
 
 CASE_TESTER
 ~~~~~~~~~~~
 
-The case tester function lets you add case-checking as an extra dimension to your response validation. The idea is that
-most APIs should have a standard.
+The case tester function lets you add case-checking as an extra dimension to
+your response validation. The idea is if you've decided your APIs should be
+*camelCased*, this provides a way to enforce that standard.
 
 The callable passed for this input decides the naming standard you wish to enforce for your documentation.
 
@@ -99,7 +95,7 @@ There are currently four supported options:
 -  ``snake case``
 -  ``pascal case``
 -  ``kebab case``
-- or you can not pass anything to skip this feature
+- or you can pass nothing to skip this feature
 
 *Example*:
 
@@ -107,7 +103,7 @@ There are currently four supported options:
 
     from django_openapi_response_tester.case_testers import is_camel_case
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         ...
         'CASE_TESTER': is_camel_case,
     }
@@ -117,9 +113,13 @@ There are currently four supported options:
 CASE_PASSLIST
 ~~~~~~~~~~~~~
 
-This setting is only required if you've set a case tester.
+This setting is only useful if you've set a case tester.
 
-The case passlist can hold a list of strings which you do *not* wish to check for case-inconsistencies. Say you've decided that all your responses should be camel cased, but you've already made ``IP`` a capitalized response key; you can the add the key to your ``CASE_PASSLIST`` to avoid this being flagged as an error in your tests.
+The case passlist can hold a list of strings which you do *not* wish to check
+for case-inconsistencies. Say you've decided that all your responses should be
+camel cased, but you've already made ``IP`` a capitalized response key and don't
+want to change it, you can the add the key to your ``CASE_PASSLIST`` to avoid
+this being flagged as an error in your tests.
 
 *Example*:
 
@@ -127,7 +127,7 @@ The case passlist can hold a list of strings which you do *not* wish to check fo
 
     from django_openapi_response_tester.case_testers import is_camel_case
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         ...
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }
@@ -137,15 +137,20 @@ The case passlist can hold a list of strings which you do *not* wish to check fo
 CAMEL_CASE_PARSER
 ~~~~~~~~~~~~~~~~~
 
-Should be set to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views. Otherwise, set it to False or leave it out of your settings.
+Set this to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
+``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
+Otherwise, set it to False or leave it out of your settings.
 
 *Example*:
 
 .. code:: python
 
-  SWAGGER_TESTER = {
+  OPENAPI_RESPONSE_TESTER = {
       'CAMEL_CASE_PARSER': True,
   }
+
+If you're not using one of these parsers for all your API views, but for
+just a few, you can pass ``camel_case_parser=True`` as a kwarg to your individual
+``validate_response`` call.
 
 **Default**: ``False``

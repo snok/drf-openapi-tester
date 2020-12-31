@@ -6,7 +6,7 @@ i18n
 
 If you're maintaining a static schema file, with internationalized routes,
 and you would like to document them by substituting the i18n component
-with a general parameter, this is supported. Simply set the ``PARAMETERIZED_I18N_NAME`` setting in you ``SWAGGER_TESTER``
+with a general parameter, this is supported. Simply set the ``PARAMETERIZED_I18N_NAME`` setting in you ``OPENAPI_RESPONSE_TESTER``
 settings.
 
 When the ``PARAMETERIZED_I18N_NAME`` is set as any string other than a blank string, we will replace

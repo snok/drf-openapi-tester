@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'django-swagger-tester'
+project = 'django-openapi-response-tester'
 copyright = '2020, Sondre Lillebø Gundersen'
 author = 'Sondre Lillebø Gundersen'
 

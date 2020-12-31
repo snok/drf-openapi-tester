@@ -16,23 +16,23 @@ logger = logging.getLogger('django_openapi_response_tester')
 class SwaggerTesterSettings:
     @property
     def schema_loader(self):
-        return django_settings.SWAGGER_TESTER.get('SCHEMA_LOADER', None)
+        return django_settings.OPENAPI_RESPONSE_TESTER.get('SCHEMA_LOADER', None)
 
     @property
     def case_tester(self) -> Callable:
-        return django_settings.SWAGGER_TESTER.get('CASE_TESTER', lambda *args: None)
+        return django_settings.OPENAPI_RESPONSE_TESTER.get('CASE_TESTER', lambda *args: None)
 
     @property
     def camel_case_parser(self) -> bool:
-        return django_settings.SWAGGER_TESTER.get('CAMEL_CASE_PARSER', False)
+        return django_settings.OPENAPI_RESPONSE_TESTER.get('CAMEL_CASE_PARSER', False)
 
     @property
     def case_passlist(self) -> List[str]:
-        return django_settings.SWAGGER_TESTER.get('CASE_PASSLIST', [])
+        return django_settings.OPENAPI_RESPONSE_TESTER.get('CASE_PASSLIST', [])
 
     @property
     def parameterized_i18n_name(self):
-        return django_settings.SWAGGER_TESTER.get('PARAMETERIZED_I18N_NAME', '')
+        return django_settings.OPENAPI_RESPONSE_TESTER.get('PARAMETERIZED_I18N_NAME', '')
 
     @property
     def loader_class(self) -> 'LoaderClass':
@@ -43,8 +43,8 @@ class SwaggerTesterSettings:
     def validate(self):
         from django.conf import settings as django_settings
 
-        if not hasattr(django_settings, 'SWAGGER_TESTER') or not django_settings.SWAGGER_TESTER:
-            raise ImproperlyConfigured('SWAGGER_TESTER settings need to be configured')
+        if not hasattr(django_settings, 'OPENAPI_RESPONSE_TESTER') or not django_settings.OPENAPI_RESPONSE_TESTER:
+            raise ImproperlyConfigured('OPENAPI_RESPONSE_TESTER settings need to be configured')
 
         self.validate_case_tester_setting()
         self.validate_camel_case_parser_setting()
@@ -63,13 +63,13 @@ class SwaggerTesterSettings:
         if self.case_tester is not None and not isinstance(self.case_tester, FunctionType):
             logger.error('CASE_TESTER setting is misspecified.')
             raise ImproperlyConfigured(
-                'The django-swagger-tester CASE_TESTER setting is misspecified. '
+                'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from django_openapi_response_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
         elif self.case_tester is None:
             raise ImproperlyConfigured(
-                'The django-swagger-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
+                'The django-openapi-response-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
             )
 
     def validate_camel_case_parser_setting(self) -> None:
@@ -106,7 +106,7 @@ class SwaggerTesterSettings:
         addon = '. Please pass a loader class from django_openapi_response_tester.schema_loaders.'
         if self.schema_loader is None:
             raise ImproperlyConfigured(
-                'SCHEMA_LOADER is missing from your SWAGGER_TESTER settings, and is required' + addon
+                'SCHEMA_LOADER is missing from your OPENAPI_RESPONSE_TESTER settings, and is required' + addon
             )
 
         if not inspect.isclass(self.schema_loader):
@@ -122,7 +122,7 @@ class SwaggerTesterSettings:
         # here we run custom validation for each loader class
         # for example, the drf-yasg loader class requires drf-yasg as an installed dependency
         # that is checked at the class level
-        self._loader_class.validation(package_settings=django_settings.SWAGGER_TESTER)
+        self._loader_class.validation(package_settings=django_settings.OPENAPI_RESPONSE_TESTER)
 
     def validate_case_passlist(self) -> None:
         """

@@ -14,7 +14,7 @@ def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """
-    with override_settings(SWAGGER_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader}):
+    with override_settings(OPENAPI_RESPONSE_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader}):
         settings = SwaggerTesterSettings()
         monkeypatch.setattr('django_openapi_response_tester.testing.settings', settings)
         for item in GOOD_TEST_DATA:
@@ -30,7 +30,7 @@ def test_i18n_endpoint(client, monkeypatch, transactional_db) -> None:
     Asserts that the validate_response function validates correct schemas successfully.
     """
     with override_settings(
-        SWAGGER_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader, 'PARAMETERIZED_I18N_NAME': 'language'}
+        OPENAPI_RESPONSE_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader, 'PARAMETERIZED_I18N_NAME': 'language'}
     ):
         settings = SwaggerTesterSettings()
         monkeypatch.setattr('django_openapi_response_tester.testing.settings', settings)

@@ -1,29 +1,29 @@
-Django Swagger Tester
+Django OpenAPI Response Tester
 =====================
 
 .. role:: python(code)
    :language: python
 
-.. image:: https://img.shields.io/pypi/v/django-swagger-tester.svg
-    :target: https://pypi.org/project/django-swagger-tester/
+.. image:: https://img.shields.io/pypi/v/django-openapi-response-tester.svg
+    :target: https://pypi.org/project/django-openapi-response-tester/
 
-.. image:: https://img.shields.io/pypi/pyversions/django-swagger-tester.svg
-    :target: https://pypi.org/project/django-swagger-tester/
+.. image:: https://img.shields.io/pypi/pyversions/django-openapi-response-tester.svg
+    :target: https://pypi.org/project/django-openapi-response-tester/
 
-.. image:: https://img.shields.io/pypi/djversions/django-swagger-tester.svg
-    :target: https://pypi.python.org/pypi/django-swagger-tester
+.. image:: https://img.shields.io/pypi/djversions/django-openapi-response-tester.svg
+    :target: https://pypi.python.org/pypi/django-openapi-response-tester
 
-.. image:: https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest
-    :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/django-openapi-response-tester/badge/?version=latest
+    :target: https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/snok/django-swagger-tester
+.. image:: https://codecov.io/gh/snok/django-openapi-response-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/snok/django-openapi-response-tester
 
 |
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://pypi.org/project/django-swagger-tester/
+    :target: https://pypi.org/project/django-openapi-response-tester/
 
 .. image:: http://www.mypy-lang.org/static/mypy_badge.svg
     :target: http://mypy-lang.org/
@@ -34,16 +34,16 @@ Django Swagger Tester
 
 --------------
 
-**Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-openapi-response-tester.readthedocs.io <https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/snok/django-swagger-tester <https://github.com/snok/django-swagger-tester>`_
+**Repository**: `https://github.com/snok/django-openapi-response-tester <https://github.com/snok/django-openapi-response-tester>`_
 
 --------------
 
-Django Swagger Tester
+Django OpenAPI Response Tester
 =====================
 
-Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
+Django OpenAPI Response Tester is a simple test utility for validating your Django Swagger documentation.
 
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
 
@@ -76,7 +76,7 @@ Install using pip:
 
 .. code:: python
 
-   pip install django-swagger-tester
+   pip install django-openapi-response-tester
 
 Configuration
 =============
@@ -93,14 +93,14 @@ To use Django Swagger Settings in your project, you first need to add a ``django
         'django_openapi_response_tester',
     ]
 
-Secondly, you need to configure the ``SWAGGER_TESTER`` package settings in your ``settings.py``:
+Secondly, you need to configure the ``OPENAPI_RESPONSE_TESTER`` package settings in your ``settings.py``:
 
 .. code:: python
 
     from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
     from django_openapi_response_tester.case_testers import is_camel_case
 
-    SWAGGER_TESTER = {
+    OPENAPI_RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
         'CAMEL_CASE_PARSER': True,
@@ -303,14 +303,14 @@ A Django test implementation of input validation for a whole project could be st
                     for method, serializer in values:
                         validate_input_serializer(serializer=serializer, method=method, route=route)
 
-.. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
-.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _`https://django-openapi-response-tester.readthedocs.io/`: https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest
+.. _Testing response documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing request body documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
-.. _documentation: https://django-swagger-tester.readthedocs.io/
-.. _docs: https://django-swagger-tester.readthedocs.io/
+.. _documentation: https://django-openapi-response-tester.readthedocs.io/
+.. _docs: https://django-openapi-response-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
-.. _parameter docs: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _parameter docs: https://django-openapi-response-tester.readthedocs.io/en/latest/configuration.html#parameters

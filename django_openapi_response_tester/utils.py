@@ -21,7 +21,7 @@ def format_response_tester_case_error(exception: CaseError) -> str:
     return (
         f'The response key `{exception.key}` is not properly {exception.case}\n\n'
         f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{exception.key}\']` to the '
-        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the SWAGGER_TESTER settings'
+        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_RESPONSE_TESTER settings'
     )
 
 

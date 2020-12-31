@@ -16,20 +16,20 @@ def test_valid_settings() -> None:
 
 def test_empty_settings(monkeypatch) -> None:
     """
-    Asserts that no error is raised when empty SWAGGER_TESTER dict is specified.
+    Asserts that no error is raised when empty OPENAPI_RESPONSE_TESTER dict is specified.
     """
-    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {})
-    with pytest.raises(ImproperlyConfigured, match='SWAGGER_TESTER settings need to be configured'):
+    monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', {})
+    with pytest.raises(ImproperlyConfigured, match='OPENAPI_RESPONSE_TESTER settings need to be configured'):
         SwaggerTesterSettings().validate()
 
 
 def test_missing_settings(monkeypatch) -> None:
     """
-    Asserts that no error is raised when no SWAGGER_TESTER dict is specified.
+    Asserts that no error is raised when no OPENAPI_RESPONSE_TESTER dict is specified.
     """
-    monkeypatch.delattr(django_settings, 'SWAGGER_TESTER')
+    monkeypatch.delattr(django_settings, 'OPENAPI_RESPONSE_TESTER')
     with pytest.raises(
         ImproperlyConfigured,
-        match='SWAGGER_TESTER settings need to be configured',
+        match='OPENAPI_RESPONSE_TESTER settings need to be configured',
     ):
         SwaggerTesterSettings().validate()

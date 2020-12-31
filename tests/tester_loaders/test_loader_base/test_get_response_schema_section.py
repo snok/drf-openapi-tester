@@ -115,7 +115,7 @@ def test_failed_index_route_with_helper_text_and_middleware_warning(monkeypatch)
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match=r'To skip validation for this route you can add `\^test-endpoint\$` to your VALIDATION_EXEMPT_URLS setting '
-        'list in your SWAGGER_TESTER.MIDDLEWARE settings.',
+        'list in your OPENAPI_RESPONSE_TESTER.MIDDLEWARE settings.',
     ):
         base.get_response_schema_section(
             route='test-endpoint', method='get', status_code=200, skip_validation_warning=True

@@ -9,5 +9,5 @@ def test_format_response_tester_case_error():
         format_response_tester_case_error(case_error)
         == '''The response key `IP` is not properly camel case
 
-If this is intentional, you can skip case validation by adding `ignore_case=['IP']` to the `validate_response` function call, or by adding the key to the CASE_PASSLIST in the SWAGGER_TESTER settings'''
+If this is intentional, you can skip case validation by adding `ignore_case=['IP']` to the `validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_RESPONSE_TESTER settings'''
     )

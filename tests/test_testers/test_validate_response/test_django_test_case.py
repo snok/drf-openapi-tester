@@ -12,7 +12,7 @@ def test_django_test_case(client, monkeypatch, transactional_db) -> None:  # noq
     """
     Asserts that the assertResponse method of the test case validates correct schemas successfully.
     """
-    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
+    monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
     test_case = OpenAPITestCase()
     for item in GOOD_TEST_DATA:
         route = f"/api/v1{item['url']}"

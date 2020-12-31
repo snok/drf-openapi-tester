@@ -144,7 +144,7 @@ LOGGING = {
 
 # fmt: off
 
-SWAGGER_TESTER = {
+OPENAPI_RESPONSE_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
