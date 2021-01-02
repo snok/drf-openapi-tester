@@ -1,4 +1,4 @@
-from tests.utils import yml_split_path
+from tests import yml_split_path
 
 from response_tester.loaders import StaticSchemaLoader
 

@@ -14,7 +14,7 @@ from response_tester.loaders import _LoaderBase
 
 def loader(path):
     with open(str(settings.BASE_DIR.parent) + path) as f:
-        return _settings.loader_class.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return yaml.load(f, Loader=yaml.FullLoader)
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')

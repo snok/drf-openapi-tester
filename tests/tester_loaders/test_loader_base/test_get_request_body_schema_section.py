@@ -157,7 +157,7 @@ def test_get_request_body_example(monkeypatch):
     base.set_schema(simple_request_body_schema)
     assert base.get_request_body_example(route='test-endpoint', method='post') == {'testParameter': 'test'}
 
-    schema_without_example = deepcopy(simple_request_body_schema)
+    schema_without_example = base.dereference_schema(deepcopy(simple_request_body_schema))
     del schema_without_example['paths']['test-endpoint']['post']['parameters'][0]['schema']['example']
     base.set_schema(schema_without_example)
     assert base.get_request_body_example(route='test-endpoint', method='post') == {'testParameter': 'string'}

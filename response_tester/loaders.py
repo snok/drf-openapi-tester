@@ -2,17 +2,53 @@ import json
 import logging
 import os
 from json import dumps, loads
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
+from prance.util.url import ResolutionError
 
-from response_tester.configuration import settings
-from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.openapi import list_types, read_properties
-from response_tester.utils import Route
+from django_swagger_tester.configuration import settings
+from django_swagger_tester.exceptions import UndocumentedSchemaSectionError, OpenAPISchemaError
+from django_swagger_tester.openapi import list_types, read_properties
+from django_swagger_tester.utils import Route
+
+from prance.util.resolver import RefResolver
 
 logger = logging.getLogger('response_tester')
+
+
+def remove_recusive_ref(schema: dict, fragment: str) -> dict:
+    """
+    Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
+    """
+
+    for key, value in schema.items():
+        if isinstance(value, dict):
+            if "$ref" in value.keys() and fragment in value["$ref"]:
+                # TODO: use this value in the testing - to ignore some parts of the specs
+                schema[key] = { "x-recursive-ref-replaced": True }
+            else:
+                schema[key] = remove_recusive_ref(schema[key], fragment)
+    return schema
+
+
+def handle_recursion_limit(schema: dict):
+    """ we are using a currying pattern to pass schema into the scope of the handler """
+
+    def handler(iteration: int, parse_result: dict, recursions: tuple):
+        """ return an empty object when encountering recursion """
+        try:
+            fragment = parse_result.fragment
+            keys = [key for key in fragment.split("/") if key]
+            definition = schema
+            for key in keys:
+                definition = definition[key]
+            return remove_recusive_ref(definition, fragment)
+        except KeyError as e:
+            return {}
+
+    return handler
 
 
 class _LoaderBase:
@@ -23,11 +59,11 @@ class _LoaderBase:
     with an OpenAPI schema.
     """
 
+    base_path = "/"
+
     def __init__(self) -> None:
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
-
-    # < methods to be overwritten >
 
     def validation(self, *args, **kwargs) -> None:
         """
@@ -53,12 +89,26 @@ class _LoaderBase:
             self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
+    def dereference_schema(self, schema: dict) -> dict:
+        try:
+            url = schema["basePath"] if "basePath" in schema else self.base_path
+            resolver = RefResolver(
+                schema,
+                recursion_limit_handler=handle_recursion_limit(schema),
+                url=url,
+            )
+            resolver.resolve_references()
+            return resolver.specs
+        except ResolutionError as e:
+            raise OpenAPISchemaError("infinite recursion error") from e
+
     def set_schema(self, schema: dict) -> None:
         """
         Sets self.schema and self.original_schema.
         """
-        self.schema = self.replace_refs(schema, loader=self)
+
         self.original_schema = schema
+        self.schema = self.dereference_schema(schema)
 
     def get_route(self, route: str) -> Route:
         """
@@ -251,79 +301,6 @@ class _LoaderBase:
         if not 100 <= status_code <= 505:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
-    @staticmethod
-    def replace_refs(schema: dict, loader=None) -> dict:
-        """
-        Finds all schema references ($ref sections) in an OpenAPI schema and inserts them back into in place of the refs.
-        This way we don't have to handle reference section when interacting with a loaded schema.
-
-        * This does add a performance overhead to interacting with a schema, so changing this in the future would be fine *
-
-        :param schema: OpenAPI schema
-        :param loader: Current loader
-        :return Adjusted OpenAPI schema
-        """
-        if '$ref' not in str(schema):
-            return schema
-
-        schemas_cache: Dict[str, dict] = {}
-
-        def find_and_replace_refs_recursively(d: dict, s: dict) -> dict:
-            """
-            Iterates over a dictionary to look for pesky $refs.
-            """
-            if '$ref' in d:
-                index_file, _, index_path = d['$ref'].partition('#')
-                # index_path looks like `/GoodTrucksList`
-                # index_file looks like `openapi-schema-split-datastructures.yaml` and will
-                # be blank unless the openapi schema is split into several sections
-                temp_schema: dict
-                if not index_file:
-                    # If index-file is empty, use local
-                    temp_schema = s
-                elif loader:
-                    # If index-file is provided, look in the cache
-                    full_path = os.path.join(os.path.dirname(loader.path), index_file)
-                    schema_from_cache: Optional[dict] = schemas_cache.get(full_path)
-                    if schema_from_cache is not None:
-                        temp_schema = schema_from_cache
-                    else:
-                        # If we cannot find our reference in the cache load external defs
-                        external_loader = loader.__class__()
-                        external_loader.set_path(full_path)
-                        temp_schema = external_loader.get_schema()
-                        schemas_cache[full_path] = temp_schema
-                else:
-                    raise RuntimeError('loader is required for external references')
-
-                indices = [i for i in index_path.split('/') if i]
-                for index in indices:
-                    logger.debug('Indexing schema by `%s`', index)
-                    temp_schema = temp_schema[index]
-                return temp_schema
-            for k, v in d.items():
-                if isinstance(v, list):
-                    d[k] = iterate_list(v, s)
-                elif isinstance(v, dict):
-                    d[k] = find_and_replace_refs_recursively(v, s)
-            return d
-
-        def iterate_list(l: list, s: dict) -> list:  # noqa: E741
-            """
-            Loves to iterate lists.
-            """
-            x = []
-            for i in l:
-                if isinstance(i, list):
-                    x.append(iterate_list(i, s))
-                elif isinstance(i, dict):
-                    x.append(find_and_replace_refs_recursively(i, s))  # type: ignore
-                else:
-                    x.append(i)
-            return x
-
-        return find_and_replace_refs_recursively(schema, schema)
-
     def get_request_body_example(self, route: str, method: str) -> Any:
         """
         Returns a request body example.
@@ -460,7 +437,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
 
 
 class DrfSpectacularSchemaLoader(_LoaderBase):
@@ -522,7 +499,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
 
 
 class StaticSchemaLoader(_LoaderBase):
@@ -548,9 +525,9 @@ class StaticSchemaLoader(_LoaderBase):
         - The right parsing library is installed (pyYAML for yaml, json is builtin)
         """
         if (
-            'package_settings' not in kwargs
-            or 'PATH' not in kwargs['package_settings']
-            or kwargs['package_settings']['PATH'] is None
+                'package_settings' not in kwargs
+                or 'PATH' not in kwargs['package_settings']
+                or kwargs['package_settings']['PATH'] is None
         ):
             logger.error('PATH setting is not specified')
             raise ImproperlyConfigured(
@@ -590,6 +567,7 @@ class StaticSchemaLoader(_LoaderBase):
             raise ImproperlyConfigured(
                 f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}'
             )
+        self.base_path = str(os.path.abspath(os.path.dirname(os.path.abspath(self.path))))
         if '.json' in self.path:
             schema = json.loads(content)
             logger.debug('Successfully loaded schema')
