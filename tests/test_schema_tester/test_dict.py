@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
-from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.exceptions import DocumentationError
 from response_tester.loaders import _LoaderBase
 from response_tester.schema_tester import SchemaTester
 
@@ -71,7 +71,7 @@ def test_nullable() -> None:
     # Test nullable items do not pass if not documented as nullable
     d = deepcopy(data)
     with pytest.raises(
-        SwaggerDocumentationError,
+        DocumentationError,
         match="Mismatched types. Expected item to be <class \'int\'> but found <class \'NoneType\'>",
     ):
         d['count'] = None
@@ -79,7 +79,7 @@ def test_nullable() -> None:
 
     # Test non-nullable dict does not pass OK
     with pytest.raises(
-        SwaggerDocumentationError,
+        DocumentationError,
         match="Mismatched types. Expected item to be <class \'dict\'> but found <class \'NoneType\'>.",
     ):
         data['results'] = [None]
@@ -91,7 +91,7 @@ def test_nullable() -> None:
 
     # Test non-nullable list does not pass OK
     with pytest.raises(
-        SwaggerDocumentationError,
+        DocumentationError,
         match="Mismatched types. Expected item to be <class \'list\'> but found <class \'NoneType\'>.",
     ):
         data['results'] = None
@@ -107,7 +107,7 @@ def test_bad_data_type() -> None:
     Asserts that the appropriate exception is raised for a bad response data type.
     """
     with pytest.raises(
-        SwaggerDocumentationError,
+        DocumentationError,
         match="Mismatched types. Expected item to be <class 'dict'> but found <class 'list'>.",
     ):
         tester.test_dict(schema=schema, data=[data], reference='placeholder')
@@ -118,7 +118,7 @@ def test_unmatched_lengths() -> None:
     Asserts that different dict lengths raises an exception.
     """
     with pytest.raises(
-        SwaggerDocumentationError,
+        DocumentationError,
         match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`',
     ):
         weird_data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
@@ -132,7 +132,7 @@ def test_schema_key_not_in_response():
     bad_data = deepcopy(data)
     bad_data['names'] = bad_data['name']
     del bad_data['name']
-    with pytest.raises(SwaggerDocumentationError, match=r'Schema key `name` was not found in the test.'):
+    with pytest.raises(DocumentationError, match=r'Schema key `name` was not found in the test.'):
         tester.test_dict(schema=schema, data=bad_data, reference='placeholder')
 
 
@@ -143,7 +143,7 @@ def test_response_key_not_in_schema():
     bad_schema = deepcopy(schema)
     bad_schema['properties']['names'] = bad_schema['properties']['name']
     del bad_schema['properties']['name']
-    with pytest.raises(SwaggerDocumentationError, match=r'Key `name` not found in the OpenAPI schema.'):
+    with pytest.raises(DocumentationError, match=r'Key `name` not found in the OpenAPI schema.'):
         tester.test_dict(schema=bad_schema, data=data, reference='placeholder')
 
 

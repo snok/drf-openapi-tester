@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 
-class SwaggerDocumentationError(Exception):
+class DocumentationError(Exception):
     """
     Custom exception raised when package tests fail.
     """

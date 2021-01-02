@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from response_tester.configuration import settings
-from response_tester.exceptions import CaseError, SwaggerDocumentationError
+from response_tester.exceptions import CaseError, DocumentationError
 from response_tester.schema_tester import SchemaTester
 from response_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
 
@@ -29,7 +29,7 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param route: Relative path of the endpoint being tested
-    :raises: response_tester.exceptions.SwaggerDocumentationError or response_tester.exceptions.CaseError
+    :raises: response_tester.exceptions.DocumentationError or response_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
     response_schema = settings.loader_class.get_response_schema_section(
@@ -44,12 +44,12 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
             origin='response',
             **kwargs,
         )
-    except SwaggerDocumentationError as e:
+    except DocumentationError as e:
         verbose_error_message = format_response_tester_error(e, hint=e.response_hint)
-        raise SwaggerDocumentationError(verbose_error_message)
+        raise DocumentationError(verbose_error_message)
     except CaseError as e:
         verbose_error_message = format_response_tester_case_error(e)
-        raise SwaggerDocumentationError(verbose_error_message)
+        raise DocumentationError(verbose_error_message)
 
 
 class OpenAPITestCase(APITestCase):
@@ -65,5 +65,5 @@ class OpenAPITestCase(APITestCase):
         method = kwargs.pop('method', response.request['REQUEST_METHOD'])
         try:
             validate_response(response=response, method=method, route=route, **kwargs)
-        except (SwaggerDocumentationError, CaseError) as e:
+        except (DocumentationError, CaseError) as e:
             raise self.failureException from e

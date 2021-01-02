@@ -235,7 +235,7 @@ When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+    response_tester.exceptions.DocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------
@@ -245,7 +245,7 @@ When found, errors will be raised in the following format:
     Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
     Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
 
-    Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
+    Hint:       Remove the key(s) from your OpenAPI docs, or include it in your API response.
     Sequence:   init.list
 
     -------------------------------------------------------------------------------------------

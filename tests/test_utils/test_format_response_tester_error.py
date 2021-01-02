@@ -1,9 +1,9 @@
 # flake8: noqa
 # fmt: off
-from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.exceptions import DocumentationError
 from response_tester.utils import format_response_tester_error
 
-error = SwaggerDocumentationError(
+error = DocumentationError(
     message='This is a message',
     response={'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryLongKey': 'test'},
     schema={

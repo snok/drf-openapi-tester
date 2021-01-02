@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.exceptions import DocumentationError
 from response_tester.testing import validate_response
 
 good_test_data = [
@@ -75,7 +75,7 @@ def test_bad_endpoints_dynamic_schema(client, transactional_db) -> None:  # noqa
 
         # Test Swagger documentation
         with pytest.raises(
-            SwaggerDocumentationError, match='The following properties seem to be missing from your response body:'
+            DocumentationError, match='The following properties seem to be missing from your response body:'
         ):
             validate_response(response, 'GET', item['url'], verbose=True)  # type: ignore
 

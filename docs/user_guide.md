@@ -1,35 +1,34 @@
-.. _testing_with_response_tester:
+# Testing your response documentation
 
-***********************************
-Testing your response documentation
-***********************************
+Adding tests to verify your response documentation can
+be as easy as appending a single line to your (hopefully)
+existing API tests.
 
-Writing tests is as easy as appending a single line to your (hopefully) existing API tests.
+If any we find any inconsistency between the API JSON
+response and the documented response in your OpenAPI
+schema, we raise an exception, causing your test to fail.
 
-Any inconsistencies between the API response received in the test, and the schema section that represents it, will raise an exception, causing the test to fail.
+## Test examples
 
-Examples
-~~~~~~~~
+### Pytest examples
 
-**Pytest example**
-
-.. code:: python
-
+```python
     from response_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
         response = client.get(route)
+
         assert response.status_code == 200
         assert response.json() == expected_response
 
-        # test swagger documentation
+        # Add this line to your API tests
         validate_response(response=response, method='GET', route=route)
+```
 
-**Django test example**
+### Django test example
 
-.. code-block:: python
-
+```python
     from response_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
@@ -50,39 +49,39 @@ Examples
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), expected_response)
 
-            # test swagger documentation
+            # Add this line to your API tests
             validate_response(response=response, method='GET', route=self.path)
+```
 
-Error messages
-~~~~~~~~~~~~~~
+## Error messages
 
-When found, errors will be raised in the following format:
+When found, errors will be formatted as follows:
 
-.. code-block:: shell
+```shell script
+response_tester.exceptions.DocumentationError: Item is misspecified:
 
-    response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+Summary
+-------------------------------------------------------------------------------------------
 
-    Summary
-    -------------------------------------------------------------------------------------------
+Error:      The following properties seem to be missing from your response body: length, width.
 
-    Error:      The following properties seem to be missing from your response body: length, width.
+Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
+Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
 
-    Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
-    Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
+Hint:       Remove the key(s) from your OpenAPI docs, or include it in your API response.
+Sequence:   init.list
 
-    Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
-    Sequence:   init.list
+-------------------------------------------------------------------------------------------
 
-    -------------------------------------------------------------------------------------------
+* If you need more details: set `verbose=True`
+```
 
-    * If you need more details: set `verbose=True`
+- `Expected` describes the response data
+- `Received` describes the schema.
+- `Hint` will sometimes include a suggestion for what actions to take, to correct an error.
+- `Sequence` will indicate how the response tester iterated through the data structure, before finding the error.
 
-- ``Expected`` describes the response data
-- ``Received`` describes the schema.
-- ``Hint`` will sometimes include a suggestion for what actions to take, to correct an error.
-- ``Sequence`` will indicate how the response tester iterated through the data structure, before finding the error.
-
-In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
+In this example, the response data is missing two attributes, `height` and `width`, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 .. Note::
 
@@ -111,7 +110,7 @@ In this example, the response data is missing two attributes, ``height`` and ``w
 The validate_response function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``validate_response`` function takes three required inputs:
+The `validate_response` function takes three required inputs:
 
 * response
     **description**: The response object returned from an API call.
@@ -127,7 +126,7 @@ The ``validate_response`` function takes three required inputs:
 
     **type**: string
 
-    **example**: ``method='GET'``
+    **example**: `method='GET'`
 
 
 * route
@@ -135,7 +134,7 @@ The ``validate_response`` function takes three required inputs:
 
     **type**: string
 
-    **example**: ``route='api/v1/test'``
+    **example**: `route='api/v1/test'`
 
 
 In addition, the function also takes two optional inputs:
@@ -145,16 +144,16 @@ In addition, the function also takes two optional inputs:
 
     **type**: List of strings
 
-    **example**: ``ignore_case=['API', 'IP]``
+    **example**: `ignore_case=['API', 'IP]`
 
 * verbose
     **description**: Whether to output more detailed error messages.
 
     **type**: bool
 
-    **default**: ``False``
+    **default**: `False`
 
-    **example**: ``verbose=True``
+    **example**: `verbose=True`
 
 
 Suggested use

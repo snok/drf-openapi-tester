@@ -9,7 +9,7 @@ from django.urls import ResolverMatch
 
 from rest_framework.response import Response
 
-from response_tester.exceptions import CaseError, SwaggerDocumentationError
+from response_tester.exceptions import CaseError, DocumentationError
 
 logger = logging.getLogger('response_tester')
 
@@ -26,7 +26,7 @@ def format_response_tester_case_error(exception: CaseError) -> str:
 
 
 def format_response_tester_error(
-    exception: SwaggerDocumentationError, hint: str, addon: Optional[str] = None, **kwargs
+    exception: DocumentationError, hint: str, addon: Optional[str] = None, **kwargs
 ) -> str:
     """
     Formats and returns a standardized error message for easy debugging.

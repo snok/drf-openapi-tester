@@ -2,12 +2,12 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.exceptions import DocumentationError
 
 
 def test_specification_error():
-    with pytest.raises(SwaggerDocumentationError, match='test'):
-        raise SwaggerDocumentationError('test')
+    with pytest.raises(DocumentationError, match='test'):
+        raise DocumentationError('test')
 
 
 def test_improperly_configured_error():

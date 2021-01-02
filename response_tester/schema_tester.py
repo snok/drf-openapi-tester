@@ -3,7 +3,7 @@ from typing import Any, Callable, List, Union
 
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.exceptions import DocumentationError
 from response_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
 from response_tester.utils import camelize, type_placeholder_value
 
@@ -17,7 +17,7 @@ class SchemaTester:
 
         :param schema: Response/request OpenAPI schema section
         :param data: API response/request data
-        :raises: response_tester.exceptions.SwaggerDocumentationError or ImproperlyConfigured
+        :raises: response_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         from response_tester.configuration import settings
 
@@ -52,7 +52,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response/request data
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.SwaggerDocumentationError
+        :raises: response_tester.exceptions.DocumentationError
         """
         if not isinstance(data, dict):
             request_hint, response_hint = '', ''
@@ -69,7 +69,7 @@ class SchemaTester:
                     'in your Schema definition.'
                 )
                 request_hint = 'You passed a None value where we expected a dict.'
-            raise SwaggerDocumentationError(
+            raise DocumentationError(
                 message=f"Mismatched types. Expected item to be <class 'dict'> but found {type(data)}.",
                 response=data,
                 schema=schema,
@@ -91,23 +91,23 @@ class SchemaTester:
             if len(set(response_keys)) > len(set(schema_keys)):
                 missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_keys)))
 
-                raise SwaggerDocumentationError(
+                raise DocumentationError(
                     message=f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.',
                     response=data,
                     schema=schema,
                     reference=reference,
-                    response_hint='Add the key(s) to your Swagger docs, or stop returning it in your view.',
+                    response_hint='Add the key(s) to your OpenAPI docs, or stop returning it in your view.',
                     request_hint='Remove the excess key(s) from your request body.',
                 )
             else:
                 missing_keys = ', '.join(f'{key}' for key in list(set(schema_keys) - set(response_keys)))
 
-                raise SwaggerDocumentationError(
+                raise DocumentationError(
                     message=f'The following properties seem to be missing from your {self.origin} body: {missing_keys}.',
                     response=data,
                     schema=schema,
                     reference=reference,
-                    response_hint='Remove the key(s) from you Swagger docs, or include it in your API response.',
+                    response_hint='Remove the key(s) from your OpenAPI docs, or include it in your API response.',
                     request_hint='Remove the excess key(s) from you request body.',
                 )
 
@@ -125,7 +125,7 @@ class SchemaTester:
 
             # Check that each element in the schema exists in the response, and vice versa
             if schema_key not in response_keys:
-                raise SwaggerDocumentationError(
+                raise DocumentationError(
                     message=f'Schema key `{schema_key}` was not found in the {self.origin}.',
                     response=data,
                     schema=schema,
@@ -134,7 +134,7 @@ class SchemaTester:
                     request_hint='You need to add the missing key to your request body.',
                 )
             elif response_key not in schema_keys:
-                raise SwaggerDocumentationError(
+                raise DocumentationError(
                     message=f'Key `{response_key}` not found in the OpenAPI schema.',
                     response=data,
                     schema=schema,
@@ -164,7 +164,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response data
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.SwaggerDocumentationError
+        :raises: response_tester.exceptions.DocumentationError
         """
         if not isinstance(data, list):
             request_hint, response_hint = '', ''
@@ -183,7 +183,7 @@ class SchemaTester:
                     '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
                 )
                 request_hint = 'You passed a None value where we expected a list.'
-            raise SwaggerDocumentationError(
+            raise DocumentationError(
                 message=f"Mismatched types. Expected item to be <class 'list'> but found {type(data)}.",
                 response=data,
                 schema=schema,
@@ -194,7 +194,7 @@ class SchemaTester:
 
         item = read_items(schema)
         if not item and data:
-            raise SwaggerDocumentationError(
+            raise DocumentationError(
                 message='Mismatched content. Response array contains data, when schema is empty.',
                 response=data,
                 schema=schema,
@@ -223,7 +223,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: response data item
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.SwaggerDocumentationError
+        :raises: response_tester.exceptions.DocumentationError
         """
         checks = {
             'boolean': {
@@ -245,7 +245,7 @@ class SchemaTester:
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
             request_hint = 'You passed a None value where we expected a list.'
-            raise SwaggerDocumentationError(
+            raise DocumentationError(
                 message=f'Mismatched types. Expected item to be {type(type_placeholder_value(read_type(schema)))} but found {type(data)}.',
                 response=data,
                 schema=schema,
@@ -254,7 +254,7 @@ class SchemaTester:
                 request_hint=request_hint,
             )
         elif checks[schema['type']]['check']:
-            raise SwaggerDocumentationError(
+            raise DocumentationError(
                 message='Mismatched types.',
                 response=data,
                 schema=schema,
