@@ -8,24 +8,24 @@ Settings
 --------
 
 To use the test-utility in your project, you need to configure the
-``OPENAPI_RESPONSE_TESTER`` package settings in your ``settings.py``.
+``RESPONSE_TESTER`` package settings in your ``settings.py``.
 At minimum you need to specify which schema loader class to use to load your
 OpenAPI schema when testing it:
 
 .. code:: python
 
-    from django_openapi_response_tester.loaders import StaticSchemaLoader
-    from django_openapi_response_tester.case_testers import is_camel_case
+    from response_tester.loaders import StaticSchemaLoader
+    from response_tester.case_testers import is_camel_case
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
     }
 
-A complete example of the ``OPENAPI_RESPONSE_TESTER`` settings might look like this:
+A complete example of the ``RESPONSE_TESTER`` settings might look like this:
 
 .. code:: python
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         'SCHEMA_LOADER': StaticSchemaLoader,
         'PATH': 'demo/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
@@ -47,7 +47,7 @@ SCHEMA_LOADER
 The loader class you use is dictated by how your OpenAPI schema is generated.
 If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
 
-Loader classes can be imported from ``django_openapi_response_tester.loaders`` and currently include:
+Loader classes can be imported from ``response_tester.loaders`` and currently include:
 
 - ``StaticSchemaLoader``
 - ``DrfYasgSchemaLoader``
@@ -59,9 +59,9 @@ The loader class is responsible for all logic related to loading and interacting
 
 .. code:: python
 
-    from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
+    from response_tester.loaders import DrfSpectacularSchemaLoader
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         ...
     }
@@ -76,7 +76,7 @@ loader class, and just lets the loader class know where your schema is located i
 
 .. code:: python
 
-  OPENAPI_RESPONSE_TESTER = {
+  RESPONSE_TESTER = {
       'PATH': BASE_DIR / '/openapi-schema.yml',
   }
 
@@ -101,9 +101,9 @@ There are currently four supported options:
 
 .. code:: python
 
-    from django_openapi_response_tester.case_testers import is_camel_case
+    from response_tester.case_testers import is_camel_case
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         ...
         'CASE_TESTER': is_camel_case,
     }
@@ -125,9 +125,9 @@ this being flagged as an error in your tests.
 
 .. code:: python
 
-    from django_openapi_response_tester.case_testers import is_camel_case
+    from response_tester.case_testers import is_camel_case
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         ...
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }
@@ -145,7 +145,7 @@ Otherwise, set it to False or leave it out of your settings.
 
 .. code:: python
 
-  OPENAPI_RESPONSE_TESTER = {
+  RESPONSE_TESTER = {
       'CAMEL_CASE_PARSER': True,
   }
 

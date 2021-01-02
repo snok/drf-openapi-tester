@@ -4,7 +4,7 @@ import pytest
 import yaml
 from tests.utils import yml_path
 
-from django_openapi_response_tester.loaders import StaticSchemaLoader
+from response_tester.loaders import StaticSchemaLoader
 
 
 def ret_schema(*args, **kwargs):

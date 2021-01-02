@@ -5,8 +5,8 @@ from django.core.exceptions import ImproperlyConfigured
 import pytest
 from tests.utils import patch_settings
 
-from django_openapi_response_tester.configuration import SwaggerTesterSettings
-from django_openapi_response_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+from response_tester.configuration import SwaggerTesterSettings
+from response_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 
 
 def test_valid_loader_classes(monkeypatch) -> None:
@@ -14,23 +14,23 @@ def test_valid_loader_classes(monkeypatch) -> None:
     Assert that valid cases always pass without errors.
     """
     for case in [DrfYasgSchemaLoader, StaticSchemaLoader]:
-        monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', case))
+        monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', case))
         SwaggerTesterSettings().validate()
 
 
 def test_missing_loader_class(monkeypatch) -> None:
-    monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', None))
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', None))
     with pytest.raises(
         ImproperlyConfigured,
-        match='SCHEMA_LOADER is missing from your OPENAPI_RESPONSE_TESTER settings, '
+        match='SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, '
         'and is required. '
-        'Please pass a loader class from django_openapi_response_tester.schema_loaders',
+        'Please pass a loader class from response_tester.schema_loaders',
     ):
         SwaggerTesterSettings().validate()
 
 
 def test_invalid_invalid_callable(monkeypatch) -> None:
-    monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', lambda x: x))
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', lambda x: x))
     with pytest.raises(ImproperlyConfigured, match='SCHEMA_LOADER must be a class'):
         SwaggerTesterSettings().validate()
 
@@ -39,9 +39,9 @@ def test_invalid_base_class(monkeypatch) -> None:
     class BadClass:
         pass
 
-    monkeypatch.setattr(django_settings, 'OPENAPI_RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', BadClass))
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', BadClass))
     with pytest.raises(
         ImproperlyConfigured,
-        match='The supplied loader_class must inherit django_openapi_response_tester.schema_loaders._LoaderBase',
+        match='The supplied loader_class must inherit response_tester.schema_loaders._LoaderBase',
     ):
         SwaggerTesterSettings().validate()

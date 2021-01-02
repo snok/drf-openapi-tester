@@ -8,8 +8,8 @@ import yaml
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
 
-from django_openapi_response_tester.configuration import settings as _settings
-from django_openapi_response_tester.loaders import _LoaderBase
+from response_tester.configuration import settings as _settings
+from response_tester.loaders import _LoaderBase
 
 
 def loader(path):

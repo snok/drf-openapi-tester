@@ -1,7 +1,7 @@
 import pytest
 
-from django_openapi_response_tester.case_testers import is_camel_case
-from django_openapi_response_tester.exceptions import CaseError
+from response_tester.case_testers import is_camel_case
+from response_tester.exceptions import CaseError
 
 camel_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snakeCase'},

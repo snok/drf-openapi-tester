@@ -15,8 +15,8 @@ from typing import List
 
 from django.utils.translation import get_language_from_path, gettext_lazy as _
 
-from django_openapi_response_tester.case_testers import is_camel_case
-from django_openapi_response_tester.loaders import DrfYasgSchemaLoader
+from response_tester.case_testers import is_camel_case
+from response_tester.loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'django_openapi_response_tester',
+    'response_tester',
 ]
 
 
@@ -135,16 +135,16 @@ LOGGING = {
         },
     },
     'loggers': {
-        'django_openapi_response_tester': {
+        'response_tester': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from django_openapi_response_tester
+            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from response_tester
         }
     },
 }
 
 # fmt: off
 
-OPENAPI_RESPONSE_TESTER = {
+RESPONSE_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
@@ -157,14 +157,14 @@ OPENAPI_RESPONSE_TESTER = {
             'DEBUG': True,
             'VALIDATION_EXEMPT_URLS': [],
             'VALIDATION_EXEMPT_STATUS_CODES': [401],
-            'LOGGER_NAME': 'django_openapi_response_tester',
+            'LOGGER_NAME': 'response_tester',
         }
     },
     'VIEWS': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',
             'DEBUG': True,
-            'LOGGER_NAME': 'django_openapi_response_tester',
+            'LOGGER_NAME': 'response_tester',
         }
     },
 }

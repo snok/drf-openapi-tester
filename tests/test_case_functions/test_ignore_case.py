@@ -1,4 +1,4 @@
-from django_openapi_response_tester.testing import validate_response
+from response_tester.testing import validate_response
 
 
 def test_endpoints_dynamic_schema(client, caplog, transactional_db) -> None:  # noqa: TYP001

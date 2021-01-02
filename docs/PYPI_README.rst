@@ -1,5 +1,5 @@
 Django OpenAPI Response Tester
-=====================
+==============================
 
 .. role:: python(code)
    :language: python
@@ -41,7 +41,7 @@ Django OpenAPI Response Tester
 --------------
 
 Django OpenAPI Response Tester
-=====================
+==============================
 
 Django OpenAPI Response Tester is a simple test utility for validating your Django Swagger documentation.
 
@@ -84,23 +84,23 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, you first need to add a ``django_openapi_response_tester`` to your installed apps.
+To use Django Swagger Settings in your project, you first need to add a ``response_tester`` to your installed apps.
 
 .. code:: python
 
     INSTALLED_APPS = [
         ...
-        'django_openapi_response_tester',
+        'response_tester',
     ]
 
-Secondly, you need to configure the ``OPENAPI_RESPONSE_TESTER`` package settings in your ``settings.py``:
+Secondly, you need to configure the ``RESPONSE_TESTER`` package settings in your ``settings.py``:
 
 .. code:: python
 
-    from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
-    from django_openapi_response_tester.case_testers import is_camel_case
+    from response_tester.loaders import DrfSpectacularSchemaLoader
+    from response_tester.case_testers import is_camel_case
 
-    OPENAPI_RESPONSE_TESTER = {
+    RESPONSE_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
         'CAMEL_CASE_PARSER': True,
@@ -148,7 +148,7 @@ A pytest implementation might look like this:
 
 .. code:: python
 
-    from django_openapi_response_tester.testing import validate_response
+    from response_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
@@ -163,7 +163,7 @@ A Django-test implementation might look like this:
 
 .. code-block:: python
 
-    from django_openapi_response_tester.testing import validate_response
+    from response_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
 
@@ -214,7 +214,7 @@ If you want to implement response validation for all outgoing API responses, sim
 
     MIDDLEWARE = [
         ...
-        'django_openapi_response_tester.middleware.ResponseValidationMiddleware',
+        'response_tester.middleware.ResponseValidationMiddleware',
     ]
 
 The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
@@ -224,7 +224,7 @@ To avoid validating the same responses over and over, the results are cached to 
 Live testing for a single view
 ------------------------------
 
-If you're using DRF's ``APIView``, you can replace that with ``django_openapi_response_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
+If you're using DRF's ``APIView``, you can replace that with ``response_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
 
 If you're not using ``APIView``, but some closely related solution, you can very easily make your own response validation class. Just have a look at the ``ResposeValidationView`` for inspiration.
 
@@ -235,7 +235,7 @@ When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    django_openapi_response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+    response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ A Django test implementation of input validation for a whole project could be st
 .. code:: python
 
     from django.test import SimpleTestCase
-    from django_openapi_response_tester.testing import validate_input_serializer
+    from response_tester.testing import validate_input_serializer
 
     from api.serializers.validation.request_bodies import ...
 

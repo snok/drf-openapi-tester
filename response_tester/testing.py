@@ -1,16 +1,12 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
-from django_openapi_response_tester.configuration import settings
-from django_openapi_response_tester.exceptions import CaseError, SwaggerDocumentationError
-from django_openapi_response_tester.schema_tester import SchemaTester
-from django_openapi_response_tester.utils import (
-    format_response_tester_case_error,
-    format_response_tester_error,
-    unpack_response,
-)
+from response_tester.configuration import settings
+from response_tester.exceptions import CaseError, SwaggerDocumentationError
+from response_tester.schema_tester import SchemaTester
+from response_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
 
-logger = logging.getLogger('django_openapi_response_tester')
+logger = logging.getLogger('response_tester')
 
 if TYPE_CHECKING:
     try:
@@ -33,7 +29,7 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param route: Relative path of the endpoint being tested
-    :raises: django_openapi_response_tester.exceptions.SwaggerDocumentationError or django_openapi_response_tester.exceptions.CaseError
+    :raises: response_tester.exceptions.SwaggerDocumentationError or response_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
     response_schema = settings.loader_class.get_response_schema_section(

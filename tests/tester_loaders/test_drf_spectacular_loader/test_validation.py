@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_openapi_response_tester.loaders import DrfSpectacularSchemaLoader
+from response_tester.loaders import DrfSpectacularSchemaLoader
 
 base = DrfSpectacularSchemaLoader()
 base.set_schema(base.load_schema())
@@ -46,7 +46,7 @@ def test_drf_spectacular_not_in_installed_apps(monkeypatch):
     class MockedApps:
         app_configs = MockAppConfigs
 
-    monkeypatch.setattr('django_openapi_response_tester.loaders.apps', MockedApps())
+    monkeypatch.setattr('response_tester.loaders.apps', MockedApps())
 
     with pytest.raises(ImproperlyConfigured, match='is missing from INSTALLED_APPS'):
         base.validation()

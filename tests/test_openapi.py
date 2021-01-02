@@ -1,8 +1,8 @@
 import pytest
 from tests.types import list_type, object_type
 
-from django_openapi_response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from django_openapi_response_tester.openapi import (
+from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from response_tester.openapi import (
     index_schema,
     is_nullable,
     list_types,

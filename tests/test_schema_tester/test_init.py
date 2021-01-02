@@ -2,7 +2,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_openapi_response_tester.schema_tester import SchemaTester
+from response_tester.schema_tester import SchemaTester
 
 
 def test_schema_tester_validation():

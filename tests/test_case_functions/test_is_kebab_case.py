@@ -1,7 +1,7 @@
 import pytest
 
-from django_openapi_response_tester.case_testers import is_kebab_case
-from django_openapi_response_tester.exceptions import CaseError
+from response_tester.case_testers import is_kebab_case
+from response_tester.exceptions import CaseError
 
 kebab_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snake-case'},

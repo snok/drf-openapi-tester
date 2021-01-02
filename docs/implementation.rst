@@ -1,8 +1,8 @@
-.. _testing_with_django_openapi_response_tester:
+.. _testing_with_response_tester:
 
-*******************************************
-Implementing Django OpenAPI Response Tester
-*******************************************
+***********************************
+Testing your response documentation
+***********************************
 
 Writing tests is as easy as appending a single line to your (hopefully) existing API tests.
 
@@ -15,7 +15,7 @@ Examples
 
 .. code:: python
 
-    from django_openapi_response_tester.testing import validate_response
+    from response_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
@@ -30,7 +30,7 @@ Examples
 
 .. code-block:: python
 
-    from django_openapi_response_tester.testing import validate_response
+    from response_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
 
@@ -60,7 +60,7 @@ When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    django_openapi_response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+    response_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------

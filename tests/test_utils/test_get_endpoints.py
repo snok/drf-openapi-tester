@@ -2,8 +2,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_openapi_response_tester.loaders import _LoaderBase
-from django_openapi_response_tester.utils import get_endpoint_paths, resolve_path, unpack_response
+from response_tester.loaders import _LoaderBase
+from response_tester.utils import get_endpoint_paths, resolve_path, unpack_response
 
 
 def test_get_endpoint_paths():

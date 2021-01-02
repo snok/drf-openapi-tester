@@ -72,7 +72,7 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-src_paths = ["django_openapi_response_tester"]
+src_paths = ["response_tester"]
 combine_as_imports = true
 line_length = 120
 sections = [

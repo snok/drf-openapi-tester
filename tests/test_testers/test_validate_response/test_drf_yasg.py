@@ -2,8 +2,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 import pytest
 
-from django_openapi_response_tester.exceptions import SwaggerDocumentationError
-from django_openapi_response_tester.testing import validate_response
+from response_tester.exceptions import SwaggerDocumentationError
+from response_tester.testing import validate_response
 
 good_test_data = [
     {
@@ -105,7 +105,7 @@ def test_missing_status_code_match(client, monkeypatch, transactional_db) -> Non
     def mocked_unpack_response(*args, **kwargs):
         return {}, 'bad status code'
 
-    monkeypatch.setattr('django_openapi_response_tester.testing.unpack_response', mocked_unpack_response)
+    monkeypatch.setattr('response_tester.testing.unpack_response', mocked_unpack_response)
     for item in bad_test_data:
         response = client.get(item['url'])
         with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):
