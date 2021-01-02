@@ -1,4 +1,5 @@
 import pytest
+
 from tests.types import (
     bool_data,
     bool_type,

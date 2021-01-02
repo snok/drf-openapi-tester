@@ -1,6 +1,5 @@
-from django.core.exceptions import ImproperlyConfigured
-
 import pytest
+from django.core.exceptions import ImproperlyConfigured
 
 from response_tester.exceptions import DocumentationError
 

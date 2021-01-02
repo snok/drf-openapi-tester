@@ -3,17 +3,17 @@ import logging
 import os
 from json import dumps, loads
 from typing import Any, Optional, Union
+from urllib.parse import ParseResult
 
 from django.apps import apps
 from django.core.exceptions import ImproperlyConfigured
+from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 
 from django_swagger_tester.configuration import settings
-from django_swagger_tester.exceptions import UndocumentedSchemaSectionError, OpenAPISchemaError
+from django_swagger_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from django_swagger_tester.openapi import list_types, read_properties
 from django_swagger_tester.utils import Route
-
-from prance.util.resolver import RefResolver
 
 logger = logging.getLogger('response_tester')
 
@@ -22,30 +22,28 @@ def remove_recusive_ref(schema: dict, fragment: str) -> dict:
     """
     Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
     """
-
     for key, value in schema.items():
         if isinstance(value, dict):
-            if "$ref" in value.keys() and fragment in value["$ref"]:
+            if '$ref' in value.keys() and fragment in value['$ref']:
                 # TODO: use this value in the testing - to ignore some parts of the specs
-                schema[key] = { "x-recursive-ref-replaced": True }
+                schema[key] = {'x-recursive-ref-replaced': True}
             else:
                 schema[key] = remove_recusive_ref(schema[key], fragment)
     return schema
 
 
 def handle_recursion_limit(schema: dict):
-    """ we are using a currying pattern to pass schema into the scope of the handler """
+    """ We are using a currying pattern to pass schema into the scope of the handler """
 
-    def handler(iteration: int, parse_result: dict, recursions: tuple):
-        """ return an empty object when encountering recursion """
+    def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
         try:
             fragment = parse_result.fragment
-            keys = [key for key in fragment.split("/") if key]
+            keys = [key for key in fragment.split('/') if key]
             definition = schema
             for key in keys:
                 definition = definition[key]
             return remove_recusive_ref(definition, fragment)
-        except KeyError as e:
+        except KeyError:
             return {}
 
     return handler
@@ -59,7 +57,7 @@ class _LoaderBase:
     with an OpenAPI schema.
     """
 
-    base_path = "/"
+    base_path = '/'
 
     def __init__(self) -> None:
         self.schema: Optional[dict] = None
@@ -91,7 +89,7 @@ class _LoaderBase:
 
     def dereference_schema(self, schema: dict) -> dict:
         try:
-            url = schema["basePath"] if "basePath" in schema else self.base_path
+            url = schema['basePath'] if 'basePath' in schema else self.base_path
             resolver = RefResolver(
                 schema,
                 recursion_limit_handler=handle_recursion_limit(schema),
@@ -100,13 +98,12 @@ class _LoaderBase:
             resolver.resolve_references()
             return resolver.specs
         except ResolutionError as e:
-            raise OpenAPISchemaError("infinite recursion error") from e
+            raise OpenAPISchemaError('infinite recursion error') from e
 
     def set_schema(self, schema: dict) -> None:
         """
         Sets self.schema and self.original_schema.
         """
-
         self.original_schema = schema
         self.schema = self.dereference_schema(schema)
 
@@ -437,7 +434,7 @@ class DrfYasgSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class DrfSpectacularSchemaLoader(_LoaderBase):
@@ -499,7 +496,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix):], resolved_path=resolved_path)
+        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class StaticSchemaLoader(_LoaderBase):
@@ -525,9 +522,9 @@ class StaticSchemaLoader(_LoaderBase):
         - The right parsing library is installed (pyYAML for yaml, json is builtin)
         """
         if (
-                'package_settings' not in kwargs
-                or 'PATH' not in kwargs['package_settings']
-                or kwargs['package_settings']['PATH'] is None
+            'package_settings' not in kwargs
+            or 'PATH' not in kwargs['package_settings']
+            or kwargs['package_settings']['PATH'] is None
         ):
             logger.error('PATH setting is not specified')
             raise ImproperlyConfigured(

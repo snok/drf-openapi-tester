@@ -6,7 +6,6 @@ import sys
 from typing import Any, List, Optional, Tuple
 
 from django.urls import ResolverMatch
-
 from rest_framework.response import Response
 
 from response_tester.exceptions import CaseError, DocumentationError

@@ -1,6 +1,5 @@
-from django.core.exceptions import ImproperlyConfigured
-
 import pytest
+from django.core.exceptions import ImproperlyConfigured
 
 from response_tester.loaders import _LoaderBase
 from response_tester.utils import get_endpoint_paths, resolve_path, unpack_response

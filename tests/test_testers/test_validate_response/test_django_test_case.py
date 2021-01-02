@@ -1,11 +1,9 @@
-from django.conf import settings as django_settings
-
 import pytest
-from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
-from tests.test_testers.test_validate_response.test_static import yml_path
+from django.conf import settings as django_settings
 
 from response_tester.loaders import StaticSchemaLoader
 from response_tester.testing import OpenAPITestCase
+from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
 
 
 def test_django_test_case(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001

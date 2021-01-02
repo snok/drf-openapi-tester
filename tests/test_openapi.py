@@ -1,5 +1,4 @@
 import pytest
-from tests.types import list_type, object_type
 
 from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from response_tester.openapi import (
@@ -11,6 +10,7 @@ from response_tester.openapi import (
     read_properties,
     read_type,
 )
+from tests.types import list_type, object_type
 
 
 def test_read_items():

@@ -1,7 +1,5 @@
-from django.core.exceptions import ImproperlyConfigured
-
 import pytest
-from tests import yml_path, json_path
+from django.core.exceptions import ImproperlyConfigured
 
 from response_tester.loaders import StaticSchemaLoader
 

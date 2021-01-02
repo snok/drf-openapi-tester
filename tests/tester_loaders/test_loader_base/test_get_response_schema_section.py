@@ -1,7 +1,6 @@
 from copy import deepcopy
 
 import pytest
-from tests.utils import MockRoute
 
 from response_tester.exceptions import UndocumentedSchemaSectionError
 from response_tester.loaders import _LoaderBase

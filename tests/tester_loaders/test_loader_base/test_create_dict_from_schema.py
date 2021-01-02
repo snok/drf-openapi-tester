@@ -1,10 +1,10 @@
 from copy import deepcopy
 
+import pytest
+import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-import pytest
-import yaml
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
 

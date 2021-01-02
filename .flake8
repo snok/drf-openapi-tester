@@ -8,6 +8,7 @@ ignore=
     D101
     # Make docstrings one line if it can fit.
     D200
+    D210
     # Imperative docstring declarations
     D401
 

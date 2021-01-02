@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 import pytest
-from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 from response_tester.exceptions import DocumentationError
 from response_tester.loaders import _LoaderBase
 from response_tester.schema_tester import SchemaTester
+from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {
     'type': 'object',

@@ -1,8 +1,8 @@
 # noqa: TYP001
+import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-import pytest
 from tests.utils import patch_settings
 
 from response_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
