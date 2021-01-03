@@ -7,7 +7,7 @@ from tests import yml_path
 from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
 
 
-def test_django_test_case(client, monkeypatch, transactional_db) -> None:
+def test_django_test_case(client, monkeypatch) -> None:
     """
     Asserts that the assertResponse method of the test case validates correct schemas successfully.
     """

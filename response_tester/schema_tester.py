@@ -1,10 +1,9 @@
 import logging
 from typing import Any, Callable, List, Union
 
-from django.core.exceptions import ImproperlyConfigured
-
+from response_tester.configuration import settings
 from response_tester.exceptions import DocumentationError
-from response_tester.openapi import is_nullable, list_types, read_items, read_properties, read_type
+from response_tester.openapi import is_nullable
 from response_tester.utils import camelize, type_placeholder_value
 
 logger = logging.getLogger('response_tester')
@@ -19,30 +18,23 @@ class SchemaTester:
         :param data: API response/request data
         :raises: response_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
-        from response_tester.configuration import settings
 
         self.case_tester = case_tester
-        self.ignored_keys: List[str] = kwargs['ignore_case'] if 'ignore_case' in kwargs else []
+        self.ignored_keys: List[str] = kwargs.get('ignore_case', [])
         self.ignored_keys += settings.case_passlist
-        self.camel_case_parser: bool = (
-            kwargs['camel_case_parser'] if 'camel_case_parser' in kwargs else settings.camel_case_parser
-        )
+        self.camel_case_parser: bool = kwargs.get('camel_case_parser', settings.camel_case_parser)
         self.origin = origin
+        self._test_schema(schema=schema, data=data, reference='init')
 
-        if '$ref' in str(schema):
-            # `$ref`s should be replaced in the schema before passed to the class
-            raise ImproperlyConfigured(
-                'Received invalid schema. You must replace $ref sections before passing a schema for validation.'
-            )
-
-        if read_type(schema) == 'object':
-            logger.debug('init --> dict')
+    def _test_schema(self, schema: dict, data: dict, reference: str) -> None:
+        """ Helper method to run checks """
+        schema_type = schema['type']
+        logger.debug(f'{reference} --> {schema_type}')
+        if schema_type == 'object':
             self.test_dict(schema=schema, data=data, reference='init')
-        elif read_type(schema) == 'array':
-            logger.debug('init --> list')
+        elif schema_type == 'array':
             self.test_list(schema=schema, data=data, reference='init')
-        elif read_type(schema) in list_types(cut=['array', 'object']):
-            logger.debug('init --> item')
+        else:
             self.test_item(schema=schema, data=data, reference='init')
 
     def test_dict(self, schema: dict, data: dict, reference: str) -> None:
@@ -55,7 +47,6 @@ class SchemaTester:
         :raises: response_tester.exceptions.DocumentationError
         """
         if not isinstance(data, dict):
-            request_hint, response_hint = '', ''
             if isinstance(data, list):
                 response_hint = 'The expected item should be a dict, or your schema should be a list.'
                 request_hint = 'You passed a list where the expected item should be a dict.'
@@ -74,15 +65,18 @@ class SchemaTester:
                 response=data,
                 schema=schema,
                 reference=reference,
-                response_hint=response_hint,
-                request_hint=request_hint,
+                response_hint=response_hint or '',
+                request_hint=request_hint or '',
             )
 
         if self.camel_case_parser:
             data = camelize(data)
 
         response_keys = data.keys()
-        properties = read_properties(schema)
+        if 'properties' in schema:
+            properties = schema['properties']
+        else:
+            properties = {'': schema['additionalProperties']}
         schema_keys = properties.keys()
 
         # Check that the response and schema has the same number of keys
@@ -146,16 +140,7 @@ class SchemaTester:
             # Pass nested elements to the appropriate function
             schema_value = properties[schema_key]
             response_value = data[schema_key]
-
-            if read_type(schema_value) == 'object':
-                logger.debug('test_dict --> test_dict')
-                self.test_dict(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
-            elif read_type(schema_value) == 'array':
-                logger.debug('test_dict --> test_list')
-                self.test_list(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
-            elif read_type(schema_value) in list_types(cut=['array', 'object']):
-                logger.debug('test_dict --> test_item')
-                self.test_item(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
+            self._test_schema(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
 
     def test_list(self, schema: dict, data: Union[list, dict], reference: str) -> None:
         """
@@ -167,7 +152,6 @@ class SchemaTester:
         :raises: response_tester.exceptions.DocumentationError
         """
         if not isinstance(data, list):
-            request_hint, response_hint = '', ''
             if isinstance(data, dict):
                 response_hint = (
                     'You might need to wrap your response item in a list, or remove the excess list '
@@ -178,7 +162,7 @@ class SchemaTester:
                 if 'x-nullable' in schema and schema['x-nullable']:
                     # NoneTypes are OK if the schema says the field is nullable
                     return
-                response_hint += (
+                response_hint = (
                     'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                     '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
                 )
@@ -188,12 +172,12 @@ class SchemaTester:
                 response=data,
                 schema=schema,
                 reference=reference,
-                response_hint=response_hint,
-                request_hint=request_hint,
+                response_hint=response_hint or '',
+                request_hint=request_hint or '',
             )
 
-        item = read_items(schema)
-        if not item and data:
+        items = schema['items']
+        if not items and data is not None:
             raise DocumentationError(
                 message='Mismatched content. Response array contains data, when schema is empty.',
                 response=data,
@@ -203,17 +187,9 @@ class SchemaTester:
                 request_hint='',
             )
         for datum in data:
-            if read_type(item) == 'object':
-                logger.debug('test_list --> test_dict')
-                self.test_dict(schema=item, data=datum, reference=f'{reference}.list')
-
-            elif read_type(item) == 'array':
-                logger.debug('test_list --> test_dict')
-                self.test_list(schema=item, data=datum, reference=f'{reference}.list')
-
-            elif read_type(item) in list_types(cut=['array', 'object']):
-                logger.debug('test_list --> test_item')
-                self.test_item(schema=item, data=datum, reference=f'{reference}.list')
+            items_type = items['type']
+            logger.debug(f'test_list --> {items_type}')
+            self._test_schema(schema=items, data=datum, reference=f'{reference}.list')
 
     @staticmethod
     def test_item(schema: dict, data: Any, reference: str) -> None:
@@ -237,23 +213,21 @@ class SchemaTester:
             'file': {'check': not (isinstance(data, str)), 'type': "<class 'str'>"},
         }
         response_hint = ''
-        if data is None and is_nullable(schema):
-            pass  # this is fine
-        elif data is None and not is_nullable(schema):
+        if data is None and not is_nullable(schema):
             response_hint += (
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
             request_hint = 'You passed a None value where we expected a list.'
             raise DocumentationError(
-                message=f'Mismatched types. Expected item to be {type(type_placeholder_value(read_type(schema)))} but found {type(data)}.',
+                message=f'Mismatched types. Expected item to be {type(type_placeholder_value(schema["type"]))} but found {type(data)}.',
                 response=data,
                 schema=schema,
                 reference=reference,
                 response_hint=response_hint,
                 request_hint=request_hint,
             )
-        elif checks[schema['type']]['check']:
+        elif data is not None and schema['type'] in checks.keys() and checks[schema['type']]['check']:
             raise DocumentationError(
                 message='Mismatched types.',
                 response=data,

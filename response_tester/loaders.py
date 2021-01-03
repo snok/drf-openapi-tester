@@ -13,7 +13,7 @@ from prance.util.url import ResolutionError
 
 from response_tester.configuration import settings
 from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from response_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
+from response_tester.openapi import index_schema
 from response_tester.route import Route
 from response_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
@@ -309,12 +309,20 @@ class BaseSchemaLoader:
 
     def _iterate_schema_dict(self, schema_object: dict) -> dict:
         parsed_schema = {}
-        for key, value in read_properties(schema_object).items():
+        if 'properties' in schema_object:
+            properties = schema_object['properties']
+        else:
+            properties = {'': schema_object['additionalProperties']}
+        for key, value in properties.items():
+            if not isinstance(value, dict):
+                raise ValueError()
+            value_type = value['type']
+
             if 'example' in value:
                 parsed_schema[key] = value['example']
-            elif read_type(value) == 'object':
+            elif value_type == 'object':
                 parsed_schema[key] = self._iterate_schema_dict(value)
-            elif read_type(value) == 'array':
+            elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
                 logger.warning('Item `%s` is missing an explicit example value', value)
@@ -323,12 +331,13 @@ class BaseSchemaLoader:
 
     def _iterate_schema_list(self, schema_array: dict) -> list:
         parsed_items = []
-        raw_items = read_items(schema_array)
+        raw_items = schema_array['items']
+        items_type = raw_items['type']
         if 'example' in raw_items:
             parsed_items.append(raw_items['example'])
-        elif read_type(raw_items) == 'object':
+        elif items_type == 'object':
             parsed_items.append(self._iterate_schema_dict(raw_items))
-        elif read_type(raw_items) == 'array':
+        elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))
         else:
             logger.warning('Item `%s` is missing an explicit example value', raw_items)
@@ -339,19 +348,18 @@ class BaseSchemaLoader:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
+        schema_type = schema['type']
         if 'example' in schema:
             return schema['example']
-        elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
+        elif schema_type == 'array':
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
-        elif read_type(schema) == 'object' and 'properties' in schema or 'additionalProperties' in schema:
+        elif schema_type == 'object':
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
-        elif 'type' in schema and schema['type'] in list_types(cut=['object', 'array']):
-            logger.warning('Item `%s` is missing an explicit example value', schema)
-            return type_placeholder_value(schema['type'])
         else:
-            raise ImproperlyConfigured(f'Not able to construct an example from schema {schema}')
+            logger.warning('Item `%s` is missing an explicit example value', schema)
+            return type_placeholder_value(schema_type)
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):

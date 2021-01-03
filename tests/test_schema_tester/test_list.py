@@ -15,7 +15,9 @@ from tests.types import (
     string_type,
 )
 
-tester = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
+tester = SchemaTester(
+    {'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], lambda x, y: None, origin='test'
+)
 
 
 def test_valid_list() -> None:
@@ -87,18 +89,3 @@ def test_call_item_from_list():
         custom_list = {'title': 'list_type_title', 'type': 'array', 'items': type_schema[0]}
         custom_data = [type_schema[1]]
         assert tester.test_list(schema=custom_list, data=custom_data, reference='placeholder') is None
-
-
-def test_bad_type():
-    """
-    If a schema is passed, with unsupported types, we want to raise a general exception.
-    """
-    custom_schema = {
-        'type': 'array',
-        'items': {'description': 'How long the car is.', 'type': 'stringo', 'example': '2 meters'},
-    }
-    custom_data = ['test']
-    with pytest.raises(
-        Exception, match='Schema item has an invalid `type` attribute. The type `stringo` is not supported.'
-    ):
-        assert tester.test_list(schema=custom_schema, data=custom_data, reference='placeholder') is None
