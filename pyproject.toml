@@ -42,9 +42,6 @@ djangorestframework = "*"
 django = "^2.2 || ^3.0"
 prance = "^0.20.0"
 
-# Optional dependencies
-djangorestframework = { version = "*", optional = true }
-
 [tool.poetry.dev-dependencies]
 drf-yasg = "^1.17.1"
 pyYAML = "^5.3.1"
@@ -65,9 +62,11 @@ include = '\.pyi?$'
 
 [tool.isort]
 profile = "black"
-combine_as_imports = true
+multi_line_output = 3
+include_trailing_comma = true
 line_length = 120
 known_third_party = ["django", "drf_spectacular", "drf_yasg", "prance", "pytest", "requests", "rest_framework", "yaml"]
+known_first_party = ["response_tester"]
 
 [build-system]
 requires = ["poetry>=0.12"]

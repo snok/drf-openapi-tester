@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from django.utils.translation import get_language_from_path, gettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from response_tester.case_testers import is_camel_case
 from response_tester.loaders import DrfYasgSchemaLoader
@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ')t^bn_szx-tce^+lqg(@p8(8jt4c582fr)*ns3s3m0q^3p*$#8'
+SECRET_KEY = ")t^bn_szx-tce^+lqg(@p8(8jt4c582fr)*ns3s3m0q^3p*$#8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,110 +34,111 @@ ALLOWED_HOSTS: List[str] = []
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.contenttypes',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'drf_yasg',
-    'drf_spectacular',
-    'response_tester',
+    "django.contrib.contenttypes",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "drf_yasg",
+    "drf_spectacular",
+    "response_tester",
+    "djangorestframework_camel_case",
 ]
 
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'demo.urls'
+ROOT_URLCONF = "demo.urls"
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
-WSGI_APPLICATION = 'demo.wsgi.application'
+WSGI_APPLICATION = "demo.wsgi.application"
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3"),
     }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
+    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
 LANGUAGES = [
-    ('de', _('German')),
-    ('en', _('English')),
+    ("de", _("German")),
+    ("en", _("English")),
 ]
 
-LANGUAGE_CODE = 'en'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = "en"
+TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-STATIC_URL = '/demo/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_URL = "/demo/static/"
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 SWAGGER_SETTINGS = {
-    'DEFAULT_MODEL_RENDERING': 'example',
-    'DEFAULT_INFO': 'demo.urls.swagger_info',
+    "DEFAULT_MODEL_RENDERING": "example",
+    "DEFAULT_INFO": "demo.urls.swagger_info",
 }
 
 REST_FRAMEWORK = {
-    'DEFAULT_VERSION': 'v1',
-    'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
-    'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
-    'DEFAULT_RENDERER_CLASSES': (
-        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+    "DEFAULT_VERSION": "v1",
+    "DEFAULT_VERSIONING_CLASS": "rest_framework.versioning.URLPathVersioning",
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.SessionAuthentication",),
+    "DEFAULT_RENDERER_CLASSES": (
+        "djangorestframework_camel_case.render.CamelCaseJSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
     ),
-    'DEFAULT_PARSER_CLASSES': (
-        'djangorestframework_camel_case.parser.CamelCaseFormParser',
-        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
-        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
+    "DEFAULT_PARSER_CLASSES": (
+        "djangorestframework_camel_case.parser.CamelCaseFormParser",
+        "djangorestframework_camel_case.parser.CamelCaseMultiPartParser",
+        "djangorestframework_camel_case.parser.CamelCaseJSONParser",
     ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'simple': {'format': '%(levelname)s -- %(message)s'},
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {"format": "%(levelname)s -- %(message)s"},
     },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
         },
     },
-    'loggers': {
-        'response_tester': {
-            'handlers': ['console'],
-            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from response_tester
+    "loggers": {
+        "response_tester": {
+            "handlers": ["console"],
+            "level": "DEBUG",  # <-- Set to DEBUG to show log messages from response_tester
         }
     },
 }
@@ -148,7 +149,7 @@ RESPONSE_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
-    'CAMEL_CASE_PARSER': True,
+    'CAMEL_CASE_PARSER': False,
     'CASE_PASSLIST': [],
     'PARAMETERIZED_I18N_NAME': '',
     'MIDDLEWARE': {

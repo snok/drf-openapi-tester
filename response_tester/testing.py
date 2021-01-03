@@ -6,7 +6,7 @@ from response_tester.exceptions import CaseError, DocumentationError
 from response_tester.schema_tester import SchemaTester
 from response_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger("response_tester")
 
 if TYPE_CHECKING:
     try:
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-def validate_response(response: 'Response', method: str, route: str, **kwargs) -> None:
+def validate_response(response: "Response", method: str, route: str, **kwargs) -> None:
     """
     Verifies that an OpenAPI schema definition matches an API response.
 
@@ -41,7 +41,7 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
             data=data,
             case_tester=settings.case_tester,
             camel_case_parser=settings.camel_case_parser,
-            origin='response',
+            origin="response",
             **kwargs,
         )
     except DocumentationError as e:
@@ -57,12 +57,12 @@ class OpenAPITestCase(APITestCase):
     Extends APITestCase with OpenAPI assertions.
     """
 
-    def assertResponse(self, response: 'Response', **kwargs: Any) -> None:
+    def assertResponse(self, response: "Response", **kwargs: Any) -> None:
         """
         Assert response matches the OpenAPI spec.
         """
-        route = kwargs.pop('route', response.request['PATH_INFO'])
-        method = kwargs.pop('method', response.request['REQUEST_METHOD'])
+        route = kwargs.pop("route", response.request["PATH_INFO"])
+        method = kwargs.pop("method", response.request["REQUEST_METHOD"])
         try:
             validate_response(response=response, method=method, route=route, **kwargs)
         except (DocumentationError, CaseError) as e:

@@ -2,6 +2,7 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 
 from response_tester.loaders import StaticSchemaLoader
+from tests import json_path, yml_path
 
 
 def test_successful_yml_fetch(monkeypatch) -> None:
@@ -11,7 +12,7 @@ def test_successful_yml_fetch(monkeypatch) -> None:
     base = StaticSchemaLoader()
     base.set_path(yml_path)
     content = base.get_schema()
-    assert 'openapi' in content
+    assert "openapi" in content
 
 
 def test_successful_json_fetch(monkeypatch) -> None:
@@ -21,7 +22,7 @@ def test_successful_json_fetch(monkeypatch) -> None:
     base = StaticSchemaLoader()
     base.set_path(json_path)
     content = base.get_schema()
-    assert 'title' in content
+    assert "title" in content
 
 
 def test_non_existent_file(caplog, monkeypatch) -> None:
@@ -29,13 +30,13 @@ def test_non_existent_file(caplog, monkeypatch) -> None:
     Asserts that a non-existent file will raise an error.
     """
     base = StaticSchemaLoader()
-    base.set_path('test')
+    base.set_path("test")
     with pytest.raises(
         ImproperlyConfigured,
-        match='The path `test` does not point to a valid file. Make sure to point to the specification file.',
+        match="The path `test` does not point to a valid file. Make sure to point to the specification file.",
     ):
         base.get_schema()
-        assert 'Path `test` does not resolve as a valid file.' in caplog.records
+        assert "Path `test` does not resolve as a valid file." in caplog.records
 
 
 def test_unreadable_file(monkeypatch, caplog) -> None:
@@ -46,12 +47,12 @@ def test_unreadable_file(monkeypatch, caplog) -> None:
     def mocked_isfile(*args, **kwargs):
         return True
 
-    monkeypatch.setattr('response_tester.loaders.os.path.isfile', mocked_isfile)
+    monkeypatch.setattr("response_tester.loaders.os.path.isfile", mocked_isfile)
 
     base = StaticSchemaLoader()
-    base.set_path(yml_path + 's')
+    base.set_path(yml_path + "s")
     with pytest.raises(
-        ImproperlyConfigured, match='Unable to read the schema file. Please make sure the path setting is correct.'
+        ImproperlyConfigured, match="Unable to read the schema file. Please make sure the path setting is correct."
     ):
         base.get_schema()
 
@@ -63,8 +64,8 @@ def test_bad_filetype(monkeypatch) -> None:
     from django.conf import settings as django_settings
 
     base = StaticSchemaLoader()
-    base.set_path(str(django_settings.BASE_DIR) + '/settings.py')  # must be a real file
+    base.set_path(str(django_settings.BASE_DIR) + "/settings.py")  # must be a real file
     with pytest.raises(
-        ImproperlyConfigured, match='The specified file path does not seem to point to a JSON or YAML file.'
+        ImproperlyConfigured, match="The specified file path does not seem to point to a JSON or YAML file."
     ):
         base.get_schema()

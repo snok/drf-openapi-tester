@@ -3,7 +3,7 @@ from typing import List, Optional
 
 from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger("response_tester")
 
 
 def read_items(array: dict) -> dict:
@@ -17,16 +17,16 @@ def read_items(array: dict) -> dict:
     :return: array items
     :raises: response_tester.exceptions.OpenAPISchemaError
     """
-    if 'items' not in array:
-        raise OpenAPISchemaError(f'Array is missing an `items` attribute.\n\nArray schema: {array}')
-    return array['items']
+    if "items" not in array:
+        raise OpenAPISchemaError(f"Array is missing an `items` attribute.\n\nArray schema: {array}")
+    return array["items"]
 
 
 def list_types(cut: Optional[List[str]] = None) -> List[str]:
     """
     Returns supported item types.
     """
-    supported_types = ['string', 'boolean', 'integer', 'number', 'file', 'object', 'array']
+    supported_types = ["string", "boolean", "integer", "number", "file", "object", "array"]
     if cut:
         supported_types = list(set(supported_types) - set(cut))
     return supported_types
@@ -46,19 +46,19 @@ def read_type(item: dict) -> str:
     if (
         item is None
         or not isinstance(item, dict)
-        or 'type' not in item
-        or not item['type']
-        or not isinstance(item['type'], str)
+        or "type" not in item
+        or not item["type"]
+        or not isinstance(item["type"], str)
     ):
         raise OpenAPISchemaError(
-            f'Schema item has an invalid `type` attribute. The type should be a single string.\n\nSchema item: {item}'
+            f"Schema item has an invalid `type` attribute. The type should be a single string.\n\nSchema item: {item}"
         )
-    if item['type'] not in list_types():
+    if item["type"] not in list_types():
         raise OpenAPISchemaError(
-            f'Schema item has an invalid `type` attribute. '
+            f"Schema item has an invalid `type` attribute. "
             f'The type `{item["type"]}` is not supported.\n\nSchema item: {item}'
         )
-    return item['type']
+    return item["type"]
 
 
 def read_additional_properties(schema_object: dict) -> dict:
@@ -69,11 +69,11 @@ def read_additional_properties(schema_object: dict) -> dict:
     :return: schema object additional properties
     :raises: response_tester.exceptions.OpenAPISchemaError
     """
-    if 'additionalProperties' not in schema_object:
+    if "additionalProperties" not in schema_object:
         raise OpenAPISchemaError(
-            f'Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}'
+            f"Object is missing a `additionalProperties` attribute.\n\nObject schema: {schema_object}"
         )
-    return schema_object['additionalProperties']
+    return schema_object["additionalProperties"]
 
 
 def read_properties(schema_object: dict) -> dict:
@@ -84,13 +84,13 @@ def read_properties(schema_object: dict) -> dict:
     :return: schema object properties
     :raises: response_tester.exceptions.OpenAPISchemaError
     """
-    if 'properties' not in schema_object:
-        if 'additionalProperties' in schema_object:
+    if "properties" not in schema_object:
+        if "additionalProperties" in schema_object:
             # We return this with an empty key, so we can still iterate over the results .items(), as we would with
             # normal properties
-            return {'': read_additional_properties(schema_object)}
-        raise OpenAPISchemaError(f'Object is missing a `properties` attribute.\n\nObject schema: {schema_object}')
-    return schema_object['properties']
+            return {"": read_additional_properties(schema_object)}
+        raise OpenAPISchemaError(f"Object is missing a `properties` attribute.\n\nObject schema: {schema_object}")
+    return schema_object["properties"]
 
 
 def is_nullable(schema_item: dict) -> bool:
@@ -110,15 +110,15 @@ def is_nullable(schema_item: dict) -> bool:
     :param schema_item: schema item
     :return: whether or not the item can be None
     """
-    openapi_schema_3_nullable = 'nullable'
-    swagger_2_nullable = 'x-nullable'
+    openapi_schema_3_nullable = "nullable"
+    swagger_2_nullable = "x-nullable"
     return any(
         schema_item
         and isinstance(schema_item, dict)
         and nullable_key in schema_item
         and (
             (isinstance(schema_item[nullable_key], bool) and schema_item)
-            or (isinstance(schema_item[nullable_key], str) and schema_item[nullable_key] == 'true')
+            or (isinstance(schema_item[nullable_key], str) and schema_item[nullable_key] == "true")
         )
         for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
     )
@@ -135,12 +135,12 @@ def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
     :raises: IndexError
     """
     if error_addon is None:
-        error_addon = ''
+        error_addon = ""
     try:
-        logger.debug('Indexing schema by `%s`', variable)
-        return schema[f'{variable}']
+        logger.debug("Indexing schema by `%s`", variable)
+        return schema[f"{variable}"]
     except KeyError:
         raise UndocumentedSchemaSectionError(
-            f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.'
+            f"Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`."
             + error_addon
         )

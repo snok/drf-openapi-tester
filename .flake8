@@ -11,7 +11,6 @@ ignore=
     D210
     # Imperative docstring declarations
     D401
-
     # Type annotation for `self`
     TYP101
     TYP102  # for cls
@@ -45,16 +44,5 @@ ignore=
 
     # Missing type annotation for **kwargs
     ANN003
-
-exclude =
-    .git,
-    .idea,
-    __pycache__,
-    demo/*,
-    tests/*,
-    venv,
-    manage.py,
-    .venv
-
 
 max-complexity = 16
