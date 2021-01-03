@@ -124,7 +124,7 @@ def is_nullable(schema_item: dict) -> bool:
     )
 
 
-def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
+def index_schema(schema: dict, variable: str, error_addon: str = '') -> dict:
     """
     Indexes schema by string variable.
 
@@ -134,13 +134,11 @@ def index_schema(schema: dict, variable: str, error_addon: str = None) -> dict:
     :return: Indexed schema
     :raises: IndexError
     """
-    if error_addon is None:
-        error_addon = ''
     try:
         logger.debug('Indexing schema by `%s`', variable)
-        return schema[f'{variable}']
+        return schema[variable]
     except KeyError:
         raise UndocumentedSchemaSectionError(
-            f'Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `{variable}`.'
-            + error_addon
+            f'Failed indexing schema.\n\n'
+            f'Error: Unsuccessfully tried to index the OpenAPI schema by `{variable}`. {error_addon}'
         )

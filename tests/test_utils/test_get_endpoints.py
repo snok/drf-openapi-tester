@@ -13,8 +13,8 @@ def test_get_endpoint_paths():
     expected = sorted(
         [
             '/api/{version}/trucks/incorrect',
-            '/api/{version}/{vehicle_type}/correct',
-            '/api/{version}/{vehicle_type}/incorrect',
+            '/api/{version}/cars/correct',
+            '/api/{version}/cars/incorrect',
             '/api/{version}/vehicles',
             '/api/{version}/items',
             '/api/{version}/trucks/correct',

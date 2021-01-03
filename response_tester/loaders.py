@@ -7,13 +7,15 @@ from urllib.parse import ParseResult
 
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
+from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 
 from response_tester.configuration import settings
 from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from response_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
-from response_tester.utils import Route, get_endpoint_paths, resolve_path, type_placeholder_value
+from response_tester.route import Route
+from response_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
 logger = logging.getLogger('response_tester')
 
@@ -59,7 +61,8 @@ class BaseSchemaLoader:
 
     base_path = '/'
 
-    def __init__(self) -> None:
+    def __init__(self):
+        super().__init__()
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
 
@@ -90,12 +93,22 @@ class BaseSchemaLoader:
         except ResolutionError as e:
             raise OpenAPISchemaError('infinite recursion error') from e
 
+    @staticmethod
+    def validate_schema(schema: dict):
+        if 'openapi' in schema:
+            validator = openapi_v3_spec_validator
+        else:
+            validator = openapi_v2_spec_validator
+        validator.validate(schema)
+
     def set_schema(self, schema: dict) -> None:
         """
         Sets self.schema and self.original_schema.
         """
+        derefernced_schema = self.dereference_schema(schema)
+        self.validate_schema(derefernced_schema)
         self.original_schema = schema
-        self.schema = self.dereference_schema(schema)
+        self.schema = self.dereference_schema(derefernced_schema)
 
     def get_route(self, route: str) -> Route:
         """
@@ -446,7 +459,9 @@ class StaticSchemaLoader(BaseSchemaLoader):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(self) -> None:
+    is_static_loader = True
+
+    def __init__(self):
         super().__init__()
         self.path: str = ''
         logger.debug('Initialized static loader schema')

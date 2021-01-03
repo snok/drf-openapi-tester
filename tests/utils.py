@@ -1,6 +1,9 @@
 from copy import deepcopy
 
+import yaml
 from django.conf import settings as django_settings
+
+from tests import yml_path
 
 default_settings = django_settings.RESPONSE_TESTER
 default_middleware_settings = default_settings['MIDDLEWARE']
@@ -67,3 +70,9 @@ class MockRoute:
         if self.counter == 2:
             raise IndexError
         return self.x
+
+
+def ret_schema(*args, **kwargs):
+    with open(yml_path) as f:
+        content = f.read()
+    return yaml.load(content, Loader=yaml.FullLoader)

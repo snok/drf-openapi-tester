@@ -34,8 +34,8 @@ register_converter(IsValidVehicleType, 'vehicle_type')
 register_converter(IsValidVersion, 'version')
 
 api_urlpatterns = [
-    path('api/<version:version>/<vehicle_type:vehicle_type>/correct', GoodCars.as_view()),
-    path('api/<version:version>/<vehicle_type:vehicle_type>/incorrect', BadCars.as_view()),
+    path('api/<version:version>/cars/correct', GoodCars.as_view()),
+    path('api/<version:version>/cars/incorrect', BadCars.as_view()),
     path('api/<version:version>/trucks/correct', GoodTrucks.as_view()),
     path('api/<version:version>/trucks/incorrect', BadTrucks.as_view()),
     path('api/<version:version>/vehicles', Vehicles.as_view()),

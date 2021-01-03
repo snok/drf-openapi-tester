@@ -10,7 +10,7 @@ from response_tester.openapi import (
     read_properties,
     read_type,
 )
-from tests.types import list_type, object_type
+from tests.types import object_type
 
 
 def test_read_items():
@@ -110,20 +110,16 @@ def test_is_nullable():
         assert is_nullable(item) is False
 
 
-def test_index_schema(caplog):
-    # Test normal indexing
-    index_schema(schema=list_type, variable='items', error_addon=None)
-    assert any('Indexing schema by `items`' in message for message in caplog.messages)
-
+def test_index_schema():
     # Fail with no addon
     with pytest.raises(
         UndocumentedSchemaSectionError, match='Unsuccessfully tried to index the OpenAPI schema by `items`'
     ):
-        index_schema(schema=object_type, variable='items', error_addon=None)
+        index_schema(schema=object_type, variable='items')
 
     # Fail with addon
     with pytest.raises(
         UndocumentedSchemaSectionError,
         match='Unsuccessfully tried to index the OpenAPI schema by `items`. This is a very specific string',
     ):
-        index_schema(schema=object_type, variable='items', error_addon=' This is a very specific string')
+        index_schema(schema=object_type, variable='items', error_addon='This is a very specific string')
