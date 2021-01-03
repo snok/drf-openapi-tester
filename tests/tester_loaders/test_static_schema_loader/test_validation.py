@@ -2,8 +2,8 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 
-from response_tester.configuration import SwaggerTesterSettings
-from response_tester.loaders import StaticSchemaLoader
+from openapi_tester.configuration import SwaggerTesterSettings
+from openapi_tester.loaders import StaticSchemaLoader
 from tests import yml_path
 
 

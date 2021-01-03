@@ -1,6 +1,6 @@
 import pytest
 
-from response_tester.utils import unpack_response
+from openapi_tester.utils import unpack_response
 
 
 def test_successful_unpack():

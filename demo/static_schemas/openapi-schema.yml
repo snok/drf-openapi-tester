@@ -1,9 +1,9 @@
 openapi: 3.0.2
 info:
-  title: ''
-  version: ''
+  title: 'api-specs'
+  version: '1.0.0'
 paths:
-  /api/v1/{vehicle_type}/correct:
+  /api/v1/cars/correct:
     get:
       operationId: listGoodCars
       description: ''
@@ -74,7 +74,7 @@ paths:
       responses:
         '204':
           description: ''
-  /api/v1/{vehicle_type}/incorrect:
+  /api/v1/cars/incorrect:
     get:
       operationId: listBadCars
       description: ''

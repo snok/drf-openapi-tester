@@ -1,6 +1,6 @@
 from django.utils.translation import activate
 
-from response_tester.utils import get_endpoint_paths
+from openapi_tester.utils import get_endpoint_paths
 
 
 def test_get_endpoint_paths():
@@ -13,8 +13,8 @@ def test_get_endpoint_paths():
     expected = sorted(
         [
             '/api/{version}/trucks/incorrect',
-            '/api/{version}/{vehicle_type}/correct',
-            '/api/{version}/{vehicle_type}/incorrect',
+            '/api/{version}/cars/correct',
+            '/api/{version}/cars/incorrect',
             '/api/{version}/vehicles',
             '/api/{version}/items',
             '/api/{version}/trucks/correct',

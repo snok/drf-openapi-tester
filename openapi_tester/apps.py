@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
-from response_tester.configuration import settings
+from openapi_tester.configuration import settings
 
 
 class DjangoSwaggerTesterConfig(AppConfig):

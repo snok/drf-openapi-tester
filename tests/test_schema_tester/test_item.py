@@ -1,9 +1,11 @@
 import pytest
 
-from response_tester.exceptions import DocumentationError
-from response_tester.schema_tester import SchemaTester
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.schema_tester import SchemaTester
 
-base = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
+base = SchemaTester(
+    {'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], lambda x, y: None, origin='test'
+)
 
 items = [
     {

@@ -1,6 +1,6 @@
 import pytest
 
-from response_tester.utils import type_placeholder_value
+from openapi_tester.utils import type_placeholder_value
 
 
 def test_type_placeholder_value():

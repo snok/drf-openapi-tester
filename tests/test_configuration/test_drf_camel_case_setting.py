@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.configuration import SwaggerTesterSettings
+from openapi_tester.configuration import SwaggerTesterSettings
 from tests.utils import patch_settings
 
 

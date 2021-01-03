@@ -7,13 +7,15 @@ from urllib.parse import ParseResult
 
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
+from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 
-from response_tester.configuration import settings
-from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from response_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
-from response_tester.utils import Route, get_endpoint_paths, resolve_path, type_placeholder_value
+from openapi_tester.configuration import settings
+from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.openapi import index_schema
+from openapi_tester.route import Route
+from openapi_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
 logger = logging.getLogger('response_tester')
 
@@ -59,7 +61,8 @@ class BaseSchemaLoader:
 
     base_path = '/'
 
-    def __init__(self) -> None:
+    def __init__(self):
+        super().__init__()
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
 
@@ -90,12 +93,22 @@ class BaseSchemaLoader:
         except ResolutionError as e:
             raise OpenAPISchemaError('infinite recursion error') from e
 
+    @staticmethod
+    def validate_schema(schema: dict):
+        if 'openapi' in schema:
+            validator = openapi_v3_spec_validator
+        else:
+            validator = openapi_v2_spec_validator
+        validator.validate(schema)
+
     def set_schema(self, schema: dict) -> None:
         """
         Sets self.schema and self.original_schema.
         """
+        derefernced_schema = self.dereference_schema(schema)
+        self.validate_schema(derefernced_schema)
         self.original_schema = schema
-        self.schema = self.dereference_schema(schema)
+        self.schema = self.dereference_schema(derefernced_schema)
 
     def get_route(self, route: str) -> Route:
         """
@@ -296,12 +309,20 @@ class BaseSchemaLoader:
 
     def _iterate_schema_dict(self, schema_object: dict) -> dict:
         parsed_schema = {}
-        for key, value in read_properties(schema_object).items():
+        if 'properties' in schema_object:
+            properties = schema_object['properties']
+        else:
+            properties = {'': schema_object['additionalProperties']}
+        for key, value in properties.items():
+            if not isinstance(value, dict):
+                raise ValueError()
+            value_type = value['type']
+
             if 'example' in value:
                 parsed_schema[key] = value['example']
-            elif read_type(value) == 'object':
+            elif value_type == 'object':
                 parsed_schema[key] = self._iterate_schema_dict(value)
-            elif read_type(value) == 'array':
+            elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
                 logger.warning('Item `%s` is missing an explicit example value', value)
@@ -310,12 +331,13 @@ class BaseSchemaLoader:
 
     def _iterate_schema_list(self, schema_array: dict) -> list:
         parsed_items = []
-        raw_items = read_items(schema_array)
+        raw_items = schema_array['items']
+        items_type = raw_items['type']
         if 'example' in raw_items:
             parsed_items.append(raw_items['example'])
-        elif read_type(raw_items) == 'object':
+        elif items_type == 'object':
             parsed_items.append(self._iterate_schema_dict(raw_items))
-        elif read_type(raw_items) == 'array':
+        elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))
         else:
             logger.warning('Item `%s` is missing an explicit example value', raw_items)
@@ -326,19 +348,18 @@ class BaseSchemaLoader:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
+        schema_type = schema['type']
         if 'example' in schema:
             return schema['example']
-        elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
+        elif schema_type == 'array':
             logger.debug('--> list')
             return self._iterate_schema_list(schema)
-        elif read_type(schema) == 'object' and 'properties' in schema or 'additionalProperties' in schema:
+        elif schema_type == 'object':
             logger.debug('--> dict')
             return self._iterate_schema_dict(schema)
-        elif 'type' in schema and schema['type'] in list_types(cut=['object', 'array']):
-            logger.warning('Item `%s` is missing an explicit example value', schema)
-            return type_placeholder_value(schema['type'])
         else:
-            raise ImproperlyConfigured(f'Not able to construct an example from schema {schema}')
+            logger.warning('Item `%s` is missing an explicit example value', schema)
+            return type_placeholder_value(schema_type)
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
@@ -431,7 +452,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         :param route: Django resolved route
         """
-        from response_tester.utils import resolve_path
+        from openapi_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
@@ -446,7 +467,9 @@ class StaticSchemaLoader(BaseSchemaLoader):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(self) -> None:
+    is_static_loader = True
+
+    def __init__(self):
         super().__init__()
         self.path: str = ''
         logger.debug('Initialized static loader schema')

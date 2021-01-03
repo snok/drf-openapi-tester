@@ -41,6 +41,7 @@ python = "^3.6.1"
 djangorestframework = "*"
 django = "^2.2 || ^3.0"
 prance = "^0.20.0"
+openapi-spec-validator = "^0.2.9"
 
 [tool.poetry.dev-dependencies]
 drf-yasg = "^1.17.1"
@@ -66,7 +67,7 @@ profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
 line_length = 120
-known_third_party = ["django", "drf_spectacular", "drf_yasg", "prance", "pytest", "requests", "rest_framework", "yaml"]
+known_third_party = ["django", "drf_spectacular", "drf_yasg", "openapi_spec_validator", "prance", "pytest", "requests", "rest_framework", "yaml"]
 known_first_party = ["response_tester"]
 
 [build-system]

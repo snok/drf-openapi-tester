@@ -1,8 +1,8 @@
-from response_tester.loaders import StaticSchemaLoader
+from openapi_tester.loaders import StaticSchemaLoader
 from tests import yml_split_path
 
 
-def test_successful_parse_reference(monkeypatch) -> None:
+def test_successful_parse_reference() -> None:
     """
     Asserts that a schema section that contains reference is returned successfully.
     """

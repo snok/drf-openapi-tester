@@ -1,7 +1,7 @@
 import logging
 import re
 
-from response_tester.exceptions import CaseError
+from openapi_tester.exceptions import CaseError
 
 logger = logging.getLogger('response_tester')
 

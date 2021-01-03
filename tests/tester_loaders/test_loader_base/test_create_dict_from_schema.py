@@ -1,11 +1,9 @@
 from copy import deepcopy
 
-import pytest
 import yaml
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.loaders import BaseSchemaLoader
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
 
@@ -89,14 +87,7 @@ def test_iterate_schema_list(caplog):
     assert "Item `{'type': 'string'}` is missing an explicit example value" == caplog.records[-1].message
 
 
-def test_failed_creation(monkeypatch):
-    with pytest.raises(
-        ImproperlyConfigured, match="Not able to construct an example from schema {'type': 'array', 'items': False}"
-    ):
-        BaseSchemaLoader().create_dict_from_schema({'type': 'array', 'items': False})
-
-
-def test_item_without_example(monkeypatch):
+def test_item_without_example():
     for item, expected in [
         (deepcopy(string_type), 'string'),
         (deepcopy(integer_type), 1),

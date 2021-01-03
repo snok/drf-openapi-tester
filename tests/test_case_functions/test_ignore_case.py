@@ -1,7 +1,7 @@
-from response_tester.testing import validate_response
+from openapi_tester.testing import validate_response
 
 
-def test_endpoints_dynamic_schema(client, caplog, transactional_db) -> None:
+def test_endpoints_dynamic_schema(client, caplog) -> None:
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """

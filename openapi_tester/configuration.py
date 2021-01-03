@@ -6,7 +6,7 @@ from typing import Callable, List
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-import response_tester.type_declarations as td
+import openapi_tester.type_declarations as td
 
 logger = logging.getLogger('response_tester')
 

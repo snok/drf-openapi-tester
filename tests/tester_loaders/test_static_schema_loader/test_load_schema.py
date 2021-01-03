@@ -1,15 +1,9 @@
 import pytest
-import yaml
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import StaticSchemaLoader
+from openapi_tester.loaders import StaticSchemaLoader
 from tests import yml_path
-
-
-def ret_schema(*args, **kwargs):
-    with open(yml_path) as f:
-        content = f.read()
-    return yaml.load(content, Loader=yaml.FullLoader)
+from tests.utils import ret_schema
 
 
 def ret_bad_schema(*args, **kwargs):

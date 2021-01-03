@@ -13,44 +13,45 @@ schema, we raise an exception, causing your test to fail.
 ### Pytest examples
 
 ```python
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
-    def test_200_response_documentation(client):
-        route = 'api/v1/test/1'
-        response = client.get(route)
 
-        assert response.status_code == 200
-        assert response.json() == expected_response
+def test_200_response_documentation(client):
+    route = 'api/v1/test/1'
+    response = client.get(route)
 
-        # Add this line to your API tests
-        validate_response(response=response, method='GET', route=route)
+    assert response.status_code == 200
+    assert response.json() == expected_response
+
+    # Add this line to your API tests
+    validate_response(response=response, method='GET', route=route)
 ```
 
 ### Django test example
 
 ```python
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
-    class MyApiTest(APITestCase):
 
-        path = '/api/v1/test/'
+class MyApiTest(APITestCase):
+    path = '/api/v1/test/'
 
-        def setUp(self) -> None:
-            user, _ = User.objects.update_or_create(username='test_user')
-            self.client.force_authenticate(user=user)
+    def setUp(self) -> None:
+        user, _ = User.objects.update_or_create(username='test_user')
+        self.client.force_authenticate(user=user)
 
-        def test_get_200(self) -> None:
-            """
-            Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
-            """
-            response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
-            expected_response = [...]
+    def test_get_200(self) -> None:
+        """
+        Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
+        """
+        response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
+        expected_response = [...]
 
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), expected_response)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), expected_response)
 
-            # Add this line to your API tests
-            validate_response(response=response, method='GET', route=self.path)
+        # Add this line to your API tests
+        validate_response(response=response, method='GET', route=self.path)
 ```
 
 ## Error messages

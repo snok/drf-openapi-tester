@@ -15,8 +15,8 @@ from typing import List
 
 from django.utils.translation import gettext_lazy as _
 
-from response_tester.case_testers import is_camel_case
-from response_tester.loaders import DrfYasgSchemaLoader
+from openapi_tester.case_testers import is_camel_case
+from openapi_tester.loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 

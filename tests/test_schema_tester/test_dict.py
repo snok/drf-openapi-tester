@@ -2,9 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from response_tester.exceptions import DocumentationError
-from response_tester.loaders import BaseSchemaLoader
-from response_tester.schema_tester import SchemaTester
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.loaders import BaseSchemaLoader
+from openapi_tester.schema_tester import SchemaTester
 from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {
@@ -20,7 +20,10 @@ schema = {
 data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 
 tester = SchemaTester(
-    schema={'type': 'array', 'items': {}}, data=[], case_tester=lambda x, y: None, origin='test-response'
+    schema={'type': 'array', 'items': {'type': 'object', 'properties': {}}},
+    data=[],
+    case_tester=lambda x, y: None,
+    origin='test-response',
 )
 
 
@@ -171,23 +174,3 @@ def test_call_list_from_dict():
     }
     custom_data = {'list': []}
     assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None
-
-
-def test_bad_type():
-    """
-    If a schema is passed, with unsupported types, we want to raise a general exception.
-    """
-    custom_schema = {
-        'type': 'object',
-        'properties': {
-            'list': {
-                'type': 'rarray',
-                'items': {'description': 'How long the car is.', 'type': 'string', 'example': '2 meters'},
-            }
-        },
-    }
-    custom_data = {'list': []}
-    with pytest.raises(
-        Exception, match='Schema item has an invalid `type` attribute. The type `rarray` is not supported'
-    ):
-        assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None
