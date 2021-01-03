@@ -26,8 +26,8 @@ repos:
     rev: v2.2.0
     hooks:
       - id: seed-isort-config
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: "v5.7.0"
+  - repo: https://github.com/pycqa/isort
+    rev: 5.5.2
     hooks:
       - id: isort
   - repo: local
