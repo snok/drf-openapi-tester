@@ -58,6 +58,7 @@ pre-commit = "^2.9.3"
 
 [tool.black]
 line-length = 120
+skip-string-normalization = true
 include = '\.pyi?$'
 
 [tool.isort]

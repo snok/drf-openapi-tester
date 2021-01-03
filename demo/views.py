@@ -7,4 +7,4 @@ def index(request: Request) -> redirect:
     """
     Redirects traffic from / to /swagger.
     """
-    return redirect("schema-swagger-ui")
+    return redirect('schema-swagger-ui')

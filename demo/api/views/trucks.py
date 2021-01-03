@@ -10,9 +10,9 @@ class GoodTrucks(APIView):
     @get_trucks_auto_schema()
     def get(request: Request, version: int) -> Response:
         trucks = [
-            {"name": "Saab", "color": "Yellow", "height": "Medium height", "width": "Very wide", "length": "2 meters"},
-            {"name": "Volvo", "color": "Red", "height": "Medium height", "width": "Not wide", "length": "2 meters"},
-            {"name": "Tesla", "color": "black", "height": "Medium height", "width": "Wide", "length": "2 meters"},
+            {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'},
+            {'name': 'Volvo', 'color': 'Red', 'height': 'Medium height', 'width': 'Not wide', 'length': '2 meters'},
+            {'name': 'Tesla', 'color': 'black', 'height': 'Medium height', 'width': 'Wide', 'length': '2 meters'},
         ]
         return Response(trucks, 200)
 
@@ -35,12 +35,12 @@ class BadTrucks(APIView):
     def get(request: Request, version: int) -> Response:
         trucks = [
             {
-                "name": "Saab",
-                "color": "Yellow",
-                "height": "Medium height",
+                'name': 'Saab',
+                'color': 'Yellow',
+                'height': 'Medium height',
             },
-            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
-            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+            {'name': 'Volvo', 'color': 'Red', 'width': 'Not very wide', 'length': '2 meters'},
+            {'name': 'Tesla', 'height': 'Medium height', 'width': 'Medium width', 'length': '2 meters'},
         ]
         return Response(trucks, 200)
 

@@ -44,5 +44,11 @@ ignore=
 
     # Missing type annotation for **kwargs
     ANN003
-
+exclude =
+    .git,
+    .idea,
+    __pycache__,
+    venv,
+    manage.py,
+    .venv
 max-complexity = 16

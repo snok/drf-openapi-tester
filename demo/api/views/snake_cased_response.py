@@ -11,4 +11,4 @@ class SnakeCasedResponse(APIView):
 
     @get_snake_cased_response()
     def get(self, request: Request, version: int, **kwargs) -> Response:
-        return Response({"this_is_snake_case": "test"}, 200)
+        return Response({'this_is_snake_case': 'test'}, 200)

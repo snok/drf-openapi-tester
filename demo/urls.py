@@ -18,44 +18,44 @@ from demo.api.views.vehicles import Vehicles
 
 class IsValidVehicleType(StringConverter):
     def to_python(self, value: str) -> str:
-        if value in ["cars", "2", 2]:
+        if value in ['cars', '2', 2]:
             return value
         raise ValueError
 
 
 class IsValidVersion(StringConverter):
     def to_python(self, value: str) -> str:
-        if value in ["v1"]:
+        if value in ['v1']:
             return value
         raise ValueError
 
 
-register_converter(IsValidVehicleType, "vehicle_type")
-register_converter(IsValidVersion, "version")
+register_converter(IsValidVehicleType, 'vehicle_type')
+register_converter(IsValidVersion, 'version')
 
 api_urlpatterns = [
-    path("api/<version:version>/<vehicle_type:vehicle_type>/correct", GoodCars.as_view()),
-    path("api/<version:version>/<vehicle_type:vehicle_type>/incorrect", BadCars.as_view()),
-    path("api/<version:version>/trucks/correct", GoodTrucks.as_view()),
-    path("api/<version:version>/trucks/incorrect", BadTrucks.as_view()),
-    path("api/<version:version>/vehicles", Vehicles.as_view()),
-    path("api/<version:version>/animals", Animals.as_view()),
-    path("api/<version:version>/items", Items.as_view()),
-    path("api/<version:version>/exempt-endpoint", Exempt.as_view()),
-    path("api/<version:version>/snake-case/", SnakeCasedResponse.as_view()),
+    path('api/<version:version>/<vehicle_type:vehicle_type>/correct', GoodCars.as_view()),
+    path('api/<version:version>/<vehicle_type:vehicle_type>/incorrect', BadCars.as_view()),
+    path('api/<version:version>/trucks/correct', GoodTrucks.as_view()),
+    path('api/<version:version>/trucks/incorrect', BadTrucks.as_view()),
+    path('api/<version:version>/vehicles', Vehicles.as_view()),
+    path('api/<version:version>/animals', Animals.as_view()),
+    path('api/<version:version>/items', Items.as_view()),
+    path('api/<version:version>/exempt-endpoint', Exempt.as_view()),
+    path('api/<version:version>/snake-case/', SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
 ]
 
 internationalised_urlpatterns = i18n_patterns(
-    path("api/<version:version>/i18n", Languages.as_view()),
+    path('api/<version:version>/i18n', Languages.as_view()),
 )
 
 
 swagger_info = openapi.Info(
-    title="DRF_YASG test project",
-    default_version="v1",
-    description="drf_yasg implementation for OpenAPI spec generation.",
-    contact=openapi.Contact(email=""),
+    title='DRF_YASG test project',
+    default_version='v1',
+    description='drf_yasg implementation for OpenAPI spec generation.',
+    contact=openapi.Contact(email=''),
 )
 schema_view = get_schema_view(
     swagger_info,
@@ -65,8 +65,8 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path("", views.index),
-    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path('', views.index),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
 urlpatterns += api_urlpatterns + internationalised_urlpatterns

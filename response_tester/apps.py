@@ -4,7 +4,7 @@ from response_tester.configuration import settings
 
 
 class DjangoSwaggerTesterConfig(AppConfig):
-    name = "response_tester"
+    name = 'response_tester'
 
     def ready(self) -> None:
         """

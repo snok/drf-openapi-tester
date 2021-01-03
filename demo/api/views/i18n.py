@@ -11,5 +11,5 @@ class Languages(APIView):
     @languages_auto_schema()
     def get(self, request: Request, version: int) -> Response:
         return Response(
-            {"languages": [_("French"), _("Spanish"), _("Greek"), _("Italian"), _("Portuguese")]}, HTTP_200_OK
+            {'languages': [_('French'), _('Spanish'), _('Greek'), _('Italian'), _('Portuguese')]}, HTTP_200_OK
         )

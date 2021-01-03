@@ -12,22 +12,22 @@ def test_valid_loader_classes(monkeypatch) -> None:
     Assert that valid cases always pass without errors.
     """
     for case in [DrfYasgSchemaLoader, StaticSchemaLoader]:
-        monkeypatch.setattr(django_settings, "RESPONSE_TESTER", patch_settings("SCHEMA_LOADER", case))
+        monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', case))
         SwaggerTesterSettings().validate()
 
 
 def test_missing_loader_class(monkeypatch) -> None:
-    monkeypatch.setattr(django_settings, "RESPONSE_TESTER", patch_settings("SCHEMA_LOADER", None))
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', None))
     with pytest.raises(
         ImproperlyConfigured,
-        match="SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, "
-        "and is required. "
-        "Please pass a loader class from response_tester.schema_loaders",
+        match='SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, '
+        'and is required. '
+        'Please pass a loader class from response_tester.schema_loaders',
     ):
         SwaggerTesterSettings().validate()
 
 
 def test_invalid_invalid_callable(monkeypatch) -> None:
-    monkeypatch.setattr(django_settings, "RESPONSE_TESTER", patch_settings("SCHEMA_LOADER", lambda x: x))
-    with pytest.raises(ImproperlyConfigured, match="SCHEMA_LOADER must be a class"):
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('SCHEMA_LOADER', lambda x: x))
+    with pytest.raises(ImproperlyConfigured, match='SCHEMA_LOADER must be a class'):
         SwaggerTesterSettings().validate()

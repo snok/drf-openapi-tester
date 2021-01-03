@@ -11,9 +11,9 @@ class DocumentationError(Exception):
         message: str,
         response: Any = None,
         schema: Optional[dict] = None,
-        reference: str = "",
-        response_hint: str = "",
-        request_hint: str = "",
+        reference: str = '',
+        response_hint: str = '',
+        request_hint: str = '',
     ) -> None:
         super().__init__(message)
         if schema is None:
@@ -31,7 +31,7 @@ class CaseError(Exception):
     Custom exception raised when items are not cased correctly.
     """
 
-    def __init__(self, key: str = "", case: str = "", origin: str = "") -> None:
+    def __init__(self, key: str = '', case: str = '', origin: str = '') -> None:
         self.key = key
         self.case = case
         self.origin = origin

@@ -13,13 +13,13 @@ def test_successful_unpack():
 
         @staticmethod
         def json():
-            return {"test": "test"}
+            return {'test': 'test'}
 
     response = MockResponse()
     response.status_code = 200
 
     data, status_code = unpack_response(response)
-    assert data == {"test": "test"}
+    assert data == {'test': 'test'}
     assert status_code == 200
 
 
@@ -35,7 +35,7 @@ def test_bad_json_method():
 
     with pytest.raises(
         Exception,
-        match="Response does not contain a JSON-formatted response and cannot be tested against a response schema.",
+        match='Response does not contain a JSON-formatted response and cannot be tested against a response schema.',
     ):
         unpack_response(response)
 
@@ -52,6 +52,6 @@ def test_bad_status_code():
 
     with pytest.raises(
         Exception,
-        match="Response object does not contain a status code. Unable to unpack response object.",
+        match='Response object does not contain a status code. Unable to unpack response object.',
     ):
         unpack_response(response)

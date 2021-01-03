@@ -7,21 +7,21 @@ def test_get_endpoint_paths():
     """
     Make sure the function returns a valid list of strings.
     """
-    activate("en")  # we need to force set locale for the i18n endpoint to work as expected
+    activate('en')  # we need to force set locale for the i18n endpoint to work as expected
 
     actual = sorted(get_endpoint_paths())
     expected = sorted(
         [
-            "/api/{version}/trucks/incorrect",
-            "/api/{version}/{vehicle_type}/correct",
-            "/api/{version}/{vehicle_type}/incorrect",
-            "/api/{version}/vehicles",
-            "/api/{version}/items",
-            "/api/{version}/trucks/correct",
-            "/api/{version}/snake-case/",
-            "/api/{version}/animals",
-            "/api/{version}/exempt-endpoint",
-            "/en/api/{version}/i18n",
+            '/api/{version}/trucks/incorrect',
+            '/api/{version}/{vehicle_type}/correct',
+            '/api/{version}/{vehicle_type}/incorrect',
+            '/api/{version}/vehicles',
+            '/api/{version}/items',
+            '/api/{version}/trucks/correct',
+            '/api/{version}/snake-case/',
+            '/api/{version}/animals',
+            '/api/{version}/exempt-endpoint',
+            '/en/api/{version}/i18n',
         ]
     )
 
