@@ -1,6 +1,6 @@
 import pytest
 
-from response_tester.utils import resolve_path
+from openapi_tester.utils import resolve_path
 
 paths = [
     '/api/v1/cars/correct/',

@@ -1,6 +1,6 @@
 import pytest
 
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.loaders import BaseSchemaLoader
 
 simple_ref_schema = {
     'paths': {

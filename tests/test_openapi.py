@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from response_tester.openapi import (
+from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.openapi import (
     index_schema,
     is_nullable,
     list_types,

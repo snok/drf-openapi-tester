@@ -93,14 +93,14 @@ To use Django Swagger Settings in your project, you first need to add a ``respon
         'response_tester',
     ]
 
-Secondly, you need to configure the ``RESPONSE_TESTER`` package settings in your ``settings.py``:
+Secondly, you need to configure the ``OPENAPI_TESTER`` package settings in your ``settings.py``:
 
 .. code:: python
 
     from response_tester.loaders import DrfSpectacularSchemaLoader
     from response_tester.case_testers import is_camel_case
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
         'CAMEL_CASE_PARSER': True,

@@ -1,7 +1,7 @@
 # flake8: noqa
 # fmt: off
-from response_tester.exceptions import DocumentationError
-from response_tester.utils import format_response_tester_error
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.utils import format_response_tester_error
 
 error = DocumentationError(
     message='This is a message',

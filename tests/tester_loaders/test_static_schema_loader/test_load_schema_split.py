@@ -1,4 +1,4 @@
-from response_tester.loaders import StaticSchemaLoader
+from openapi_tester.loaders import StaticSchemaLoader
 from tests import yml_split_path
 
 

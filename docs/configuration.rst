@@ -8,7 +8,7 @@ Settings
 --------
 
 To use the test-utility in your project, you need to configure the
-``RESPONSE_TESTER`` package settings in your ``settings.py``.
+``OPENAPI_TESTER`` package settings in your ``settings.py``.
 At minimum you need to specify which schema loader class to use to load your
 OpenAPI schema when testing it:
 
@@ -17,15 +17,15 @@ OpenAPI schema when testing it:
     from response_tester.loaders import StaticSchemaLoader
     from response_tester.case_testers import is_camel_case
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
     }
 
-A complete example of the ``RESPONSE_TESTER`` settings might look like this:
+A complete example of the ``OPENAPI_TESTER`` settings might look like this:
 
 .. code:: python
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         'SCHEMA_LOADER': StaticSchemaLoader,
         'PATH': 'demo/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
@@ -61,7 +61,7 @@ The loader class is responsible for all logic related to loading and interacting
 
     from response_tester.loaders import DrfSpectacularSchemaLoader
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         ...
     }
@@ -76,7 +76,7 @@ loader class, and just lets the loader class know where your schema is located i
 
 .. code:: python
 
-  RESPONSE_TESTER = {
+  OPENAPI_TESTER = {
       'PATH': BASE_DIR / '/openapi-schema.yml',
   }
 
@@ -103,7 +103,7 @@ There are currently four supported options:
 
     from response_tester.case_testers import is_camel_case
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         ...
         'CASE_TESTER': is_camel_case,
     }
@@ -127,7 +127,7 @@ this being flagged as an error in your tests.
 
     from response_tester.case_testers import is_camel_case
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         ...
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }
@@ -145,7 +145,7 @@ Otherwise, set it to False or leave it out of your settings.
 
 .. code:: python
 
-  RESPONSE_TESTER = {
+  OPENAPI_TESTER = {
       'CAMEL_CASE_PARSER': True,
   }
 

@@ -54,7 +54,7 @@ Changelog
 
 **Breaking changes**
 
-Version 2.0.0 introduces new required package settings, which means existing implementations will need to set up their ``RESPONSE_TESTER`` settings again before package functions will run.
+Version 2.0.0 introduces new required package settings, which means existing implementations will need to set up their ``OPENAPI_TESTER`` settings again before package functions will run.
 
 Specifically:
 

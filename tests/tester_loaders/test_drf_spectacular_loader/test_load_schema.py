@@ -1,4 +1,4 @@
-from response_tester.loaders import DrfSpectacularSchemaLoader
+from openapi_tester.loaders import DrfSpectacularSchemaLoader
 
 
 def test_successful_parse_documented_endpoints(monkeypatch) -> None:

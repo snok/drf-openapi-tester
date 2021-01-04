@@ -5,7 +5,7 @@ import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.loaders import BaseSchemaLoader
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
 

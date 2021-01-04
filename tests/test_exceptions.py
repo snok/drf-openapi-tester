@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.exceptions import DocumentationError
+from openapi_tester.exceptions import DocumentationError
 
 
 def test_specification_error():

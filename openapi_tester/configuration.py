@@ -6,9 +6,9 @@ from typing import Callable, List
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-import response_tester.type_declarations as td
+import openapi_tester.type_declarations as td
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 class SwaggerTesterSettings:
@@ -16,23 +16,23 @@ class SwaggerTesterSettings:
 
     @property
     def schema_loader(self):
-        return django_settings.RESPONSE_TESTER.get('SCHEMA_LOADER', None)
+        return django_settings.OPENAPI_TESTER.get('SCHEMA_LOADER', None)
 
     @property
     def case_tester(self) -> Callable:
-        return django_settings.RESPONSE_TESTER.get('CASE_TESTER', lambda *args: None)
+        return django_settings.OPENAPI_TESTER.get('CASE_TESTER', lambda *args: None)
 
     @property
     def camel_case_parser(self) -> bool:
-        return django_settings.RESPONSE_TESTER.get('CAMEL_CASE_PARSER', False)
+        return django_settings.OPENAPI_TESTER.get('CAMEL_CASE_PARSER', False)
 
     @property
     def case_passlist(self) -> List[str]:
-        return django_settings.RESPONSE_TESTER.get('CASE_PASSLIST', [])
+        return django_settings.OPENAPI_TESTER.get('CASE_PASSLIST', [])
 
     @property
     def parameterized_i18n_name(self):
-        return django_settings.RESPONSE_TESTER.get('PARAMETERIZED_I18N_NAME', '')
+        return django_settings.OPENAPI_TESTER.get('PARAMETERIZED_I18N_NAME', '')
 
     @property
     def loader_class(self) -> td.BaseSchemaLoader:
@@ -41,8 +41,8 @@ class SwaggerTesterSettings:
         return self._loader_class
 
     def validate(self):
-        if not hasattr(django_settings, 'RESPONSE_TESTER') or not django_settings.RESPONSE_TESTER:
-            raise ImproperlyConfigured('RESPONSE_TESTER settings need to be configured')
+        if not hasattr(django_settings, 'OPENAPI_TESTER') or not django_settings.OPENAPI_TESTER:
+            raise ImproperlyConfigured('OPENAPI_TESTER settings need to be configured')
 
         self.validate_case_tester_setting()
         self.validate_camel_case_parser_setting()
@@ -62,7 +62,7 @@ class SwaggerTesterSettings:
             logger.error('CASE_TESTER setting is mis-specified.')
             raise ImproperlyConfigured(
                 'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
-                'Please pass a case tester callable from response_tester.case_testers, '
+                'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
         elif self.case_tester is None:
@@ -96,10 +96,10 @@ class SwaggerTesterSettings:
         Sets self.loader_class and validates the setting.
         """
 
-        addon = '. Please pass a loader class from response_tester.schema_loaders.'
+        addon = '. Please pass a loader class from openapi_tester.schema_loaders.'
         if self.schema_loader is None:
             raise ImproperlyConfigured(
-                'SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, and is required' + addon
+                'SCHEMA_LOADER is missing from your OPENAPI_TESTER settings, and is required' + addon
             )
 
         if not inspect.isclass(self.schema_loader):
@@ -115,15 +115,15 @@ class SwaggerTesterSettings:
             - The path to the static file is provided, and that the file type is compatible (json/yml/yaml)
             - The right parsing library is installed (pyYAML for yaml, json is builtin)
             """
-            path = django_settings.RESPONSE_TESTER.get('PATH', None)
+            path = django_settings.OPENAPI_TESTER.get('PATH', None)
             if not path:
                 logger.error('PATH setting is not specified')
                 raise ImproperlyConfigured(
-                    'PATH is required to load static OpenAPI schemas. Please add PATH to the RESPONSE_TESTER settings.'
+                    'PATH is required to load static OpenAPI schemas. Please add PATH to the OPENAPI_TESTER settings.'
                 )
             elif not isinstance(path, str):
                 logger.error('PATH setting is not a string')
-                raise ImproperlyConfigured('`PATH` needs to be a string. Please update your RESPONSE_TESTER settings.')
+                raise ImproperlyConfigured('`PATH` needs to be a string. Please update your OPENAPI_TESTER settings.')
             if '.yml' in path or '.yaml' in path:
                 try:
                     import yaml  # noqa: F401

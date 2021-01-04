@@ -8,9 +8,9 @@ from typing import Any, List, Optional, Tuple
 from django.urls import ResolverMatch
 from rest_framework.response import Response
 
-from response_tester.exceptions import CaseError, DocumentationError
+from openapi_tester.exceptions import CaseError, DocumentationError
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def format_response_tester_case_error(exception: CaseError) -> str:
@@ -20,7 +20,7 @@ def format_response_tester_case_error(exception: CaseError) -> str:
     return (
         f'The response key `{exception.key}` is not properly {exception.case}\n\n'
         f"If this is intentional, you can skip case validation by adding `ignore_case=['{exception.key}']` to the "
-        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the RESPONSE_TESTER settings'
+        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_TESTER settings'
     )
 
 
@@ -30,7 +30,7 @@ def format_response_tester_error(
     """
     Formats and returns a standardized error message for easy debugging.
 
-    Primarily used for the response_tester.testing.response_validation function, as it's too verbose for
+    Primarily used for the openapi_tester.testing.response_validation function, as it's too verbose for
     middleware logging.
     """
     logger.debug('Constructing error message')
@@ -39,7 +39,7 @@ def format_response_tester_error(
         addon = '\n* If you need more details: set `verbose=True`'
 
     # Construct example dict/list from schema - this is useful to display comparable items
-    from response_tester.configuration import settings
+    from openapi_tester.configuration import settings
 
     example_item = settings.loader_class.create_dict_from_schema(exception.schema)
 
@@ -303,7 +303,7 @@ class Route:
         """
         from django.utils import translation
 
-        from response_tester.configuration import settings
+        from openapi_tester.configuration import settings
 
         if settings.parameterized_i18n_name:
             parameter = f'{{{settings.parameterized_i18n_name}}}'

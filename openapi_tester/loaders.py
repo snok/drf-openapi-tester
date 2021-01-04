@@ -10,12 +10,12 @@ from django.core.exceptions import ImproperlyConfigured
 from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 
-from response_tester.configuration import settings
-from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from response_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
-from response_tester.utils import Route, get_endpoint_paths, resolve_path, type_placeholder_value
+from openapi_tester.configuration import settings
+from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
+from openapi_tester.utils import Route, get_endpoint_paths, resolve_path, type_placeholder_value
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def remove_recursive_ref(schema: dict, fragment: str) -> dict:
@@ -143,7 +143,7 @@ class BaseSchemaLoader:
         if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
             route_error += (
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
-                f'to your VALIDATION_EXEMPT_URLS setting list in your RESPONSE_TESTER.MIDDLEWARE settings.'
+                f'to your VALIDATION_EXEMPT_URLS setting list in your OPENAPI_TESTER.MIDDLEWARE settings.'
             )
 
         error = None
@@ -431,7 +431,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         :param route: Django resolved route
         """
-        from response_tester.utils import resolve_path
+        from openapi_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'

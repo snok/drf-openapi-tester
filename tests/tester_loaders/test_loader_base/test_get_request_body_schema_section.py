@@ -2,8 +2,8 @@ from copy import deepcopy
 
 import pytest
 
-from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
+from openapi_tester.loaders import BaseSchemaLoader
 from tests.utils import MockRoute
 
 request_body = {

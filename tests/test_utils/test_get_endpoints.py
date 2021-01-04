@@ -1,6 +1,6 @@
 from django.utils.translation import activate
 
-from response_tester.utils import get_endpoint_paths
+from openapi_tester.utils import get_endpoint_paths
 
 
 def test_get_endpoint_paths():
