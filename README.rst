@@ -1,21 +1,21 @@
 .. raw:: html
 
     <p align="center">
-        <h1 align="center">Django OpenAPI Response Tester</h1>
+        <h1 align="center">Django OpenAPI Tester</h1>
     </p>
     <p align="center">
-      <em>A Django test utility for validating Swagger documentation</em>
+      <em>A Django test utility for validating OpenAPI response documentation</em>
     </p>
 
 
 .. raw:: html
 
     <p align="center">
-    <a href="https://pypi.org/project/django-openapi-tester/">
-        <img src="https://img.shields.io/pypi/v/django-openapi-tester.svg" alt="Package version">
+    <a href="https://pypi.org/project/django-swagger-tester/">
+        <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
     </a>
-    <a href="https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest">
-        <img src="https://readthedocs.org/projects/django-openapi-tester/badge/?version=latest" alt="Documentation status">
+    <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
+        <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
     </a>
     <a href="https://codecov.io/gh/snok/django-openapi-tester">
         <img src="https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
