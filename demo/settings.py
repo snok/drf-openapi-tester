@@ -15,8 +15,8 @@ from typing import List
 
 from django.utils.translation import gettext_lazy as _
 
-from response_tester.case_testers import is_camel_case
-from response_tester.loaders import DrfYasgSchemaLoader
+from openapi_tester.case_testers import is_camel_case
+from openapi_tester.loaders import DrfYasgSchemaLoader
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent
 
@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'response_tester',
+    'openapi_tester',
     'djangorestframework_camel_case',
 ]
 
@@ -136,9 +136,9 @@ LOGGING = {
         },
     },
     'loggers': {
-        'response_tester': {
+        'openapi_tester': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from response_tester
+            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from openapi_tester
         }
     },
 }
@@ -158,14 +158,14 @@ RESPONSE_TESTER = {
             'DEBUG': True,
             'VALIDATION_EXEMPT_URLS': [],
             'VALIDATION_EXEMPT_STATUS_CODES': [401],
-            'LOGGER_NAME': 'response_tester',
+            'LOGGER_NAME': 'openapi_tester',
         }
     },
     'VIEWS': {
         'RESPONSE_VALIDATION': {
             'LOG_LEVEL': 'ERROR',
             'DEBUG': True,
-            'LOGGER_NAME': 'response_tester',
+            'LOGGER_NAME': 'openapi_tester',
         }
     },
 }

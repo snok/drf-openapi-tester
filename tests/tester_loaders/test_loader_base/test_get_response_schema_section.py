@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
+from openapi_tester.loaders import BaseSchemaLoader
 from tests.utils import MockRoute, ret_schema
 
 route = '/api/v1/cars/correct'

@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.exceptions import DocumentationError
-from response_tester.schema_tester import SchemaTester
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.schema_tester import SchemaTester
 from tests.types import (
     bool_data,
     bool_type,

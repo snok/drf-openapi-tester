@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.route import Route
-from response_tester.utils import resolve_path
+from openapi_tester.route import Route
+from openapi_tester.utils import resolve_path
 
 
 def test_route_initialization():

@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from requests.models import Response
 from rest_framework.test import APITestCase
 
-from response_tester.testing import validate_response
+from openapi_tester.testing import validate_response
 
 
 class APITestBase(APITestCase):

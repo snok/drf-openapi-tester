@@ -2,8 +2,8 @@ import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.configuration import SwaggerTesterSettings
-from response_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
+from openapi_tester.configuration import SwaggerTesterSettings
+from openapi_tester.loaders import DrfYasgSchemaLoader, StaticSchemaLoader
 from tests.utils import patch_settings
 
 
@@ -22,7 +22,7 @@ def test_missing_loader_class(monkeypatch) -> None:
         ImproperlyConfigured,
         match='SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, '
         'and is required. '
-        'Please pass a loader class from response_tester.schema_loaders',
+        'Please pass a loader class from openapi_tester.schema_loaders',
     ):
         SwaggerTesterSettings().validate()
 

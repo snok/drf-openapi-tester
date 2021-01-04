@@ -13,7 +13,7 @@ schema, we raise an exception, causing your test to fail.
 ### Pytest examples
 
 ```python
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
@@ -29,7 +29,7 @@ schema, we raise an exception, causing your test to fail.
 ### Django test example
 
 ```python
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
 

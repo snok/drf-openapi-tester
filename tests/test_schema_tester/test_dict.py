@@ -2,9 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from response_tester.exceptions import DocumentationError
-from response_tester.loaders import BaseSchemaLoader
-from response_tester.schema_tester import SchemaTester
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.loaders import BaseSchemaLoader
+from openapi_tester.schema_tester import SchemaTester
 from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {

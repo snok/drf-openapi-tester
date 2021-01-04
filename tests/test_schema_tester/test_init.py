@@ -1,4 +1,4 @@
-from response_tester.schema_tester import SchemaTester
+from openapi_tester.schema_tester import SchemaTester
 
 
 def test_calls(caplog):

@@ -1,8 +1,8 @@
 import pytest
 from django.conf import settings as django_settings
 
-from response_tester.loaders import StaticSchemaLoader
-from response_tester.testing import OpenAPITestCase
+from openapi_tester.loaders import StaticSchemaLoader
+from openapi_tester.testing import OpenAPITestCase
 from tests import yml_path
 from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
 

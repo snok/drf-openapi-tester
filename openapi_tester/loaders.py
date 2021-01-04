@@ -11,13 +11,13 @@ from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_va
 from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 
-from response_tester.configuration import settings
-from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from response_tester.openapi import index_schema
-from response_tester.route import Route
-from response_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
+from openapi_tester.configuration import settings
+from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.openapi import index_schema
+from openapi_tester.route import Route
+from openapi_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def remove_recursive_ref(schema: dict, fragment: str) -> dict:
@@ -452,7 +452,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         :param route: Django resolved route
         """
-        from response_tester.utils import resolve_path
+        from openapi_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'

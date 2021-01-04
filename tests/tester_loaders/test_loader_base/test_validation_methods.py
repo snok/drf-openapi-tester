@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import BaseSchemaLoader
+from openapi_tester.loaders import BaseSchemaLoader
 
 
 def test_valid_methods_pass():

@@ -1,12 +1,12 @@
 import logging
 from typing import Any, Callable, List, Union
 
-from response_tester.configuration import settings
-from response_tester.exceptions import DocumentationError
-from response_tester.openapi import is_nullable
-from response_tester.utils import camelize, type_placeholder_value
+from openapi_tester.configuration import settings
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.openapi import is_nullable
+from openapi_tester.utils import camelize, type_placeholder_value
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 class SchemaTester:
@@ -16,7 +16,7 @@ class SchemaTester:
 
         :param schema: Response/request OpenAPI schema section
         :param data: API response/request data
-        :raises: response_tester.exceptions.DocumentationError or ImproperlyConfigured
+        :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
 
         self.case_tester = case_tester
@@ -44,7 +44,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response/request data
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.DocumentationError
+        :raises: openapi_tester.exceptions.DocumentationError
         """
         if not isinstance(data, dict):
             if isinstance(data, list):
@@ -149,7 +149,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: Response data
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.DocumentationError
+        :raises: openapi_tester.exceptions.DocumentationError
         """
         if not isinstance(data, list):
             if isinstance(data, dict):
@@ -199,7 +199,7 @@ class SchemaTester:
         :param schema: OpenAPI schema
         :param data: response data item
         :param reference: string reference pointing to function caller
-        :raises: response_tester.exceptions.DocumentationError
+        :raises: openapi_tester.exceptions.DocumentationError
         """
         checks = {
             'boolean': {

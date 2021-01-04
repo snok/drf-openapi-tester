@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.case_testers import is_snake_case
-from response_tester.exceptions import CaseError
+from openapi_tester.case_testers import is_snake_case
+from openapi_tester.exceptions import CaseError
 
 snake_case_test_data = [
     {'incorrect': 'camelCase', 'correct': 'camel_case'},

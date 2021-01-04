@@ -1,8 +1,8 @@
 import logging
 
-from response_tester.exceptions import UndocumentedSchemaSectionError
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def is_nullable(schema_item: dict) -> bool:

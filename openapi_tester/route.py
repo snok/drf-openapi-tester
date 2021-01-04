@@ -104,7 +104,7 @@ class Route:
         """
         from django.utils import translation
 
-        from response_tester.configuration import settings
+        from openapi_tester.configuration import settings
 
         if settings.parameterized_i18n_name:
             parameter = f'{{{settings.parameterized_i18n_name}}}'

@@ -6,9 +6,9 @@ from typing import Callable, List
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-import response_tester.type_declarations as td
+import openapi_tester.type_declarations as td
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 class SwaggerTesterSettings:
@@ -62,7 +62,7 @@ class SwaggerTesterSettings:
             logger.error('CASE_TESTER setting is mis-specified.')
             raise ImproperlyConfigured(
                 'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
-                'Please pass a case tester callable from response_tester.case_testers, '
+                'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
         elif self.case_tester is None:
@@ -96,7 +96,7 @@ class SwaggerTesterSettings:
         Sets self.loader_class and validates the setting.
         """
 
-        addon = '. Please pass a loader class from response_tester.schema_loaders.'
+        addon = '. Please pass a loader class from openapi_tester.schema_loaders.'
         if self.schema_loader is None:
             raise ImproperlyConfigured(
                 'SCHEMA_LOADER is missing from your RESPONSE_TESTER settings, and is required' + addon

@@ -1,7 +1,7 @@
 import pytest
 
-from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.openapi import index_schema, is_nullable
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
+from openapi_tester.openapi import index_schema, is_nullable
 from tests.types import object_type
 
 example = {

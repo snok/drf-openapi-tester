@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import DrfSpectacularSchemaLoader
+from openapi_tester.loaders import DrfSpectacularSchemaLoader
 
 
 def test_drf_spectacular_not_in_installed_apps(monkeypatch):

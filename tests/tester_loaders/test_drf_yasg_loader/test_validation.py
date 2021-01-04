@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.loaders import DrfYasgSchemaLoader
+from openapi_tester.loaders import DrfYasgSchemaLoader
 
 
 def test_drf_yasg_not_in_installed_apps(monkeypatch):

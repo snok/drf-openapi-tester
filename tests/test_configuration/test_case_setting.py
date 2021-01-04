@@ -2,8 +2,8 @@ import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-from response_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
-from response_tester.configuration import SwaggerTesterSettings
+from openapi_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
+from openapi_tester.configuration import SwaggerTesterSettings
 from tests.utils import patch_settings
 
 
@@ -41,7 +41,7 @@ def test_invalid_cases(monkeypatch) -> None:
             ImproperlyConfigured,
             match=(
                 'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
-                'Please pass a case tester callable from response_tester.case_testers, '
+                'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             ),
         ):

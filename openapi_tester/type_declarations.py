@@ -40,4 +40,4 @@ else:
     the type checker does not actually run the code.
     """
     # noinspection PyUnresolvedReferences
-    from response_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
+    from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader

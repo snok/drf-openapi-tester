@@ -1,5 +1,5 @@
-from response_tester.exceptions import CaseError
-from response_tester.utils import format_response_tester_case_error
+from openapi_tester.exceptions import CaseError
+from openapi_tester.utils import format_response_tester_case_error
 
 case_error = CaseError(key='IP', case='camel case', origin='middleware')
 
