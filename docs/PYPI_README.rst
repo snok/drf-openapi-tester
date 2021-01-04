@@ -4,26 +4,26 @@ Django OpenAPI Response Tester
 .. role:: python(code)
    :language: python
 
-.. image:: https://img.shields.io/pypi/v/django-openapi-response-tester.svg
-    :target: https://pypi.org/project/django-openapi-response-tester/
+.. image:: https://img.shields.io/pypi/v/django-openapi-tester.svg
+    :target: https://pypi.org/project/django-openapi-tester/
 
-.. image:: https://img.shields.io/pypi/pyversions/django-openapi-response-tester.svg
-    :target: https://pypi.org/project/django-openapi-response-tester/
+.. image:: https://img.shields.io/pypi/pyversions/django-openapi-tester.svg
+    :target: https://pypi.org/project/django-openapi-tester/
 
-.. image:: https://img.shields.io/pypi/djversions/django-openapi-response-tester.svg
-    :target: https://pypi.python.org/pypi/django-openapi-response-tester
+.. image:: https://img.shields.io/pypi/djversions/django-openapi-tester.svg
+    :target: https://pypi.python.org/pypi/django-openapi-tester
 
-.. image:: https://readthedocs.org/projects/django-openapi-response-tester/badge/?version=latest
-    :target: https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/django-openapi-tester/badge/?version=latest
+    :target: https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
-.. image:: https://codecov.io/gh/snok/django-openapi-response-tester/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/snok/django-openapi-response-tester
+.. image:: https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/snok/django-openapi-tester
 
 |
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://pypi.org/project/django-openapi-response-tester/
+    :target: https://pypi.org/project/django-openapi-tester/
 
 .. image:: http://www.mypy-lang.org/static/mypy_badge.svg
     :target: http://mypy-lang.org/
@@ -34,9 +34,9 @@ Django OpenAPI Response Tester
 
 --------------
 
-**Documentation**: `https://django-openapi-response-tester.readthedocs.io <https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/snok/django-openapi-response-tester <https://github.com/snok/django-openapi-response-tester>`_
+**Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
 --------------
 
@@ -76,7 +76,7 @@ Install using pip:
 
 .. code:: python
 
-   pip install django-openapi-response-tester
+   pip install django-openapi-tester
 
 Configuration
 =============
@@ -84,23 +84,23 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, you first need to add a ``response_tester`` to your installed apps.
+To use Django Swagger Settings in your project, you first need to add a ``openapi_tester`` to your installed apps.
 
 .. code:: python
 
     INSTALLED_APPS = [
         ...
-        'response_tester',
+        'openapi_tester',
     ]
 
-Secondly, you need to configure the ``RESPONSE_TESTER`` package settings in your ``settings.py``:
+Secondly, you need to configure the ``OPENAPI_TESTER`` package settings in your ``settings.py``:
 
 .. code:: python
 
-    from response_tester.loaders import DrfSpectacularSchemaLoader
-    from response_tester.case_testers import is_camel_case
+    from openapi_tester.loaders import DrfSpectacularSchemaLoader
+    from openapi_tester.case_testers import is_camel_case
 
-    RESPONSE_TESTER = {
+    OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
         'CASE_TESTER': is_camel_case,
         'CAMEL_CASE_PARSER': True,
@@ -148,7 +148,7 @@ A pytest implementation might look like this:
 
 .. code:: python
 
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
@@ -163,7 +163,7 @@ A Django-test implementation might look like this:
 
 .. code-block:: python
 
-    from response_tester.testing import validate_response
+    from openapi_tester.testing import validate_response
 
     class MyApiTest(APITestCase):
 
@@ -214,7 +214,7 @@ If you want to implement response validation for all outgoing API responses, sim
 
     MIDDLEWARE = [
         ...
-        'response_tester.middleware.ResponseValidationMiddleware',
+        'openapi_tester.middleware.ResponseValidationMiddleware',
     ]
 
 The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
@@ -224,7 +224,7 @@ To avoid validating the same responses over and over, the results are cached to 
 Live testing for a single view
 ------------------------------
 
-If you're using DRF's ``APIView``, you can replace that with ``response_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
+If you're using DRF's ``APIView``, you can replace that with ``openapi_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
 
 If you're not using ``APIView``, but some closely related solution, you can very easily make your own response validation class. Just have a look at the ``ResposeValidationView`` for inspiration.
 
@@ -235,7 +235,7 @@ When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    response_tester.exceptions.DocumentationError: Item is misspecified:
+    openapi_tester.exceptions.DocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------
@@ -271,7 +271,7 @@ A Django test implementation of input validation for a whole project could be st
 .. code:: python
 
     from django.test import SimpleTestCase
-    from response_tester.testing import validate_input_serializer
+    from openapi_tester.testing import validate_input_serializer
 
     from api.serializers.validation.request_bodies import ...
 
@@ -303,14 +303,14 @@ A Django test implementation of input validation for a whole project could be st
                     for method, serializer in values:
                         validate_input_serializer(serializer=serializer, method=method, route=route)
 
-.. _`https://django-openapi-response-tester.readthedocs.io/`: https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest
-.. _Testing response documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing request body documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _`https://django-openapi-tester.readthedocs.io/`: https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest
+.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
-.. _documentation: https://django-openapi-response-tester.readthedocs.io/
-.. _docs: https://django-openapi-response-tester.readthedocs.io/
+.. _documentation: https://django-openapi-tester.readthedocs.io/
+.. _docs: https://django-openapi-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
-.. _parameter docs: https://django-openapi-response-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _parameter docs: https://django-openapi-tester.readthedocs.io/en/latest/configuration.html#parameters

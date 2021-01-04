@@ -1,17 +1,8 @@
 from copy import deepcopy
 
-import yaml
-from django.conf import settings
-
 from openapi_tester.loaders import BaseSchemaLoader
 from tests.types import bool_type, integer_type, number_type, string_type
-from tests.utils import MockRoute
-
-
-def loader(path):
-    with open(str(settings.BASE_DIR.parent) + path) as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
-
+from tests.utils import MockRoute, loader
 
 schema = loader('/tests/drf_yasg_reference.yaml')
 base = BaseSchemaLoader()

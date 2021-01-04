@@ -47,7 +47,7 @@ def test_unreadable_file(monkeypatch) -> None:
     def mocked_isfile(*args, **kwargs):
         return True
 
-    monkeypatch.setattr('response_tester.loaders.os.path.isfile', mocked_isfile)
+    monkeypatch.setattr('openapi_tester.loaders.os.path.isfile', mocked_isfile)
 
     base = StaticSchemaLoader()
     base.set_path(yml_path + 's')

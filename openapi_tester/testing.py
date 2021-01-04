@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Any
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import CaseError, DocumentationError
 from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
+from openapi_tester.utils import format_error, format_openapi_tester_case_error, unpack_response
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 if TYPE_CHECKING:
     try:
@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 try:
     from rest_framework.test import APITestCase
 except ImportError:
+    # Anyone using the overwritten APITestCase will need to
+    # have djangorestframework installed, but no one else
     pass
 
 
@@ -29,7 +31,7 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
     :param response: HTTP response
     :param method: HTTP method ('get', 'put', 'post', ...)
     :param route: Relative path of the endpoint being tested
-    :raises: response_tester.exceptions.DocumentationError or response_tester.exceptions.CaseError
+    :raises: openapi_tester.exceptions.DocumentationError or openapi_tester.exceptions.CaseError
     """
     data, status_code = unpack_response(response)
     response_schema = settings.loader_class.get_response_schema_section(
@@ -45,10 +47,10 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
             **kwargs,
         )
     except DocumentationError as e:
-        verbose_error_message = format_response_tester_error(e, hint=e.response_hint)
+        verbose_error_message = format_error(e, hint=e.response_hint)
         raise DocumentationError(verbose_error_message)
     except CaseError as e:
-        verbose_error_message = format_response_tester_case_error(e)
+        verbose_error_message = format_openapi_tester_case_error(e)
         raise DocumentationError(verbose_error_message)
 
 

@@ -2,7 +2,7 @@ import logging
 
 from openapi_tester.exceptions import UndocumentedSchemaSectionError
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def is_nullable(schema_item: dict) -> bool:
@@ -13,11 +13,11 @@ def is_nullable(schema_item: dict) -> bool:
     but in OpenAPI 3.0 they added `nullable: true` to specify that the value may be null.
     Note that null is different from an empty string "".
 
-    This feature was back-ported to the Swagger 2 parser as a vendored extension `x-nullable`.
+    This feature was back-ported to the OpenApi 2 parser as a vendored extension `x-nullable`.
     This is what drf_yasg generates.
 
     OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
-    Swagger 2 ref: https://help.apiary.io/api_101/swagger-extensions/
+    OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
 
     :param schema_item: schema item
     :return: whether or not the item can be None

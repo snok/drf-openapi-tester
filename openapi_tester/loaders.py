@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from json import dumps, loads
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 from urllib.parse import ParseResult
 
 from django.conf import settings as django_settings
@@ -17,24 +17,10 @@ from openapi_tester.openapi import index_schema
 from openapi_tester.route import Route
 from openapi_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
-logger = logging.getLogger('response_tester')
+logger = logging.getLogger('openapi_tester')
 
 
-def remove_recursive_ref(schema: dict, fragment: str) -> dict:
-    """
-    Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
-    """
-    for key, value in schema.items():
-        if isinstance(value, dict):
-            if '$ref' in value.keys() and fragment in value['$ref']:
-                # TODO: use this value in the testing - to ignore some parts of the specs
-                schema[key] = {'x-recursive-ref-replaced': True}
-            else:
-                schema[key] = remove_recursive_ref(schema[key], fragment)
-    return schema
-
-
-def handle_recursion_limit(schema: dict):
+def handle_recursion_limit(schema: dict) -> Callable:
     """ We are using a currying pattern to pass schema into the scope of the handler """
 
     def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
@@ -49,6 +35,20 @@ def handle_recursion_limit(schema: dict):
             return {}
 
     return handler
+
+
+def remove_recursive_ref(schema: dict, fragment: str) -> dict:
+    """
+    Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
+    """
+    for key, value in schema.items():
+        if isinstance(value, dict):
+            if '$ref' in value.keys() and fragment in value['$ref']:
+                # TODO: use this value in the testing - to ignore some parts of the specs
+                schema[key] = {'x-recursive-ref-replaced': True}
+            else:
+                schema[key] = remove_recursive_ref(schema[key], fragment)
+    return schema
 
 
 class BaseSchemaLoader:
@@ -156,7 +156,7 @@ class BaseSchemaLoader:
         if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
             route_error += (
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
-                f'to your VALIDATION_EXEMPT_URLS setting list in your RESPONSE_TESTER.MIDDLEWARE settings.'
+                f'to your VALIDATION_EXEMPT_URLS setting list in your OPENAPI_TESTER.MIDDLEWARE settings.'
             )
 
         error = None

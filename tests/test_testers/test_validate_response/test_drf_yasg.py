@@ -59,7 +59,7 @@ def test_endpoints_dynamic_schema(client) -> None:
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
-        # Test Swagger documentation
+        # Test OpenApi documentation
         validate_response(response=response, method='GET', route=item['url'])  # type: ignore
 
 
@@ -72,7 +72,7 @@ def test_bad_endpoints_dynamic_schema(client) -> None:
         assert response.status_code == 200
         assert response.json() == item['expected_response']
 
-        # Test Swagger documentation
+        # Test OpenApi documentation
         with pytest.raises(
             DocumentationError, match='The following properties seem to be missing from your response body:'
         ):
@@ -87,7 +87,7 @@ def test_missing_status_code_match(client, monkeypatch) -> None:
     def mocked_unpack_response(*args, **kwargs):
         return {}, 'bad status code'
 
-    monkeypatch.setattr('response_tester.testing.unpack_response', mocked_unpack_response)
+    monkeypatch.setattr('openapi_tester.testing.unpack_response', mocked_unpack_response)
     for item in bad_test_data:
         response = client.get(item['url'])
         with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):

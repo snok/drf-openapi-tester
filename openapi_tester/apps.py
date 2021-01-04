@@ -3,8 +3,8 @@ from django.apps import AppConfig
 from openapi_tester.configuration import settings
 
 
-class DjangoSwaggerTesterConfig(AppConfig):
-    name = 'response_tester'
+class DjangoOpenAPITesterConfig(AppConfig):
+    name = 'openapi_tester'
 
     def ready(self) -> None:
         """

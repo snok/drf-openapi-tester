@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'drf_spectacular',
-    'response_tester',
+    'openapi_tester',
     'djangorestframework_camel_case',
 ]
 
@@ -136,38 +136,17 @@ LOGGING = {
         },
     },
     'loggers': {
-        'response_tester': {
+        'openapi_tester': {
             'handlers': ['console'],
-            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from response_tester
+            'level': 'DEBUG',  # <-- Set to DEBUG to show log messages from openapi_tester
         }
     },
 }
-
-# fmt: off
-
-RESPONSE_TESTER = {
+OPENAPI_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
     'CAMEL_CASE_PARSER': False,
     'CASE_PASSLIST': [],
     'PARAMETERIZED_I18N_NAME': '',
-    'MIDDLEWARE': {
-        'RESPONSE_VALIDATION': {
-            'LOG_LEVEL': 'ERROR',
-            'DEBUG': True,
-            'VALIDATION_EXEMPT_URLS': [],
-            'VALIDATION_EXEMPT_STATUS_CODES': [401],
-            'LOGGER_NAME': 'response_tester',
-        }
-    },
-    'VIEWS': {
-        'RESPONSE_VALIDATION': {
-            'LOG_LEVEL': 'ERROR',
-            'DEBUG': True,
-            'LOGGER_NAME': 'response_tester',
-        }
-    },
 }
-
-# fmt: on

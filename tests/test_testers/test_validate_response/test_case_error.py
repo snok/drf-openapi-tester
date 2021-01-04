@@ -11,6 +11,6 @@ def test_endpoints_bad_case(client) -> None:
     response = client.get('/api/v1/snake-case/')
     assert response.status_code == 200
 
-    # Test Swagger documentation
+    # Test OpenApi documentation
     with pytest.raises(DocumentationError, match='The response key `this_is_snake_case` is not properly camelCased'):
         validate_response(response=response, method='GET', route='/api/v1/snake-case')  # type: ignore

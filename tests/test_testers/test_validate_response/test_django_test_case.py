@@ -11,7 +11,7 @@ def test_django_test_case(client, monkeypatch) -> None:
     """
     Asserts that the assertResponse method of the test case validates correct schemas successfully.
     """
-    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
     test_case = OpenAPITestCase()
     for item in GOOD_TEST_DATA:
         route = f"/api/v1{item['url']}"

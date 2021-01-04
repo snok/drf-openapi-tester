@@ -41,7 +41,7 @@ class TestCorrectlyDocumentedCars(APITestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_response)
 
-        # Test Swagger documentation
+        # Test OpenApi documentation
         validate_response(response=response, method='GET', route=self.path + '/correct/')
 
 
@@ -64,5 +64,5 @@ class TestCorrectlyDocumentedTrucks(APITestBase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_response)
 
-        # Test Swagger documentation
+        # Test OpenApi documentation
         validate_response(response=response, method='GET', route=self.path + '/correct/')

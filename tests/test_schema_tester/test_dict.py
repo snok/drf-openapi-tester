@@ -5,7 +5,7 @@ import pytest
 from openapi_tester.exceptions import DocumentationError
 from openapi_tester.loaders import BaseSchemaLoader
 from openapi_tester.schema_tester import SchemaTester
-from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
+from tests.utils import loader
 
 schema = {
     'type': 'object',
