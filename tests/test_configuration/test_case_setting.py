@@ -3,7 +3,7 @@ from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.case_testers import is_camel_case, is_kebab_case, is_pascal_case, is_snake_case
-from openapi_tester.configuration import SwaggerTesterSettings
+from openapi_tester.configuration import OpenAPITesterSettings
 from tests.utils import patch_settings
 
 
@@ -19,7 +19,7 @@ def test_valid_cases(monkeypatch) -> None:
         lambda x: x * 2,  # custom callable
     ]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_TESTER', case))
-        SwaggerTesterSettings().validate()
+        OpenAPITesterSettings().validate()
 
 
 def test_none(monkeypatch) -> None:
@@ -28,7 +28,7 @@ def test_none(monkeypatch) -> None:
         ImproperlyConfigured,
         match=('The django-openapi-response-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'),
     ):
-        SwaggerTesterSettings().validate()
+        OpenAPITesterSettings().validate()
 
 
 def test_invalid_cases(monkeypatch) -> None:
@@ -45,7 +45,7 @@ def test_invalid_cases(monkeypatch) -> None:
                 'make your own, or pass `None` to skip case validation.'
             ),
         ):
-            SwaggerTesterSettings().validate()
+            OpenAPITesterSettings().validate()
 
 
 def test_valid_case_whitelist(monkeypatch) -> None:
@@ -54,7 +54,7 @@ def test_valid_case_whitelist(monkeypatch) -> None:
     """
     for item, expected in [(['IP', 'DHCP'], ['IP', 'DHCP'])]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_PASSLIST', item))
-        settings = SwaggerTesterSettings()
+        settings = OpenAPITesterSettings()
         assert settings.case_passlist == expected
 
 
@@ -65,7 +65,7 @@ def test_invalid_case_whitelist(monkeypatch) -> None:
     for item in [{'IP': None, 'DHCP': 2}, 2, -2, (None, [])]:
         monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_PASSLIST', item))
         with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting needs to be a list of strings'):
-            SwaggerTesterSettings().validate()
+            OpenAPITesterSettings().validate()
 
 
 def test_case_whitelist_contains_non_str(monkeypatch) -> None:
@@ -74,4 +74,4 @@ def test_case_whitelist_contains_non_str(monkeypatch) -> None:
     """
     monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_PASSLIST', ['item', 2]))
     with pytest.raises(ImproperlyConfigured, match='The CASE_PASSLIST setting list can only contain strings'):
-        SwaggerTesterSettings().validate()
+        OpenAPITesterSettings().validate()

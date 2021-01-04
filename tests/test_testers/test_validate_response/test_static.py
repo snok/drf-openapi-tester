@@ -1,6 +1,6 @@
 from django.test import override_settings
 
-from openapi_tester.configuration import SwaggerTesterSettings
+from openapi_tester.configuration import OpenAPITesterSettings
 from openapi_tester.loaders import StaticSchemaLoader
 from openapi_tester.testing import validate_response
 from tests import yml_path
@@ -12,7 +12,7 @@ def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:
     Asserts that the validate_response function validates correct schemas successfully.
     """
     with override_settings(OPENAPI_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader}):
-        settings = SwaggerTesterSettings()
+        settings = OpenAPITesterSettings()
         monkeypatch.setattr('openapi_tester.testing.settings', settings)
         for item in GOOD_TEST_DATA:
             url = '/api/v1' + item['url']
@@ -29,7 +29,7 @@ def test_i18n_endpoint(client, monkeypatch, transactional_db) -> None:
     with override_settings(
         OPENAPI_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader, 'PARAMETERIZED_I18N_NAME': 'language'}
     ):
-        settings = SwaggerTesterSettings()
+        settings = OpenAPITesterSettings()
         monkeypatch.setattr('openapi_tester.testing.settings', settings)
         for item in I18N_DATA:
             lang_prefix = '/' + item['lang']

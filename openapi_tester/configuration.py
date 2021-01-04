@@ -11,7 +11,7 @@ import openapi_tester.type_declarations as td
 logger = logging.getLogger('openapi_tester')
 
 
-class SwaggerTesterSettings:
+class OpenAPITesterSettings:
     _loader_class: td.BaseSchemaLoader
 
     @property
@@ -144,4 +144,4 @@ class SwaggerTesterSettings:
             raise ImproperlyConfigured('The CASE_PASSLIST setting list can only contain strings')
 
 
-settings = SwaggerTesterSettings()
+settings = OpenAPITesterSettings()
