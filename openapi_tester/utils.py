@@ -24,7 +24,7 @@ def format_openapi_tester_case_error(exception: CaseError) -> str:
     )
 
 
-def format_openapi_tester_error(exception: DocumentationError, hint: str, addon: Optional[str] = None, **kwargs) -> str:
+def format_error(exception: DocumentationError, hint: str, addon: Optional[str] = None, **kwargs) -> str:
     """
     Formats and returns a standardized error message for easy debugging.
 
