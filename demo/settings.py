@@ -152,22 +152,6 @@ OPENAPI_TESTER = {
     'CAMEL_CASE_PARSER': False,
     'CASE_PASSLIST': [],
     'PARAMETERIZED_I18N_NAME': '',
-    'MIDDLEWARE': {
-        'RESPONSE_VALIDATION': {
-            'LOG_LEVEL': 'ERROR',
-            'DEBUG': True,
-            'VALIDATION_EXEMPT_URLS': [],
-            'VALIDATION_EXEMPT_STATUS_CODES': [401],
-            'LOGGER_NAME': 'openapi_tester',
-        }
-    },
-    'VIEWS': {
-        'RESPONSE_VALIDATION': {
-            'LOG_LEVEL': 'ERROR',
-            'DEBUG': True,
-            'LOGGER_NAME': 'openapi_tester',
-        }
-    },
 }
 
 # fmt: on

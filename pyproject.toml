@@ -42,9 +42,9 @@ include = ["CHANGELOG.rst"]
 
 [tool.poetry.dependencies]
 python = "^3.6.1"
-djangorestframework = {version="*", optional='true'}
 django = "^2.2 || ^3.0"
 prance = "^0.20.0"
+djangorestframework = {version = "*", optional = true}
 
 [tool.poetry.dev-dependencies]
 drf-yasg = "^1.17.1"
