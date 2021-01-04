@@ -1,5 +1,4 @@
 import pytest
-from tests.types import list_type, object_type
 
 from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
 from response_tester.openapi import (
@@ -11,6 +10,7 @@ from response_tester.openapi import (
     read_properties,
     read_type,
 )
+from tests.types import list_type, object_type
 
 
 def test_read_items():
@@ -104,8 +104,8 @@ def test_is_nullable():
     """
     Ensure this helper function works as it's designed to.
     """
-    assert is_nullable(nullable_example['properties']['id']) == True
-    assert is_nullable(nullable_example['properties']['first_name']) == True
+    assert is_nullable(nullable_example['properties']['id']) == True  # noqa: E712
+    assert is_nullable(nullable_example['properties']['first_name']) == True  # noqa: E712
     for item in [2, '', None, -1, {'nullable': 'false'}]:
         assert is_nullable(item) is False
 

@@ -1,9 +1,8 @@
+import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-import pytest
-from tests.utils import json_path, yml_path
-
 from response_tester.loaders import StaticSchemaLoader
+from tests import json_path, yml_path
 
 
 def test_successful_yml_fetch(monkeypatch) -> None:

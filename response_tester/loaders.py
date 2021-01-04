@@ -2,20 +2,54 @@ import json
 import logging
 import os
 from json import dumps, loads
-from typing import Any, Dict, Optional, Union
+from typing import Any, Optional, Union
+from urllib.parse import ParseResult
 
-from django.apps import apps
+from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
+from prance.util.resolver import RefResolver
+from prance.util.url import ResolutionError
 
 from response_tester.configuration import settings
-from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.openapi import list_types, read_properties
-from response_tester.utils import Route
+from response_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from response_tester.openapi import index_schema, list_types, read_items, read_properties, read_type
+from response_tester.utils import Route, get_endpoint_paths, resolve_path, type_placeholder_value
 
 logger = logging.getLogger('response_tester')
 
 
-class _LoaderBase:
+def remove_recursive_ref(schema: dict, fragment: str) -> dict:
+    """
+    Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
+    """
+    for key, value in schema.items():
+        if isinstance(value, dict):
+            if '$ref' in value.keys() and fragment in value['$ref']:
+                # TODO: use this value in the testing - to ignore some parts of the specs
+                schema[key] = {'x-recursive-ref-replaced': True}
+            else:
+                schema[key] = remove_recursive_ref(schema[key], fragment)
+    return schema
+
+
+def handle_recursion_limit(schema: dict):
+    """ We are using a currying pattern to pass schema into the scope of the handler """
+
+    def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
+        try:
+            fragment = parse_result.fragment
+            keys = [key for key in fragment.split('/') if key]
+            definition = schema
+            for key in keys:
+                definition = definition[key]
+            return remove_recursive_ref(definition, fragment)
+        except KeyError:
+            return {}
+
+    return handler
+
+
+class BaseSchemaLoader:
     """
     Base class for OpenAPI schema loading classes.
 
@@ -23,27 +57,17 @@ class _LoaderBase:
     with an OpenAPI schema.
     """
 
+    base_path = '/'
+
     def __init__(self) -> None:
         self.schema: Optional[dict] = None
         self.original_schema: Optional[dict] = None
-
-    # < methods to be overwritten >
-
-    def validation(self, *args, **kwargs) -> None:
-        """
-        Put class level validation logic here.
-
-        For example, if you have specific dependencies for your loader class, you might want to check they're installed here.
-        """
-        pass
 
     def load_schema(self) -> dict:
         """
         Put logic required to load a schema and return it here.
         """
-        raise ImproperlyConfigured('The `load_schema` method has to be overwritten.')
-
-    # </ methods to be overwritten >
+        raise NotImplementedError('The `load_schema` method has to be overwritten.')
 
     def get_schema(self) -> dict:
         """
@@ -53,12 +77,25 @@ class _LoaderBase:
             self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
+    def dereference_schema(self, schema: dict) -> dict:
+        try:
+            url = schema['basePath'] if 'basePath' in schema else self.base_path
+            resolver = RefResolver(
+                schema,
+                recursion_limit_handler=handle_recursion_limit(schema),
+                url=url,
+            )
+            resolver.resolve_references()
+            return resolver.specs
+        except ResolutionError as e:
+            raise OpenAPISchemaError('infinite recursion error') from e
+
     def set_schema(self, schema: dict) -> None:
         """
         Sets self.schema and self.original_schema.
         """
-        self.schema = self.replace_refs(schema, loader=self)
         self.original_schema = schema
+        self.schema = self.dereference_schema(schema)
 
     def get_route(self, route: str) -> Route:
         """
@@ -67,8 +104,6 @@ class _LoaderBase:
         This method was primarily implemented because drf-yasg has its own route style, and so this method
         lets loader classes overwrite and add custom route conversion logic if required.
         """
-        from response_tester.utils import resolve_path
-
         return Route(*resolve_path(route))
 
     def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
@@ -80,7 +115,6 @@ class _LoaderBase:
         :param status_code: HTTP response code
         :return Response schema
         """
-        from response_tester.openapi import index_schema
 
         self.validate_method(method)
         self.validate_string(route, 'route')
@@ -163,7 +197,6 @@ class _LoaderBase:
         :param route: Schema-compatible path
         :return: Request body schema
         """
-        from response_tester.openapi import index_schema
 
         self.validate_method(method)
         self.validate_string(route, 'route')
@@ -251,79 +284,6 @@ class _LoaderBase:
         if not 100 <= status_code <= 505:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
-    @staticmethod
-    def replace_refs(schema: dict, loader=None) -> dict:
-        """
-        Finds all schema references ($ref sections) in an OpenAPI schema and inserts them back into in place of the refs.
-        This way we don't have to handle reference section when interacting with a loaded schema.
-
-        * This does add a performance overhead to interacting with a schema, so changing this in the future would be fine *
-
-        :param schema: OpenAPI schema
-        :param loader: Current loader
-        :return Adjusted OpenAPI schema
-        """
-        if '$ref' not in str(schema):
-            return schema
-
-        schemas_cache: Dict[str, dict] = {}
-
-        def find_and_replace_refs_recursively(d: dict, s: dict) -> dict:
-            """
-            Iterates over a dictionary to look for pesky $refs.
-            """
-            if '$ref' in d:
-                index_file, _, index_path = d['$ref'].partition('#')
-                # index_path looks like `/GoodTrucksList`
-                # index_file looks like `openapi-schema-split-datastructures.yaml` and will
-                # be blank unless the openapi schema is split into several sections
-                temp_schema: dict
-                if not index_file:
-                    # If index-file is empty, use local
-                    temp_schema = s
-                elif loader:
-                    # If index-file is provided, look in the cache
-                    full_path = os.path.join(os.path.dirname(loader.path), index_file)
-                    schema_from_cache: Optional[dict] = schemas_cache.get(full_path)
-                    if schema_from_cache is not None:
-                        temp_schema = schema_from_cache
-                    else:
-                        # If we cannot find our reference in the cache load external defs
-                        external_loader = loader.__class__()
-                        external_loader.set_path(full_path)
-                        temp_schema = external_loader.get_schema()
-                        schemas_cache[full_path] = temp_schema
-                else:
-                    raise RuntimeError('loader is required for external references')
-
-                indices = [i for i in index_path.split('/') if i]
-                for index in indices:
-                    logger.debug('Indexing schema by `%s`', index)
-                    temp_schema = temp_schema[index]
-                return temp_schema
-            for k, v in d.items():
-                if isinstance(v, list):
-                    d[k] = iterate_list(v, s)
-                elif isinstance(v, dict):
-                    d[k] = find_and_replace_refs_recursively(v, s)
-            return d
-
-        def iterate_list(l: list, s: dict) -> list:  # noqa: E741
-            """
-            Loves to iterate lists.
-            """
-            x = []
-            for i in l:
-                if isinstance(i, list):
-                    x.append(iterate_list(i, s))
-                elif isinstance(i, dict):
-                    x.append(find_and_replace_refs_recursively(i, s))  # type: ignore
-                else:
-                    x.append(i)
-            return x
-
-        return find_and_replace_refs_recursively(schema, schema)
-
     def get_request_body_example(self, route: str, method: str) -> Any:
         """
         Returns a request body example.
@@ -334,48 +294,38 @@ class _LoaderBase:
         request_body_schema = self.get_request_body_schema_section(route, method)
         return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
-    def _iterate_schema_dict(self, d: dict) -> dict:
-        from response_tester.openapi import read_type
-        from response_tester.utils import type_placeholder_value
-
-        x = {}
-        for key, value in read_properties(d).items():
+    def _iterate_schema_dict(self, schema_object: dict) -> dict:
+        parsed_schema = {}
+        for key, value in read_properties(schema_object).items():
             if 'example' in value:
-                x[key] = value['example']
+                parsed_schema[key] = value['example']
             elif read_type(value) == 'object':
-                x[key] = self._iterate_schema_dict(value)
+                parsed_schema[key] = self._iterate_schema_dict(value)
             elif read_type(value) == 'array':
-                x[key] = self._iterate_schema_list(value)  # type: ignore
+                parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
                 logger.warning('Item `%s` is missing an explicit example value', value)
-                x[key] = type_placeholder_value(value['type'])
-        return x
+                parsed_schema[key] = type_placeholder_value(value['type'])
+        return parsed_schema
 
-    def _iterate_schema_list(self, l: dict) -> list:  # noqa: E741
-
-        from response_tester.openapi import read_items, read_type
-        from response_tester.utils import type_placeholder_value
-
-        x = []
-        i = read_items(l)
-        if 'example' in i:
-            x.append(i['example'])
-        elif read_type(i) == 'object':
-            x.append(self._iterate_schema_dict(i))
-        elif read_type(i) == 'array':
-            x.append(self._iterate_schema_list(i))  # type: ignore
+    def _iterate_schema_list(self, schema_array: dict) -> list:
+        parsed_items = []
+        raw_items = read_items(schema_array)
+        if 'example' in raw_items:
+            parsed_items.append(raw_items['example'])
+        elif read_type(raw_items) == 'object':
+            parsed_items.append(self._iterate_schema_dict(raw_items))
+        elif read_type(raw_items) == 'array':
+            parsed_items.append(self._iterate_schema_list(raw_items))
         else:
-            logger.warning('Item `%s` is missing an explicit example value', i)
-            x.append(type_placeholder_value(i['type']))
-        return x
+            logger.warning('Item `%s` is missing an explicit example value', raw_items)
+            parsed_items.append(type_placeholder_value(raw_items['type']))
+        return parsed_items
 
     def create_dict_from_schema(self, schema: dict) -> Any:
         """
         Converts an OpenAPI schema representation of a dict to dict.
         """
-        from response_tester.openapi import read_type
-        from response_tester.utils import type_placeholder_value
-
         if 'example' in schema:
             return schema['example']
         elif read_type(schema) == 'array' and 'items' in schema and schema['items']:
@@ -391,40 +341,23 @@ class _LoaderBase:
             raise ImproperlyConfigured(f'Not able to construct an example from schema {schema}')
 
 
-class DrfYasgSchemaLoader(_LoaderBase):
+class DrfYasgSchemaLoader(BaseSchemaLoader):
     """
     Loads OpenAPI schema generated by drf_yasg.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self.validation()  # this has to run before drf_yasg imports
-        from drf_yasg.generators import OpenAPISchemaGenerator
-        from drf_yasg.openapi import Info
-
-        logger.debug('Initialized drf-yasg loader schema')
-
-        self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
-
-    def validation(self, *args, **kwargs) -> None:
-        """
-        For drf_yasg-generated schemas, it's important that we verify:
-
-        1. The package is installed
-        2. drf_yasg is in the projects installed_apps
-        """
-        try:
-            import drf_yasg  # noqa: F401
-        except ModuleNotFoundError:
-            raise ImproperlyConfigured(
-                'The package `drf_yasg` is required. Please run `pip install drf_yasg` to install it.'
-            )
-
-        if 'drf_yasg' not in apps.app_configs.keys():
+        if 'drf_yasg' not in django_settings.INSTALLED_APPS:
             raise ImproperlyConfigured(
                 'The package `drf_yasg` is missing from INSTALLED_APPS. Please add it to your '
                 '`settings.py`, as it is required for this implementation'
             )
+        from drf_yasg.generators import OpenAPISchemaGenerator
+        from drf_yasg.openapi import Info
+
+        logger.debug('Initialized drf-yasg loader schema')
+        self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
     def load_schema(self) -> dict:
         """
@@ -443,7 +376,6 @@ class DrfYasgSchemaLoader(_LoaderBase):
         and cutting them out of the generated openapi schema.
         For example, `/api/v1/example` might then just become `/example`
         """
-        from response_tester.utils import get_endpoint_paths
 
         return self.schema_generator.determine_path_prefix(get_endpoint_paths())
 
@@ -453,7 +385,6 @@ class DrfYasgSchemaLoader(_LoaderBase):
 
         :param route: Django resolved route
         """
-        from response_tester.utils import resolve_path
 
         deparameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
@@ -463,37 +394,22 @@ class DrfYasgSchemaLoader(_LoaderBase):
         return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
-class DrfSpectacularSchemaLoader(_LoaderBase):
+class DrfSpectacularSchemaLoader(BaseSchemaLoader):
     """
     Loads OpenAPI schema generated by drf_spectacular.
     """
 
     def __init__(self) -> None:
         super().__init__()
-        self.validation()  # this has to run before drf_spectacular imports
-        from drf_spectacular.generators import SchemaGenerator
-
-        self.schema_generator = SchemaGenerator()
-        logger.debug('Initialized drf-spectacular loader schema')
-
-    def validation(self, *args, **kwargs) -> None:
-        """
-        For drf_spectacular-generated schemas, it's important that we verify:
-        1. The package is installed
-        2. drf_spectacular is in the projects installed_apps
-        """
-        try:
-            import drf_spectacular  # noqa: F401
-        except ModuleNotFoundError:
-            raise ImproperlyConfigured(
-                'The package `drf_spectacular` is required. Please run `pip install drf_spectacular` to install it.'
-            )
-
-        if 'drf_spectacular' not in apps.app_configs.keys():
+        if 'drf_spectacular' not in django_settings.INSTALLED_APPS:
             raise ImproperlyConfigured(
                 'The package `drf_spectacular` is missing from INSTALLED_APPS. Please add it to your '
                 '`settings.py`, as it is required for this implementation'
             )
+        from drf_spectacular.generators import SchemaGenerator
+
+        self.schema_generator = SchemaGenerator()
+        logger.debug('Initialized drf-spectacular loader schema')
 
     def load_schema(self) -> dict:
         """
@@ -525,7 +441,7 @@ class DrfSpectacularSchemaLoader(_LoaderBase):
         return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
-class StaticSchemaLoader(_LoaderBase):
+class StaticSchemaLoader(BaseSchemaLoader):
     """
     Loads OpenAPI schema from a static file.
     """
@@ -540,34 +456,6 @@ class StaticSchemaLoader(_LoaderBase):
         Sets value for self.path
         """
         self.path = path
-
-    def validation(self, *args, **kwargs) -> None:
-        """
-        Before trying to load static schema, we need to verify that:
-        - The path to the static file is provided, and that the file type is compatible (json/yml/yaml)
-        - The right parsing library is installed (pyYAML for yaml, json is builtin)
-        """
-        if (
-            'package_settings' not in kwargs
-            or 'PATH' not in kwargs['package_settings']
-            or kwargs['package_settings']['PATH'] is None
-        ):
-            logger.error('PATH setting is not specified')
-            raise ImproperlyConfigured(
-                'PATH is required to load static OpenAPI schemas. Please add PATH to the RESPONSE_TESTER settings.'
-            )
-        elif not isinstance(kwargs['package_settings']['PATH'], str):
-            logger.error('PATH setting is not a string')
-            raise ImproperlyConfigured('`PATH` needs to be a string. Please update your RESPONSE_TESTER settings.')
-        if '.yml' in kwargs['package_settings']['PATH'] or '.yaml' in kwargs['package_settings']['PATH']:
-            try:
-                import yaml  # noqa: F401
-            except ModuleNotFoundError:
-                raise ImproperlyConfigured(
-                    'The package `PyYAML` is required for parsing yaml files. '
-                    'Please run `pip install PyYAML` to install it.'
-                )
-        self.set_path(kwargs['package_settings']['PATH'])
 
     def load_schema(self) -> dict:
         """
@@ -590,6 +478,7 @@ class StaticSchemaLoader(_LoaderBase):
             raise ImproperlyConfigured(
                 f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}'
             )
+        self.base_path = str(os.path.abspath(os.path.dirname(os.path.abspath(self.path))))
         if '.json' in self.path:
             schema = json.loads(content)
             logger.debug('Successfully loaded schema')

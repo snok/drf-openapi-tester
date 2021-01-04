@@ -4,7 +4,7 @@ from response_tester.exceptions import DocumentationError
 from response_tester.testing import validate_response
 
 
-def test_endpoints_bad_case(client, transactional_db) -> None:  # noqa: TYP001
+def test_endpoints_bad_case(client, transactional_db) -> None:
     """
     Asserts bad case errors are raised correctly in the tester.
     """

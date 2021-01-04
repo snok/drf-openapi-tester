@@ -1,10 +1,10 @@
 from copy import deepcopy
 
 import pytest
-from tests.utils import MockRoute
 
 from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.loaders import _LoaderBase
+from response_tester.loaders import BaseSchemaLoader
+from tests.utils import MockRoute
 
 response_200 = {
     'description': '',
@@ -40,7 +40,7 @@ def test_succesful_load(monkeypatch):
     """
     Make sure the method returns the appropriate response schema section.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     base.set_schema(simple_response_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
     assert (
@@ -59,7 +59,7 @@ def test_failed_index_paths(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']
     base.set_schema(bad_schema)
@@ -74,7 +74,7 @@ def test_failed_index_route(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']
     base.set_schema(bad_schema)
@@ -89,7 +89,7 @@ def test_failed_index_route_with_helper_text(monkeypatch):
     """
     Test helper texts.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']
     bad_schema['paths']['other-endpoint'] = {}
@@ -106,7 +106,7 @@ def test_failed_index_route_with_helper_text_and_middleware_warning(monkeypatch)
     """
     Test helper texts.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']
     bad_schema['paths']['other-endpoint'] = {}
@@ -126,7 +126,7 @@ def test_failed_index_method(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']
     base.set_schema(bad_schema)
@@ -141,7 +141,7 @@ def test_failed_index_method_with_helper_text(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']
     bad_schema['paths']['test-endpoint']['post'] = {}
@@ -156,7 +156,7 @@ def test_failed_index_responses(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']['responses']
     base.set_schema(bad_schema)
@@ -171,7 +171,7 @@ def test_failed_index_status(monkeypatch):
     """
     Make sure the right exception type is raised when indexing fails.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']['responses']['200']
     del bad_schema['paths']['test-endpoint']['get']['responses']['400']
@@ -188,7 +188,7 @@ def test_failed_index_status_with_helper_text(monkeypatch):
     """
     Test helper text.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_response_schema)
     del bad_schema['paths']['test-endpoint']['get']['responses']['200']
     base.set_schema(bad_schema)

@@ -1,10 +1,10 @@
 from django.utils.translation import gettext as _
-
-from demo.api.swagger.auto_schemas import languages_auto_schema
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
+
+from demo.api.swagger.auto_schemas import languages_auto_schema
 
 
 class Languages(APIView):

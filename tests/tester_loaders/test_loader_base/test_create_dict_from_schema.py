@@ -1,24 +1,22 @@
 from copy import deepcopy
 
+import pytest
+import yaml
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
-import pytest
-import yaml
+from response_tester.loaders import BaseSchemaLoader
 from tests.types import bool_type, integer_type, number_type, string_type
 from tests.utils import MockRoute
-
-from response_tester.configuration import settings as _settings
-from response_tester.loaders import _LoaderBase
 
 
 def loader(path):
     with open(str(settings.BASE_DIR.parent) + path) as f:
-        return _settings.loader_class.replace_refs(yaml.load(f, Loader=yaml.FullLoader))
+        return yaml.load(f, Loader=yaml.FullLoader)
 
 
 schema = loader('/tests/drf_yasg_reference.yaml')
-base = _LoaderBase()
+base = BaseSchemaLoader()
 base.set_schema(schema)
 
 
@@ -95,7 +93,7 @@ def test_failed_creation(monkeypatch):
     with pytest.raises(
         ImproperlyConfigured, match="Not able to construct an example from schema {'type': 'array', 'items': False}"
     ):
-        _LoaderBase().create_dict_from_schema({'type': 'array', 'items': False})
+        BaseSchemaLoader().create_dict_from_schema({'type': 'array', 'items': False})
 
 
 def test_item_without_example(monkeypatch):
@@ -106,4 +104,4 @@ def test_item_without_example(monkeypatch):
         (deepcopy(bool_type), True),
     ]:
         del item['example']
-        assert _LoaderBase().create_dict_from_schema(item) == expected
+        assert BaseSchemaLoader().create_dict_from_schema(item) == expected

@@ -1,10 +1,10 @@
 from copy import deepcopy
 
 import pytest
-from tests.utils import MockRoute
 
 from response_tester.exceptions import UndocumentedSchemaSectionError
-from response_tester.loaders import _LoaderBase
+from response_tester.loaders import BaseSchemaLoader
+from tests.utils import MockRoute
 
 request_body = {
     'required': ['testParameter'],
@@ -41,14 +41,14 @@ def test_successful_load(monkeypatch):
     """
     Make sure the API works.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     base.set_schema(simple_request_body_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
     assert base.get_request_body_schema_section(route='test-endpoint', method='post') == request_body
 
 
 def test_fail_indexing_paths(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']
     base.set_schema(bad_schema)
@@ -60,7 +60,7 @@ def test_fail_indexing_paths(monkeypatch):
 
 
 def test_fail_indexing_route(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']
     base.set_schema(bad_schema)
@@ -72,7 +72,7 @@ def test_fail_indexing_route(monkeypatch):
 
 
 def test_fail_indexing_route_with_helper_text(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']
     bad_schema['paths']['other-endpoint'] = {}
@@ -90,7 +90,7 @@ def test_fail_indexing_route_with_helper_text(monkeypatch):
 
 
 def test_fail_indexing_method(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']['post']
     base.set_schema(bad_schema)
@@ -102,7 +102,7 @@ def test_fail_indexing_method(monkeypatch):
 
 
 def test_fail_indexing_method_with_helper_text(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     base.set_schema(simple_request_body_schema)
     monkeypatch.setattr(base, 'get_route', MockRoute)
     with pytest.raises(UndocumentedSchemaSectionError, match='Available methods include: POST.'):
@@ -110,7 +110,7 @@ def test_fail_indexing_method_with_helper_text(monkeypatch):
 
 
 def test_fail_indexing_parameters(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     del bad_schema['paths']['test-endpoint']['post']['parameters']
     base.set_schema(bad_schema)
@@ -122,7 +122,7 @@ def test_fail_indexing_parameters(monkeypatch):
 
 
 def test_fail_getting_parameter(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     bad_schema['paths']['test-endpoint']['post']['parameters'] = []
     base.set_schema(bad_schema)
@@ -136,7 +136,7 @@ def test_fail_getting_parameter(monkeypatch):
 
 
 def test_no_request_body(monkeypatch):
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     bad_schema = deepcopy(simple_request_body_schema)
     bad_schema['paths']['test-endpoint']['post']['parameters'][0]['in'] = 'path'
     base.set_schema(bad_schema)
@@ -152,12 +152,12 @@ def test_get_request_body_example(monkeypatch):
     """
     Makes sure we're able to generate an example value for the documented request body, with or without example values.
     """
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     monkeypatch.setattr(base, 'get_route', MockRoute)
     base.set_schema(simple_request_body_schema)
     assert base.get_request_body_example(route='test-endpoint', method='post') == {'testParameter': 'test'}
 
-    schema_without_example = deepcopy(simple_request_body_schema)
+    schema_without_example = base.dereference_schema(deepcopy(simple_request_body_schema))
     del schema_without_example['paths']['test-endpoint']['post']['parameters'][0]['schema']['example']
     base.set_schema(schema_without_example)
     assert base.get_request_body_example(route='test-endpoint', method='post') == {'testParameter': 'string'}

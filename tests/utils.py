@@ -56,11 +56,6 @@ def patch_response_validation_view_settings(key, value) -> dict:
     return settings
 
 
-yml_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.yml'
-yml_split_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema-split.yaml'
-json_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.json'
-
-
 class MockRoute:
     def __init__(self, x):
         self.x = x

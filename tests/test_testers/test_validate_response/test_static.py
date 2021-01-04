@@ -1,16 +1,13 @@
-from django.conf import settings as django_settings
 from django.test import override_settings
-
-from tests.test_testers.test_validate_response import GOOD_TEST_DATA, I18N_DATA
 
 from response_tester.configuration import SwaggerTesterSettings
 from response_tester.loaders import StaticSchemaLoader
 from response_tester.testing import validate_response
+from tests import yml_path
+from tests.test_testers.test_validate_response import GOOD_TEST_DATA, I18N_DATA
 
-yml_path = str(django_settings.BASE_DIR) + '/static_schemas/openapi-schema.yml'
 
-
-def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
+def test_endpoints_static_schema(client, monkeypatch, transactional_db) -> None:
     """
     Asserts that the validate_response function validates correct schemas successfully.
     """

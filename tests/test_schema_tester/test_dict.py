@@ -1,11 +1,11 @@
 from copy import deepcopy
 
 import pytest
-from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 from response_tester.exceptions import DocumentationError
-from response_tester.loaders import _LoaderBase
+from response_tester.loaders import BaseSchemaLoader
 from response_tester.schema_tester import SchemaTester
+from tests.tester_loaders.test_loader_base.test_create_dict_from_schema import loader
 
 schema = {
     'type': 'object',
@@ -36,7 +36,7 @@ def test_nullable() -> None:
     Asserts that valid data passes successfully.
     """
     schema = loader('/tests/drf_yasg_reference.yaml')
-    base = _LoaderBase()
+    base = BaseSchemaLoader()
     base.set_schema(schema)
     response_schema = base.schema['paths']['/articles/']['get']['responses']['200']['schema']
     data = {
@@ -72,7 +72,7 @@ def test_nullable() -> None:
     d = deepcopy(data)
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class \'int\'> but found <class \'NoneType\'>",
+        match="Mismatched types. Expected item to be <class 'int'> but found <class 'NoneType'>",
     ):
         d['count'] = None
         tester.test_dict(schema=response_schema, data=d, reference='placeholder')
@@ -80,7 +80,7 @@ def test_nullable() -> None:
     # Test non-nullable dict does not pass OK
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class \'dict\'> but found <class \'NoneType\'>.",
+        match="Mismatched types. Expected item to be <class 'dict'> but found <class 'NoneType'>.",
     ):
         data['results'] = [None]
         assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
@@ -92,7 +92,7 @@ def test_nullable() -> None:
     # Test non-nullable list does not pass OK
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class \'list\'> but found <class \'NoneType\'>.",
+        match="Mismatched types. Expected item to be <class 'list'> but found <class 'NoneType'>.",
     ):
         data['results'] = None
         assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None

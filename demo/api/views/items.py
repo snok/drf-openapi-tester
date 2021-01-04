@@ -1,9 +1,10 @@
 import uuid
 
-from demo.api.serializers import ItemSerializer
-from demo.api.swagger.auto_schemas import post_item_auto_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from demo.api.serializers import ItemSerializer
+from demo.api.swagger.auto_schemas import post_item_auto_schema
 
 
 class Items(APIView):

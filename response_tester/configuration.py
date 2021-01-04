@@ -1,19 +1,19 @@
-# flake8: noqa: D102
 import inspect
 import logging
 from types import FunctionType
-from typing import TYPE_CHECKING, Callable, List
+from typing import Callable, List
 
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-if TYPE_CHECKING:
-    from response_tester.types import LoaderClass
+import response_tester.type_declarations as td
 
 logger = logging.getLogger('response_tester')
 
 
 class SwaggerTesterSettings:
+    _loader_class: td.BaseSchemaLoader
+
     @property
     def schema_loader(self):
         return django_settings.RESPONSE_TESTER.get('SCHEMA_LOADER', None)
@@ -35,14 +35,12 @@ class SwaggerTesterSettings:
         return django_settings.RESPONSE_TESTER.get('PARAMETERIZED_I18N_NAME', '')
 
     @property
-    def loader_class(self) -> 'LoaderClass':
+    def loader_class(self) -> td.BaseSchemaLoader:
         if not hasattr(self, '_loader_class'):
             self.set_and_validate_schema_loader()
         return self._loader_class
 
     def validate(self):
-        from django.conf import settings as django_settings
-
         if not hasattr(django_settings, 'RESPONSE_TESTER') or not django_settings.RESPONSE_TESTER:
             raise ImproperlyConfigured('RESPONSE_TESTER settings need to be configured')
 
@@ -61,7 +59,7 @@ class SwaggerTesterSettings:
         Make sure we receive a callable or a None.
         """
         if self.case_tester is not None and not isinstance(self.case_tester, FunctionType):
-            logger.error('CASE_TESTER setting is misspecified.')
+            logger.error('CASE_TESTER setting is mis-specified.')
             raise ImproperlyConfigured(
                 'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from response_tester.case_testers, '
@@ -78,16 +76,12 @@ class SwaggerTesterSettings:
         """
         if not isinstance(self.camel_case_parser, bool):
             raise ImproperlyConfigured('`CAMEL_CASE_PARSER` needs to be True or False')
-        if self.camel_case_parser:
-            try:
-                import djangorestframework_camel_case  # noqa: F401
-            except ImportError:
-                raise ImproperlyConfigured(
-                    'The package `djangorestframework_camel_case` is not installed, '
-                    'and is required to enable camel case parsing.'
-                )
+        if self.camel_case_parser and 'djangorestframework_camel_case' not in django_settings.INSTALLED_APPS:
+            raise ImproperlyConfigured(
+                'The package `djangorestframework_camel_case` is not installed, '
+                'and is required to enable camel case parsing.'
+            )
         else:
-            from django.conf import settings as django_settings
 
             if hasattr(django_settings, 'REST_FRAMEWORK') and 'djangorestframework_camel_case.parser' in str(
                 django_settings.REST_FRAMEWORK
@@ -101,7 +95,6 @@ class SwaggerTesterSettings:
         """
         Sets self.loader_class and validates the setting.
         """
-        from response_tester.loaders import _LoaderBase
 
         addon = '. Please pass a loader class from response_tester.schema_loaders.'
         if self.schema_loader is None:
@@ -111,17 +104,35 @@ class SwaggerTesterSettings:
 
         if not inspect.isclass(self.schema_loader):
             raise ImproperlyConfigured('SCHEMA_LOADER must be a class' + addon)
-        elif not issubclass(self.schema_loader, _LoaderBase):
-            raise ImproperlyConfigured(
-                'The supplied loader_class must inherit response_tester.schema_loaders._LoaderBase' + addon
-            )
 
-        # noinspection PyAttributeOutsideInit
-        self._loader_class: 'LoaderClass' = self.schema_loader()
-        # here we run custom validation for each loader class
-        # for example, the drf-yasg loader class requires drf-yasg as an installed dependency
-        # that is checked at the class level
-        self._loader_class.validation(package_settings=django_settings.RESPONSE_TESTER)
+        self._loader_class = self.schema_loader()
+
+        from .loaders import StaticSchemaLoader
+
+        if isinstance(self._loader_class, StaticSchemaLoader):
+            """
+            Before trying to load static schema, we need to verify that:
+            - The path to the static file is provided, and that the file type is compatible (json/yml/yaml)
+            - The right parsing library is installed (pyYAML for yaml, json is builtin)
+            """
+            path = django_settings.RESPONSE_TESTER.get('PATH', None)
+            if not path:
+                logger.error('PATH setting is not specified')
+                raise ImproperlyConfigured(
+                    'PATH is required to load static OpenAPI schemas. Please add PATH to the RESPONSE_TESTER settings.'
+                )
+            elif not isinstance(path, str):
+                logger.error('PATH setting is not a string')
+                raise ImproperlyConfigured('`PATH` needs to be a string. Please update your RESPONSE_TESTER settings.')
+            if '.yml' in path or '.yaml' in path:
+                try:
+                    import yaml  # noqa: F401
+                except ModuleNotFoundError:
+                    raise ImproperlyConfigured(
+                        'The package `PyYAML` is required for parsing yaml files. '
+                        'Please run `pip install PyYAML` to install it.'
+                    )
+            self._loader_class.set_path(path)
 
     def validate_case_passlist(self) -> None:
         """

@@ -1,12 +1,10 @@
-from django.conf import settings as django_settings
+import pytest
 from django.core.exceptions import ImproperlyConfigured
 from django.test import override_settings
 
-import pytest
-from tests.utils import yml_path
-
 from response_tester.configuration import SwaggerTesterSettings
 from response_tester.loaders import StaticSchemaLoader
+from tests import yml_path
 
 
 def test_static_schema_loader_validation(monkeypatch):

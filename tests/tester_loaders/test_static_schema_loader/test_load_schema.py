@@ -1,10 +1,9 @@
-from django.core.exceptions import ImproperlyConfigured
-
 import pytest
 import yaml
-from tests.utils import yml_path
+from django.core.exceptions import ImproperlyConfigured
 
 from response_tester.loaders import StaticSchemaLoader
+from tests import yml_path
 
 
 def ret_schema(*args, **kwargs):

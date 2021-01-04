@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 from typing import List
 
-from django.utils.translation import get_language_from_path, gettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from response_tester.case_testers import is_camel_case
 from response_tester.loaders import DrfYasgSchemaLoader
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'drf_spectacular',
     'response_tester',
+    'djangorestframework_camel_case',
 ]
 
 
@@ -148,7 +149,7 @@ RESPONSE_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
-    'CAMEL_CASE_PARSER': True,
+    'CAMEL_CASE_PARSER': False,
     'CASE_PASSLIST': [],
     'PARAMETERIZED_I18N_NAME': '',
     'MIDDLEWARE': {

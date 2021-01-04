@@ -1,11 +1,9 @@
-# noqa: TYP001
+import pytest
 from django.conf import settings as django_settings
 from django.core.exceptions import ImproperlyConfigured
 
-import pytest
-from tests.utils import patch_settings
-
 from response_tester.configuration import SwaggerTesterSettings
+from tests.utils import patch_settings
 
 
 def test_enable_camel_case(monkeypatch) -> None:
@@ -37,18 +35,13 @@ def test_missing_camel_case_parser_setting(monkeypatch) -> None:
         SwaggerTesterSettings().validate()
 
 
-def test_djangorestframework_camel_case_not_installed():
+def test_djangorestframework_camel_case_not_installed(monkeypatch):
     """
     Verify that validation raises an exception if the package isnt installed.
     """
-    import sys
-
-    # Mock away the dependency
-    temp = sys.modules['djangorestframework_camel_case']
-    sys.modules['djangorestframework_camel_case'] = None
-
+    filtered_apps = filter(lambda x: x != 'djangorestframework_camel_case', django_settings.INSTALLED_APPS)
+    monkeypatch.setattr(django_settings, 'INSTALLED_APPS', filtered_apps)
+    monkeypatch.setattr(django_settings, 'RESPONSE_TESTER', patch_settings('CAMEL_CASE_PARSER', True))
     e = 'The package `djangorestframework_camel_case` is not installed, and is required to enable camel case parsing.'
     with pytest.raises(ImproperlyConfigured, match=e):
         SwaggerTesterSettings().validate()
-
-    sys.modules['djangorestframework_camel_case'] = temp

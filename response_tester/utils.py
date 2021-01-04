@@ -6,7 +6,6 @@ import sys
 from typing import Any, List, Optional, Tuple
 
 from django.urls import ResolverMatch
-
 from rest_framework.response import Response
 
 from response_tester.exceptions import CaseError, DocumentationError
@@ -20,7 +19,7 @@ def format_response_tester_case_error(exception: CaseError) -> str:
     """
     return (
         f'The response key `{exception.key}` is not properly {exception.case}\n\n'
-        f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{exception.key}\']` to the '
+        f"If this is intentional, you can skip case validation by adding `ignore_case=['{exception.key}']` to the "
         f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the RESPONSE_TESTER settings'
     )
 
@@ -218,7 +217,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'({[\w]+})')  # noqa: FS003
+        pattern = re.compile(r'({[\w]+})')
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
