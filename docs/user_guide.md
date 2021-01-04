@@ -58,7 +58,7 @@ schema, we raise an exception, causing your test to fail.
 When found, errors will be formatted as follows:
 
 ```shell script
-response_tester.exceptions.DocumentationError: Item is misspecified:
+openapi_tester.exceptions.DocumentationError: Item is misspecified:
 
 Summary
 -------------------------------------------------------------------------------------------

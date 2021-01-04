@@ -14,8 +14,8 @@ OpenAPI schema when testing it:
 
 .. code:: python
 
-    from response_tester.loaders import StaticSchemaLoader
-    from response_tester.case_testers import is_camel_case
+    from openapi_tester.loaders import StaticSchemaLoader
+    from openapi_tester.case_testers import is_camel_case
 
     OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
@@ -47,7 +47,7 @@ SCHEMA_LOADER
 The loader class you use is dictated by how your OpenAPI schema is generated.
 If your schema is a static file, you should use the ``StaticSchemaLoader``. If not, you should select the loader class that serves your implementation.
 
-Loader classes can be imported from ``response_tester.loaders`` and currently include:
+Loader classes can be imported from ``openapi_tester.loaders`` and currently include:
 
 - ``StaticSchemaLoader``
 - ``DrfYasgSchemaLoader``
@@ -59,7 +59,7 @@ The loader class is responsible for all logic related to loading and interacting
 
 .. code:: python
 
-    from response_tester.loaders import DrfSpectacularSchemaLoader
+    from openapi_tester.loaders import DrfSpectacularSchemaLoader
 
     OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
@@ -101,7 +101,7 @@ There are currently four supported options:
 
 .. code:: python
 
-    from response_tester.case_testers import is_camel_case
+    from openapi_tester.case_testers import is_camel_case
 
     OPENAPI_TESTER = {
         ...
@@ -125,7 +125,7 @@ this being flagged as an error in your tests.
 
 .. code:: python
 
-    from response_tester.case_testers import is_camel_case
+    from openapi_tester.case_testers import is_camel_case
 
     OPENAPI_TESTER = {
         ...

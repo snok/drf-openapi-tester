@@ -7,11 +7,11 @@ Troubleshooting
 Activating logs for debugging
 -----------------------------
 
-To enable logs form the package, simply add the logger ``response_tester`` to your logging setup::
+To enable logs form the package, simply add the logger ``openapi_tester`` to your logging setup::
 
     LOGGING = {
         'loggers': {
-            'response_tester': {
+            'openapi_tester': {
                 'handlers': ['console'],
                 'level': 'DEBUG',
             },

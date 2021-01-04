@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import CaseError, DocumentationError
 from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.utils import format_response_tester_case_error, format_response_tester_error, unpack_response
+from openapi_tester.utils import format_openapi_tester_case_error, format_openapi_tester_error, unpack_response
 
 logger = logging.getLogger('openapi_tester')
 
@@ -45,10 +45,10 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
             **kwargs,
         )
     except DocumentationError as e:
-        verbose_error_message = format_response_tester_error(e, hint=e.response_hint)
+        verbose_error_message = format_openapi_tester_error(e, hint=e.response_hint)
         raise DocumentationError(verbose_error_message)
     except CaseError as e:
-        verbose_error_message = format_response_tester_case_error(e)
+        verbose_error_message = format_openapi_tester_case_error(e)
         raise DocumentationError(verbose_error_message)
 
 
