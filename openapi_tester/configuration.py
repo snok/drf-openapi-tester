@@ -61,13 +61,13 @@ class OpenAPITesterSettings:
         if self.case_tester is not None and not isinstance(self.case_tester, FunctionType):
             logger.error('CASE_TESTER setting is mis-specified.')
             raise ImproperlyConfigured(
-                'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
+                'The django-openapi-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
         elif self.case_tester is None:
             raise ImproperlyConfigured(
-                'The django-openapi-response-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
+                'The django-openapi-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
             )
 
     def validate_camel_case_parser_setting(self) -> None:

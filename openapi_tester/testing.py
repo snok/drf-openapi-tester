@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 try:
     from rest_framework.test import APITestCase
 except ImportError:
+    # Anyone using the overwritten APITestCase will need to
+    # have djangorestframework installed, but no one else
     pass
 
 

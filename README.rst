@@ -11,24 +11,24 @@
 .. raw:: html
 
     <p align="center">
-    <a href="https://pypi.org/project/django-openapi-response-tester/">
-        <img src="https://img.shields.io/pypi/v/django-openapi-response-tester.svg" alt="Package version">
+    <a href="https://pypi.org/project/django-openapi-tester/">
+        <img src="https://img.shields.io/pypi/v/django-openapi-tester.svg" alt="Package version">
     </a>
-    <a href="https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest">
-        <img src="https://readthedocs.org/projects/django-openapi-response-tester/badge/?version=latest" alt="Documentation status">
+    <a href="https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest">
+        <img src="https://readthedocs.org/projects/django-openapi-tester/badge/?version=latest" alt="Documentation status">
     </a>
-    <a href="https://codecov.io/gh/snok/django-openapi-response-tester">
-        <img src="https://codecov.io/gh/snok/django-openapi-response-tester/branch/master/graph/badge.svg" alt="Code coverage">
+    <a href="https://codecov.io/gh/snok/django-openapi-tester">
+        <img src="https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
-    <a href="https://pypi.org/project/django-openapi-response-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
-    <a href="https://pypi.python.org/pypi/django-openapi-response-tester">
+    <a href="https://pypi.python.org/pypi/django-openapi-tester">
         <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     </p>
     <p align="center">
-    <a href="https://pypi.org/project/django-openapi-response-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
     </a>
     <a href="http://mypy-lang.org/">
@@ -42,9 +42,9 @@
 --------------
 
 
-**Documentation**: `https://django-openapi-response-tester.readthedocs.io <https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/snok/django-openapi-response-tester <https://github.com/snok/django-openapi-response-tester>`_
+**Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
 --------------
 
@@ -193,7 +193,7 @@ Install using pip:
 
 .. code:: python
 
-   pip install django-openapi-response-tester
+   pip install django-openapi-tester
 
 Configuration
 =============
@@ -259,11 +259,11 @@ To learn more about setting parameters, see the `parameter docs`_.
     </p>
     <p align="center">
         The following sections contain simplified versions of the
-        <a href="https://django-openapi-response-tester.readthedocs.io/">docs</a>.
+        <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
         They are included to give you a quick indication of how the package functions.
     </p>
     <p align="center">
-        If you decide to implement Django OpenAPI Response Tester functions, it's better to read the <a href="https://django-openapi-response-tester.readthedocs.io/">docs</a>.
+        If you decide to implement Django OpenAPI Response Tester functions, it's better to read the <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
     </p>
 
 --------------
@@ -442,15 +442,15 @@ A Django test implementation of input validation for a whole project could be st
                     for method, serializer in values:
                         validate_input_serializer(serializer=serializer, method=method, route=route)
 
-.. _`https://django-openapi-response-tester.readthedocs.io/`: https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest
-.. _Testing response documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing input documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _`https://django-openapi-tester.readthedocs.io/`: https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest
+.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing input documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
-.. _documentation: https://django-openapi-response-tester.readthedocs.io/
-.. _docs: https://django-openapi-response-tester.readthedocs.io/
+.. _documentation: https://django-openapi-tester.readthedocs.io/
+.. _docs: https://django-openapi-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
-.. _parameter docs: https://django-openapi-response-tester.readthedocs.io/en/latest/configuration.html#parameters
-.. _Testing request body documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _parameter docs: https://django-openapi-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation

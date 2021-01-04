@@ -20,15 +20,15 @@
     <a href="https://codecov.io/gh/snok/django-swagger-tester">
         <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
-    <a href="https://pypi.org/project/django-openapi-response-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
-    <a href="https://pypi.python.org/pypi/django-openapi-response-tester">
+    <a href="https://pypi.python.org/pypi/django-openapi-tester">
         <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     </p>
     <p align="center">
-    <a href="https://pypi.org/project/django-openapi-response-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
     </a>
     <a href="http://mypy-lang.org/">
@@ -41,9 +41,9 @@
 
 --------------
 
-**Documentation**: `https://django-openapi-response-tester.readthedocs.io <https://django-openapi-response-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/snok/django-openapi-response-tester <https://github.com/snok/django-openapi-response-tester>`_
+**Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
 --------------
 
@@ -94,6 +94,6 @@ Contents
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
-.. _Testing response documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing request body documentation: https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-response-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking

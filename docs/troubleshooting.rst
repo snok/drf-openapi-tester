@@ -36,4 +36,4 @@ There is a simple demo project available in the ``demo`` folder. This can be con
 
 Ask for help
 ------------
-Still no luck? Go ahead and create an `issue on GitHub <https://github.com/snok/django-openapi-response-tester/issues>`_ and ask for help there.
+Still no luck? Go ahead and create an `issue on GitHub <https://github.com/snok/django-openapi-tester/issues>`_ and ask for help there.

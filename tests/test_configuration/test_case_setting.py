@@ -26,7 +26,7 @@ def test_none(monkeypatch) -> None:
     monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_TESTER', None))
     with pytest.raises(
         ImproperlyConfigured,
-        match=('The django-openapi-response-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'),
+        match=('The django-openapi-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'),
     ):
         OpenAPITesterSettings().validate()
 
@@ -40,7 +40,7 @@ def test_invalid_cases(monkeypatch) -> None:
         with pytest.raises(
             ImproperlyConfigured,
             match=(
-                'The django-openapi-response-tester CASE_TESTER setting is misspecified. '
+                'The django-openapi-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             ),
