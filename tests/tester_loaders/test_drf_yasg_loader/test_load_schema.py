@@ -1,4 +1,4 @@
-from django_swagger_tester.loaders import DrfYasgSchemaLoader
+from openapi_tester.loaders import DrfYasgSchemaLoader
 
 
 def test_successful_parse_documented_endpoints(monkeypatch) -> None:

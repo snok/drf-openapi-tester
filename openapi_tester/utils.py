@@ -1,40 +1,34 @@
 import difflib
-import hashlib
 import json
 import logging
 import re
 import sys
-from copy import deepcopy
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple
 
-from django.core.exceptions import ImproperlyConfigured
 from django.urls import ResolverMatch
-
 from rest_framework.response import Response
 
-from django_swagger_tester.exceptions import CaseError, SwaggerDocumentationError
+from openapi_tester.exceptions import CaseError, DocumentationError
 
-logger = logging.getLogger('django_swagger_tester')
+logger = logging.getLogger('openapi_tester')
 
 
-def format_response_tester_case_error(exception: CaseError) -> str:
+def format_openapi_tester_case_error(exception: CaseError) -> str:
     """
     Returns an appropriate error message.
     """
     return (
         f'The response key `{exception.key}` is not properly {exception.case}\n\n'
-        f'If this is intentional, you can skip case validation by adding `ignore_case=[\'{exception.key}\']` to the '
-        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the SWAGGER_TESTER settings'
+        f"If this is intentional, you can skip case validation by adding `ignore_case=['{exception.key}']` to the "
+        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_TESTER settings'
     )
 
 
-def format_response_tester_error(
-    exception: SwaggerDocumentationError, hint: str, addon: Optional[str] = None, **kwargs
-) -> str:
+def format_error(exception: DocumentationError, hint: str, addon: Optional[str] = None, **kwargs) -> str:
     """
     Formats and returns a standardized error message for easy debugging.
 
-    Primarily used for the django_swagger_tester.testing.response_validation function, as it's too verbose for
+    Primarily used for the openapi_tester.testing.response_validation function, as it's too verbose for
     middleware logging.
     """
     logger.debug('Constructing error message')
@@ -43,7 +37,7 @@ def format_response_tester_error(
         addon = '\n* If you need more details: set `verbose=True`'
 
     # Construct example dict/list from schema - this is useful to display comparable items
-    from django_swagger_tester.configuration import settings
+    from openapi_tester.configuration import settings
 
     example_item = settings.loader_class.create_dict_from_schema(exception.schema)
 
@@ -221,7 +215,7 @@ class Route:
         """
         Returns a count of parameters in a string.
         """
-        pattern = re.compile(r'({[\w]+})')  # noqa: FS003
+        pattern = re.compile(r'({[\w]+})')
         return list(re.findall(pattern, path))
 
     def get_path(self) -> str:
@@ -307,7 +301,7 @@ class Route:
         """
         from django.utils import translation
 
-        from django_swagger_tester.configuration import settings
+        from openapi_tester.configuration import settings
 
         if settings.parameterized_i18n_name:
             parameter = f'{{{settings.parameterized_i18n_name}}}'
@@ -347,110 +341,3 @@ def camelize(data: dict) -> dict:
             new_key = key
         new_dict[new_key] = value
     return new_dict
-
-
-def copy_response(response: Response) -> Response:
-    """
-    Loads response data as JSON and returns a copied response object.
-    """
-    # By parsing the response data JSON we bypass problems like uuid's not having been converted to
-    # strings yet, which otherwise would create problems when comparing response data types to the
-    # documented schema types in the schema tester
-    content = response.content.decode(response.charset)
-    response_data = json.loads(content) if response.status_code != 204 and content else {}
-    copied_response = deepcopy(response)
-    copied_response.data = response_data
-    return copied_response
-
-
-def get_logger(level: str, logger_name: str) -> Callable:
-    """
-    Return logger.
-
-    :param level: log level
-    :param logger_name: logger name
-    :return: logger
-    """
-    error = (
-        f'`{level}` is not a valid log level. Please change the `LOG_LEVEL` setting in your `SWAGGER_TESTER` '
-        f'settings to one of `DEBUG`, `INFO`, `WARNING`, `ERROR`, `EXCEPTION`, or `CRITICAL`.'
-    )
-    if not isinstance(level, str):
-        raise ImproperlyConfigured(error)
-    if not isinstance(logger_name, str):
-        raise ImproperlyConfigured('Logger name must be a string')
-    else:
-        level = level.upper()
-    if level == 'DEBUG':
-        return logging.getLogger(logger_name).debug
-    elif level == 'INFO':
-        return logging.getLogger(logger_name).info
-    elif level == 'WARNING':
-        return logging.getLogger(logger_name).warning
-    elif level == 'ERROR':
-        return logging.getLogger(logger_name).error
-    elif level == 'EXCEPTION':
-        return logging.getLogger(logger_name).exception
-    elif level == 'CRITICAL':
-        return logging.getLogger(logger_name).critical
-    else:
-        raise ImproperlyConfigured(error)
-
-
-def hash_response(response: dict) -> str:
-    """
-    Function replaces all response values with type-specific placeholder values, and returns a hash value.
-
-    The idea is that we don't have to validate the same response twice, unless response types change.
-    """
-    types = {str: 0, int: 1, bool: 2, float: 3, type(None): 4}
-
-    def iterate_list(_list: list) -> list:
-        new_list = []
-        for item in _list:
-            if isinstance(item, dict):
-                new_list.append(iterate_dict(item))
-            elif isinstance(item, list):
-                new_list.append(iterate_list(item))  # type: ignore
-            elif isinstance(item, tuple(types)):
-                new_list.append(types[type(item)])  # type: ignore
-        return new_list
-
-    def iterate_dict(d: dict) -> dict:
-        new_dict = {}
-        for k, v in d.items():
-            if isinstance(v, dict):
-                new_dict[k] = iterate_dict(v)
-            elif isinstance(v, list):
-                new_dict[k] = iterate_list(v)  # type: ignore
-            elif isinstance(v, tuple(types)):
-                new_dict[k] = types[type(v)]  # type: ignore
-        return new_dict
-
-    if isinstance(response, dict):
-        result = iterate_dict(response)
-    elif isinstance(response, list):
-        result = iterate_list(response)
-    elif isinstance(response, tuple(types)):
-        result = types[type(response)]
-
-    return str(int(hashlib.sha1(bytes(str(result), 'utf-8')).hexdigest(), 16))
-
-
-def hash_schema(o: dict) -> str:
-    """
-    Makes a hash out of anything that contains only list, dict and hashable types including string and numeric types.
-
-    Stolen from https://stackoverflow.com/questions/5884066/hashing-a-dictionary
-    """
-
-    def freeze(o: Any) -> Any:
-        if isinstance(o, dict):
-            return frozenset({k: freeze(v) for k, v in o.items()}.items())
-
-        if isinstance(o, list):
-            return tuple(freeze(v) for v in o)
-
-        return o
-
-    return str(hash(freeze(o)))

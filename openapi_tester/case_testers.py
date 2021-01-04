@@ -1,9 +1,9 @@
 import logging
 import re
 
-from django_swagger_tester.exceptions import CaseError
+from openapi_tester.exceptions import CaseError
 
-logger = logging.getLogger('django_swagger_tester')
+logger = logging.getLogger('openapi_tester')
 
 
 def is_camel_case(key: str, origin: str) -> None:
@@ -12,7 +12,7 @@ def is_camel_case(key: str, origin: str) -> None:
 
     :param key: The key to be tested
     :param origin: Where the key came from (e.g., response or schema)
-    :raises: django_swagger_tester.exceptions.CaseError
+    :raises: openapi_tester.exceptions.CaseError
     """
     logger.debug('Verifying that %s key `%s` is properly camel cased', origin, key)
     if len(key) == 0:
@@ -33,7 +33,7 @@ def is_snake_case(key: str, origin: str) -> None:
 
     :param key: The key to be tested
     :param origin: Where the key came from (e.g., response or schema)
-    :raises: django_swagger_tester.exceptions.CaseError
+    :raises: openapi_tester.exceptions.CaseError
     """
     logger.debug('Verifying that %s key `%s` is properly snake cased', origin, key)
     if len(key) == 0:
@@ -58,7 +58,7 @@ def is_kebab_case(key: str, origin: str) -> None:
 
     :param key: The key to be tested
     :param origin: Where the key came from (e.g., response or schema)
-    :raises: django_swagger_tester.exceptions.CaseError
+    :raises: openapi_tester.exceptions.CaseError
     """
     logger.debug('Verifying that %s key `%s` is properly kebab cased', origin, key)
     if len(key) == 0:
@@ -83,7 +83,7 @@ def is_pascal_case(key: str, origin: str) -> None:
 
     :param key: The key to be tested
     :param origin: Where the key came from (e.g., response or schema)
-    :raises: django_swagger_tester.exceptions.CaseError
+    :raises: openapi_tester.exceptions.CaseError
     """
     logger.debug('Verifying that %s key `%s` is properly pascal cased', origin, key)
     if len(key) == 0:

@@ -1,6 +1,9 @@
 from django.conf.urls.i18n import i18n_patterns
 from django.urls import path, register_converter
 from django.urls.converters import StringConverter
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
 
 from demo import views
 from demo.api.views.animals import Animals
@@ -11,10 +14,6 @@ from demo.api.views.items import Items
 from demo.api.views.snake_cased_response import SnakeCasedResponse
 from demo.api.views.trucks import BadTrucks, GoodTrucks
 from demo.api.views.vehicles import Vehicles
-from rest_framework import permissions
-
-from drf_yasg import openapi
-from drf_yasg.views import get_schema_view
 
 
 class IsValidVehicleType(StringConverter):

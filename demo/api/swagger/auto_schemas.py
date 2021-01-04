@@ -1,9 +1,9 @@
+from drf_yasg.openapi import TYPE_ARRAY, TYPE_OBJECT, Schema
+from drf_yasg.utils import swagger_auto_schema
+
 from demo.api.serializers import VehicleSerializer
 from demo.api.swagger.responses import generic_error_response, get_cars_200_response, get_trucks_200_response
 from demo.api.swagger.schemas import generic_string_schema
-
-from drf_yasg.openapi import TYPE_ARRAY, TYPE_OBJECT, Schema
-from drf_yasg.utils import swagger_auto_schema
 
 
 def get_cars_auto_schema():

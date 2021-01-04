@@ -65,5 +65,5 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          poetry run pytest --cov=django_swagger_tester --verbose --assert=plain
+          poetry run pytest --cov=openapi_tester --verbose --assert=plain
           poetry run coverage report

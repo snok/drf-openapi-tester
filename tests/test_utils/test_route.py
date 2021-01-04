@@ -1,6 +1,6 @@
 import pytest
 
-from django_swagger_tester.utils import Route, resolve_path
+from openapi_tester.utils import Route, resolve_path
 
 
 def test_route_initialization():

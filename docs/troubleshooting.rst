@@ -7,11 +7,11 @@ Troubleshooting
 Activating logs for debugging
 -----------------------------
 
-To enable logs form the package, simply add the logger ``django_swagger_tester`` to your logging setup::
+To enable logs form the package, simply add the logger ``openapi_tester`` to your logging setup::
 
     LOGGING = {
         'loggers': {
-            'django_swagger_tester': {
+            'openapi_tester': {
                 'handlers': ['console'],
                 'level': 'DEBUG',
             },
@@ -36,4 +36,4 @@ There is a simple demo project available in the ``demo`` folder. This can be con
 
 Ask for help
 ------------
-Still no luck? Go ahead and create an `issue on GitHub <https://github.com/snok/django-swagger-tester/issues>`_ and ask for help there.
+Still no luck? Go ahead and create an `issue on GitHub <https://github.com/snok/django-openapi-tester/issues>`_ and ask for help there.

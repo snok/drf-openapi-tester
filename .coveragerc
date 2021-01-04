@@ -1,17 +1,17 @@
 # This is a configuration file for the coverage package, which we use to measure test coverage for the project.
 
 # To run the coverage package:
-# run tests --> `poetry run pytest --cov=django_swagger_tester --verbose --color=yes  --assert=plain --cov-report=xml`
+# run tests --> `poetry run pytest --cov=openapi_tester --verbose --color=yes  --assert=plain --cov-report=xml`
 # getting the report --> `poetry run coverage report`
 
 [run]
-source = django_swagger_tester/*
+source = openapi_tester/*
 
 omit =
     demo/*
-    django_swagger_tester/static.py,
-    django_swagger_tester/drf_yasg.py,
-    django_swagger_tester/migrations/*,
+    openapi_tester/static.py,
+    openapi_tester/drf_yasg.py,
+    openapi_tester/migrations/*,
     docs/*
     tests/*
     */python38-32/*

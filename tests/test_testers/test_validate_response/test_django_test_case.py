@@ -1,18 +1,17 @@
+import pytest
 from django.conf import settings as django_settings
 
-import pytest
+from openapi_tester.loaders import StaticSchemaLoader
+from openapi_tester.testing import OpenAPITestCase
+from tests import yml_path
 from tests.test_testers.test_validate_response import BAD_TEST_DATA, GOOD_TEST_DATA
-from tests.test_testers.test_validate_response.test_static import yml_path
-
-from django_swagger_tester.loaders import StaticSchemaLoader
-from django_swagger_tester.testing import OpenAPITestCase
 
 
-def test_django_test_case(client, monkeypatch, transactional_db) -> None:  # noqa: TYP001
+def test_django_test_case(client, monkeypatch, transactional_db) -> None:
     """
     Asserts that the assertResponse method of the test case validates correct schemas successfully.
     """
-    monkeypatch.setattr(django_settings, 'SWAGGER_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
+    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', {'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader})
     test_case = OpenAPITestCase()
     for item in GOOD_TEST_DATA:
         route = f"/api/v1{item['url']}"

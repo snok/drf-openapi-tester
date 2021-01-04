@@ -1,7 +1,7 @@
 import pytest
 
-from django_swagger_tester.exceptions import SwaggerDocumentationError
-from django_swagger_tester.schema_tester import SchemaTester
+from openapi_tester.exceptions import DocumentationError
+from openapi_tester.schema_tester import SchemaTester
 
 base = SchemaTester({'type': 'array', 'items': {}}, [], lambda x, y: None, origin='test')
 
@@ -47,5 +47,5 @@ def test_invalid_item_types():
     Verify that all invalid item types raise appropriate exceptions.
     """
     for item in items:
-        with pytest.raises(SwaggerDocumentationError):
+        with pytest.raises(DocumentationError):
             base.test_item(schema=item['schema'], data=item['bad_data'], reference='placeholder')

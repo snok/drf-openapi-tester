@@ -8,10 +8,10 @@ Install using pip:
 
 .. code:: bash
 
-    pip install django-swagger-tester
+    pip install django-openapi-tester
 
-or install using poetry:
+or if you're using poetry:
 
 .. code:: bash
 
-    poetry add django-swagger-tester
+    poetry add django-openapi-tester

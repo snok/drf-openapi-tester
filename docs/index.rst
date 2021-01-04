@@ -1,10 +1,10 @@
 .. raw:: html
 
     <p align="center">
-        <h2 align='center'>Django Swagger Tester</h2>
+        <h2 align='center'>Django OpenAPI Response Tester</h2>
     </p>
     <p align="center">
-      <em>A Django test utility for validating Swagger documentation</em>
+      <em>A test utility for validating API responses</em>
     </p>
 
 
@@ -20,15 +20,15 @@
     <a href="https://codecov.io/gh/snok/django-swagger-tester">
         <img src="https://codecov.io/gh/snok/django-swagger-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
-    <a href="https://pypi.org/project/django-swagger-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
-    <a href="https://pypi.python.org/pypi/django-swagger-tester">
+    <a href="https://pypi.python.org/pypi/django-openapi-tester">
         <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     </p>
     <p align="center">
-    <a href="https://pypi.org/project/django-swagger-tester/">
+    <a href="https://pypi.org/project/django-openapi-tester/">
         <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
     </a>
     <a href="http://mypy-lang.org/">
@@ -41,40 +41,40 @@
 
 --------------
 
-**Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
 
-**Repository**: `https://github.com/snok/django-swagger-tester <https://github.com/snok/django-swagger-tester>`_
+**Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
 --------------
 
-Django Swagger Tester
-=====================
+Django OpenAPI Response Tester
+==============================
 
-Django Swagger Tester is a simple test utility for validating your Django Swagger documentation.
+This package is a simple test utility for validating your OpenAPI response documentation.
 
-Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
+Maintaining consistent and error-free documentation can be hard,
+and ensuring correctness typically becomes exponentially harder as your documentation increases.
+Response documentation in particular, is a combinatorial nightmare, as every API can have multiple methods,
+where each method has multiple possible responses.
 
-Features
---------
+This package tries to solve this problem by testing that response documentation matches
+your actual API JSON responses. This way, you can actually *know* that an API's documentation reflects reality.
 
-The package has two primary features:
+Supported OpenAPI Implementations
+---------------------------------
 
--  `Testing response documentation`_
--  `Testing request body documentation`_
+How we load your OpenAPI schema will depend on what packages you're using to
+host/generate your own OpenAPI schema. We currently have schema-loader classes
+created for:
 
-Support for other use cases could be added in the future, and contributions made are appreciated.
+- Schemas rendered dynamically using `drf-yasg`_
+- Schemas rendered dynamically using `drf-spectacular`_
+- Any implementation which generates a static yaml or json file (e.g., like `DRF`_)
 
-Implementations
----------------
-
-This package currently supports:
-
-- Testing of dynamically rendered OpenAPI schemas using `drf-yasg`_
-- Testing of dynamically rendered OpenAPI schemas using `drf-spectacular`_
-- Testing any implementation which generates a static yaml or json file (e.g., like `DRF`_)
-
-
-If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
+We belive this should cover most projects, but if you're using another method to
+generate your documentation and would like to use this package, feel free to
+add an issue, or create a PR. Adding a new implementation is as easy as adding
+the required logic needed to load the OpenAPI schema.
 
 Contents
 --------
@@ -94,6 +94,6 @@ Contents
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
-.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking
