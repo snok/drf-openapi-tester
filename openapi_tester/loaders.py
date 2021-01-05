@@ -107,10 +107,10 @@ class BaseSchemaLoader:
         """
         Sets self.schema and self.original_schema.
         """
-        derefernced_schema = self.dereference_schema(schema)
-        self.validate_schema(derefernced_schema)
+        dereferenced_schema = self.dereference_schema(schema)
+        self.validate_schema(dereferenced_schema)
         self.original_schema = schema
-        self.schema = self.dereference_schema(derefernced_schema)
+        self.schema = self.dereference_schema(dereferenced_schema)
 
     def get_route(self, route: str) -> Route:
         """
