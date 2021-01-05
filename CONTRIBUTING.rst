@@ -23,8 +23,8 @@ Nice to know
 - Static files are gitignored, so to generate static assets locally, you should run ``manage.py collectstatic``.
 - To publish a test-release, run
 
-```
-poetry config repositories.test https://test.pypi.org/legacy/
-poetry config pypi-token.test ${{ secrets.TEST_PYPI_TOKEN }}
-poetry publish --build --no-interaction --repository test
-```
+    .. code-block:: shell
+
+        poetry config repositories.test https://test.pypi.org/legacy/
+        poetry config pypi-token.test ${{ secrets.TEST_PYPI_TOKEN }}
+        poetry publish --build --no-interaction --repository test

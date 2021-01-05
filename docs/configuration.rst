@@ -7,21 +7,19 @@ Configuration
 Settings
 --------
 
-To use the test-utility in your project, you need to configure the
-``OPENAPI_TESTER`` package settings in your ``settings.py``.
-At minimum you need to specify which schema loader class to use to load your
-OpenAPI schema when testing it:
+To use the ``validate_response`` function in your project, you first need to
+configure the ``OPENAPI_TESTER`` package settings in your ``settings.py``.
+At minimum we need to know schema loader class to use to load your OpenAPI schema:
 
 .. code:: python
 
     from openapi_tester.loaders import StaticSchemaLoader
-    from openapi_tester.case_testers import is_camel_case
 
     OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
     }
 
-A complete example of the ``OPENAPI_TESTER`` settings might look like this:
+A full example of the ``OPENAPI_TESTER`` settings might look like this:
 
 .. code:: python
 
@@ -32,11 +30,12 @@ A complete example of the ``OPENAPI_TESTER`` settings might look like this:
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }
 
+
 .. Note::
 
     The ``PATH`` setting is only required if you are using the StaticSchemaLoader loader class.
 
-
+Scroll down for info on each individual setting.
 
 Parameters
 ----------

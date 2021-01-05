@@ -11,7 +11,7 @@ license = "BSD-4-Clause"
 readme = "docs/PYPI_README.rst"
 homepage = "https://github.com/snok/django-openapi-tester"
 repository = "https://github.com/snok/django-openapi-tester"
-documentation = "https://django-openapi-tester.readthedocs.io/en/latest/"
+documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"
 keywords = ['openapi', 'swagger', 'api', 'testing', 'django']
 classifiers = [
     'Development Status :: 4 - Beta',

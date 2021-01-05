@@ -3,11 +3,13 @@ import json
 import logging
 import re
 import sys
-from typing import Any, List, Optional, Tuple
-
-from rest_framework.response import Response
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple
 
 from openapi_tester.exceptions import CaseError, DocumentationError
+
+if TYPE_CHECKING:
+    from rest_framework.response import Response
+
 
 logger = logging.getLogger('openapi_tester')
 
@@ -129,7 +131,7 @@ def format_error(exception: DocumentationError, hint: str, addon: Optional[str] 
     return ''.join(message)
 
 
-def unpack_response(response: Response) -> Tuple[dict, int]:
+def unpack_response(response: 'Response') -> Tuple[dict, int]:
     """
     Unpacks HTTP response.
     """

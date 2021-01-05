@@ -21,7 +21,9 @@ logger = logging.getLogger('openapi_tester')
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
-    """ We are using a currying pattern to pass schema into the scope of the handler """
+    """
+    We are using a currying pattern to pass schema into the scope of the handler.
+    """
 
     def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
         try:
@@ -202,60 +204,6 @@ class BaseSchemaLoader:
 
         return index_schema(status_code_schema, 'schema')
 
-    def get_request_body_schema_section(self, route: str, method: str) -> dict:
-        """
-        Indexes schema to get an endpoints request body.
-
-        :param method: HTTP request method
-        :param route: Schema-compatible path
-        :return: Request body schema
-        """
-
-        self.validate_method(method)
-        self.validate_string(route, 'route')
-        route = self.get_route(route).get_path()
-        schema = self.get_schema()
-
-        paths_schema = index_schema(schema=schema, variable='paths')
-
-        # Index by route
-        routes = ', '.join(list(paths_schema))
-        route_error = ''
-        if routes:
-            pretty_routes = '\n\t• '.join(routes.split())
-
-            if settings.parameterized_i18n_name:
-                route_error += (
-                    '\n\nDid you specify the correct i18n parameter name? '
-                    f'Your project settings specify `{settings.parameterized_i18n_name}` '
-                    f'as the name of your parameterized language, meaning a path like `/api/en/items` '
-                    f'will be indexed as `/api/{{{settings.parameterized_i18n_name}}}/items`.'
-                )
-            route_error += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
-        route_schema = index_schema(schema=paths_schema, variable=route, error_addon=route_error)
-
-        # Index by method
-        joined_methods = ', '.join(method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS')
-
-        method_error = ''
-        if joined_methods:
-            method_error += f'\n\nAvailable methods include: {joined_methods}.'
-        method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
-
-        parameters_schema = index_schema(schema=method_schema, variable='parameters')
-        try:
-            parameter_schema = parameters_schema[0]
-        except IndexError:
-            raise UndocumentedSchemaSectionError(
-                f'Request body does not seem to be documented. `Parameters` is empty for path `{route}` and method `{method}`'
-            )
-        if 'in' not in parameter_schema or parameter_schema['in'] != 'body':
-            logger.debug('Request body schema seems to be missing a request body section')
-            raise UndocumentedSchemaSectionError(
-                f'There is no in-body request body documented for route `{route}` and method `{method}`.'
-            )
-        return parameter_schema['schema']
-
     @staticmethod
     def validate_string(string: str, name: str) -> None:
         """
@@ -296,16 +244,6 @@ class BaseSchemaLoader:
             raise ImproperlyConfigured('`status_code` should be an integer.')
         if not 100 <= status_code <= 505:
             raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
-
-    def get_request_body_example(self, route: str, method: str) -> Any:
-        """
-        Returns a request body example.
-
-        Does this either by returning a ready example from the schema, or by constructing an example manually.
-        """
-        logger.info('Fetching request body example for %s request to %s', method, route)
-        request_body_schema = self.get_request_body_schema_section(route, method)
-        return request_body_schema.get('example', self.create_dict_from_schema(request_body_schema))
 
     def _iterate_schema_dict(self, schema_object: dict) -> dict:
         parsed_schema = {}

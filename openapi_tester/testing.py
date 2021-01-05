@@ -1,6 +1,8 @@
 import logging
 from typing import TYPE_CHECKING, Any
 
+from django.core.exceptions import ImproperlyConfigured
+
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import CaseError, DocumentationError
 from openapi_tester.schema_tester import SchemaTester
@@ -14,13 +16,6 @@ if TYPE_CHECKING:
     except ImportError:
         from django.http.response import HttpResponse as Response
 
-try:
-    from rest_framework.test import APITestCase
-except ImportError:
-    # Anyone using the overwritten APITestCase will need to
-    # have djangorestframework installed, but no one else
-    pass
-
 
 def validate_response(response: 'Response', method: str, route: str, **kwargs) -> None:
     """
@@ -28,10 +23,14 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
 
     It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
 
-    :param response: HTTP response
-    :param method: HTTP method ('get', 'put', 'post', ...)
-    :param route: Relative path of the endpoint being tested
-    :raises: openapi_tester.exceptions.DocumentationError or openapi_tester.exceptions.CaseError
+    :param response: The HTTP response
+    :param method: The HTTP method ('get', 'put', 'post', ...)
+    :param route: The relative path of the endpoint which sent the response (must be resolvable)
+    :keyword ignore_case: List of strings to ignore when testing the case of response keys
+    :keyword camel_case_parser: Boolean to indicate whether djangorestframework-camel-case parsers are active for this endpoint
+    :raises: ``openapi_tester.exceptions.DocumentationError`` if we find inconsistencies in the API response and schema.
+
+             ``openapi_tester.exceptions.CaseError`` if we find case errors.
     """
     data, status_code = unpack_response(response)
     response_schema = settings.loader_class.get_response_schema_section(
@@ -54,18 +53,28 @@ def validate_response(response: 'Response', method: str, route: str, **kwargs) -
         raise DocumentationError(verbose_error_message)
 
 
-class OpenAPITestCase(APITestCase):
-    """
-    Extends APITestCase with OpenAPI assertions.
-    """
+try:
+    from rest_framework.test import APITestCase
 
-    def assertResponse(self, response: 'Response', **kwargs: Any) -> None:
+    class OpenAPITestCase(APITestCase):
         """
-        Assert response matches the OpenAPI spec.
+        Extends APITestCase with OpenAPI assertions.
         """
-        route = kwargs.pop('route', response.request['PATH_INFO'])
-        method = kwargs.pop('method', response.request['REQUEST_METHOD'])
-        try:
-            validate_response(response=response, method=method, route=route, **kwargs)
-        except (DocumentationError, CaseError) as e:
-            raise self.failureException from e
+
+        # noinspection PyPep8Naming
+        def assertResponse(self, response: 'Response', **kwargs: Any) -> None:
+            """
+            Assert response matches the OpenAPI spec.
+            """
+            route = kwargs.pop('route', response.request['PATH_INFO'])
+            method = kwargs.pop('method', response.request['REQUEST_METHOD'])
+            try:
+                validate_response(response=response, method=method, route=route, **kwargs)
+            except (DocumentationError, CaseError) as e:
+                raise self.failureException from e
+
+
+except (ImportError, ImproperlyConfigured):
+    # Anyone using this will need djangorestframework installed,
+    # but it's an optional dependency.
+    pass
