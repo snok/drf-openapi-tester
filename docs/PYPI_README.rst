@@ -14,7 +14,7 @@ Django OpenAPI Tester
     :target: https://pypi.python.org/pypi/django-openapi-tester
 
 .. image:: https://readthedocs.org/projects/django-openapi-tester/badge/?version=latest
-    :target: https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest
+    :target: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. image:: https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg
@@ -34,7 +34,7 @@ Django OpenAPI Tester
 
 --------------
 
-**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
 **Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
@@ -171,6 +171,6 @@ Contents
     publish
     changelog
 
-.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking
+.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _Ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking

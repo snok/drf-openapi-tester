@@ -7,7 +7,7 @@ project = 'django-openapi-tester'
 author = 'Sondre Lillebø Gundersen'
 copyright = '2020, Snok'
 
-extensions = ['sphinx_rtd_theme', 'sphinx.ext.autodoc', 'sphinx.ext.coverage', 'sphinx.ext.napoleon']
+extensions = ['sphinx_rtd_theme']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

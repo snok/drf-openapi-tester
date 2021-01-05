@@ -1,73 +1,66 @@
 .. raw:: html
 
-    <p align="center">
-        <h1 align="center">Django OpenAPI Tester</h1>
-    </p>
-    <p align="center">
-      <em>A test utility for validating API responses</em>
-    </p>
-
+    <p align="center"><h1 align='center'>Django OpenAPI Tester</h1></p>
+    <p align="center"><em>A test utility for validating API responses</em></p>
 
 .. raw:: html
 
     <p align="center">
-    <a href="https://pypi.org/project/django-swagger-tester/">
-        <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
-    </a>
-    <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
-        <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
-    </a>
-    <a href="https://codecov.io/gh/snok/django-openapi-tester">
-        <img src="https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
-    </a>
-    <a href="https://pypi.org/project/django-openapi-tester/">
-        <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
-    </a>
-    <a href="https://pypi.python.org/pypi/django-openapi-tester">
-        <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
-    </a>
-    <a href="http://mypy-lang.org/">
-        <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-    </a>
+        <a href="https://pypi.org/project/django-swagger-tester/">
+            <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
+        </a>
+        <a href="https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest">
+            <img src="https://readthedocs.org/projects/django-swagger-tester/badge/?version=latest" alt="Documentation status">
+        </a>
+        <a href="https://codecov.io/gh/snok/django-openapi-tester">
+            <img src="https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
+        </a>
+        <a href="https://pypi.org/project/django-openapi-tester/">
+            <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
+        </a>
+        <a href="https://pypi.python.org/pypi/django-openapi-tester">
+            <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
+        </a>
+        <a href="http://mypy-lang.org/">
+            <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
+        </a>
     </p>
 
 --------------
 
-
-**Documentation**: `https://django-openapi-tester.readthedocs.io <https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest>`_
+**Documentation**: `https://django-swagger-tester.readthedocs.io <https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest>`_
 
 **Repository**: `https://github.com/snok/django-openapi-tester <https://github.com/snok/django-openapi-tester>`_
 
 --------------
 
-Django OpenAPI Tester is a simple test utility for validating your Django Swagger documentation.
+Django OpenAPI Tester is a simple test utility. Its aim is to make it easy for
+developers to catch and correct documentation errors in their OpenAPI schema.
 
-Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
+.. raw::
 
-Given a response
+    <img src="https://github.com/snok/django-openapi-tester/blob/docs/docs/gifs/example.gif"/>
+
+Maintaining good documentation is hard, and ensuring complete correctness is
+harder. By testing that your **actual** API responses against your schema,
+you can *know* that your schema reflects reality.
+
+To illustrate; given this example response:
+
 
 .. code-block:: python
 
     {
       "id": 0,
-      "category": {
-        "id": 0,
-        "name": "string"
-      },
       "name": "doggie",
-      "photoUrls": [
-        "string"
-      ],
-      "tags": [
-        {
-          "id": 0,
-          "name": "string"
-        }
-      ],
       "status": "available"
+      "photoUrls": ["string"],
+      "tags": [{"id": 0, "name": "string"}],
+      "category": {"id": 0, "name": "string"},
     }
 
-your brain shouldn't have to manually scan this OpenAPI response schema for errors
+your brain shouldn't have to manually scan this OpenAPI response schema for
+possible documentation errors
 
 .. code-block:: python
 
@@ -156,15 +149,9 @@ your brain shouldn't have to manually scan this OpenAPI response schema for erro
 
 when automated tests can simply tell you that ``photoUrls`` is missing an ``s``.
 
-Features
---------
-
-The package has two primary features:
-
--  `Testing response documentation`_
--  `Testing request body documentation`_
-
-Support for other use cases could be added in the future, and contributions are welcome.
+Not only that, but when you come back and change your API next year, your test
+suite should not allow you to deploy your changes without remembering to
+update your documentation.
 
 Implementations
 ---------------
@@ -174,7 +161,6 @@ This package currently supports:
 - Testing of dynamically rendered OpenAPI schemas using `drf-yasg`_
 - Testing of dynamically rendered OpenAPI schemas using `drf-spectacular`_
 - Testing any implementation which generates a static yaml or json file (e.g., like `DRF`_)
-
 
 If you're using another method to generate your documentation and would like to use this package, feel free to add an issue, or create a PR. Adding a new implementation is as easy as adding the required logic needed to load the OpenAPI schema.
 
@@ -193,88 +179,31 @@ Configuration
 Settings
 --------
 
-To use Django Swagger Settings in your project, you first need to add a ``openapi_tester`` to your installed apps.
+To use the ``validate_response`` function in your project, you first need to
+configure the ``OPENAPI_TESTER`` package settings in your ``settings.py``.
+At minimum we need to know schema loader class to use to load your OpenAPI schema:
 
 .. code:: python
 
-    INSTALLED_APPS = [
-        ...
-        'openapi_tester',
-    ]
-
-Secondly, you need to configure the ``OPENAPI_TESTER`` package settings in your ``settings.py``:
-
-.. code:: python
-
-    from openapi_tester.loaders import DrfSpectacularSchemaLoader
-    from openapi_tester.case_testers import is_camel_case
+    from openapi_tester.loaders import StaticSchemaLoader
 
     OPENAPI_TESTER = {
         'SCHEMA_LOADER': DrfSpectacularSchemaLoader,
-        'CASE_TESTER': is_camel_case,
-        'CAMEL_CASE_PARSER': True,
-        'CASE_PASSLIST': ['IP', 'DHCP'],
-        'MIDDLEWARE': {
-            'RESPONSE_VALIDATION': {
-                'LOG_LEVEL': 'ERROR',
-                'LOGGER_NAME': 'middleware_response_validation',
-                'VALIDATION_EXEMPT_URLS': ['^api/v1/exempt-endpoint$'],
-                'VALIDATION_EXEMPT_STATUS_CODES': [401],
-                'DEBUG': True,
-            }
-        },
-        'VIEWS': {
-            'RESPONSE_VALIDATION': {
-                'LOG_LEVEL': 'ERROR',
-                'LOGGER_NAME': 'view_response_validation',
-                'DEBUG': True,
-            }
-        },
     }
 
-The only required setting, is the schema loader class.
+See the configuration_ section of the docs for more info.
 
-Parameters
-----------
+.. _configuration: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html
 
-To learn more about setting parameters, see the `parameter docs`_.
 
 |
-|
-
---------------
-
-.. raw:: html
-
-    <p align="center">
-        <b>Please Note</b>
-    </p>
-    <p align="center">
-        The following sections contain simplified versions of the
-        <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
-        They are included to give you a quick indication of how the package functions.
-    </p>
-    <p align="center">
-        If you decide to implement Django OpenAPI Tester functions, it's better to read the <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
-    </p>
-
---------------
-
 |
 
 Response Validation
 ===================
 
-There are three ways to verify that your API responses match your documented responses:
 
-1. Add static tests for each endpoint, method, and status code
-2. Implement live testing for your project (middleware)
-3. Implement live testing for individual views (inherit ResponseValidation in place of an APIView)
-
-Static testing
---------------
-
-A pytest implementation might look like this:
+**Pytest**
 
 .. code:: python
 
@@ -283,13 +212,13 @@ A pytest implementation might look like this:
     def test_200_response_documentation(client):
         route = 'api/v1/test/1'
         response = client.get(route)
+
         assert response.status_code == 200
         assert response.json() == expected_response
 
-        # test swagger documentation
         validate_response(response=response, method='GET', route=route)
 
-A Django-test implementation might look like this:
+**Django test**
 
 .. code-block:: python
 
@@ -304,68 +233,25 @@ A Django-test implementation might look like this:
             self.client.force_authenticate(user=user)
 
         def test_get_200(self) -> None:
+            """
+            Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
+            """
             response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
             expected_response = [...]
 
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), expected_response)
 
-            # test swagger documentation
             validate_response(response=response, method='GET', route=self.path)
 
-It is also possible to test more than a single response at the time:
-
-.. code:: python
-
-    def test_post_endpoint_responses(client):
-        # 201 - Resource created
-        response = client.post(...)
-        validate_response(response=response, method='POST', route='api/v1/test/')
-
-        # 400 - Bad data
-        response = client.post(...)
-        validate_response(response=response, method='POST', route='api/v1/test/')
-
-    def test_get_endpoint_responses(client):
-        # 200 - Fetch resource
-        response = client.get(...)
-        validate_response(response=response, method='GET', route='api/v1/test/<id>')
-
-        # 404 - Bad ID
-        response = client.get(...)
-        validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
-
-Live testing with a middleware
-------------------------------
-
-If you want to implement response validation for all outgoing API responses, simply add the middleware to your settings.py:
-
-.. code:: python
-
-    MIDDLEWARE = [
-        ...
-        'openapi_tester.middleware.ResponseValidationMiddleware',
-    ]
-
-The middleware validates all outgoing responses with the ``application/json`` content-type. Any errors/inconsistencies are then logged using a settings-specified log-level.
-
-To avoid validating the same responses over and over, the results are cached to a database table, making sure we only validate a response once. Two responses from the same endpoint *can* trigger duplicate validation, but only if the response structure has changed, i.e., the type of a response attribute has changed.
-
-Live testing for a single view
-------------------------------
-
-If you're using DRF's ``APIView``, you can replace that with ``openapi_tester.views.ResponseValidationView``, to add response validation before a response is returned to the user.
-
-If you're not using ``APIView``, but some closely related solution, you can very easily make your own response validation class. Just have a look at the ``ResposeValidationView`` for inspiration.
-
 Error messages
---------------
+~~~~~~~~~~~~~~
 
 When found, errors will be raised in the following format:
 
 .. code-block:: shell
 
-    openapi_tester.exceptions.DocumentationError: Item is misspecified:
+    openapi_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
 
     Summary
     -------------------------------------------------------------------------------------------
@@ -375,7 +261,7 @@ When found, errors will be raised in the following format:
     Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
     Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
 
-    Hint:       Remove the key(s) from your OpenAPI docs, or include it in your API response.
+    Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
     Sequence:   init.list
 
     -------------------------------------------------------------------------------------------
@@ -389,60 +275,117 @@ When found, errors will be raised in the following format:
 
 In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
+.. Note::
 
-Input Validation
-================
+    It can be useful to test more than just successful responses::
 
-To make sure your request body documentation is accurate, and will stay accurate, you can use endpoint serializers to validate your schema directly.
+        def test_post_endpoint_responses(client):
+            # 201 - Resource created
+            response = client.post(...)
+            validate_response(response=response, method='POST', route='api/v1/test/')
 
-``validate_input_serializer`` constructs an example representation of the documented request body, and passes it to the serializer it is given. This means it's only useful if you use serializers for validating your incoming request data.
+            # 400 - Bad data
+            response = client.post(...)
+            validate_response(response=response, method='POST', route='api/v1/test/')
 
-A Django test implementation of input validation for a whole project could be structured like this:
+        def test_get_endpoint_responses(client):
+            # 200 - Fetch resource
+            response = client.get(...)
+            validate_response(response=response, method='GET', route='api/v1/test/<id>')
 
-.. code:: python
-
-    from django.test import SimpleTestCase
-    from openapi_tester.testing import validate_input_serializer
-
-    from api.serializers.validation.request_bodies import ...
+            # 404 - Bad ID
+            response = client.get(...)
+            validate_response(response=response, method='GET', route='api/v1/test/<bad id>')
 
 
-    class TestSwaggerInput(SimpleTestCase):
-        endpoints = [
-            {
-                'api/v1/orders/': [
-                    ('POST', ValidatePostOrderBody),
-                    ('PUT', ValidatePutOrderBody),
-                    ('DELETE', ValidateDeleteOrderBody)
-                ]
-            },
-            {
-                'api/v1/orders/<id>/entries/': [
-                    ('POST', ValidatePostEntryBody),
-                    ('PUT', ValidatePutEntryBody),
-                    ('DELETE', ValidateEntryDeleteBody)
-                ]
-            },
-        ]
+The validate_response function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-        def test_swagger_input(self) -> None:
+The ``validate_response`` function takes three required inputs:
+
+* response
+    **description**: The response object returned from an API call.
+
+    **type**: Response
+
+    .. Note::
+
+        Make sure to pass the response object, not the response data.
+
+* method
+    **description**: The HTTP method used to get the response.
+
+    **type**: string
+
+    **example**: ``method='GET'``
+
+
+* route
+    **description**: The resolvable path of your API.
+
+    **type**: string
+
+    **example**: ``route='api/v1/test'``
+
+
+In addition, the function also takes two optional inputs:
+
+* ignore_case
+    **description**: List of keys for which we will skip case-validation. This can be useful for when you've made a conscious decision to, e.g., keep an acronym upper-cased although you have camelCase as a general standard.
+
+    **type**: List of strings
+
+    **example**: ``ignore_case=['API', 'IP]``
+
+* verbose
+    **description**: Whether to output more detailed error messages.
+
+    **type**: bool
+
+    **default**: ``False``
+
+    **example**: ``verbose=True``
+
+
+Suggested use
+~~~~~~~~~~~~~
+
+The response validation function can be called from anywhere,
+but because the tests require a request client it generally makes sense to include
+these tests with your existing API view tests.
+
+For example::
+
+    class TestGetCustomers(AuthorizedRequestBase):
+
+        ...
+
+        def test_is_valid(self):
             """
-            Verifies that the documented request bodies are valid.
+            Verify that we get a 200 from a valid request.
             """
-            for endpoint in self.endpoints:
-                for route, values in endpoint.items():
-                    for method, serializer in values:
-                        validate_input_serializer(serializer=serializer, method=method, route=route)
+            response = self.get(route='api/v1/customers/')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), expected_response)
 
-.. _`https://django-openapi-tester.readthedocs.io/`: https://django-openapi-tester.readthedocs.io/en/latest/?badge=latest
-.. _Testing response documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#response-validation
-.. _Testing input documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
-.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#case-checking
+        def test_swagger_schema(self):
+            """
+            Verifies that the API response matches the swagger documentation for the endpoint.
+            """
+            response = self.get(route='api/v1/customers/')
+            validate_response(response=response, method='GET', route='api/v1/customers/')
+
+        ...
+
+.. _`https://django-swagger-tester.readthedocs.io/`: https://django-swagger-tester.readthedocs.io/en/latest/?badge=latest
+.. _Testing response documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#response-validation
+.. _Testing input documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _ensuring your docs comply with a single parameter naming standard (case type): https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#case-checking
 .. _drf_yasg: https://github.com/axnsan12/drf-yasg
-.. _documentation: https://django-openapi-tester.readthedocs.io/
-.. _docs: https://django-openapi-tester.readthedocs.io/
+.. _documentation: https://django-swagger-tester.readthedocs.io/
+.. _docs: https://django-swagger-tester.readthedocs.io/
 .. _drf: https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas
 .. _drf-yasg: https://github.com/axnsan12/drf-yasg
 .. _drf-spectacular: https://github.com/tfranzel/drf-spectacular
-.. _parameter docs: https://django-openapi-tester.readthedocs.io/en/latest/configuration.html#parameters
-.. _Testing request body documentation: https://django-openapi-tester.readthedocs.io/en/latest/implementation.html#input-validation
+.. _parameter docs: https://django-swagger-tester.readthedocs.io/en/latest/configuration.html#parameters
+.. _Testing request body documentation: https://django-swagger-tester.readthedocs.io/en/latest/implementation.html#input-validation
