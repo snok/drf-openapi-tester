@@ -47,6 +47,7 @@ class SchemaTester:
         :raises: openapi_tester.exceptions.DocumentationError
         """
         if not isinstance(data, dict):
+            response_hint, request_hint = '', ''
             if isinstance(data, list):
                 response_hint = 'The expected item should be a dict, or your schema should be a list.'
                 request_hint = 'You passed a list where the expected item should be a dict.'
@@ -152,6 +153,7 @@ class SchemaTester:
         :raises: openapi_tester.exceptions.DocumentationError
         """
         if not isinstance(data, list):
+            response_hint, request_hint = '', ''
             if isinstance(data, dict):
                 response_hint = (
                     'You might need to wrap your response item in a list, or remove the excess list '
@@ -212,9 +214,8 @@ class SchemaTester:
             'number': {'check': not isinstance(data, float), 'type': "<class 'float'>"},
             'file': {'check': not (isinstance(data, str)), 'type': "<class 'str'>"},
         }
-        response_hint = ''
         if data is None and not is_nullable(schema):
-            response_hint += (
+            response_hint = (
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
             )
@@ -227,7 +228,7 @@ class SchemaTester:
                 response_hint=response_hint,
                 request_hint=request_hint,
             )
-        elif data is not None and schema['type'] in checks.keys() and checks[schema['type']]['check']:
+        elif data is not None and schema['type'] in checks and checks[schema['type']]['check']:
             raise DocumentationError(
                 message='Mismatched types.',
                 response=data,

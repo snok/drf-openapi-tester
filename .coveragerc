@@ -8,14 +8,8 @@
 source = openapi_tester/*
 
 omit =
-    demo/*
-    openapi_tester/static.py,
-    openapi_tester/drf_yasg.py,
-    openapi_tester/migrations/*,
-    docs/*
-    tests/*
-    */python38-32/*
-    */python3.8/*
+    openapi_tester/apps.py
+    openapi_tester/type_declarations.py
 
 [report]
 exclude_lines =
