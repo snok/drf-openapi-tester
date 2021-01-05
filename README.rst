@@ -4,7 +4,7 @@
         <h1 align="center">Django OpenAPI Tester</h1>
     </p>
     <p align="center">
-      <em>A Django test utility for validating OpenAPI response documentation</em>
+      <em>A test utility for validating API responses</em>
     </p>
 
 
@@ -26,16 +26,8 @@
     <a href="https://pypi.python.org/pypi/django-openapi-tester">
         <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
-    </p>
-    <p align="center">
-    <a href="https://pypi.org/project/django-openapi-tester/">
-        <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style Black">
-    </a>
     <a href="http://mypy-lang.org/">
         <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-    </a>
-    <a href="https://github.com/pre-commit/pre-commit">
-        <img src="https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white" alt="Pre-commit enabled">
     </a>
     </p>
 
@@ -48,7 +40,7 @@
 
 --------------
 
-Django OpenAPI Response Tester is a simple test utility for validating your Django Swagger documentation.
+Django OpenAPI Tester is a simple test utility for validating your Django Swagger documentation.
 
 Its aim is to make it easy for developers to catch and correct documentation errors in their Swagger/OpenAPI docs.
 
@@ -263,7 +255,7 @@ To learn more about setting parameters, see the `parameter docs`_.
         They are included to give you a quick indication of how the package functions.
     </p>
     <p align="center">
-        If you decide to implement Django OpenAPI Response Tester functions, it's better to read the <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
+        If you decide to implement Django OpenAPI Tester functions, it's better to read the <a href="https://django-openapi-tester.readthedocs.io/">docs</a>.
     </p>
 
 --------------
