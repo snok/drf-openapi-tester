@@ -39,6 +39,9 @@ classifiers = [
     'Topic :: Software Development :: Testing :: Unit',
 ]
 include = ["CHANGELOG.rst"]
+packages = [
+    { include = "openapi_tester" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.6.1"

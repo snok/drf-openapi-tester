@@ -18,7 +18,6 @@ class SchemaTester:
         :param data: API response/request data
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
-
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs.get('ignore_case', [])
         self.ignored_keys += settings.case_passlist
@@ -27,7 +26,9 @@ class SchemaTester:
         self._test_schema(schema=schema, data=data, reference='init')
 
     def _test_schema(self, schema: dict, data: dict, reference: str) -> None:
-        """ Helper method to run checks """
+        """
+        Helper method to run checks.
+        """
         schema_type = schema['type']
         logger.debug(f'{reference} --> {schema_type}')
         if schema_type == 'object':
