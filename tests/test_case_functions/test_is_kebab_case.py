@@ -7,7 +7,6 @@ kebab_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snake-case'},
     {'incorrect': 'PascalCase', 'correct': 'pascal-case'},
     {'incorrect': 'camelCase', 'correct': 'camel-case'},
-    {'incorrect': 'l ower', 'correct': 'lower'},
     {'incorrect': 'UPPER', 'correct': 'u-p-p-e-r'},
 ]
 

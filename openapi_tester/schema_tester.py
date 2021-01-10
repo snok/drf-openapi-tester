@@ -1,10 +1,12 @@
 import logging
 from typing import Any, Callable, List, Union
 
+from inflection import camelize
+
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import DocumentationError
 from openapi_tester.openapi import is_nullable
-from openapi_tester.utils import camelize, type_placeholder_value
+from openapi_tester.utils import type_placeholder_value
 
 logger = logging.getLogger('openapi_tester')
 
@@ -72,7 +74,7 @@ class SchemaTester:
             )
 
         if self.camel_case_parser:
-            data = camelize(data)
+            data = camelize(data, False)
 
         response_keys = data.keys()
         if 'properties' in schema:

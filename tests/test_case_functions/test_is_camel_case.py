@@ -7,8 +7,7 @@ camel_case_test_data = [
     {'incorrect': 'snake_case', 'correct': 'snakeCase'},
     {'incorrect': 'PascalCase', 'correct': 'pascalCase'},
     {'incorrect': 'kebab-case', 'correct': 'kebabCase'},
-    {'incorrect': 'l ower', 'correct': 'lower'},
-    {'incorrect': 'UPPER', 'correct': 'uPPER'},
+    {'incorrect': 'UPPER', 'correct': 'upper'},
 ]
 
 
@@ -27,8 +26,8 @@ def test_less_than_two_chars():
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
-    is_camel_case('', 'test')
     with pytest.raises(CaseError):
+        is_camel_case('', 'test')
         is_camel_case(' ', 'test')
         is_camel_case('-', 'test')
         is_camel_case('_', 'test')

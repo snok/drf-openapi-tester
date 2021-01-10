@@ -1,24 +1,39 @@
 import logging
 from typing import Callable, Optional
 
+from inflection import camelize, dasherize, underscore
+
 from openapi_tester.exceptions import CaseError
-from inflection import camelize, underscore, humanize, dasherize
 
 logger = logging.getLogger('openapi_tester')
 
 
 def _create_tester(casing: str, handler: Callable[[str, Optional[bool]], str]) -> Callable[[str, str], None]:
     """ factory function for creating testers """
+
     def tester(key: str, origin: str) -> None:
-        logger.debug(f'Verifying that {origin} key `{key}` is properly {humanize(casing)}')
-        if key and not handler(key) == key:
-            logger.error(f'{key} is not properly {humanize(casing)}')
+        stripped = key.strip()
+        logger.debug(f'Verifying that {origin} key `{key}` stripped {stripped} is properly {casing}')
+        if len(stripped) and not handler(stripped) == stripped:
+            logger.error(f'{stripped} is not properly {casing}')
             raise CaseError(key=key, case=casing, origin=origin, expected=handler(key))
 
     return tester
 
 
-is_camel_case = _create_tester("camelCased", lambda x: camelize(x, False))
-is_snake_case = _create_tester("snake_cased", underscore)
-is_pascal_case = _create_tester("PascalCased", camelize)
-is_kebab_case = _create_tester('kebab-cased', lambda x: dasherize(underscore(x)))
+def _camelize(s: str) -> str:
+    return camelize(underscore(s), False)
+
+
+def _pascalize(s: str) -> str:
+    return camelize(underscore(s))
+
+
+def _kebabize(s: str) -> str:
+    return dasherize(underscore(s))
+
+
+is_camel_case = _create_tester('camelCased', _camelize)
+is_kebab_case = _create_tester('kebab-cased', _kebabize)
+is_pascal_case = _create_tester('PascalCased', _pascalize)
+is_snake_case = _create_tester('snake_cased', underscore)

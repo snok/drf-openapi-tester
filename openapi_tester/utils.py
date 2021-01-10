@@ -1,16 +1,11 @@
 import difflib
 import json
 import logging
-import re
 import sys
-
-from inflection import camelize, dasherize, underscore
-
-import openapi_tester.type_declarations as td
 from typing import Any, List, Optional, Tuple
 
+import openapi_tester.type_declarations as td
 from openapi_tester.exceptions import CaseError, DocumentationError
-
 
 logger = logging.getLogger('openapi_tester')
 
@@ -19,11 +14,7 @@ def format_openapi_tester_case_error(exception: CaseError) -> str:
     """
     Returns an appropriate error message.
     """
-    return (
-        f'The response key `{exception.key}` is not properly {exception.case}. \nExpected value: {exception.expected}\n\n'
-        f"If this is intentional, you can skip case validation by adding `ignore_case=['{exception.key}']` to the "
-        f'`validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_TESTER settings'
-    )
+    return f"The response key `{exception.key}` is not properly {exception.case}. Expected value: {exception.expected}\n\nIf this is intentional, you can skip case validation by adding `ignore_case=['{exception.key}']` to the `validate_response` function call, or by adding the key to the CASE_PASSLIST in the OPENAPI_TESTER settings"
 
 
 def format_error(exception: DocumentationError, hint: str, addon: Optional[str] = None, **kwargs) -> str:
@@ -217,19 +208,3 @@ def type_placeholder_value(_type: str) -> Any:
         return 'string'
     else:
         raise TypeError(f'Cannot return placeholder value for {_type}')
-
-
-def camelize(data: dict) -> dict:
-    """
-    Adapted djangorestframework.utils.camelize function for converting a snake_cased dict to camelCase.
-    """
-    from djangorestframework_camel_case.util import camelize_re, underscore_to_camel
-
-    new_dict = {}
-    for key, value in data.items():
-        if isinstance(key, str) and '_' in key:
-            new_key = re.sub(camelize_re, underscore_to_camel, key)
-        else:
-            new_key = key
-        new_dict[new_key] = value
-    return new_dict

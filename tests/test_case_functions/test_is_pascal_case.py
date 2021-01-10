@@ -8,7 +8,7 @@ pascal_case_test_data = [
     {'incorrect': 'camelCase', 'correct': 'CamelCase'},
     {'incorrect': 'kebab-case', 'correct': 'KebabCase'},
     {'incorrect': 'l ower', 'correct': 'Lower'},
-    {'incorrect': 'uPPER', 'correct': 'UPPER'},
+    {'incorrect': 'uPPER', 'correct': 'Upper'},
 ]
 
 
