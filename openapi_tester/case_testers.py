@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Optional
+from typing import Any, Callable
 
 from inflection import camelize, dasherize, underscore
 
@@ -8,7 +8,7 @@ from openapi_tester.exceptions import CaseError
 logger = logging.getLogger('openapi_tester')
 
 
-def _create_tester(casing: str, handler: Callable[[str, Optional[bool]], str]) -> Callable[[str, str], None]:
+def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str, str], None]:
     """ factory function for creating testers """
 
     def tester(key: str, origin: str) -> None:
