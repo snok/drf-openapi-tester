@@ -2,6 +2,7 @@ import logging
 from typing import Any
 
 from django.core.exceptions import ImproperlyConfigured
+from rest_framework.test import APITestCase
 
 import openapi_tester.type_declarations as td
 from openapi_tester.configuration import settings
@@ -48,28 +49,19 @@ def validate_response(response: td.Response, method: str, route: str, **kwargs) 
         raise DocumentationError(verbose_error_message)
 
 
-try:
-    from rest_framework.test import APITestCase
+class OpenAPITestCase(APITestCase):
+    """
+    Extends APITestCase with OpenAPI assertions.
+    """
 
-    class OpenAPITestCase(APITestCase):
+    # noinspection PyPep8Naming
+    def assertResponse(self, response: td.Response, **kwargs: Any) -> None:
         """
-        Extends APITestCase with OpenAPI assertions.
+        Assert response matches the OpenAPI spec.
         """
-
-        # noinspection PyPep8Naming
-        def assertResponse(self, response: td.Response, **kwargs: Any) -> None:
-            """
-            Assert response matches the OpenAPI spec.
-            """
-            route = kwargs.pop('route', response.request['PATH_INFO'])
-            method = kwargs.pop('method', response.request['REQUEST_METHOD'])
-            try:
-                validate_response(response=response, method=method, route=route, **kwargs)
-            except (DocumentationError, CaseError) as e:
-                raise self.failureException from e
-
-
-except (ImportError, ImproperlyConfigured):
-    # Anyone using this will need djangorestframework installed,
-    # but it's an optional dependency.
-    pass
+        route = kwargs.pop('route', response.request['PATH_INFO'])
+        method = kwargs.pop('method', response.request['REQUEST_METHOD'])
+        try:
+            validate_response(response=response, method=method, route=route, **kwargs)
+        except (DocumentationError, CaseError) as e:
+            raise self.failureException from e
