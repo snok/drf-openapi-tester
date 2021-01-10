@@ -13,7 +13,6 @@ from prance.util.url import ResolutionError
 
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
-from openapi_tester.openapi import index_schema
 from openapi_tester.route import Route
 from openapi_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
@@ -73,6 +72,26 @@ class BaseSchemaLoader:
         Put logic required to load a schema and return it here.
         """
         raise NotImplementedError('The `load_schema` method has to be overwritten.')
+
+    @staticmethod
+    def index_schema(schema: dict, variable: str, error_addon: str = '') -> dict:
+        """
+        Indexes schema by string variable.
+
+        :param schema: Schema to index
+        :param variable: Variable to index by
+        :param error_addon: Additional error info to be included in the printed error message
+        :return: Indexed schema
+        :raises: IndexError
+        """
+        try:
+            logger.debug('Indexing schema by `%s`', variable)
+            return schema[variable]
+        except KeyError:
+            raise UndocumentedSchemaSectionError(
+                f'Failed indexing schema.\n\n'
+                f'Error: Unsuccessfully tried to index the OpenAPI schema by `{variable}`. {error_addon}'
+            )
 
     def get_schema(self) -> dict:
         """
@@ -138,7 +157,7 @@ class BaseSchemaLoader:
         schema = self.get_schema()
 
         # Index by paths
-        paths_schema = index_schema(schema=schema, variable='paths')
+        paths_schema = BaseSchemaLoader.index_schema(schema=schema, variable='paths')
 
         # Index by route
         routes = ', '.join(list(paths_schema))
@@ -167,7 +186,7 @@ class BaseSchemaLoader:
                 # This is an unfortunate piece of logic, where we're attempting to insert path parameters
                 # one by one until the path works
                 # if it never works, we finally raise an UndocumentedSchemaSectionError
-                route_schema = index_schema(
+                route_schema = BaseSchemaLoader.index_schema(
                     schema=paths_schema, variable=route_object.get_path(), error_addon=route_error
                 )
                 break
@@ -184,17 +203,17 @@ class BaseSchemaLoader:
         method_error = ''
         if joined_methods:
             method_error += f'\n\nAvailable methods include: {joined_methods}.'
-        method_schema = index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
+        method_schema = BaseSchemaLoader.index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
 
         # Index by responses
-        responses_schema = index_schema(schema=method_schema, variable='responses')
+        responses_schema = BaseSchemaLoader.index_schema(schema=method_schema, variable='responses')
 
         # Index by status code
         responses = ', '.join(f'{code}' for code in responses_schema.keys())
         status_code_error = f' Is the `{status_code}` response documented?'
         if responses:
             status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
-        status_code_schema = index_schema(
+        status_code_schema = BaseSchemaLoader.index_schema(
             schema=responses_schema, variable=str(status_code), error_addon=status_code_error
         )
 
@@ -202,7 +221,7 @@ class BaseSchemaLoader:
         if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
             status_code_schema = status_code_schema['content']['application/json']
 
-        return index_schema(status_code_schema, 'schema')
+        return BaseSchemaLoader.index_schema(status_code_schema, 'schema')
 
     @staticmethod
     def validate_string(string: str, name: str) -> None:

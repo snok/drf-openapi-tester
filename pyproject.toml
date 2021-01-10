@@ -48,7 +48,7 @@ python = "^3.6.1"
 django = "^2.2 || ^3.0"
 prance = "^0.20.0"
 openapi-spec-validator = "^0.2.9"
-djangorestframework = {version = "*", optional = true}
+djangorestframework = "*"
 inflection = "^0.5.1"
 
 [tool.poetry.dev-dependencies]

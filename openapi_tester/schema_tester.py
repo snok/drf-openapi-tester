@@ -5,7 +5,6 @@ from inflection import camelize
 
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import DocumentationError
-from openapi_tester.openapi import is_nullable
 from openapi_tester.utils import type_placeholder_value
 
 logger = logging.getLogger('openapi_tester')
@@ -39,6 +38,37 @@ class SchemaTester:
             self.test_list(schema=schema, data=data, reference='init')
         else:
             self.test_item(schema=schema, data=data, reference='init')
+
+    @staticmethod
+    def _is_nullable(schema_item: dict) -> bool:
+        """
+        Checks if the item is nullable.
+
+        OpenAPI does not have a null type, like a JSON schema,
+        but in OpenAPI 3.0 they added `nullable: true` to specify that the value may be null.
+        Note that null is different from an empty string "".
+
+        This feature was back-ported to the OpenApi 2 parser as a vendored extension `x-nullable`.
+        This is what drf_yasg generates.
+
+        OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
+        OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
+
+        :param schema_item: schema item
+        :return: whether or not the item can be None
+        """
+        openapi_schema_3_nullable = 'nullable'
+        swagger_2_nullable = 'x-nullable'
+        return any(
+            schema_item
+            and isinstance(schema_item, dict)
+            and nullable_key in schema_item
+            and (
+                    (isinstance(schema_item[nullable_key], bool) and schema_item)
+                    or (isinstance(schema_item[nullable_key], str) and schema_item[nullable_key] == 'true')
+            )
+            for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
+        )
 
     def test_dict(self, schema: dict, data: dict, reference: str) -> None:
         """
@@ -217,7 +247,7 @@ class SchemaTester:
             'number': {'check': not isinstance(data, float), 'type': "<class 'float'>"},
             'file': {'check': not (isinstance(data, str)), 'type': "<class 'str'>"},
         }
-        if data is None and not is_nullable(schema):
+        if data is None and not SchemaTester._is_nullable(schema):
             response_hint = (
                 'If you wish to allow null values for this schema item, your schema needs to set `x-nullable: True`.'
                 '\nFor drf-yasg implementations, set `x_nullable=True` in your Schema definition.'
