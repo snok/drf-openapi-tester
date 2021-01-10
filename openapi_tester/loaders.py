@@ -203,7 +203,9 @@ class BaseSchemaLoader:
         method_error = ''
         if joined_methods:
             method_error += f'\n\nAvailable methods include: {joined_methods}.'
-        method_schema = BaseSchemaLoader.index_schema(schema=route_schema, variable=method.lower(), error_addon=method_error)
+        method_schema = BaseSchemaLoader.index_schema(
+            schema=route_schema, variable=method.lower(), error_addon=method_error
+        )
 
         # Index by responses
         responses_schema = BaseSchemaLoader.index_schema(schema=method_schema, variable='responses')

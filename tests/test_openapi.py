@@ -64,4 +64,6 @@ def test_index_schema():
         UndocumentedSchemaSectionError,
         match='Unsuccessfully tried to index the OpenAPI schema by `items`. This is a very specific string',
     ):
-        BaseSchemaLoader.index_schema(schema=object_type, variable='items', error_addon='This is a very specific string')
+        BaseSchemaLoader.index_schema(
+            schema=object_type, variable='items', error_addon='This is a very specific string'
+        )

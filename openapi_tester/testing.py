@@ -1,7 +1,6 @@
 import logging
 from typing import Any
 
-from django.core.exceptions import ImproperlyConfigured
 from rest_framework.test import APITestCase
 
 import openapi_tester.type_declarations as td
