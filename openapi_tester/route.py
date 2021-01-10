@@ -14,7 +14,8 @@ class Route:
         self.counter = 0
         self.parameters = self.get_parameters(self.deparameterized_path)
 
-    def get_parameters(self, path: str) -> List[str]:
+    @staticmethod
+    def get_parameters(path: str) -> List[str]:
         """
         Returns a count of parameters in a string.
         """
