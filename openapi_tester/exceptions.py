@@ -31,9 +31,10 @@ class CaseError(Exception):
     Custom exception raised when items are not cased correctly.
     """
 
-    def __init__(self, key: str = '', case: str = '', origin: str = '') -> None:
+    def __init__(self, key: str = '', case: str = '', origin: str = '', expected: str = '') -> None:
         self.key = key
         self.case = case
+        self.expected = expected
         self.origin = origin
 
 

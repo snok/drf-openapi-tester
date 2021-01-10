@@ -1,8 +1,9 @@
 import logging
 from typing import Any
-import type_declarations as td
+
 from django.core.exceptions import ImproperlyConfigured
 
+import openapi_tester.type_declarations as td
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import CaseError, DocumentationError
 from openapi_tester.schema_tester import SchemaTester

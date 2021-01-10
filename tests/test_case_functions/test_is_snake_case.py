@@ -7,7 +7,6 @@ snake_case_test_data = [
     {'incorrect': 'camelCase', 'correct': 'camel_case'},
     {'incorrect': 'PascalCase', 'correct': 'pascal_case'},
     {'incorrect': 'kebab-case', 'correct': 'kebab_case'},
-    {'incorrect': 'l ower', 'correct': 'lower'},
     {'incorrect': 'UPPER', 'correct': 'u_p_p_e_r'},
 ]
 
@@ -19,6 +18,7 @@ def test_snake_cased_words():
     for item in snake_case_test_data:
         is_snake_case(item['correct'], 'test')
         with pytest.raises(CaseError):
+
             is_snake_case(item['incorrect'], 'test')
 
 
