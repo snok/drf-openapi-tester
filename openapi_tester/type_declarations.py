@@ -41,3 +41,4 @@ else:
     """
     # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
+    from rest_framework.response import Response

@@ -1,6 +1,6 @@
 import logging
-from typing import TYPE_CHECKING, Any
-
+from typing import Any
+import type_declarations as td
 from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.configuration import settings
@@ -10,14 +10,8 @@ from openapi_tester.utils import format_error, format_openapi_tester_case_error,
 
 logger = logging.getLogger('openapi_tester')
 
-if TYPE_CHECKING:
-    try:
-        from rest_framework.response import Response
-    except ImportError:
-        from django.http.response import HttpResponse as Response
 
-
-def validate_response(response: 'Response', method: str, route: str, **kwargs) -> None:
+def validate_response(response: td.Response, method: str, route: str, **kwargs) -> None:
     """
     Verifies that an OpenAPI schema definition matches an API response.
 
@@ -62,7 +56,7 @@ try:
         """
 
         # noinspection PyPep8Naming
-        def assertResponse(self, response: 'Response', **kwargs: Any) -> None:
+        def assertResponse(self, response: td.Response, **kwargs: Any) -> None:
             """
             Assert response matches the OpenAPI spec.
             """
