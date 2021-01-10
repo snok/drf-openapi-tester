@@ -1,6 +1,6 @@
 import logging
 from typing import Any
-import type_declarations as td
+import openapi_tester.type_declarations as td
 from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.configuration import settings
