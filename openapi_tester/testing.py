@@ -22,7 +22,6 @@ def validate_response(response: td.Response, method: str, route: str, **kwargs) 
     :param method: The HTTP method ('get', 'put', 'post', ...)
     :param route: The relative path of the endpoint which sent the response (must be resolvable)
     :keyword ignore_case: List of strings to ignore when testing the case of response keys
-    :keyword camel_case_parser: Boolean to indicate whether djangorestframework-camel-case parsers are active for this endpoint
     :raises: ``openapi_tester.exceptions.DocumentationError`` if we find inconsistencies in the API response and schema.
 
              ``openapi_tester.exceptions.CaseError`` if we find case errors.
@@ -36,7 +35,6 @@ def validate_response(response: td.Response, method: str, route: str, **kwargs) 
             schema=response_schema,
             data=data,
             case_tester=settings.case_tester,
-            camel_case_parser=settings.camel_case_parser,
             origin='response',
             **kwargs,
         )

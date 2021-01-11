@@ -66,8 +66,6 @@ def test_nullable() -> None:
         ],
     }
 
-    tester.camel_case_parser = False
-
     # Test nullable values pass OK
     assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
 

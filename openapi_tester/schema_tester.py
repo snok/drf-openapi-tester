@@ -1,8 +1,6 @@
 import logging
 from typing import Any, Callable, List, Union
 
-from inflection import camelize
-
 from openapi_tester.configuration import settings
 from openapi_tester.exceptions import DocumentationError
 from openapi_tester.utils import type_placeholder_value
@@ -22,7 +20,6 @@ class SchemaTester:
         self.case_tester = case_tester
         self.ignored_keys: List[str] = kwargs.get('ignore_case', [])
         self.ignored_keys += settings.case_passlist
-        self.camel_case_parser: bool = kwargs.get('camel_case_parser', settings.camel_case_parser)
         self.origin = origin
         self._test_schema(schema=schema, data=data, reference='init')
 
@@ -102,9 +99,6 @@ class SchemaTester:
                 response_hint=response_hint or '',
                 request_hint=request_hint or '',
             )
-
-        if self.camel_case_parser:
-            data = camelize(data, False)
 
         response_keys = data.keys()
         if 'properties' in schema:

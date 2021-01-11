@@ -54,7 +54,6 @@ inflection = "^0.5.1"
 [tool.poetry.dev-dependencies]
 drf-yasg = "^1.17.1"
 pyYAML = "^5.3.1"
-djangorestframework_camel_case = "1.2.0"
 pytest = "^6.2"
 pytest-cov = "2.10.1"
 pytest-django = "^4.1.0"

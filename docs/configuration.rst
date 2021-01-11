@@ -132,24 +132,3 @@ this being flagged as an error in your tests.
     }
 
 **Default**: ``[]``
-
-CAMEL_CASE_PARSER
-~~~~~~~~~~~~~~~~~
-
-Set this to ``True`` if you use `djangorestframework-camel-case <https://github.com/vbabiy/djangorestframework-camel-case>`_'s
-``CamelCaseJSONParser`` or ``CamelCaseJSONRenderer`` for your API views.
-Otherwise, set it to False or leave it out of your settings.
-
-*Example*:
-
-.. code:: python
-
-  OPENAPI_TESTER = {
-      'CAMEL_CASE_PARSER': True,
-  }
-
-If you're not using one of these parsers for all your API views, but for
-just a few, you can pass ``camel_case_parser=True`` as a kwarg to your individual
-``validate_response`` call.
-
-**Default**: ``False``
