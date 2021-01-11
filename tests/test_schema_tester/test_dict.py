@@ -22,7 +22,7 @@ data = {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': '
 tester = SchemaTester(
     schema={'type': 'array', 'items': {'type': 'object', 'properties': {}}},
     data=[],
-    case_tester=lambda x, y: None,
+    case_tester=None,
     origin='test-response',
 )
 
@@ -31,7 +31,7 @@ def test_valid_dict() -> None:
     """
     Asserts that valid data passes successfully.
     """
-    tester.test_dict(schema=schema, data=data, reference='placeholder')
+    tester.test_schema(schema=schema, data=data, reference='placeholder')
 
 
 def test_nullable() -> None:
@@ -67,40 +67,40 @@ def test_nullable() -> None:
     }
 
     # Test nullable values pass OK
-    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+    assert tester.test_schema(schema=response_schema, data=data, reference='placeholder') is None
 
     # Test nullable items do not pass if not documented as nullable
     d = deepcopy(data)
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class 'int'> but found <class 'NoneType'>",
+        match='Mismatched types, expected int but received NoneType.',
     ):
         d['count'] = None
-        tester.test_dict(schema=response_schema, data=d, reference='placeholder')
+        tester.test_schema(schema=response_schema, data=d, reference='placeholder')
 
     # Test non-nullable dict does not pass OK
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class 'dict'> but found <class 'NoneType'>.",
+        match='Mismatched types, expected dict but received NoneType.',
     ):
         data['results'] = [None]
-        assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+        assert tester.test_schema(schema=response_schema, data=data, reference='placeholder') is None
 
     # Test nullable dict passes OK
     response_schema['properties']['results']['items']['x-nullable'] = True
-    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+    assert tester.test_schema(schema=response_schema, data=data, reference='placeholder') is None
 
     # Test non-nullable list does not pass OK
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class 'list'> but found <class 'NoneType'>.",
+        match='Mismatched types, expected list but received NoneType.',
     ):
         data['results'] = None
-        assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+        assert tester.test_schema(schema=response_schema, data=data, reference='placeholder') is None
 
     # Test nullable list passes OK
     response_schema['properties']['results']['x-nullable'] = True
-    assert tester.test_dict(schema=response_schema, data=data, reference='placeholder') is None
+    assert tester.test_schema(schema=response_schema, data=data, reference='placeholder') is None
 
 
 def test_bad_data_type() -> None:
@@ -109,9 +109,9 @@ def test_bad_data_type() -> None:
     """
     with pytest.raises(
         DocumentationError,
-        match="Mismatched types. Expected item to be <class 'dict'> but found <class 'list'>.",
+        match='Mismatched types, expected dict but received list.',
     ):
-        tester.test_dict(schema=schema, data=[data], reference='placeholder')
+        tester.test_schema(schema=schema, data=[data], reference='placeholder')
 
 
 def test_unmatched_lengths() -> None:
@@ -123,7 +123,7 @@ def test_unmatched_lengths() -> None:
         match='The following properties seem to be missing from your OpenAPI/Swagger documentation: `extra key`',
     ):
         weird_data = {'name': '', 'color': '', 'height': '', 'width': '', 'length': '', 'extra key': ''}
-        tester.test_dict(schema=schema, data=weird_data, reference='placeholder')
+        tester.test_schema(schema=schema, data=weird_data, reference='placeholder')
 
 
 def test_schema_key_not_in_response():
@@ -134,7 +134,7 @@ def test_schema_key_not_in_response():
     bad_data['names'] = bad_data['name']
     del bad_data['name']
     with pytest.raises(DocumentationError, match=r'Schema key `name` was not found in the test.'):
-        tester.test_dict(schema=schema, data=bad_data, reference='placeholder')
+        tester.test_schema(schema=schema, data=bad_data, reference='placeholder')
 
 
 def test_response_key_not_in_schema():
@@ -145,7 +145,7 @@ def test_response_key_not_in_schema():
     bad_schema['properties']['names'] = bad_schema['properties']['name']
     del bad_schema['properties']['name']
     with pytest.raises(DocumentationError, match=r'Key `name` not found in the OpenAPI schema.'):
-        tester.test_dict(schema=bad_schema, data=data, reference='placeholder')
+        tester.test_schema(schema=bad_schema, data=data, reference='placeholder')
 
 
 def test_call_dict_from_dict():
@@ -154,7 +154,7 @@ def test_call_dict_from_dict():
     """
     custom_schema = {'type': 'object', 'properties': {'test': schema}}
     custom_data = {'test': data}
-    assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None
+    assert tester.test_schema(schema=custom_schema, data=custom_data, reference='placeholder') is None
 
 
 def test_call_list_from_dict():
@@ -171,4 +171,4 @@ def test_call_list_from_dict():
         },
     }
     custom_data = {'list': []}
-    assert tester.test_dict(schema=custom_schema, data=custom_data, reference='placeholder') is None
+    assert tester.test_schema(schema=custom_schema, data=custom_data, reference='placeholder') is None

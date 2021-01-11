@@ -20,7 +20,7 @@ class OpenAPITesterSettings:
 
     @property
     def case_tester(self) -> Callable:
-        return django_settings.OPENAPI_TESTER.get('CASE_TESTER', lambda *args: None)
+        return django_settings.OPENAPI_TESTER.get('CASE_TESTER', None)
 
     @property
     def case_passlist(self) -> List[str]:
@@ -59,10 +59,6 @@ class OpenAPITesterSettings:
                 'The django-openapi-tester CASE_TESTER setting is misspecified. '
                 'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
-            )
-        elif self.case_tester is None:
-            raise ImproperlyConfigured(
-                'The django-openapi-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
             )
 
     def set_and_validate_schema_loader(self) -> None:
