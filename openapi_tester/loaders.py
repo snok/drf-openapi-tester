@@ -366,12 +366,12 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         :param route: Django resolved route
         """
 
-        deparameterized_path, resolved_path = resolve_path(route)
+        de_parameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return Route(de_parameterized_path=de_parameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class DrfSpectacularSchemaLoader(BaseSchemaLoader):
@@ -411,14 +411,13 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         :param route: Django resolved route
         """
-        from openapi_tester.utils import resolve_path
 
-        deparameterized_path, resolved_path = resolve_path(route)
+        de_parameterized_path, resolved_path = resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
         logger.debug('Path prefix: %s', path_prefix)
-        return Route(deparameterized_path=deparameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return Route(de_parameterized_path=de_parameterized_path[len(path_prefix) :], resolved_path=resolved_path)
 
 
 class StaticSchemaLoader(BaseSchemaLoader):

@@ -6,8 +6,8 @@ from openapi_tester.utils import resolve_path
 
 def test_route_initialization():
     route = Route(*resolve_path('/api/v1/cars/correct'))
-    assert route.deparameterized_path == '/api/{version}/cars/correct'
-    assert route.parameterized_path == route.deparameterized_path
+    assert route.de_parameterized_path == '/api/{version}/cars/correct'
+    assert route.parameterized_path == route.de_parameterized_path
     assert route.counter == 0
     assert route.parameters == ['{version}']
     assert route.resolved_path.kwargs == {'version': 'v1'}

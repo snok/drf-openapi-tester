@@ -2,17 +2,20 @@ import re
 from typing import List
 
 from django.urls import ResolverMatch
+from django.utils import translation
+
+from openapi_tester.configuration import settings
 
 
 class Route:
-    def __init__(self, deparameterized_path: str, resolved_path: ResolverMatch) -> None:
-        self.deparameterized_path = deparameterized_path
-        self.parameterized_path = deparameterized_path
+    def __init__(self, de_parameterized_path: str, resolved_path: ResolverMatch) -> None:
+        self.de_parameterized_path = de_parameterized_path
+        self.parameterized_path = de_parameterized_path
         self.resolved_path = resolved_path
 
         # Used to create a next() type logic
         self.counter = 0
-        self.parameters = self.get_parameters(self.deparameterized_path)
+        self.parameters = self.get_parameters(self.de_parameterized_path)
 
     @staticmethod
     def get_parameters(path: str) -> List[str]:
@@ -66,7 +69,7 @@ class Route:
         """
         Resets parameterized path and counter.
         """
-        self.parameterized_path = self.deparameterized_path
+        self.parameterized_path = self.de_parameterized_path
         self.counter = 0
 
     def route_matches(self, route: str) -> bool:
@@ -74,7 +77,7 @@ class Route:
         Checks whether a route matches any version of get_path.
         """
         if len(self.parameters) == 0:
-            return self.deparameterized_path == route
+            return self.de_parameterized_path == route
 
         for _ in range(len(self.parameters) + 1):
             x = self.get_path()
@@ -103,10 +106,6 @@ class Route:
 
             /{lang}/api/v1/items
         """
-        from django.utils import translation
-
-        from openapi_tester.configuration import settings
-
         if settings.parameterized_i18n_name:
             parameter = f'{{{settings.parameterized_i18n_name}}}'
             language = translation.get_language()
