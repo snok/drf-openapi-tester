@@ -20,11 +20,7 @@ class OpenAPITesterSettings:
 
     @property
     def case_tester(self) -> Callable:
-        return django_settings.OPENAPI_TESTER.get('CASE_TESTER', lambda *args: None)
-
-    @property
-    def camel_case_parser(self) -> bool:
-        return django_settings.OPENAPI_TESTER.get('CAMEL_CASE_PARSER', False)
+        return django_settings.OPENAPI_TESTER.get('CASE_TESTER', None)
 
     @property
     def case_passlist(self) -> List[str]:
@@ -45,7 +41,6 @@ class OpenAPITesterSettings:
             raise ImproperlyConfigured('OPENAPI_TESTER settings need to be configured')
 
         self.validate_case_tester_setting()
-        self.validate_camel_case_parser_setting()
         self.validate_case_passlist()
         self.set_and_validate_schema_loader()
         self.validate_parameterized_i18n_name()
@@ -65,31 +60,6 @@ class OpenAPITesterSettings:
                 'Please pass a case tester callable from openapi_tester.case_testers, '
                 'make your own, or pass `None` to skip case validation.'
             )
-        elif self.case_tester is None:
-            raise ImproperlyConfigured(
-                'The django-openapi-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'
-            )
-
-    def validate_camel_case_parser_setting(self) -> None:
-        """
-        Make sure CAMEL_CASE_PARSER is a boolean, and that the required dependencies are installed if set to True.
-        """
-        if not isinstance(self.camel_case_parser, bool):
-            raise ImproperlyConfigured('`CAMEL_CASE_PARSER` needs to be True or False')
-        if self.camel_case_parser and 'djangorestframework_camel_case' not in django_settings.INSTALLED_APPS:
-            raise ImproperlyConfigured(
-                'The package `djangorestframework_camel_case` is not installed, '
-                'and is required to enable camel case parsing.'
-            )
-        else:
-
-            if hasattr(django_settings, 'REST_FRAMEWORK') and 'djangorestframework_camel_case.parser' in str(
-                django_settings.REST_FRAMEWORK
-            ):
-                logger.warning(
-                    'Found `djangorestframework_camel_case` in REST_FRAMEWORK settings, '
-                    'but CAMEL_CASE_PARSER is not set to True'
-                )
 
     def set_and_validate_schema_loader(self) -> None:
         """

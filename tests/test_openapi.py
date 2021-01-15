@@ -46,10 +46,10 @@ def test_is_nullable():
     """
     Ensure this helper function works as it's designed to.
     """
-    assert SchemaTester._is_nullable(nullable_example['properties']['id']) == True  # noqa: E712
-    assert SchemaTester._is_nullable(nullable_example['properties']['first_name']) == True  # noqa: E712
+    assert SchemaTester.is_nullable(nullable_example['properties']['id']) == True  # noqa: E712
+    assert SchemaTester.is_nullable(nullable_example['properties']['first_name']) == True  # noqa: E712
     for item in [2, '', None, -1, {'nullable': 'false'}]:
-        assert SchemaTester._is_nullable(item) is False
+        assert SchemaTester.is_nullable(item) is False
 
 
 def test_index_schema():

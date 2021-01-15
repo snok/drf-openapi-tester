@@ -22,15 +22,6 @@ def test_valid_cases(monkeypatch) -> None:
         OpenAPITesterSettings().validate()
 
 
-def test_none(monkeypatch) -> None:
-    monkeypatch.setattr(django_settings, 'OPENAPI_TESTER', patch_settings('CASE_TESTER', None))
-    with pytest.raises(
-        ImproperlyConfigured,
-        match=('The django-openapi-tester CASE_TESTER setting cannot be None. Replace it with `lambda: None`'),
-    ):
-        OpenAPITesterSettings().validate()
-
-
 def test_invalid_cases(monkeypatch) -> None:
     """
     Asserts that any invalid case raises an appropriate error.

@@ -15,24 +15,22 @@ from tests.types import (
     string_type,
 )
 
-tester = SchemaTester(
-    {'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], lambda x, y: None, origin='test'
-)
+tester = SchemaTester({'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], None, origin='test')
 
 
 def test_valid_list() -> None:
     """
     Asserts that valid data passes successfully.
     """
-    tester.test_list(schema=list_type, data=list_data, reference='placeholder')
+    tester.test_schema(schema=list_type, data=list_data, reference='placeholder')
 
 
 def test_bad_data_type() -> None:
     """
     Asserts that the appropriate exception is raised for a bad response data type.
     """
-    with pytest.raises(DocumentationError, match="Expected item to be <class 'list'> but found <class 'dict'>"):
-        tester.test_list(schema=list_type, data={'test': list_data}, reference='placeholder')
+    with pytest.raises(DocumentationError, match='Mismatched types, expected list but received dict.'):
+        tester.test_schema(schema=list_type, data={'test': list_data}, reference='placeholder')
 
 
 def test_empty_schema_list() -> None:
@@ -40,14 +38,14 @@ def test_empty_schema_list() -> None:
         DocumentationError, match='Mismatched content. Response array contains data, when schema is empty.'
     ):
         list_schema = {'title': 'list_type_title', 'type': 'array', 'items': {}}  # empty list
-        tester.test_list(schema=list_schema, data=list_data, reference='placeholder')
+        tester.test_schema(schema=list_schema, data=list_data, reference='placeholder')
 
 
 def test_empty_response_data_list() -> None:
     """
     Asserts that the no exception is raised when the response data is missing - this has valid cases.
     """
-    tester.test_list(schema=list_type, data=[], reference='placeholder')
+    tester.test_schema(schema=list_type, data=[], reference='placeholder')
 
 
 def test_call_list_from_list():
@@ -73,7 +71,7 @@ def test_call_list_from_list():
         },
     }
     custom_data = [[{'string': string_data, 'integer': integer_data, 'number': number_data, 'bool': bool_data}]]
-    assert tester.test_list(schema=custom_list, data=custom_data, reference='placeholder') is None
+    assert tester.test_schema(schema=custom_list, data=custom_data, reference='placeholder') is None
 
 
 def test_call_item_from_list():
@@ -88,4 +86,4 @@ def test_call_item_from_list():
     ]:
         custom_list = {'title': 'list_type_title', 'type': 'array', 'items': type_schema[0]}
         custom_data = [type_schema[1]]
-        assert tester.test_list(schema=custom_list, data=custom_data, reference='placeholder') is None
+        assert tester.test_schema(schema=custom_list, data=custom_data, reference='placeholder') is None

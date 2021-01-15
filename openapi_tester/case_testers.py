@@ -11,7 +11,7 @@ logger = logging.getLogger('openapi_tester')
 def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str, str], None]:
     """ factory function for creating testers """
 
-    def tester(key: str, origin: str) -> None:
+    def tester(key: str, origin: str = 'schema') -> None:
         stripped = key.strip()
         logger.debug(f'Verifying that {origin} key `{stripped}` is properly {casing}')
         if len(stripped) and not handler(stripped) == stripped:

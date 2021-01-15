@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'drf_spectacular',
     'openapi_tester',
-    'djangorestframework_camel_case',
 ]
 
 
@@ -112,15 +111,6 @@ REST_FRAMEWORK = {
     'DEFAULT_VERSION': 'v1',
     'DEFAULT_VERSIONING_CLASS': 'rest_framework.versioning.URLPathVersioning',
     'DEFAULT_AUTHENTICATION_CLASSES': ('rest_framework.authentication.SessionAuthentication',),
-    'DEFAULT_RENDERER_CLASSES': (
-        'djangorestframework_camel_case.render.CamelCaseJSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'djangorestframework_camel_case.parser.CamelCaseFormParser',
-        'djangorestframework_camel_case.parser.CamelCaseMultiPartParser',
-        'djangorestframework_camel_case.parser.CamelCaseJSONParser',
-    ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 LOGGING = {
@@ -146,7 +136,6 @@ OPENAPI_TESTER = {
     'SCHEMA_LOADER': DrfYasgSchemaLoader,
     'PATH': 'demo/openapi-schema.yml',
     'CASE_TESTER': is_camel_case,
-    'CAMEL_CASE_PARSER': False,
     'CASE_PASSLIST': [],
     'PARAMETERIZED_I18N_NAME': '',
 }
