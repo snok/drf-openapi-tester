@@ -44,12 +44,14 @@ To illustrate; given this example response:
 
 ```python
 {
+  "id": 0,
+  "name": "doggie",
+  "status": "available",
+  "photoUrls": ["string"],
+  "category": {
     "id": 0,
-    "name": "doggie",
-    "status": "available",
-    "photoUrls": ["string"],
-    "tags": [{"id": 0, "name": "string"}],
-    "category": {"id": 0, "name": "string"},
+    "name": "string"
+  }
 }
 ```
 
@@ -90,20 +92,6 @@ responses:
             type: string
             xml:
               name: photoUrl
-        tags:
-          type: array
-          xml:
-            wrapped: true
-          items:
-            type: object
-            properties:
-              id:
-                type: integer
-                format: int64
-              name:
-                type: string
-            xml:
-              name: Tag
         status:
           type: string
           description: pet status in the store

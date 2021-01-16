@@ -1,7 +1,6 @@
-.. _supported_implementations:
-
+*************************
 Supported Implementations
--------------------------
+*************************
 
 As long as we can load your OpenAPI schema, we can test your API responses.
 How we load your OpenAPI schema, however, will depend on what package(s) you're
