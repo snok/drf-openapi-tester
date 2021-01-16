@@ -1,6 +1,7 @@
 import difflib
 import json
 import logging
+import re
 from json import dumps, loads
 from typing import Callable, List, Optional
 from urllib.parse import ParseResult
@@ -14,9 +15,10 @@ from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
 from openapi_tester.exceptions import OpenAPISchemaError
-from openapi_tester.route import Route
 
 logger = logging.getLogger('openapi_tester')
+
+PARAMETERS_PATTERN = re.compile(r'({[\w]+})')
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -109,14 +111,18 @@ class BaseSchemaLoader:
         self.validate_schema(dereferenced_schema)
         self.schema = self.dereference_schema(dereferenced_schema)
 
-    def get_route(self, route: str) -> Route:
+    def get_route(self, route: str) -> str:
         """
         Returns the appropriate endpoint route.
 
         This method was primarily implemented because drf-yasg has its own route style, and so this method
         lets loader classes overwrite and add custom route conversion logic if required.
         """
-        return Route(*self.resolve_path(route))
+        path, resolved_path = self.resolve_path(route)
+        for parameter in list(re.findall(PARAMETERS_PATTERN, path)):
+            parameter_name = parameter.replace('{', '').replace('}', '')
+            path = path.replace(resolved_path.kwargs[parameter_name], parameter_name)
+        return path
 
     @staticmethod
     def get_endpoint_paths() -> List[str]:
@@ -199,19 +205,12 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
 
         return self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
 
-    def get_route(self, route: str) -> Route:
-        """
-        Returns a url that matches the urls found in a drf_yasg-generated schema.
-
-        :param route: Django resolved route
-        """
-
-        de_parameterized_path, resolved_path = self.resolve_path(route)
+    def resolve_path(self, route: str) -> tuple:
+        de_parameterized_path, resolved_path = super().resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
-        logger.debug('Path prefix: %s', path_prefix)
-        return Route(de_parameterized_path=de_parameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return de_parameterized_path[len(path_prefix) :], resolved_path
 
 
 class DrfSpectacularSchemaLoader(BaseSchemaLoader):
@@ -240,19 +239,12 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         return spectacular_settings.SCHEMA_PATH_PREFIX
 
-    def get_route(self, route: str) -> Route:
-        """
-        Returns a url that matches the urls found in a drf_spectacular-generated schema.
-
-        :param route: Django resolved route
-        """
-
-        de_parameterized_path, resolved_path = self.resolve_path(route)
+    def resolve_path(self, route: str) -> tuple:
+        de_parameterized_path, resolved_path = super().resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
-        logger.debug('Path prefix: %s', path_prefix)
-        return Route(de_parameterized_path=de_parameterized_path[len(path_prefix) :], resolved_path=resolved_path)
+        return de_parameterized_path[len(path_prefix) :], resolved_path
 
 
 class StaticSchemaLoader(BaseSchemaLoader):

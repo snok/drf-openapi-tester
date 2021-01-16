@@ -1,6 +1,8 @@
 import json
 from typing import Any
 
+from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
+
 
 class DocumentationError(Exception):
     """
@@ -25,7 +27,8 @@ class DocumentationError(Exception):
             )
         )
 
-    def _sort_data(self, data_object: Any) -> Any:
+    @staticmethod
+    def _sort_data(data_object: Any) -> Any:
         if isinstance(data_object, dict):
             return dict(sorted(data_object.items()))
         elif isinstance(data_object, list):
@@ -39,37 +42,17 @@ class DocumentationError(Exception):
         Formats and returns a standardized error message for easy debugging.
 
         """
-        offset = 8
         message = [
-            'Error:'.ljust(offset) + f'{str(message)}\n',
-            '\n',
-            'Expected:'.ljust(offset) + f'{json.dumps(example_item)}\n',
-            'Received:'.ljust(offset) + f'{json.dumps(response)}\n',
-            '\n',
-            'Hint:'.ljust(offset)
-            + '\n'.ljust(offset + 1).join(hint.split('\n'))
-            + '\n',  # the join logic adds support for multi-line hints
-            'Sequence:'.ljust(offset) + f'{reference}\n',
-            '\n',
+            f'Error: {message}\n\n' f'Expected: {json.dumps(example_item)}\n\n',
+            f'Received: {json.dumps(response)}\n\n',
         ]
-
+        if hint:
+            message += [f'Hint: {hint}\n\n']
+        if reference:
+            message += [
+                f'Sequence: {reference}\n',
+            ]
         return ''.join(message)
-
-    @staticmethod
-    def type_placeholder_value(_type: str) -> Any:
-        """
-        Returns a placeholder example value for schema items without one.
-        """
-        if _type == 'boolean':
-            return True
-        elif _type == 'integer':
-            return 1
-        elif _type == 'number':
-            return 1.0
-        elif _type in ['string', 'file']:
-            return 'string'
-        else:
-            raise TypeError(f'Cannot return placeholder value for {_type}')
 
     def _iterate_schema_dict(self, schema_object: dict) -> dict:
         parsed_schema = {}
@@ -88,21 +71,19 @@ class DocumentationError(Exception):
             elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
-                parsed_schema[key] = self.type_placeholder_value(value['type'])
+                parsed_schema[key] = OPENAPI_PYTHON_MAPPING[value['type']]
         return parsed_schema
 
     def _iterate_schema_list(self, schema_array: dict) -> list:
         parsed_items = []
         raw_items = schema_array['items']
         items_type = raw_items['type']
-        if 'example' in raw_items:
-            parsed_items.append(raw_items['example'])
-        elif items_type == 'object':
+        if items_type == 'object':
             parsed_items.append(self._iterate_schema_dict(raw_items))
         elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))
         else:
-            parsed_items.append(self.type_placeholder_value(raw_items['type']))
+            parsed_items.append(OPENAPI_PYTHON_MAPPING[raw_items['type']])
         return parsed_items
 
     def create_dict_from_schema(self, schema: dict) -> Any:
@@ -110,14 +91,12 @@ class DocumentationError(Exception):
         Converts an OpenAPI schema representation of a dict to dict.
         """
         schema_type = schema['type']
-        if 'example' in schema:
-            return schema['example']
-        elif schema_type == 'array':
+        if schema_type == 'array':
             return self._iterate_schema_list(schema)
         elif schema_type == 'object':
             return self._iterate_schema_dict(schema)
         else:
-            return self.type_placeholder_value(schema_type)
+            return OPENAPI_PYTHON_MAPPING[schema_type]
 
 
 class CaseError(Exception):

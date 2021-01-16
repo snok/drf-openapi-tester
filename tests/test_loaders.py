@@ -71,7 +71,7 @@ def test_static_get_schema():
         schema = loader.get_schema()
         openapi_v3_spec_validator.validate(schema)
 
-    loader = StaticSchemaLoader(str(CURRENT_PATH) + f'/schemas/lol.fun')
+    loader = StaticSchemaLoader(str(CURRENT_PATH) + '/schemas/lol.fun')
     with pytest.raises(ImproperlyConfigured):
         loader.get_schema()
 
@@ -79,11 +79,11 @@ def test_static_get_schema():
 def test_base_loader_get_route():
     for _loader in [BaseSchemaLoader, DrfYasgSchemaLoader, DrfSpectacularSchemaLoader]:
         loader = _loader()
-        assert loader.get_route('/api/v1/items/').get_path() == '/api/{version}/items'
-        assert loader.get_route('/api/v1/items').get_path() == '/api/{version}/items'
-        assert loader.get_route('api/v1/items/').get_path() == '/api/{version}/items'
-        assert loader.get_route('api/v1/items').get_path() == '/api/{version}/items'
-        assert loader.get_route('/api/v1/snake-case/').get_path() == '/api/{version}/snake-case/'
-        assert loader.get_route('/api/v1/snake-case').get_path() == '/api/{version}/snake-case/'
-        assert loader.get_route('api/v1/snake-case/').get_path() == '/api/{version}/snake-case/'
-        assert loader.get_route('api/v1/snake-case').get_path() == '/api/{version}/snake-case/'
+        assert loader.get_route('/api/v1/items/') == '/api/{version}/items'
+        assert loader.get_route('/api/v1/items') == '/api/{version}/items'
+        assert loader.get_route('api/v1/items/') == '/api/{version}/items'
+        assert loader.get_route('api/v1/items') == '/api/{version}/items'
+        assert loader.get_route('/api/v1/snake-case/') == '/api/{version}/snake-case/'
+        assert loader.get_route('/api/v1/snake-case') == '/api/{version}/snake-case/'
+        assert loader.get_route('api/v1/snake-case/') == '/api/{version}/snake-case/'
+        assert loader.get_route('api/v1/snake-case') == '/api/{version}/snake-case/'

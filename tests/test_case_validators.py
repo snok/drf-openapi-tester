@@ -16,25 +16,25 @@ def test_camel_cased_words():
     Verifies that our camel case verification function actually works as expected.
     """
     for item in camel_case_test_data:
-        is_camel_case(item['correct'], 'test')
+        is_camel_case(item['correct'])
         with pytest.raises(CaseError):
-            is_camel_case(item['incorrect'], 'test')
+            is_camel_case(item['incorrect'])
 
 
-def test_less_than_two_chars():
+def test_camel_case_less_than_two_chars():
     """
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
     with pytest.raises(CaseError):
-        is_camel_case('', 'test')
-        is_camel_case(' ', 'test')
-        is_camel_case('-', 'test')
-        is_camel_case('_', 'test')
-        is_camel_case(None, 'test')
-        is_camel_case('%', 'test')
-        is_camel_case('R', 'test')
-        is_camel_case('s', 'test')
+        is_camel_case('')
+        is_camel_case(' ')
+        is_camel_case('-')
+        is_camel_case('_')
+        is_camel_case(None)
+        is_camel_case('%')
+        is_camel_case('R')
+        is_camel_case('s')
 
 
 kebab_case_test_data = [
@@ -50,25 +50,25 @@ def test_kebab_cased_words():
     Verifies that our kebab case verification function actually works as expected.
     """
     for item in kebab_case_test_data:
-        is_kebab_case(item['correct'], 'test')
+        is_kebab_case(item['correct'])
         with pytest.raises(CaseError):
-            is_kebab_case(item['incorrect'], 'test')
+            is_kebab_case(item['incorrect'])
 
 
-def test_less_than_two_chars():
+def test_kebab_case_less_than_two_chars():
     """
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
-    is_kebab_case('', 'test')
-    is_kebab_case('s', 'test')
+    is_kebab_case('')
+    is_kebab_case('s')
     with pytest.raises(CaseError):
-        is_kebab_case(' ', 'test')
-        is_kebab_case('-', 'test')
-        is_kebab_case('_', 'test')
-        is_kebab_case(None, 'test')
-        is_kebab_case('%', 'test')
-        is_kebab_case('R', 'test')
+        is_kebab_case(' ')
+        is_kebab_case('-')
+        is_kebab_case('_')
+        is_kebab_case(None)
+        is_kebab_case('%')
+        is_kebab_case('R')
 
 
 pascal_case_test_data = [
@@ -85,25 +85,25 @@ def test_pascal_cased_words():
     Verifies that our pascal case verification function actually works as expected.
     """
     for item in pascal_case_test_data:
-        is_pascal_case(item['correct'], 'test')
+        is_pascal_case(item['correct'])
         with pytest.raises(CaseError):
-            is_pascal_case(item['incorrect'], 'test')
+            is_pascal_case(item['incorrect'])
 
 
-def test_less_than_two_chars():
+def test_pascal_case_less_than_two_chars():
     """
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
-    is_pascal_case('', 'test')
-    is_pascal_case('S', 'test')
+    is_pascal_case('')
+    is_pascal_case('S')
     with pytest.raises(CaseError):
-        is_pascal_case(' ', 'test')
-        is_pascal_case('-', 'test')
-        is_pascal_case('_', 'test')
-        is_pascal_case(None, 'test')
-        is_pascal_case('%', 'test')
-        is_pascal_case('s', 'test')
+        is_pascal_case(' ')
+        is_pascal_case('-')
+        is_pascal_case('_')
+        is_pascal_case(None)
+        is_pascal_case('%')
+        is_pascal_case('s')
 
 
 snake_case_test_data = [
@@ -119,22 +119,22 @@ def test_snake_cased_words():
     Verifies that our snake case verification function actually works as expected.
     """
     for item in snake_case_test_data:
-        is_snake_case(item['correct'], 'test')
+        is_snake_case(item['correct'])
         with pytest.raises(CaseError):
-            is_snake_case(item['incorrect'], 'test')
+            is_snake_case(item['incorrect'])
 
 
-def test_less_than_two_chars():
+def test_snake_case_less_than_two_chars():
     """
     When the length of an input is less than 2, our regex logic breaks down,
     :return:
     """
-    is_snake_case('', 'test')
-    is_snake_case('s', 'test')
+    is_snake_case('')
+    is_snake_case('s')
     with pytest.raises(CaseError):
-        is_snake_case(' ', 'test')
-        is_snake_case('-', 'test')
-        is_snake_case('_', 'test')
-        is_snake_case(None, 'test')
-        is_snake_case('%', 'test')
-        is_snake_case('R', 'test')
+        is_snake_case(' ')
+        is_snake_case('-')
+        is_snake_case('_')
+        is_snake_case(None)
+        is_snake_case('%')
+        is_snake_case('R')

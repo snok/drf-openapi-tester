@@ -7,20 +7,11 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
-from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
+from openapi_tester.exceptions import CaseError, DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
 logger = logging.getLogger('openapi_tester')
-
-OPENAPI_PYTHON_MAPPING = {
-    'boolean': bool.__name__,
-    'string': str.__name__,
-    'file': str.__name__,
-    'array': list.__name__,
-    'object': dict.__name__,
-    'integer': int.__name__,
-    'number': f'{int.__name__} or {float.__name__}',
-}
 
 
 class SchemaTester:
@@ -30,7 +21,6 @@ class SchemaTester:
         self,
         case_tester: Optional[Callable[[str], None]] = None,
         ignored_keys: Optional[List[str]] = None,
-        i18n_name: Optional[str] = None,
         schema_file_path: Optional[str] = None,
     ) -> None:
         """
@@ -42,7 +32,6 @@ class SchemaTester:
         """
         self.case_tester = case_tester
         self.ignored_keys = ignored_keys or []
-        self.i18n_name = i18n_name
 
         if 'drf_spectacular' in settings.INSTALLED_APPS:
             self.loader = DrfSpectacularSchemaLoader()  # type: ignore
@@ -98,14 +87,6 @@ class SchemaTester:
     def _route_error_text_addon(self, paths: KeysView) -> str:
         route_error_text = ''
         pretty_routes = '\n\t• '.join(paths)
-
-        if self.i18n_name:
-            route_error_text += (
-                '\n\nDid you specify the correct i18n parameter name? '
-                f'Your project settings specify `{self.i18n_name}` '
-                f'as the name of your parameterized language, meaning a path like `/api/en/items` '
-                f'will be indexed as `/api/{{{self.i18n_name}}}/items`.'
-            )
         route_error_text += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
         return route_error_text
 
@@ -134,7 +115,7 @@ class SchemaTester:
         paths_object = self._get_key_value(schema=schema, key='paths')
         route_object = self._get_key_value(
             schema=paths_object,
-            key=route.get_path(self.i18n_name),
+            key=route,
             error_addon=self._route_error_text_addon(paths_object.keys()),
         )
         method_object = self._get_key_value(
@@ -268,8 +249,11 @@ class SchemaTester:
         if not isinstance(response, Response):
             raise ValueError('expected response to be an instance of DRF Response')
 
-        response_schema = self.get_response_schema_section(response)
-        self.test_schema_section(schema_section=response_schema, data=response.json(), reference='init')
+        try:
+            response_schema = self.get_response_schema_section(response)
+            self.test_schema_section(schema_section=response_schema, data=response.json(), reference='init')
+        except (DocumentationError, CaseError) as e:
+            raise AssertionError from e
 
     def test_case(self) -> APITestCase:
         validate_response = self.validate_response
