@@ -21,7 +21,11 @@ class SchemaTester:
     """ SchemaTester class """
 
     def __init__(
-        self, schema: dict, data: Any, case_tester: Optional[Callable[[str], None]], origin: str, **kwargs
+        self,
+        schema: dict,
+        data: Any,
+        case_tester: Optional[Callable[[str], None]],
+        ignore_case: Optional[List[str]],
     ) -> None:
         """
         Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
@@ -31,10 +35,9 @@ class SchemaTester:
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
-        self.ignored_keys: List[str] = kwargs.get('ignore_case', [])
+        self.ignored_keys = ignore_case or []
         self.ignored_keys += settings.case_passlist
-        self.origin = origin
-        self.test_schema(schema=schema, data=data, reference='init')
+        self.test_schema_section(schema=schema, data=data, reference='init')
 
     def _test_key_casing(self, key: str) -> None:
         if self.case_tester:
@@ -61,11 +64,6 @@ class SchemaTester:
     def _test_object(self, schema: dict, data: dict, reference: str) -> None:
         """
         Verifies that an OpenAPI schema object matches a given dict.
-
-        :param schema: OpenAPI schema
-        :param data: Response/request data
-        :param reference: string reference pointing to function caller
-        :raises: openapi_tester.exceptions.DocumentationError
         """
 
         if 'properties' in schema:
@@ -88,7 +86,7 @@ class SchemaTester:
                 missing_keys = ', '.join(f'{key}' for key in list(set(schema_keys) - set(response_keys)))
                 response_hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
                 request_hint = 'Remove the excess key(s) from you request body.'
-                message = f'The following properties seem to be missing from your {self.origin} body: {missing_keys}.'
+                message = f'The following properties are missing from the tested data: {missing_keys}.'
             raise DocumentationError(
                 message=message,
                 response=data,
@@ -103,7 +101,7 @@ class SchemaTester:
             self._test_key_casing(response_key)
             if schema_key not in response_keys:
                 raise DocumentationError(
-                    message=f'Schema key `{schema_key}` was not found in the {self.origin}.',
+                    message=f'Schema key `{schema_key}` was not found in the tested data.',
                     response=data,
                     schema=schema,
                     reference=reference,
@@ -122,16 +120,13 @@ class SchemaTester:
 
             schema_value = properties[schema_key]
             response_value = data[schema_key]
-            self.test_schema(schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}')
+            self.test_schema_section(
+                schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}'
+            )
 
     def _test_array(self, schema: dict, data: list, reference: str) -> None:
         """
         Verifies that an OpenAPI schema array matches a given list.
-
-        :param schema: OpenAPI schema
-        :param data: Response data
-        :param reference: string reference pointing to function caller
-        :raises: openapi_tester.exceptions.DocumentationError
         """
         items = schema['items']
         if not items and data is not None:
@@ -146,11 +141,11 @@ class SchemaTester:
         for datum in data:
             items_type = items['type']
             logger.debug(f'test_array --> {items_type}')
-            self.test_schema(schema=items, data=datum, reference=f'{reference}.list')
+            self.test_schema_section(schema=items, data=datum, reference=f'{reference}.list')
 
-    def test_schema(self, schema: dict, data: Any, reference: str) -> None:
+    def test_schema_section(self, schema: dict, data: Any, reference: str) -> None:
         """
-        Helper method to run checks.
+        This method orchestrates the testing of a schema section
         """
 
         schema_type = schema['type']
@@ -174,13 +169,6 @@ class SchemaTester:
         """
         Checks if the item is nullable.
 
-        OpenAPI does not have a null type, like a JSON schema,
-        but in OpenAPI 3.0 they added `nullable: true` to specify that the value may be null.
-        Note that null is different from an empty string "".
-
-        This feature was back-ported to the OpenApi 2 parser as a vendored extension `x-nullable`.
-        This is what drf_yasg generates.
-
         OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
         OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
 
@@ -190,12 +178,6 @@ class SchemaTester:
         openapi_schema_3_nullable = 'nullable'
         swagger_2_nullable = 'x-nullable'
         return any(
-            schema_item
-            and isinstance(schema_item, dict)
-            and nullable_key in schema_item
-            and (
-                (isinstance(schema_item[nullable_key], bool) and schema_item)
-                or (isinstance(schema_item[nullable_key], str) and schema_item[nullable_key] == 'true')
-            )
+            nullable_key in schema_item and schema_item[nullable_key]
             for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
         )

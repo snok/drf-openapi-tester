@@ -174,7 +174,7 @@ class BaseSchemaLoader:
                 )
             route_error += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
 
-        if 'skip_validation_warning' in kwargs and kwargs['skip_validation_warning']:
+        if kwargs.get('skip_validation_warning'):
             route_error += (
                 f'\n\nTo skip validation for this route you can add `^{route}$` '
                 f'to your VALIDATION_EXEMPT_URLS setting list in your OPENAPI_TESTER.MIDDLEWARE settings.'

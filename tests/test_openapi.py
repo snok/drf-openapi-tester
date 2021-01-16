@@ -48,7 +48,7 @@ def test_is_nullable():
     """
     assert SchemaTester.is_nullable(nullable_example['properties']['id']) == True  # noqa: E712
     assert SchemaTester.is_nullable(nullable_example['properties']['first_name']) == True  # noqa: E712
-    for item in [2, '', None, -1, {'nullable': 'false'}]:
+    for item in [{'x-nullable': False}, {'nullable': False}, {'someKey': 'someValue'}]:
         assert SchemaTester.is_nullable(item) is False
 
 

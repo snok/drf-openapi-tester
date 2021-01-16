@@ -3,7 +3,7 @@ import pytest
 from openapi_tester.exceptions import DocumentationError
 from openapi_tester.schema_tester import SchemaTester
 
-base = SchemaTester({'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], None, origin='test')
+base = SchemaTester({'type': 'array', 'items': {'type': 'object', 'properties': {}}}, [], None)
 
 items = [
     {
@@ -39,7 +39,7 @@ def test_valid_item_types():
     Verify that all valid item types pass successfully.
     """
     for item in items:
-        base.test_schema(schema=item['schema'], data=item['good_data'], reference='test')
+        base.test_schema_section(schema=item['schema'], data=item['good_data'], reference='test')
 
 
 def test_invalid_item_types():
@@ -48,4 +48,4 @@ def test_invalid_item_types():
     """
     for item in items:
         with pytest.raises(DocumentationError):
-            base.test_schema(schema=item['schema'], data=item['bad_data'], reference='placeholder')
+            base.test_schema_section(schema=item['schema'], data=item['bad_data'], reference='placeholder')

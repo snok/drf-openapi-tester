@@ -35,7 +35,6 @@ def validate_response(response: td.Response, method: str, route: str, **kwargs) 
             schema=response_schema,
             data=data,
             case_tester=settings.case_tester,
-            origin='response',
             **kwargs,
         )
     except DocumentationError as e:
