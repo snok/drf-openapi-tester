@@ -1,20 +1,20 @@
+import difflib
 import json
 import logging
-import os
 from json import dumps, loads
-from typing import Any, Callable, Optional, Union
+from typing import Callable, List, Optional
 from urllib.parse import ParseResult
 
-from django.conf import settings as django_settings
+import yaml
 from django.core.exceptions import ImproperlyConfigured
+from django.urls import Resolver404, resolve
 from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
+from rest_framework.schemas.generators import EndpointEnumerator
 
-from openapi_tester.configuration import settings
-from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import OpenAPISchemaError
 from openapi_tester.route import Route
-from openapi_tester.utils import get_endpoint_paths, resolve_path, type_placeholder_value
 
 logger = logging.getLogger('openapi_tester')
 
@@ -65,33 +65,12 @@ class BaseSchemaLoader:
     def __init__(self):
         super().__init__()
         self.schema: Optional[dict] = None
-        self.original_schema: Optional[dict] = None
 
     def load_schema(self) -> dict:
         """
         Put logic required to load a schema and return it here.
         """
         raise NotImplementedError('The `load_schema` method has to be overwritten.')
-
-    @staticmethod
-    def index_schema(schema: dict, variable: str, error_addon: str = '') -> dict:
-        """
-        Indexes schema by string variable.
-
-        :param schema: Schema to index
-        :param variable: Variable to index by
-        :param error_addon: Additional error info to be included in the printed error message
-        :return: Indexed schema
-        :raises: IndexError
-        """
-        try:
-            logger.debug('Indexing schema by `%s`', variable)
-            return schema[variable]
-        except KeyError:
-            raise UndocumentedSchemaSectionError(
-                f'Failed indexing schema.\n\n'
-                f'Error: Unsuccessfully tried to index the OpenAPI schema by `{variable}`. {error_addon}'
-            )
 
     def get_schema(self) -> dict:
         """
@@ -128,7 +107,6 @@ class BaseSchemaLoader:
         """
         dereferenced_schema = self.dereference_schema(schema)
         self.validate_schema(dereferenced_schema)
-        self.original_schema = schema
         self.schema = self.dereference_schema(dereferenced_schema)
 
     def get_route(self, route: str) -> Route:
@@ -138,143 +116,54 @@ class BaseSchemaLoader:
         This method was primarily implemented because drf-yasg has its own route style, and so this method
         lets loader classes overwrite and add custom route conversion logic if required.
         """
-        return Route(*resolve_path(route))
+        return Route(*self.resolve_path(route))
 
-    def get_response_schema_section(self, route: str, method: str, status_code: Union[int, str], **kwargs) -> dict:
+    @staticmethod
+    def get_endpoint_paths() -> List[str]:
         """
-        Indexes schema by url, HTTP method, and status code to get the schema section related to a specific response.
-
-        :param route: Schema-compatible path
-        :param method: HTTP request method
-        :param status_code: HTTP response code
-        :return Response schema
+        Returns a list of endpoint paths.
         """
+        return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
-        route_object = self.get_route(route)
-        schema = self.get_schema()
-
-        # Index by paths
-        paths_schema = BaseSchemaLoader.index_schema(schema=schema, variable='paths')
-
-        # Index by route
-        routes = ', '.join(list(paths_schema))
-        route_error = ''
-        if routes:
-            pretty_routes = '\n\t• '.join(routes.split())
-
-            if settings.parameterized_i18n_name:
-                route_error += (
-                    '\n\nDid you specify the correct i18n parameter name? '
-                    f'Your project settings specify `{settings.parameterized_i18n_name}` '
-                    f'as the name of your parameterized language, meaning a path like `/api/en/items` '
-                    f'will be indexed as `/api/{{{settings.parameterized_i18n_name}}}/items`.'
-                )
-            route_error += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
-
-        if kwargs.get('skip_validation_warning'):
-            route_error += (
-                f'\n\nTo skip validation for this route you can add `^{route}$` '
-                f'to your VALIDATION_EXEMPT_URLS setting list in your OPENAPI_TESTER.MIDDLEWARE settings.'
-            )
-
-        error = None
-        for _ in range(len(route_object.parameters) + 1):
+    def resolve_path(self, endpoint_path: str) -> tuple:
+        """
+        Resolves a Django path.
+        """
+        try:
+            logger.debug('Resolving path.')
+            if '?' in endpoint_path:
+                endpoint_path = endpoint_path.split('?')[0]
+            if endpoint_path == '' or endpoint_path[0] != '/':
+                logger.debug('Adding leading `/` to provided path')
+                endpoint_path = '/' + endpoint_path
+            if len(endpoint_path) > 2 and endpoint_path[-1] == '/':
+                endpoint_path = endpoint_path[:-1]
             try:
-                # This is an unfortunate piece of logic, where we're attempting to insert path parameters
-                # one by one until the path works
-                # if it never works, we finally raise an UndocumentedSchemaSectionError
-                route_schema = BaseSchemaLoader.index_schema(
-                    schema=paths_schema, variable=route_object.get_path(), error_addon=route_error
+                resolved_route = resolve(endpoint_path)
+                logger.debug('Resolved %s successfully', endpoint_path)
+            except Resolver404:
+                resolved_route = resolve(endpoint_path + '/')
+                endpoint_path += '/'
+            kwarg = resolved_route.kwargs
+            for key, value in kwarg.items():
+                # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex regex
+                # handling. However, its important not to freely use the .replace() function, as a {value} of `1` would
+                # also cause the `1` in api/v1/ to be replaced
+                var_index = endpoint_path.rfind(str(value))
+                endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(str(value)) :]
+            return endpoint_path, resolved_route
+
+        except Resolver404:
+            logger.warning('URL `%s` did not resolve successfully', endpoint_path)
+            paths = self.get_endpoint_paths()
+            closest_matches = ''.join(f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths))
+            if closest_matches:
+                raise ValueError(
+                    f'Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n'
+                    f'If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a '
+                    f'value, and not the parameter pattern.'
                 )
-                break
-            except UndocumentedSchemaSectionError as e:
-                error = e
-            except IndexError:
-                raise error  # type: ignore
-        else:
-            raise error  # type: ignore
-
-        # Index by method
-        joined_methods = ', '.join(method.upper() for method in route_schema.keys() if method.upper() != 'PARAMETERS')
-
-        method_error = ''
-        if joined_methods:
-            method_error += f'\n\nAvailable methods include: {joined_methods}.'
-        method_schema = BaseSchemaLoader.index_schema(
-            schema=route_schema, variable=method.lower(), error_addon=method_error
-        )
-
-        # Index by responses
-        responses_schema = BaseSchemaLoader.index_schema(schema=method_schema, variable='responses')
-
-        # Index by status code
-        responses = ', '.join(f'{code}' for code in responses_schema.keys())
-        status_code_error = f' Is the `{status_code}` response documented?'
-        if responses:
-            status_code_error = f'\n\nDocumented responses include: {responses}. ' + status_code_error  # reverse add
-        status_code_schema = BaseSchemaLoader.index_schema(
-            schema=responses_schema, variable=str(status_code), error_addon=status_code_error
-        )
-
-        # Not sure about this logic - this is what my static schema looks like, but not the drf_yasg dynamic schema
-        if 'content' in status_code_schema and 'application/json' in status_code_schema['content']:
-            status_code_schema = status_code_schema['content']['application/json']
-
-        return BaseSchemaLoader.index_schema(status_code_schema, 'schema')
-
-    def _iterate_schema_dict(self, schema_object: dict) -> dict:
-        parsed_schema = {}
-        if 'properties' in schema_object:
-            properties = schema_object['properties']
-        else:
-            properties = {'': schema_object['additionalProperties']}
-        for key, value in properties.items():
-            if not isinstance(value, dict):
-                raise ValueError()
-            value_type = value['type']
-
-            if 'example' in value:
-                parsed_schema[key] = value['example']
-            elif value_type == 'object':
-                parsed_schema[key] = self._iterate_schema_dict(value)
-            elif value_type == 'array':
-                parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
-            else:
-                logger.warning('Item `%s` is missing an explicit example value', value)
-                parsed_schema[key] = type_placeholder_value(value['type'])
-        return parsed_schema
-
-    def _iterate_schema_list(self, schema_array: dict) -> list:
-        parsed_items = []
-        raw_items = schema_array['items']
-        items_type = raw_items['type']
-        if 'example' in raw_items:
-            parsed_items.append(raw_items['example'])
-        elif items_type == 'object':
-            parsed_items.append(self._iterate_schema_dict(raw_items))
-        elif items_type == 'array':
-            parsed_items.append(self._iterate_schema_list(raw_items))
-        else:
-            logger.warning('Item `%s` is missing an explicit example value', raw_items)
-            parsed_items.append(type_placeholder_value(raw_items['type']))
-        return parsed_items
-
-    def create_dict_from_schema(self, schema: dict) -> Any:
-        """
-        Converts an OpenAPI schema representation of a dict to dict.
-        """
-        schema_type = schema['type']
-        if 'example' in schema:
-            return schema['example']
-        elif schema_type == 'array':
-            logger.debug('--> list')
-            return self._iterate_schema_list(schema)
-        elif schema_type == 'object':
-            logger.debug('--> dict')
-            return self._iterate_schema_dict(schema)
-        else:
-            logger.warning('Item `%s` is missing an explicit example value', schema)
-            return type_placeholder_value(schema_type)
+            raise ValueError(f'Could not resolve path `{endpoint_path}`')
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
@@ -284,11 +173,6 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
 
     def __init__(self) -> None:
         super().__init__()
-        if 'drf_yasg' not in django_settings.INSTALLED_APPS:
-            raise ImproperlyConfigured(
-                'The package `drf_yasg` is missing from INSTALLED_APPS. Please add it to your '
-                '`settings.py`, as it is required for this implementation'
-            )
         from drf_yasg.generators import OpenAPISchemaGenerator
         from drf_yasg.openapi import Info
 
@@ -313,7 +197,7 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         For example, `/api/v1/example` might then just become `/example`
         """
 
-        return self.schema_generator.determine_path_prefix(get_endpoint_paths())
+        return self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
 
     def get_route(self, route: str) -> Route:
         """
@@ -322,7 +206,7 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         :param route: Django resolved route
         """
 
-        de_parameterized_path, resolved_path = resolve_path(route)
+        de_parameterized_path, resolved_path = self.resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
@@ -337,11 +221,6 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
     def __init__(self) -> None:
         super().__init__()
-        if 'drf_spectacular' not in django_settings.INSTALLED_APPS:
-            raise ImproperlyConfigured(
-                'The package `drf_spectacular` is missing from INSTALLED_APPS. Please add it to your '
-                '`settings.py`, as it is required for this implementation'
-            )
         from drf_spectacular.generators import SchemaGenerator
 
         self.schema_generator = SchemaGenerator()
@@ -368,7 +247,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         :param route: Django resolved route
         """
 
-        de_parameterized_path, resolved_path = resolve_path(route)
+        de_parameterized_path, resolved_path = self.resolve_path(route)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == '/':
             path_prefix = ''
@@ -383,16 +262,10 @@ class StaticSchemaLoader(BaseSchemaLoader):
 
     is_static_loader = True
 
-    def __init__(self):
+    def __init__(self, path: str):
         super().__init__()
-        self.path: str = ''
-        logger.debug('Initialized static loader schema')
-
-    def set_path(self, path: str) -> None:
-        """
-        Sets value for self.path
-        """
         self.path = path
+        logger.debug('Initialized static loader schema')
 
     def load_schema(self) -> dict:
         """
@@ -401,30 +274,17 @@ class StaticSchemaLoader(BaseSchemaLoader):
         :return: Schema contents as a dict
         :raises: ImproperlyConfigured
         """
-        if not os.path.isfile(self.path):
-            logger.error('Path `%s` does not resolve as a valid file.', self.path)
-            raise ImproperlyConfigured(
-                f'The path `{self.path}` does not point to a valid file. Make sure to point to the specification file.'
-            )
         try:
             logger.debug('Fetching static schema from %s', self.path)
             with open(self.path) as f:
                 content = f.read()
+                if '.json' in self.path:
+                    schema = json.loads(content)
+                else:
+                    schema = yaml.load(content, Loader=yaml.FullLoader)
+            logger.debug('Successfully loaded schema')
+            return schema
         except Exception as e:
-            logger.exception('Exception raised when fetching OpenAPI schema from %s. Error: %s', self.path, e)
             raise ImproperlyConfigured(
-                f'Unable to read the schema file. Please make sure the path setting is correct.\n\nError: {e}'
-            )
-        self.base_path = str(os.path.abspath(os.path.dirname(os.path.abspath(self.path))))
-        if '.json' in self.path:
-            schema = json.loads(content)
-            logger.debug('Successfully loaded schema')
-            return schema
-        elif '.yaml' in self.path or '.yml' in self.path:
-            import yaml
-
-            schema = yaml.load(content, Loader=yaml.FullLoader)
-            logger.debug('Successfully loaded schema')
-            return schema
-        else:
-            raise ImproperlyConfigured('The specified file path does not seem to point to a JSON or YAML file.')
+                'Unable to read the schema file. Please make sure the path setting is correct.'
+            ) from e

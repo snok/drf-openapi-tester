@@ -45,15 +45,15 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.6.1"
-django = "^2.2 || ^3.0"
 prance = "^0.20.0"
 openapi-spec-validator = "^0.2.9"
 djangorestframework = "*"
 inflection = "^0.5.1"
+pyYAML = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
 drf-yasg = "^1.17.1"
-pyYAML = "^5.3.1"
+django = "^3.0"
 pytest = "^6.2"
 pytest-cov = "2.10.1"
 pytest-django = "^4.1.0"

@@ -1,8 +1,14 @@
 import logging
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, KeysView, List, Optional, Union, cast
 
-from openapi_tester.configuration import settings
-from openapi_tester.exceptions import DocumentationError
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
+from rest_framework.response import Response
+from rest_framework.test import APITestCase
+
+from openapi_tester import type_declarations as td
+from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
 logger = logging.getLogger('openapi_tester')
 
@@ -22,10 +28,10 @@ class SchemaTester:
 
     def __init__(
         self,
-        schema: dict,
-        data: Any,
         case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        ignored_keys: Optional[List[str]] = None,
+        i18n_name: Optional[str] = None,
+        schema_file_path: Optional[str] = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
@@ -35,9 +41,17 @@ class SchemaTester:
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
-        self.ignored_keys = ignore_case or []
-        self.ignored_keys += settings.case_passlist
-        self.test_schema_section(schema=schema, data=data, reference='init')
+        self.ignored_keys = ignored_keys or []
+        self.i18n_name = i18n_name
+
+        if 'drf_spectacular' in settings.INSTALLED_APPS:
+            self.loader = DrfSpectacularSchemaLoader()  # type: ignore
+        elif 'drf_yasg' in settings.INSTALLED_APPS:
+            self.loader = DrfYasgSchemaLoader()  # type: ignore
+        elif schema_file_path is not None:
+            self.loader = StaticSchemaLoader(schema_file_path)  # type: ignore
+        else:
+            raise ImproperlyConfigured('schema_file_path is a required parameter when loading static OpenAPI schemas.')
 
     def _test_key_casing(self, key: str) -> None:
         if self.case_tester:
@@ -61,108 +75,163 @@ class SchemaTester:
         if schema_type == 'array':
             return isinstance(value, list)
 
-    def _test_object(self, schema: dict, data: dict, reference: str) -> None:
+    @staticmethod
+    def _get_key_value(schema: dict, key: str, error_addon: str = '') -> dict:
         """
-        Verifies that an OpenAPI schema object matches a given dict.
+        Indexes schema by string variable.
+
+        :param schema: Schema to index
+        :param key: Variable to index by
+        :param error_addon: Additional error info to be included in the printed error message
+        :return: Indexed schema
+        :raises: IndexError
         """
-
-        if 'properties' in schema:
-            properties = schema['properties']
-        else:
-            properties = {'': schema['additionalProperties']}
-
-        response_keys = data.keys()
-        schema_keys = properties.keys()
-
-        # Check that the response and schema has the same number of keys
-        if len(schema_keys) != len(response_keys):
-            logger.debug('The number of schema elements doesnt match the number of data elements')
-            if len(response_keys) > len(schema_keys):
-                missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_keys)))
-                response_hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
-                request_hint = 'Remove the excess key(s) from your request body.'
-                message = f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.'
-            else:
-                missing_keys = ', '.join(f'{key}' for key in list(set(schema_keys) - set(response_keys)))
-                response_hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
-                request_hint = 'Remove the excess key(s) from you request body.'
-                message = f'The following properties are missing from the tested data: {missing_keys}.'
-            raise DocumentationError(
-                message=message,
-                response=data,
-                schema=schema,
-                reference=reference,
-                response_hint=response_hint,
-                request_hint=request_hint,
+        try:
+            logger.debug('Indexing schema by key `%s`', key)
+            return schema[key]
+        except KeyError:
+            raise UndocumentedSchemaSectionError(
+                f'Failed indexing schema.\n\n'
+                f'Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}'
             )
 
-        for schema_key, response_key in zip(schema_keys, response_keys):
-            self._test_key_casing(schema_key)
-            self._test_key_casing(response_key)
-            if schema_key not in response_keys:
-                raise DocumentationError(
-                    message=f'Schema key `{schema_key}` was not found in the tested data.',
-                    response=data,
-                    schema=schema,
-                    reference=reference,
-                    response_hint='You need to add the missing schema key to the response, or remove it from the documented response.',
-                    request_hint='You need to add the missing key to your request body.',
-                )
-            if response_key not in schema_keys:
-                raise DocumentationError(
-                    message=f'Key `{response_key}` not found in the OpenAPI schema.',
-                    response=data,
-                    schema=schema,
-                    reference=reference,
-                    response_hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
-                    request_hint='You need to add the missing key to your request body.',
-                )
+    def _route_error_text_addon(self, paths: KeysView) -> str:
+        route_error_text = ''
+        pretty_routes = '\n\t• '.join(paths)
 
-            schema_value = properties[schema_key]
-            response_value = data[schema_key]
-            self.test_schema_section(
-                schema=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}'
+        if self.i18n_name:
+            route_error_text += (
+                '\n\nDid you specify the correct i18n parameter name? '
+                f'Your project settings specify `{self.i18n_name}` '
+                f'as the name of your parameterized language, meaning a path like `/api/en/items` '
+                f'will be indexed as `/api/{{{self.i18n_name}}}/items`.'
             )
+        route_error_text += f'\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}'
+        return route_error_text
 
-    def _test_array(self, schema: dict, data: list, reference: str) -> None:
-        """
-        Verifies that an OpenAPI schema array matches a given list.
-        """
-        items = schema['items']
-        if not items and data is not None:
-            raise DocumentationError(
-                message='Mismatched content. Response array contains data, when schema is empty.',
-                response=data,
-                schema=schema,
-                reference=reference,
-                response_hint='Document the contents of the empty dictionary to match the response object.',
-                request_hint='',
-            )
-        for datum in data:
-            items_type = items['type']
-            logger.debug(f'test_array --> {items_type}')
-            self.test_schema_section(schema=items, data=datum, reference=f'{reference}.list')
+    @staticmethod
+    def _method_error_text_addon(methods: KeysView) -> str:
+        return f'\n\nAvailable methods include: {", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")}.'
 
-    def test_schema_section(self, schema: dict, data: Any, reference: str) -> None:
+    @staticmethod
+    def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
+        return f'\n\nDocumented responses include: {", ".join(response_status_codes)}. Is the `{status_code}` response documented?'
+
+    def get_response_schema_section(self, response: td.Response) -> dict:
+        """
+        Indexes schema by url, HTTP method, and status code to get the schema section related to a specific response.
+
+        :param response: DRF Response Instance
+        :return Response schema
+        """
+        path = response.request['PATH_INFO']
+        method = response.request['REQUEST_METHOD']
+        status_code = str(response.status_code)
+
+        schema = self.loader.get_schema()
+        route = self.loader.get_route(path)
+
+        paths_object = self._get_key_value(schema=schema, key='paths')
+        route_object = self._get_key_value(
+            schema=paths_object,
+            key=route.get_path(self.i18n_name),
+            error_addon=self._route_error_text_addon(paths_object.keys()),
+        )
+        method_object = self._get_key_value(
+            schema=route_object, key=method.lower(), error_addon=self._method_error_text_addon(route_object.keys())
+        )
+        responses_object = self._get_key_value(schema=method_object, key='responses')
+        status_code_object = self._get_key_value(
+            schema=responses_object,
+            key=status_code,
+            error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
+        )
+        content_object = self._get_key_value(schema=status_code_object, key='content')
+        json_object = self._get_key_value(schema=content_object, key='application/json')
+        return self._get_key_value(schema=json_object, key='schema')
+
+    def test_schema_section(self, schema_section: dict, data: Any, reference: str) -> None:
         """
         This method orchestrates the testing of a schema section
         """
 
-        schema_type = schema['type']
-        logger.debug(f'{reference} --> {schema_type}')
-        if data is None and self.is_nullable(schema):
+        schema_section_type = schema_section['type']
+        logger.debug(f'{reference} --> {schema_section_type}')
+        if data is None and self.is_nullable(schema_section):
             return
-        if data is None or not self._check_openapi_type(schema_type, data):
+        if data is None or not self._check_openapi_type(schema_section_type, data):
             raise DocumentationError(
-                message=f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_type]} but received {type(data).__name__}.',
+                message=f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.',
                 response=data,
-                schema=schema,
+                schema=schema_section,
                 reference=reference,
             )
-        if schema_type == 'object':
-            self._test_object(schema=schema, data=data, reference='init')
-        elif schema_type == 'array':
-            self._test_array(schema=schema, data=data, reference='init')
+        if schema_section_type == 'object':
+            if 'properties' in schema_section:
+                properties = schema_section['properties']
+            else:
+                properties = {'': schema_section['additionalProperties']}
+
+            response_keys = data.keys()
+            schema_section_keys = properties.keys()
+
+            if len(schema_section_keys) != len(response_keys):
+                logger.debug('The number of schema elements doesnt match the number of data elements')
+                if len(response_keys) > len(schema_section_keys):
+                    missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_section_keys)))
+                    hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
+                    message = f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.'
+                else:
+                    missing_keys = ', '.join(f'{key}' for key in list(set(schema_section_keys) - set(response_keys)))
+                    hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
+                    message = f'The following properties are missing from the tested data: {missing_keys}.'
+                raise DocumentationError(
+                    message=message,
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                    hint=hint,
+                )
+
+            for schema_key, response_key in zip(schema_section_keys, response_keys):
+                self._test_key_casing(schema_key)
+                self._test_key_casing(response_key)
+                if schema_key not in response_keys:
+                    raise DocumentationError(
+                        message=f'Schema key `{schema_key}` was not found in the tested data.',
+                        response=data,
+                        schema=schema_section,
+                        reference=reference,
+                        hint='You need to add the missing schema key to the response, or remove it from the documented response.',
+                    )
+                if response_key not in schema_section_keys:
+                    raise DocumentationError(
+                        message=f'Key `{response_key}` not found in the OpenAPI schema.',
+                        response=data,
+                        schema=schema_section,
+                        reference=reference,
+                        hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
+                    )
+
+                schema_value = properties[schema_key]
+                response_value = data[schema_key]
+                self.test_schema_section(
+                    schema_section=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}'
+                )
+        elif schema_section_type == 'array':
+            items = schema_section['items']
+            if not items and data is not None:
+                raise DocumentationError(
+                    message='Mismatched content. Response array contains data, when schema is empty.',
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                    hint='Document the contents of the empty dictionary to match the response object.',
+                )
+            for datum in data:
+                items_type = items['type']
+                logger.debug(f'test_array --> {items_type}')
+                self.test_schema_section(schema_section=items, data=datum, reference=f'{reference}.list')
 
     @staticmethod
     def is_nullable(schema_item: dict) -> bool:
@@ -181,3 +250,34 @@ class SchemaTester:
             nullable_key in schema_item and schema_item[nullable_key]
             for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
         )
+
+    def validate_response(self, response: td.Response):
+        """
+        Verifies that an OpenAPI schema definition matches an API response.
+
+        It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
+
+        :param response: The HTTP response
+        :param method: The HTTP method ('get', 'put', 'post', ...)
+        :param route: The relative path of the endpoint which sent the response (must be resolvable)
+        :keyword ignore_case: List of strings to ignore when testing the case of response keys
+        :raises: ``openapi_tester.exceptions.DocumentationError`` if we find inconsistencies in the API response and schema.
+
+                 ``openapi_tester.exceptions.CaseError`` if we find case errors.
+        """
+        if not isinstance(response, Response):
+            raise ValueError('expected response to be an instance of DRF Response')
+
+        response_schema = self.get_response_schema_section(response)
+        self.test_schema_section(schema_section=response_schema, data=response.json(), reference='init')
+
+    def test_case(self) -> APITestCase:
+        validate_response = self.validate_response
+
+        def assert_response(response: td.Response) -> None:
+            """
+            Assert response matches the OpenAPI spec.
+            """
+            validate_response(response=response)
+
+        return cast(APITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))

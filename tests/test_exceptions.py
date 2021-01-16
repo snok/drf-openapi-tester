@@ -1,14 +1,39 @@
-import pytest
-from django.core.exceptions import ImproperlyConfigured
-
 from openapi_tester.exceptions import DocumentationError
 
+error = DocumentationError(
+    message='This is a message',
+    response={'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryLongKey': 'test'},
+    schema={
+        'title': 'object_type_title',
+        'type': 'object',
+        'properties': {
+            'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryLongKey': {
+                'description': 'This is a string type',
+                'type': 'string',
+                'example': 'string',
+            }
+        },
+    },
+    reference='test',
+    hint='test',
+)
 
-def test_specification_error():
-    with pytest.raises(DocumentationError, match='test'):
-        raise DocumentationError('test')
 
+def test_format():
+    expected = """Item is misspecified:
 
-def test_improperly_configured_error():
-    with pytest.raises(ImproperlyConfigured, match='test'):
-        raise ImproperlyConfigured('test')
+Summary
+------------------------------------------------------------------------------------
+
+Error:      This is a message
+
+Expected:   {'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryLongKey': 'string'}
+Received:   {'thisIsAVeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeryLongKey': 'test'}
+
+Hint:       test
+Sequence:   test
+
+------------------------------------------------------------------------------------
+
+* If you need more details: set `verbose=True`"""
+    assert error.format() == expected

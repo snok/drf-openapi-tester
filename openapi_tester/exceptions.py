@@ -1,4 +1,5 @@
-from typing import Any, Optional
+import json
+from typing import Any
 
 
 class DocumentationError(Exception):
@@ -9,21 +10,114 @@ class DocumentationError(Exception):
     def __init__(
         self,
         message: str,
-        response: Any = None,
-        schema: Optional[dict] = None,
+        response: Any,
+        schema: dict,
+        hint: str = '',
         reference: str = '',
-        response_hint: str = '',
-        request_hint: str = '',
     ) -> None:
-        super().__init__(message)
-        if schema is None:
-            schema = {}
-        self.message = message
-        self.response = response
-        self.schema = schema
-        self.reference = reference
-        self.response_hint = response_hint
-        self.request_hint = request_hint
+        super().__init__(
+            self.format(
+                response=self._sort_data(response),
+                example_item=self._sort_data(self.create_dict_from_schema(schema or {})),
+                hint=hint,
+                message=message,
+                reference=reference,
+            )
+        )
+
+    def _sort_data(self, data_object: Any) -> Any:
+        if isinstance(data_object, dict):
+            return dict(sorted(data_object.items()))
+        elif isinstance(data_object, list):
+            try:
+                return sorted(data_object)
+            except TypeError:
+                return data_object
+
+    def format(self, example_item: Any, response: Any, reference: str, message: str, hint: str) -> str:
+        """
+        Formats and returns a standardized error message for easy debugging.
+
+        """
+        offset = 8
+        message = [
+            'Error:'.ljust(offset) + f'{str(message)}\n',
+            '\n',
+            'Expected:'.ljust(offset) + f'{json.dumps(example_item)}\n',
+            'Received:'.ljust(offset) + f'{json.dumps(response)}\n',
+            '\n',
+            'Hint:'.ljust(offset)
+            + '\n'.ljust(offset + 1).join(hint.split('\n'))
+            + '\n',  # the join logic adds support for multi-line hints
+            'Sequence:'.ljust(offset) + f'{reference}\n',
+            '\n',
+        ]
+
+        return ''.join(message)
+
+    @staticmethod
+    def type_placeholder_value(_type: str) -> Any:
+        """
+        Returns a placeholder example value for schema items without one.
+        """
+        if _type == 'boolean':
+            return True
+        elif _type == 'integer':
+            return 1
+        elif _type == 'number':
+            return 1.0
+        elif _type in ['string', 'file']:
+            return 'string'
+        else:
+            raise TypeError(f'Cannot return placeholder value for {_type}')
+
+    def _iterate_schema_dict(self, schema_object: dict) -> dict:
+        parsed_schema = {}
+        if 'properties' in schema_object:
+            properties = schema_object['properties']
+        else:
+            properties = {'': schema_object['additionalProperties']}
+        for key, value in properties.items():
+            if not isinstance(value, dict):
+                raise ValueError()
+            value_type = value['type']
+            if 'example' in value:
+                parsed_schema[key] = value['example']
+            elif value_type == 'object':
+                parsed_schema[key] = self._iterate_schema_dict(value)
+            elif value_type == 'array':
+                parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
+            else:
+                parsed_schema[key] = self.type_placeholder_value(value['type'])
+        return parsed_schema
+
+    def _iterate_schema_list(self, schema_array: dict) -> list:
+        parsed_items = []
+        raw_items = schema_array['items']
+        items_type = raw_items['type']
+        if 'example' in raw_items:
+            parsed_items.append(raw_items['example'])
+        elif items_type == 'object':
+            parsed_items.append(self._iterate_schema_dict(raw_items))
+        elif items_type == 'array':
+            parsed_items.append(self._iterate_schema_list(raw_items))
+        else:
+            parsed_items.append(self.type_placeholder_value(raw_items['type']))
+        return parsed_items
+
+    def create_dict_from_schema(self, schema: dict) -> Any:
+        """
+        Converts an OpenAPI schema representation of a dict to dict.
+        """
+        schema_type = schema['type']
+        if 'example' in schema:
+            return schema['example']
+        elif schema_type == 'array':
+            return self._iterate_schema_list(schema)
+        elif schema_type == 'object':
+            return self._iterate_schema_dict(schema)
+        else:
+            return self.type_placeholder_value(schema_type)
 
 
 class CaseError(Exception):
@@ -31,11 +125,8 @@ class CaseError(Exception):
     Custom exception raised when items are not cased correctly.
     """
 
-    def __init__(self, key: str = '', case: str = '', origin: str = '', expected: str = '') -> None:
-        self.key = key
-        self.case = case
-        self.expected = expected
-        self.origin = origin
+    def __init__(self, key: str, case: str, expected: str) -> None:
+        super().__init__(f'The response key `{key}` is not properly {case}. Expected value: {expected}')
 
 
 class OpenAPISchemaError(Exception):

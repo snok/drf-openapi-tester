@@ -1,10 +1,8 @@
 import re
-from typing import List
+from typing import List, Optional
 
 from django.urls import ResolverMatch
 from django.utils import translation
-
-from openapi_tester.configuration import settings
 
 
 class Route:
@@ -25,7 +23,7 @@ class Route:
         pattern = re.compile(r'({[\w]+})')
         return list(re.findall(pattern, path))
 
-    def get_path(self) -> str:
+    def get_path(self, i18n_name: Optional[str] = None) -> str:
         """
         Given an original deparameterized path looking like this:
 
@@ -51,7 +49,9 @@ class Route:
         """
         if self.counter == 0:
             self.counter += 1
-            return self.replace_i18n_parameter(self.parameterized_path)
+            if i18n_name:
+                return self.replace_i18n_parameter(self.parameterized_path, i18n_name)
+            return self.parameterized_path
         if self.counter > len(self.parameters):
             raise IndexError('No more parameters to insert')
 
@@ -62,8 +62,9 @@ class Route:
         path = f'{path[:starting_index]}{self.resolved_path.kwargs[parameter_name]}{path[starting_index + len(parameter):]}'
         self.parameterized_path = path
         self.counter += 1
-
-        return self.replace_i18n_parameter(path)
+        if i18n_name:
+            return self.replace_i18n_parameter(path, i18n_name)
+        return path
 
     def reset(self) -> None:
         """
@@ -88,7 +89,7 @@ class Route:
         return False
 
     @staticmethod
-    def replace_i18n_parameter(route: str):
+    def replace_i18n_parameter(route: str, i18n_name: str):
         """
         If PARAMETERIZED_I18N_NAME is set in the package settings,
         this function will replace a route with a parameter value.
@@ -106,9 +107,6 @@ class Route:
 
             /{lang}/api/v1/items
         """
-        if settings.parameterized_i18n_name:
-            parameter = f'{{{settings.parameterized_i18n_name}}}'
-            language = translation.get_language()
-            route = route.replace(f'/{language}/', f'/{parameter}/')
-
-        return route
+        parameter = f'{{{i18n_name}}}'
+        language = translation.get_language()
+        return route.replace(f'/{language}/', f'/{parameter}/')

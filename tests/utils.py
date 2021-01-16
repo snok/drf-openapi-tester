@@ -1,15 +1,7 @@
-from copy import deepcopy
+import json
+from pathlib import Path
 
 import yaml
-from django.conf import settings as django_settings
-
-from tests import yml_path
-
-
-def patch_settings(key, value) -> dict:
-    patched_settings = deepcopy(django_settings.OPENAPI_TESTER)
-    patched_settings[key] = value
-    return patched_settings
 
 
 class MockRoute:
@@ -25,12 +17,13 @@ class MockRoute:
         return self.x
 
 
-def ret_schema(*args, **kwargs):
-    with open(yml_path) as f:
+CURRENT_PATH = Path(__file__).resolve(strict=True).parent
+
+
+def load_schema(path, load_yaml: bool = True):
+    with open(str(CURRENT_PATH) + f'schemas/{path}') as f:
         content = f.read()
-    return yaml.load(content, Loader=yaml.FullLoader)
-
-
-def loader(path):
-    with open(str(django_settings.BASE_DIR.parent) + path) as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
+        if load_yaml:
+            return yaml.load(content, Loader=yaml.FullLoader)
+        else:
+            return json.loads(content)
