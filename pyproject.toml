@@ -8,7 +8,7 @@ maintainers = [
     "Jonas Krüger Svensson <jonas-ks@hotmail.com>",
 ]
 license = "BSD-4-Clause"
-readme = "docs/PYPI_README.rst"
+readme = "docs/pypi/README.rst"
 homepage = "https://github.com/snok/django-openapi-tester"
 repository = "https://github.com/snok/django-openapi-tester"
 documentation = "https://django-swagger-tester.readthedocs.io/en/latest/"

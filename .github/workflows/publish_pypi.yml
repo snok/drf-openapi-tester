@@ -1,13 +1,15 @@
 name: publish package to pypi
 
-on:
-  release:
-    types: [published]
+#on:
+#  release:
+#    types: [published]
+
+on: push
 
 jobs:
   build-and-publish:
     name: Build and publish
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@master
       - name: Set up Python 3.8
@@ -18,10 +20,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry
-      - name: Install dependencies
+#      - name: Build and publish
+#        run: |
+#          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
+#          poetry publish --build --no-interaction
+      - run: cat pyproject.toml
+      - name: Edit configuration to push django-swagger-tester
         run: |
-          poetry install
-      - name: Build and publish
-        run: |
-          poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-          poetry publish --build --no-interaction
+          sed -i '' 's/name = "django-openapi-tester"/name = "django-swagger-tester"/' pyproject.toml
+          sed -i '' 's/docs\/pypi\/README.rst/docs\/pypi\/OLD_README.rst/' pyproject.toml
+      - run: cat pyproject.toml
