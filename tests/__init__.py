@@ -1,5 +1,7 @@
-from demo import settings
+from pathlib import Path
 
-yml_path = f'{settings.BASE_DIR}/static_schemas/openapi-schema.yml'
-yml_split_path = f'{settings.BASE_DIR}/static_schemas/openapi-schema-split.yaml'
-json_path = f'{settings.BASE_DIR}/static_schemas/openapi-schema.json'
+current_path = Path(__file__).resolve(strict=True).parent
+
+yml_path = f'{current_path}/test_schemas/openapi-schema.yml'
+yml_split_path = f'{current_path}/test_schemas/openapi-schema-split.yaml'
+json_path = f'{current_path}/test_schemas/openapi-schema.json'

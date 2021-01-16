@@ -1,7 +1,7 @@
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from demo.api.swagger.auto_schemas import VehicleSerializer, post_vehicle_auto_schema
+from test_project.api.swagger.auto_schemas import VehicleSerializer, post_vehicle_auto_schema
 
 
 class Vehicles(APIView):

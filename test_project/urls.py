@@ -5,15 +5,15 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from demo import views
-from demo.api.views.animals import Animals
-from demo.api.views.cars import BadCars, GoodCars
-from demo.api.views.exempt_endpoint import Exempt
-from demo.api.views.i18n import Languages
-from demo.api.views.items import Items
-from demo.api.views.snake_cased_response import SnakeCasedResponse
-from demo.api.views.trucks import BadTrucks, GoodTrucks
-from demo.api.views.vehicles import Vehicles
+from test_project import views
+from test_project.api.views.animals import Animals
+from test_project.api.views.cars import BadCars, GoodCars
+from test_project.api.views.exempt_endpoint import Exempt
+from test_project.api.views.i18n import Languages
+from test_project.api.views.items import Items
+from test_project.api.views.snake_cased_response import SnakeCasedResponse
+from test_project.api.views.trucks import BadTrucks, GoodTrucks
+from test_project.api.views.vehicles import Vehicles
 
 
 class IsValidVehicleType(StringConverter):

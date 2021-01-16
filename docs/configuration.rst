@@ -25,7 +25,7 @@ A full example of the ``OPENAPI_TESTER`` settings might look like this:
 
     OPENAPI_TESTER = {
         'SCHEMA_LOADER': StaticSchemaLoader,
-        'PATH': 'demo/openapi-schema.yml',
+        'PATH': 'test_project/openapi-schema.yml',
         'CASE_TESTER': is_camel_case,
         'CASE_PASSLIST': ['IP', 'DHCP'],
     }

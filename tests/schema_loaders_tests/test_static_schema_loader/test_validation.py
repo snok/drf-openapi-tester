@@ -9,7 +9,7 @@ from tests import yml_path
 
 def test_static_schema_loader_validation():
     """
-    Verify that validation runs successfully for the demo project.
+    Verify that validation runs successfully for the test_project.
     """
     with override_settings(OPENAPI_TESTER={'PATH': yml_path, 'SCHEMA_LOADER': StaticSchemaLoader}):
         settings = OpenAPITesterSettings()
@@ -18,7 +18,7 @@ def test_static_schema_loader_validation():
 
 def test_missing_path():
     """
-    Verify that validation runs successfully for the demo project.
+    Verify that validation runs successfully for the test_project.
     """
     with override_settings(OPENAPI_TESTER={'SCHEMA_LOADER': StaticSchemaLoader}):
         with pytest.raises(
@@ -30,7 +30,7 @@ def test_missing_path():
 
 def test_bad_path_type():
     """
-    Verify that validation runs successfully for the demo project.
+    Verify that validation runs successfully for the test_project.
     """
     with override_settings(OPENAPI_TESTER={'PATH': 2, 'SCHEMA_LOADER': StaticSchemaLoader}):
         with pytest.raises(

@@ -7,7 +7,7 @@ from openapi_tester.configuration import OpenAPITesterSettings
 
 def test_valid_settings() -> None:
     """
-    Assert that the default settings in the demo project pass without errors.
+    Assert that the default settings in the test_project pass without errors.
     """
     OpenAPITesterSettings().validate()
 

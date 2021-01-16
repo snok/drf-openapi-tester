@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
 
-from demo.api.swagger.auto_schemas import languages_auto_schema
+from test_project.api.swagger.auto_schemas import languages_auto_schema
 
 
 class Languages(APIView):

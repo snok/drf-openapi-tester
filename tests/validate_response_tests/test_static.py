@@ -4,7 +4,7 @@ from openapi_tester.configuration import OpenAPITesterSettings
 from openapi_tester.loaders import StaticSchemaLoader
 from openapi_tester.testing import validate_response
 from tests import yml_path
-from tests.test_testers.test_validate_response import GOOD_TEST_DATA, I18N_DATA
+from tests.validate_response_tests import GOOD_TEST_DATA, I18N_DATA
 
 
 def test_endpoints_static_schema(client, monkeypatch) -> None:
