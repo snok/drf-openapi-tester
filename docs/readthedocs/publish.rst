@@ -4,20 +4,14 @@
 Publish
 *******
 
-This site is intended for the contributors of ``django-openapi-tester``.
+This page is intended for the contributors of ``django-openapi-tester``.
 
 PyPi
 ----
 
-Publishing ``django-openapi-tester`` is done via Github workflows.
+Publishing ``django-openapi-tester`` is done via Github workflows. A publish to test-pypi is performed *before* we push to pypi, meaning the workflow will never fail against pypi.
 
-A publish to test-pypi is done every time a branch is merged into master (this means that the job will fail if the version already exists, but that's fine).
-
-To publish to pypi, the push-to-pypi jobs is triggered by creating a ``release`` in the Github UI. See previous releases for formatting.
-
-.. Note::
-
-    Our ``README.rst`` and ``index.rst`` uses embedded html. This is not allowed by PyPi, and so we currently maintain a separate PYPI_README.rst that also needs to be updated to reflect changes.
+To publish, create a ``release`` in the Github UI. See previous releases for formatting.
 
 Read the docs
 -------------
