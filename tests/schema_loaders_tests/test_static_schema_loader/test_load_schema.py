@@ -1,5 +1,4 @@
 import pytest
-from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.loaders import StaticSchemaLoader
 from tests import yml_path
@@ -12,7 +11,7 @@ def ret_bad_schema(*args, **kwargs):
     return schema
 
 
-def test_successful_parse_documented_endpoints(monkeypatch) -> None:
+def test_successful_parse_documented_endpoints() -> None:
     """
     Asserts that a schema section is returned successfully.
     """
@@ -65,7 +64,7 @@ def test_successful_parse_documented_endpoints(monkeypatch) -> None:
         assert base.get_response_schema_section(route=item['url'], method='GET', status_code=200) == item['expected']
 
 
-def test_successful_parse_undocumented_endpoints(monkeypatch) -> None:
+def test_successful_parse_undocumented_endpoints() -> None:
     """
     Asserts that a schema section is returned successfully.
     """
@@ -75,20 +74,7 @@ def test_successful_parse_undocumented_endpoints(monkeypatch) -> None:
         base.get_response_schema_section(route=url, method='GET', status_code=200)
 
 
-def test_method_missing_from_schema(monkeypatch) -> None:
-    """
-    Asserts that a non-existent method raises the appropriate exception.
-    """
-    base = StaticSchemaLoader()
-    base.set_path(yml_path)
-    with pytest.raises(
-        ImproperlyConfigured,
-        match=r'Method \`gets\` is invalid. Should be one of: GET, POST, PUT, PATCH, DELETE, OPTIONS, HEAD.',
-    ):
-        base.get_response_schema_section(route='api/v1/trucks/correct', method='gets', status_code=200)
-
-
-def test_no_matching_routes(monkeypatch) -> None:
+def test_no_matching_routes() -> None:
     """
     Asserts that the right exception is raised when an endpoint is not documented in the schema.
     """

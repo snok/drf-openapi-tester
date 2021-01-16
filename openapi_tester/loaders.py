@@ -150,9 +150,6 @@ class BaseSchemaLoader:
         :return Response schema
         """
 
-        self.validate_method(method)
-        self.validate_string(route, 'route')
-        self.validate_status_code(status_code)
         route_object = self.get_route(route)
         schema = self.get_schema()
 
@@ -224,47 +221,6 @@ class BaseSchemaLoader:
             status_code_schema = status_code_schema['content']['application/json']
 
         return BaseSchemaLoader.index_schema(status_code_schema, 'schema')
-
-    @staticmethod
-    def validate_string(string: str, name: str) -> None:
-        """
-        Validates input as a string.
-        """
-        if not isinstance(string, str):
-            raise ImproperlyConfigured(f'`{name}` is invalid.')
-
-    @staticmethod
-    def validate_method(method: str) -> str:
-        """
-        Validates a string as an HTTP method.
-
-        :param method: HTTP method
-        :raises: ImproperlyConfigured
-        """
-        methods = ['get', 'post', 'put', 'patch', 'delete', 'options', 'head']
-        if not isinstance(method, str) or method.lower() not in methods:
-            logger.error(
-                'Method `%s` is invalid. Should be one of: %s.', method, ', '.join([i.upper() for i in methods])
-            )
-            raise ImproperlyConfigured(
-                f'Method `{method}` is invalid. Should be one of: {", ".join([i.upper() for i in methods])}.'
-            )
-        return method
-
-    @staticmethod
-    def validate_status_code(status_code: Union[int, str]) -> None:
-        """
-        Validates a string or int as a valid HTTP response status code.
-
-        :param status_code: the relevant HTTP response status code to check in the OpenAPI schema
-        :raises: ImproperlyConfigured
-        """
-        try:
-            status_code = int(status_code)
-        except Exception:
-            raise ImproperlyConfigured('`status_code` should be an integer.')
-        if not 100 <= status_code <= 505:
-            raise ImproperlyConfigured('`status_code` should be a valid HTTP response code.')
 
     def _iterate_schema_dict(self, schema_object: dict) -> dict:
         parsed_schema = {}

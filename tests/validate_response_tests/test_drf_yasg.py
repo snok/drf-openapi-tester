@@ -1,5 +1,4 @@
 import pytest
-from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.exceptions import DocumentationError
 from openapi_tester.testing import validate_response
@@ -75,18 +74,3 @@ def test_bad_endpoints_dynamic_schema(client) -> None:
         # Test OpenApi documentation
         with pytest.raises(DocumentationError, match='Item is misspecified:'):
             validate_response(response, 'GET', item['url'])  # type: ignore
-
-
-def test_missing_status_code_match(client, monkeypatch) -> None:
-    """
-    When we fail to index the schema by status code, we need to raise an exception.
-    """
-
-    def mocked_unpack_response(*args, **kwargs):
-        return {}, 'bad status code'
-
-    monkeypatch.setattr('openapi_tester.testing.unpack_response', mocked_unpack_response)
-    for item in bad_test_data:
-        response = client.get(item['url'])
-        with pytest.raises(ImproperlyConfigured, match='`status_code` should be an integer'):
-            validate_response(response=response, method='GET', route=item['url'])  # type: ignore

@@ -24,8 +24,8 @@ class SchemaTester:
         self,
         schema: dict,
         data: Any,
-        case_tester: Optional[Callable[[str], None]],
-        ignore_case: Optional[List[str]],
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
