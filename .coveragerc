@@ -8,6 +8,8 @@
 source = openapi_tester/*
 
 omit =
+    openapi_tester/__init__.py
+    openapi_tester/constants.py
     openapi_tester/type_declarations.py
 
 [report]
