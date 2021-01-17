@@ -63,5 +63,5 @@ class SchemaToPythonConverter:
         elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
         else:
-            parsed_items.append(self._to_mock_value(raw_items['type']))  # type :ignore
+            parsed_items.append(self._to_mock_value(items_type))  # type :ignore
         return parsed_items
