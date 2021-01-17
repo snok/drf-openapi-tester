@@ -124,9 +124,13 @@ class SchemaTester:
             key=status_code,
             error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
         )
-        content_object = self._get_key_value(schema=status_code_object, key='content')
-        json_object = self._get_key_value(schema=content_object, key='application/json')
-        return self._get_key_value(schema=json_object, key='schema')
+        if 'openapi' in schema:
+            content_object = self._get_key_value(schema=status_code_object, key='content')
+            json_object = self._get_key_value(schema=content_object, key='application/json')
+            return self._get_key_value(schema=json_object, key='schema')
+        else:
+            # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
+            return self._get_key_value(schema=status_code_object, key='schema')
 
     def test_schema_section(
         self,
@@ -161,13 +165,16 @@ class SchemaTester:
             schema_section_keys = properties.keys()
 
             if len(schema_section_keys) != len(response_keys):
-
                 if len(response_keys) > len(schema_section_keys):
-                    missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_section_keys)))
+                    missing_keys = ', '.join(
+                        f'`{key}`' for key in sorted(list(set(response_keys) - set(schema_section_keys)))
+                    )
                     hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
                     message = f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.'
                 else:
-                    missing_keys = ', '.join(f'{key}' for key in list(set(schema_section_keys) - set(response_keys)))
+                    missing_keys = ', '.join(
+                        f'{key}' for key in sorted(list(set(schema_section_keys) - set(response_keys)))
+                    )
                     hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
                     message = f'The following properties are missing from the tested data: {missing_keys}.'
                 raise DocumentationError(
