@@ -1,1003 +1,158 @@
-id: https://spec.openapis.org/oas/3.0/schema/2019-04-02
-$schema: http://json-schema.org/draft-04/schema#
-description: Validation schema for OpenAPI Specification 3.0.X.
-type: object
-required:
-  - openapi
-  - info
-  - paths
-properties:
-  openapi:
-    type: string
-    pattern: ^3\.0\.\d(-.+)?$
-  info:
-    $ref: '#/definitions/Info'
-  externalDocs:
-    $ref: '#/definitions/ExternalDocumentation'
-  servers:
-    type: array
-    items:
-      $ref: '#/definitions/Server'
-  security:
-    type: array
-    items:
-      $ref: '#/definitions/SecurityRequirement'
-  tags:
-    type: array
-    items:
-      $ref: '#/definitions/Tag'
-    uniqueItems: true
-  paths:
-    $ref: '#/definitions/Paths'
-  components:
-    $ref: '#/definitions/Components'
-patternProperties:
-  '^x-': { }
-additionalProperties: false
-definitions:
-  Reference:
-    type: object
-    required:
-      - $ref
-    patternProperties:
-      '^\$ref$':
-        type: string
-        format: uri-reference
-  Info:
-    type: object
-    required:
-      - title
-      - version
-    properties:
-      title:
-        type: string
-      description:
-        type: string
-      termsOfService:
-        type: string
-        format: uri-reference
-      contact:
-        $ref: '#/definitions/Contact'
-      license:
-        $ref: '#/definitions/License'
-      version:
-        type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  description: A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Swagger API Team
+    email: apiteam@swagger.io
+    url: http://swagger.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://petstore.swagger.io/api
+paths:
+  /pets:
+    get:
+      description: |
+        Returns all pets from the system that the user has access to
+        Nam sed condimentum est. Maecenas tempor sagittis sapien, nec rhoncus sem sagittis sit amet. Aenean at gravida augue, ac iaculis sem. Curabitur odio lorem, ornare eget elementum nec, cursus id lectus. Duis mi turpis, pulvinar ac eros ac, tincidunt varius justo. In hac habitasse platea dictumst. Integer at adipiscing ante, a sagittis ligula. Aenean pharetra tempor ante molestie imperdiet. Vivamus id aliquam diam. Cras quis velit non tortor eleifend sagittis. Praesent at enim pharetra urna volutpat venenatis eget eget mauris. In eleifend fermentum facilisis. Praesent enim enim, gravida ac sodales sed, placerat id erat. Suspendisse lacus dolor, consectetur non augue vel, vehicula interdum libero. Morbi euismod sagittis libero sed lacinia.
 
-
-  Contact:
-    type: object
-    properties:
-      name:
-        type: string
-      url:
-        type: string
-        format: uri-reference
-      email:
-        type: string
-        format: email
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  License:
-    type: object
-    required:
-      - name
-    properties:
-      name:
-        type: string
-      url:
-        type: string
-        format: uri-reference
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Server:
-    type: object
-    required:
-      - url
-    properties:
-      url:
-        type: string
-      description:
-        type: string
-      variables:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/ServerVariable'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  ServerVariable:
-    type: object
-    required:
-      - default
-    properties:
-      enum:
-        type: array
-        items:
-          type: string
-      default:
-        type: string
-      description:
-        type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Components:
-    type: object
-    properties:
-      schemas:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Schema'
-              - $ref: '#/definitions/Reference'
+        Sed tempus felis lobortis leo pulvinar rutrum. Nam mattis velit nisl, eu condimentum ligula luctus nec. Phasellus semper velit eget aliquet faucibus. In a mattis elit. Phasellus vel urna viverra, condimentum lorem id, rhoncus nibh. Ut pellentesque posuere elementum. Sed a varius odio. Morbi rhoncus ligula libero, vel eleifend nunc tristique vitae. Fusce et sem dui. Aenean nec scelerisque tortor. Fusce malesuada accumsan magna vel tempus. Quisque mollis felis eu dolor tristique, sit amet auctor felis gravida. Sed libero lorem, molestie sed nisl in, accumsan tempor nisi. Fusce sollicitudin massa ut lacinia mattis. Sed vel eleifend lorem. Pellentesque vitae felis pretium, pulvinar elit eu, euismod sapien.
+      operationId: findPets
+      parameters:
+        - name: tags
+          in: query
+          description: tags to filter by
+          required: false
+          style: form
+          schema:
+            type: array
+            items:
+              type: string
+        - name: limit
+          in: query
+          description: maximum number of results to return
+          required: false
+          schema:
+            type: integer
+            format: int32
       responses:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Response'
-      parameters:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Parameter'
-      examples:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Example'
-      requestBodies:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/RequestBody'
-      headers:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Header'
-      securitySchemes:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/SecurityScheme'
-      links:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Link'
-      callbacks:
-        type: object
-        patternProperties:
-          '^[a-zA-Z0-9\.\-_]+$':
-            oneOf:
-              - $ref: '#/definitions/Reference'
-              - $ref: '#/definitions/Callback'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Schema:
-    type: object
-    properties:
-      title:
-        type: string
-      multipleOf:
-        type: number
-        minimum: 0
-        exclusiveMinimum: true
-      maximum:
-        type: number
-      exclusiveMaximum:
-        type: boolean
-        default: false
-      minimum:
-        type: number
-      exclusiveMinimum:
-        type: boolean
-        default: false
-      maxLength:
-        type: integer
-        minimum: 0
-      minLength:
-        type: integer
-        minimum: 0
-        default: 0
-      pattern:
-        type: string
-        format: regex
-      maxItems:
-        type: integer
-        minimum: 0
-      minItems:
-        type: integer
-        minimum: 0
-        default: 0
-      uniqueItems:
-        type: boolean
-        default: false
-      maxProperties:
-        type: integer
-        minimum: 0
-      minProperties:
-        type: integer
-        minimum: 0
-        default: 0
-      required:
-        type: array
-        items:
-          type: string
-        minItems: 1
-        uniqueItems: true
-      enum:
-        type: array
-        items: { }
-        minItems: 1
-        uniqueItems: false
-      type:
-        type: string
-        enum:
-          - array
-          - boolean
-          - integer
-          - number
-          - object
-          - string
-      not:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-      allOf:
-        type: array
-        items:
-          oneOf:
-            - $ref: '#/definitions/Schema'
-            - $ref: '#/definitions/Reference'
-      oneOf:
-        type: array
-        items:
-          oneOf:
-            - $ref: '#/definitions/Schema'
-            - $ref: '#/definitions/Reference'
-      anyOf:
-        type: array
-        items:
-          oneOf:
-            - $ref: '#/definitions/Schema'
-            - $ref: '#/definitions/Reference'
-      items:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-      properties:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Schema'
-            - $ref: '#/definitions/Reference'
-      additionalProperties:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-          - type: boolean
-        default: true
-      description:
-        type: string
-      format:
-        type: string
-      default: { }
-      nullable:
-        type: boolean
-        default: false
-      discriminator:
-        $ref: '#/definitions/Discriminator'
-      readOnly:
-        type: boolean
-        default: false
-      writeOnly:
-        type: boolean
-        default: false
-      example: { }
-      externalDocs:
-        $ref: '#/definitions/ExternalDocumentation'
-      deprecated:
-        type: boolean
-        default: false
-      xml:
-        $ref: '#/definitions/XML'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Discriminator:
-    type: object
-    required:
-      - propertyName
-    properties:
-      propertyName:
-        type: string
-      mapping:
-        type: object
-        additionalProperties:
-          type: string
-
-  XML:
-    type: object
-    properties:
-      name:
-        type: string
-      namespace:
-        type: string
-        format: uri
-      prefix:
-        type: string
-      attribute:
-        type: boolean
-        default: false
-      wrapped:
-        type: boolean
-        default: false
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Response:
-    type: object
-    required:
-      - description
-    properties:
-      description:
-        type: string
-      headers:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Header'
-            - $ref: '#/definitions/Reference'
-      content:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/MediaType'
-      links:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Link'
-            - $ref: '#/definitions/Reference'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  MediaType:
-    type: object
-    properties:
-      schema:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-      example: { }
-      examples:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Example'
-            - $ref: '#/definitions/Reference'
-      encoding:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/Encoding'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-    allOf:
-      - $ref: '#/definitions/ExampleXORExamples'
-
-  Example:
-    type: object
-    properties:
-      summary:
-        type: string
-      description:
-        type: string
-      value: { }
-      externalValue:
-        type: string
-        format: uri-reference
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Header:
-    type: object
-    properties:
-      description:
-        type: string
-      required:
-        type: boolean
-        default: false
-      deprecated:
-        type: boolean
-        default: false
-      allowEmptyValue:
-        type: boolean
-        default: false
-      style:
-        type: string
-        enum:
-          - simple
-        default: simple
-      explode:
-        type: boolean
-      allowReserved:
-        type: boolean
-        default: false
-      schema:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-      content:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/MediaType'
-        minProperties: 1
-        maxProperties: 1
-      example: { }
-      examples:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Example'
-            - $ref: '#/definitions/Reference'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-    allOf:
-      - $ref: '#/definitions/ExampleXORExamples'
-      - $ref: '#/definitions/SchemaXORContent'
-
-  Paths:
-    type: object
-    patternProperties:
-      '^\/':
-        $ref: '#/definitions/PathItem'
-      '^x-': { }
-    additionalProperties: false
-
-  PathItem:
-    type: object
-    properties:
-      $ref:
-        type: string
-      summary:
-        type: string
-      description:
-        type: string
-      servers:
-        type: array
-        items:
-          $ref: '#/definitions/Server'
-      parameters:
-        type: array
-        items:
-          oneOf:
-            - $ref: '#/definitions/Parameter'
-            - $ref: '#/definitions/Reference'
-        uniqueItems: true
-    patternProperties:
-      '^(get|put|post|delete|options|head|patch|trace)$':
-        $ref: '#/definitions/Operation'
-      '^x-': { }
-    additionalProperties: false
-
-  Operation:
-    type: object
-    required:
-      - responses
-    properties:
-      tags:
-        type: array
-        items:
-          type: string
-      summary:
-        type: string
-      description:
-        type: string
-      externalDocs:
-        $ref: '#/definitions/ExternalDocumentation'
-      operationId:
-        type: string
-      parameters:
-        type: array
-        items:
-          oneOf:
-            - $ref: '#/definitions/Parameter'
-            - $ref: '#/definitions/Reference'
-        uniqueItems: true
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pet'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      description: Creates a new pet in the store. Duplicates are allowed
+      operationId: addPet
       requestBody:
-        oneOf:
-          - $ref: '#/definitions/RequestBody'
-          - $ref: '#/definitions/Reference'
+        description: Pet to add to the store
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewPet'
       responses:
-        $ref: '#/definitions/Responses'
-      callbacks:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Callback'
-            - $ref: '#/definitions/Reference'
-      deprecated:
-        type: boolean
-        default: false
-      security:
-        type: array
-        items:
-          $ref: '#/definitions/SecurityRequirement'
-      servers:
-        type: array
-        items:
-          $ref: '#/definitions/Server'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Responses:
-    type: object
-    properties:
-      default:
-        oneOf:
-          - $ref: '#/definitions/Response'
-          - $ref: '#/definitions/Reference'
-    patternProperties:
-      '^[1-5](?:\d{2}|XX)$':
-        oneOf:
-          - $ref: '#/definitions/Response'
-          - $ref: '#/definitions/Reference'
-      '^x-': { }
-    minProperties: 1
-    additionalProperties: false
-
-
-  SecurityRequirement:
-    type: object
-    additionalProperties:
-      type: array
-      items:
-        type: string
-
-  Tag:
-    type: object
-    required:
-      - name
-    properties:
-      name:
-        type: string
-      description:
-        type: string
-      externalDocs:
-        $ref: '#/definitions/ExternalDocumentation'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  ExternalDocumentation:
-    type: object
-    required:
-      - url
-    properties:
-      description:
-        type: string
-      url:
-        type: string
-        format: uri-reference
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  ExampleXORExamples:
-    description: Example and examples are mutually exclusive
-    not:
-      required: [ example, examples ]
-
-  SchemaXORContent:
-    description: Schema and content are mutually exclusive, at least one is required
-    not:
-      required: [ schema, content ]
-    oneOf:
-      - required: [ schema ]
-      - required: [ content ]
-        description: Some properties are not allowed if content is present
-        allOf:
-          - not:
-              required: [ style ]
-          - not:
-              required: [ explode ]
-          - not:
-              required: [ allowReserved ]
-          - not:
-              required: [ example ]
-          - not:
-              required: [ examples ]
-
-  Parameter:
-    type: object
-    properties:
-      name:
-        type: string
-      in:
-        type: string
-      description:
-        type: string
-      required:
-        type: boolean
-        default: false
-      deprecated:
-        type: boolean
-        default: false
-      allowEmptyValue:
-        type: boolean
-        default: false
-      style:
-        type: string
-      explode:
-        type: boolean
-      allowReserved:
-        type: boolean
-        default: false
-      schema:
-        oneOf:
-          - $ref: '#/definitions/Schema'
-          - $ref: '#/definitions/Reference'
-      content:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/MediaType'
-        minProperties: 1
-        maxProperties: 1
-      example: { }
-      examples:
-        type: object
-        additionalProperties:
-          oneOf:
-            - $ref: '#/definitions/Example'
-            - $ref: '#/definitions/Reference'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-    required:
-      - name
-      - in
-    allOf:
-      - $ref: '#/definitions/ExampleXORExamples'
-      - $ref: '#/definitions/SchemaXORContent'
-      - $ref: '#/definitions/ParameterLocation'
-
-  ParameterLocation:
-    description: Parameter location
-    oneOf:
-      - description: Parameter in path
-        required:
-          - required
-        properties:
-          in:
-            enum: [ path ]
-          style:
-            enum: [ matrix, label, simple ]
-            default: simple
-          required:
-            enum: [ true ]
-
-      - description: Parameter in query
-        properties:
-          in:
-            enum: [ query ]
-          style:
-            enum: [ form, spaceDelimited, pipeDelimited, deepObject ]
-            default: form
-
-      - description: Parameter in header
-        properties:
-          in:
-            enum: [ header ]
-          style:
-            enum: [ simple ]
-            default: simple
-
-      - description: Parameter in cookie
-        properties:
-          in:
-            enum: [ cookie ]
-          style:
-            enum: [ form ]
-            default: form
-
-  RequestBody:
-    type: object
-    required:
-      - content
-    properties:
-      description:
-        type: string
-      content:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/MediaType'
-      required:
-        type: boolean
-        default: false
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  SecurityScheme:
-    oneOf:
-      - $ref: '#/definitions/APIKeySecurityScheme'
-      - $ref: '#/definitions/HTTPSecurityScheme'
-      - $ref: '#/definitions/OAuth2SecurityScheme'
-      - $ref: '#/definitions/OpenIdConnectSecurityScheme'
-
-  APIKeySecurityScheme:
-    type: object
-    required:
-      - type
-      - name
-      - in
-    properties:
-      type:
-        type: string
-        enum:
-          - apiKey
-      name:
-        type: string
-      in:
-        type: string
-        enum:
-          - header
-          - query
-          - cookie
-      description:
-        type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  HTTPSecurityScheme:
-    type: object
-    required:
-      - scheme
-      - type
-    properties:
-      scheme:
-        type: string
-      bearerFormat:
-        type: string
-      description:
-        type: string
-      type:
-        type: string
-        enum:
-          - http
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-    oneOf:
-      - description: Bearer
-        properties:
-          scheme:
-            enum: [ bearer ]
-
-      - description: Non Bearer
-        not:
-          required: [ bearerFormat ]
-        properties:
-          scheme:
-            not:
-              enum: [ bearer ]
-
-  OAuth2SecurityScheme:
-    type: object
-    required:
-      - type
-      - flows
-    properties:
-      type:
-        type: string
-        enum:
-          - oauth2
-      flows:
-        $ref: '#/definitions/OAuthFlows'
-      description:
-        type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  OpenIdConnectSecurityScheme:
-    type: object
-    required:
-      - type
-      - openIdConnectUrl
-    properties:
-      type:
-        type: string
-        enum:
-          - openIdConnect
-      openIdConnectUrl:
-        type: string
-        format: uri-reference
-      description:
-        type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  OAuthFlows:
-    type: object
-    properties:
-      implicit:
-        $ref: '#/definitions/ImplicitOAuthFlow'
-      password:
-        $ref: '#/definitions/PasswordOAuthFlow'
-      clientCredentials:
-        $ref: '#/definitions/ClientCredentialsFlow'
-      authorizationCode:
-        $ref: '#/definitions/AuthorizationCodeOAuthFlow'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  ImplicitOAuthFlow:
-    type: object
-    required:
-      - authorizationUrl
-      - scopes
-    properties:
-      authorizationUrl:
-        type: string
-        format: uri-reference
-      refreshUrl:
-        type: string
-        format: uri-reference
-      scopes:
-        type: object
-        additionalProperties:
-          type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  PasswordOAuthFlow:
-    type: object
-    required:
-      - tokenUrl
-    properties:
-      tokenUrl:
-        type: string
-        format: uri-reference
-      refreshUrl:
-        type: string
-        format: uri-reference
-      scopes:
-        type: object
-        additionalProperties:
-          type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  ClientCredentialsFlow:
-    type: object
-    required:
-      - tokenUrl
-    properties:
-      tokenUrl:
-        type: string
-        format: uri-reference
-      refreshUrl:
-        type: string
-        format: uri-reference
-      scopes:
-        type: object
-        additionalProperties:
-          type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  AuthorizationCodeOAuthFlow:
-    type: object
-    required:
-      - authorizationUrl
-      - tokenUrl
-    properties:
-      authorizationUrl:
-        type: string
-        format: uri-reference
-      tokenUrl:
-        type: string
-        format: uri-reference
-      refreshUrl:
-        type: string
-        format: uri-reference
-      scopes:
-        type: object
-        additionalProperties:
-          type: string
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-
-  Link:
-    type: object
-    properties:
-      operationId:
-        type: string
-      operationRef:
-        type: string
-        format: uri-reference
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pets/{id}:
+    get:
+      description: Returns a user based on a single ID, if the user does not have access to the pet
+      operationId: find pet by id
       parameters:
-        type: object
-        additionalProperties: { }
-      requestBody: { }
-      description:
-        type: string
-      server:
-        $ref: '#/definitions/Server'
-    patternProperties:
-      '^x-': { }
-    additionalProperties: false
-    not:
-      description: Operation Id and Operation Ref are mutually exclusive
-      required: [ operationId, operationRef ]
+        - name: id
+          in: path
+          description: ID of pet to fetch
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: pet response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      description: deletes a single pet based on the ID supplied
+      operationId: deletePet
+      parameters:
+        - name: id
+          in: path
+          description: ID of pet to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: pet deleted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Pet:
+      allOf:
+        - $ref: '#/components/schemas/NewPet'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: integer
+              format: int64
 
-  Callback:
-    type: object
-    additionalProperties:
-      $ref: '#/definitions/PathItem'
-    patternProperties:
-      '^x-': { }
+    NewPet:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
 
-  Encoding:
-    type: object
-    properties:
-      contentType:
-        type: string
-      headers:
-        type: object
-        additionalProperties:
-          $ref: '#/definitions/Header'
-      style:
-        type: string
-        enum:
-          - form
-          - spaceDelimited
-          - pipeDelimited
-          - deepObject
-      explode:
-        type: boolean
-      allowReserved:
-        type: boolean
-        default: false
-    additionalProperties: false
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
