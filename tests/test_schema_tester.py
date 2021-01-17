@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import Callable
 
 import pytest
@@ -20,8 +21,8 @@ def _mock_schema(schema) -> Callable:
     return _mocked
 
 
-def test_get_response_schema_section_success_scenario():
-    schema = tester.loader.get_schema()
+def test_validate_response_success_scenario():
+    schema = deepcopy(tester.loader.get_schema())
 
     for path, path_object in schema['paths'].items():
         for method, method_object in path_object.items():
@@ -29,12 +30,12 @@ def test_get_response_schema_section_success_scenario():
                 if hasattr(responses_object, 'content'):
                     schema_section = responses_object['content']['application/json']['schema']
                     response = response_factory(schema_section, path, method, status_code)
-                    assert tester.get_response_schema_section(response) == schema_section
-                    assert tester.get_response_schema_section(response) == schema_section
+                    assert tester.validate_response(response) == schema_section
+                    assert tester.validate_response(response) == schema_section
 
 
-def test_get_response_schema_section_failure_scenario_undocumented_path(monkeypatch):
-    schema = tester.loader.get_schema()
+def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
     schema_section = schema['paths'][parameterized_path][method]['responses'][status]['content']['application/json'][
         'schema'
     ]
@@ -43,28 +44,36 @@ def test_get_response_schema_section_failure_scenario_undocumented_path(monkeypa
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
-        match='Error: Unsuccessfully tried to index the OpenAPI schema by `/api/{version}/cars/correct`.',
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.',
     ):
-        tester.get_response_schema_section(response)
+        tester.validate_response(response)
 
 
-#
-# def test_failed_index_method(monkeypatch):
-#     base = BaseSchemaLoader()
-#     base.set_schema(schema_object)
-#     monkeypatch.setattr(base, 'get_route', MockRoute)
-#     with pytest.raises(
-#         UndocumentedSchemaSectionError,
-#         match='Failed indexing schema.\n\nError: Unsuccessfully tried to index the OpenAPI schema by `patch`. \n\nAvailable methods include: GET, POST, PUT, DELETE.',
-#     ):
-#         base.get_response_schema_section(route=route, method='patch', status_code=code)
-#
-#
-# def test_failed_index_status(monkeypatch):
-#     base = BaseSchemaLoader()
-#     base.set_schema(schema_object)
-#     monkeypatch.setattr(base, 'get_route', MockRoute)
-#     with pytest.raises(
-#         UndocumentedSchemaSectionError, match='Documented responses include: 200.  Is the `400` response documented?'
-#     ):
-#         base.get_response_schema_section(route=route, method=method, status_code='400')
+def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    schema_section = schema['paths'][parameterized_path][method]['responses'][status]['content']['application/json'][
+        'schema'
+    ]
+    del schema['paths'][parameterized_path][method]
+    monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
+    response = response_factory(schema_section, de_parameterized_path, method, status)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.',
+    ):
+        tester.validate_response(response)
+
+
+def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    schema_section = schema['paths'][parameterized_path][method]['responses'][status]['content']['application/json'][
+        'schema'
+    ]
+    del schema['paths'][parameterized_path][method]['responses'][status]
+    monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
+    response = response_factory(schema_section, de_parameterized_path, method, status)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
+    ):
+        tester.validate_response(response)

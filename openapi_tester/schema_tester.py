@@ -80,7 +80,6 @@ class SchemaTester:
             return schema[key]
         except KeyError:
             raise UndocumentedSchemaSectionError(
-                f'Failed indexing schema.\n\n'
                 f'Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}'
             )
 
