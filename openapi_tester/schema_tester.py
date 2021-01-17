@@ -30,14 +30,14 @@ class SchemaTester:
         self.case_tester = case_tester
         self.ignore_case = ignore_case or []
 
-        if 'drf_spectacular' in settings.INSTALLED_APPS:
+        if schema_file_path is not None:
+            self.loader = StaticSchemaLoader(schema_file_path)  # type: ignore
+        elif 'drf_spectacular' in settings.INSTALLED_APPS:
             self.loader = DrfSpectacularSchemaLoader()  # type: ignore
         elif 'drf_yasg' in settings.INSTALLED_APPS:
             self.loader = DrfYasgSchemaLoader()  # type: ignore
-        elif schema_file_path is not None:
-            self.loader = StaticSchemaLoader(schema_file_path)  # type: ignore
         else:
-            raise ImproperlyConfigured('schema_file_path is a required parameter when loading static OpenAPI schemas.')
+            raise ImproperlyConfigured('No loader is configured.')
 
     def _test_key_casing(
         self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
@@ -46,6 +46,14 @@ class SchemaTester:
         ignore_case = [*self.ignore_case, *(ignore_case or [])]
         if tester and key not in ignore_case:
             tester(key)
+
+    @staticmethod
+    def _merge_all_of(schema: dict) -> dict:
+        properties = {}
+        for entry in schema['allOf']:
+            for key, value in entry['properties'].items():
+                properties[key] = value
+        return properties
 
     @staticmethod
     def _check_openapi_type(schema_type: str, value: Any) -> bool:

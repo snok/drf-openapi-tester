@@ -40,8 +40,12 @@ class SchemaToPythonConverter:
         parsed_schema = {}
         if 'properties' in schema_object:
             properties = schema_object['properties']
-        else:
+        elif 'additionalProperties' in schema_object:
             properties = {'': schema_object['additionalProperties']}
+        elif 'allOf' in schema_object:
+            from openapi_tester.schema_tester import SchemaTester
+
+            properties = SchemaTester._merge_all_of(schema_object)
         for key, value in properties.items():
             value_type = value['type']
             if 'example' in value:

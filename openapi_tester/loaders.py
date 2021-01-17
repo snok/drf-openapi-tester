@@ -13,9 +13,8 @@ from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
+from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
 from openapi_tester.exceptions import OpenAPISchemaError
-
-PARAMETERS_PATTERN = re.compile(r'({[\w]+})')
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -82,9 +81,11 @@ class BaseSchemaLoader:
     def de_reference_schema(self, schema: dict) -> dict:
         try:
             url = schema['basePath'] if 'basePath' in schema else self.base_path
+            recursion_handler = handle_recursion_limit(schema)
             resolver = RefResolver(
                 schema,
-                recursion_limit_handler=handle_recursion_limit(schema),
+                recursion_limit_handler=recursion_handler,
+                recursion_limit=10,
                 url=url,
             )
             resolver.resolve_references()
@@ -122,7 +123,7 @@ class BaseSchemaLoader:
         Returns the appropriate endpoint route.
         """
         path, resolved_path = self.resolve_path(de_parameterized_path)
-        for parameter in list(re.findall(PARAMETERS_PATTERN, path)):
+        for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
             parameter_name = parameter.replace('{', '').replace('}', '')
             path = path.replace(resolved_path.kwargs[parameter_name], parameter_name)
         return path
