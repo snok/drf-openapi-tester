@@ -110,12 +110,12 @@ class SchemaTester:
         status_code = str(response.status_code)
 
         schema = self.loader.get_schema()
-        route = self.loader.get_route(path)
+        parameterized_path = self.loader.parameterize_path(path)
 
         paths_object = self._get_key_value(schema=schema, key='paths')
         route_object = self._get_key_value(
             schema=paths_object,
-            key=route,
+            key=parameterized_path,
             error_addon=self._route_error_text_addon(paths_object.keys()),
         )
         method_object = self._get_key_value(

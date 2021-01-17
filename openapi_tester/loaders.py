@@ -3,7 +3,7 @@ import json
 import logging
 import re
 from json import dumps, loads
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 from urllib.parse import ParseResult
 
 import yaml
@@ -82,7 +82,7 @@ class BaseSchemaLoader:
             self.set_schema(self.load_schema())
         return self.schema  # type: ignore
 
-    def dereference_schema(self, schema: dict) -> dict:
+    def de_reference_schema(self, schema: dict) -> dict:
         try:
             url = schema['basePath'] if 'basePath' in schema else self.base_path
             resolver = RefResolver(
@@ -94,6 +94,15 @@ class BaseSchemaLoader:
             return resolver.specs
         except ResolutionError as e:
             raise OpenAPISchemaError('infinite recursion error') from e
+
+    def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
+        normalized_paths: Dict[str, dict] = {}
+        for key, value in schema['paths'].items():
+            if '{' in key:
+                normalized_paths[key] = value
+            else:
+                normalized_paths[self.parameterize_path(key)] = value
+        return {**schema, 'paths': normalized_paths}
 
     @staticmethod
     def validate_schema(schema: dict):
@@ -107,18 +116,15 @@ class BaseSchemaLoader:
         """
         Sets self.schema and self.original_schema.
         """
-        dereferenced_schema = self.dereference_schema(schema)
-        self.validate_schema(dereferenced_schema)
-        self.schema = self.dereference_schema(dereferenced_schema)
+        de_referenced_schema = self.de_reference_schema(schema)
+        self.validate_schema(de_referenced_schema)
+        self.schema = self.normalize_schema_paths(de_referenced_schema)
 
-    def get_route(self, route: str) -> str:
+    def parameterize_path(self, de_parameterized_path: str) -> str:
         """
         Returns the appropriate endpoint route.
-
-        This method was primarily implemented because drf-yasg has its own route style, and so this method
-        lets loader classes overwrite and add custom route conversion logic if required.
         """
-        path, resolved_path = self.resolve_path(route)
+        path, resolved_path = self.resolve_path(de_parameterized_path)
         for parameter in list(re.findall(PARAMETERS_PATTERN, path)):
             parameter_name = parameter.replace('{', '').replace('}', '')
             path = path.replace(resolved_path.kwargs[parameter_name], parameter_name)
@@ -251,8 +257,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
     """
     Loads OpenAPI schema from a static file.
     """
-
-    is_static_loader = True
 
     def __init__(self, path: str):
         super().__init__()
