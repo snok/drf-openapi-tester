@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
-from openapi_tester.exceptions import CaseError, DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
 
@@ -17,7 +17,7 @@ class SchemaTester:
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
-        ignored_keys: Optional[List[str]] = None,
+        ignore_case: Optional[List[str]] = None,
         schema_file_path: Optional[str] = None,
     ) -> None:
         """
@@ -28,7 +28,7 @@ class SchemaTester:
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
-        self.ignored_keys = ignored_keys or []
+        self.ignore_case = ignore_case or []
 
         if 'drf_spectacular' in settings.INSTALLED_APPS:
             self.loader = DrfSpectacularSchemaLoader()  # type: ignore
@@ -43,8 +43,8 @@ class SchemaTester:
         self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
     ) -> None:
         tester = case_tester or getattr(self, 'case_tester', None)
-        ignored_keys = [*self.ignored_keys, *(ignore_case or [])]
-        if tester and key not in ignored_keys:
+        ignore_case = [*self.ignore_case, *(ignore_case or [])]
+        if tester and key not in ignore_case:
             tester(key)
 
     @staticmethod
@@ -201,7 +201,11 @@ class SchemaTester:
                 schema_value = properties[schema_key]
                 response_value = data[schema_key]
                 self.test_schema_section(
-                    schema_section=schema_value, data=response_value, reference=f'{reference}.dict:key:{schema_key}'
+                    schema_section=schema_value,
+                    data=response_value,
+                    reference=f'{reference}.dict:key:{schema_key}',
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
                 )
         elif schema_section_type == 'array':
             items = schema_section['items']
@@ -214,7 +218,13 @@ class SchemaTester:
                     hint='Document the contents of the empty dictionary to match the response object.',
                 )
             for datum in data:
-                self.test_schema_section(schema_section=items, data=datum, reference=f'{reference}.list')
+                self.test_schema_section(
+                    schema_section=items,
+                    data=datum,
+                    reference=f'{reference}.list',
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
 
     @staticmethod
     def is_nullable(schema_item: dict) -> bool:
@@ -243,30 +253,24 @@ class SchemaTester:
         """
         Verifies that an OpenAPI schema definition matches an API response.
 
-        It inspects the schema recursively, and verifies that the schema matches the structure of the response at every level.
-
         :param response: The HTTP response
-        :param method: The HTTP method ('get', 'put', 'post', ...)
-        :param route: The relative path of the endpoint which sent the response (must be resolvable)
-        :keyword ignore_case: List of strings to ignore when testing the case of response keys
-        :raises: ``openapi_tester.exceptions.DocumentationError`` if we find inconsistencies in the API response and schema.
-
-                 ``openapi_tester.exceptions.CaseError`` if we find case errors.
+        :param case_tester: Optional Callable that checks a string's casing
+        :param ignore_case: List of strings to ignore when testing the case of response keys
+        :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
+                 ``openapi_tester.exceptions.CaseError`` for case errors.
         """
+
         if not isinstance(response, Response):
             raise ValueError('expected response to be an instance of DRF Response')
 
-        try:
-            response_schema = self.get_response_schema_section(response)
-            self.test_schema_section(
-                schema_section=response_schema,
-                data=response.json(),
-                reference='init',
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
-        except (DocumentationError, CaseError) as e:
-            raise AssertionError from e
+        response_schema = self.get_response_schema_section(response)
+        self.test_schema_section(
+            schema_section=response_schema,
+            data=response.json(),
+            reference='init',
+            case_tester=case_tester,
+            ignore_case=ignore_case,
+        )
 
     def test_case(self) -> APITestCase:
         validate_response = self.validate_response
@@ -279,6 +283,6 @@ class SchemaTester:
             """
             Assert response matches the OpenAPI spec.
             """
-            validate_response(response=response, ignore_case=ignore_case)
+            validate_response(response=response, case_tester=case_tester, ignore_case=ignore_case)
 
         return cast(APITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))

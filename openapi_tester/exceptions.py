@@ -4,7 +4,7 @@ from typing import Any
 from openapi_tester.schema_converter import SchemaToPythonConverter
 
 
-class DocumentationError(Exception):
+class DocumentationError(AssertionError):
     """
     Custom exception raised when package tests fail.
     """
@@ -57,7 +57,7 @@ class DocumentationError(Exception):
         return ''.join(msg)
 
 
-class CaseError(Exception):
+class CaseError(AssertionError):
     """
     Custom exception raised when items are not cased correctly.
     """
@@ -74,7 +74,7 @@ class OpenAPISchemaError(Exception):
     pass
 
 
-class UndocumentedSchemaSectionError(Exception):
+class UndocumentedSchemaSectionError(AssertionError):
     """
     Custom exception raised when we cannot find a schema section.
     """

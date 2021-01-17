@@ -3,7 +3,7 @@ from typing import Callable
 
 import pytest
 
-from openapi_tester import UndocumentedSchemaSectionError
+from openapi_tester import CaseError, UndocumentedSchemaSectionError, is_pascal_case
 from openapi_tester.schema_tester import SchemaTester
 from tests.utils import response_factory
 
@@ -77,3 +77,31 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
         match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
     ):
         tester.validate_response(response)
+
+
+def test_validate_response_global_case_tester(client):
+    tester_with_case_tester = SchemaTester(case_tester=is_pascal_case)
+    response = client.get(de_parameterized_path)
+    with pytest.raises(CaseError, match='The response key `name` is not properly PascalCased. Expected value: Name'):
+        tester_with_case_tester.validate_response(response=response)
+
+
+def test_validate_response_global_ignored_case(client):
+    tester_with_case_tester = SchemaTester(
+        case_tester=is_pascal_case, ignore_case=['name', 'color', 'height', 'width', 'length']
+    )
+    response = client.get(de_parameterized_path)
+    tester_with_case_tester.validate_response(response=response)
+
+
+def test_validate_response_passed_in_case_tester(client):
+    response = client.get(de_parameterized_path)
+    with pytest.raises(CaseError, match='The response key `name` is not properly PascalCased. Expected value: Name'):
+        tester.validate_response(response=response, case_tester=is_pascal_case)
+
+
+def test_validate_response_passed_in_ignored_case(client):
+    response = client.get(de_parameterized_path)
+    tester.validate_response(
+        response=response, case_tester=is_pascal_case, ignore_case=['name', 'color', 'height', 'width', 'length']
+    )
