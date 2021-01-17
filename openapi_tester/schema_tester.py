@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Callable, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
@@ -10,8 +9,6 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 from openapi_tester.exceptions import CaseError, DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-
-logger = logging.getLogger('openapi_tester')
 
 
 class SchemaTester:
@@ -42,12 +39,13 @@ class SchemaTester:
         else:
             raise ImproperlyConfigured('schema_file_path is a required parameter when loading static OpenAPI schemas.')
 
-    def _test_key_casing(self, key: str) -> None:
-        if self.case_tester:
-            if key not in self.ignored_keys:
-                self.case_tester(key)
-            else:
-                logger.debug('Skipping case check for key `%s`', key)
+    def _test_key_casing(
+        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
+    ) -> None:
+        tester = case_tester or getattr(self, 'case_tester', None)
+        ignored_keys = [*self.ignored_keys, *(ignore_case or [])]
+        if tester and key not in ignored_keys:
+            tester(key)
 
     @staticmethod
     def _check_openapi_type(schema_type: str, value: Any) -> bool:
@@ -76,7 +74,7 @@ class SchemaTester:
         :raises: IndexError
         """
         try:
-            logger.debug('Indexing schema by key `%s`', key)
+
             return schema[key]
         except KeyError:
             raise UndocumentedSchemaSectionError(
@@ -130,13 +128,20 @@ class SchemaTester:
         json_object = self._get_key_value(schema=content_object, key='application/json')
         return self._get_key_value(schema=json_object, key='schema')
 
-    def test_schema_section(self, schema_section: dict, data: Any, reference: str) -> None:
+    def test_schema_section(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ) -> None:
         """
         This method orchestrates the testing of a schema section
         """
 
         schema_section_type = schema_section['type']
-        logger.debug(f'{reference} --> {schema_section_type}')
+
         if data is None and self.is_nullable(schema_section):
             return
         if data is None or not self._check_openapi_type(schema_section_type, data):
@@ -156,7 +161,7 @@ class SchemaTester:
             schema_section_keys = properties.keys()
 
             if len(schema_section_keys) != len(response_keys):
-                logger.debug('The number of schema elements doesnt match the number of data elements')
+
                 if len(response_keys) > len(schema_section_keys):
                     missing_keys = ', '.join(f'`{key}`' for key in list(set(response_keys) - set(schema_section_keys)))
                     hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
@@ -174,8 +179,8 @@ class SchemaTester:
                 )
 
             for schema_key, response_key in zip(schema_section_keys, response_keys):
-                self._test_key_casing(schema_key)
-                self._test_key_casing(response_key)
+                self._test_key_casing(schema_key, case_tester, ignore_case)
+                self._test_key_casing(response_key, case_tester, ignore_case)
                 if schema_key not in response_keys:
                     raise DocumentationError(
                         message=f'Schema key `{schema_key}` was not found in the tested data.',
@@ -209,8 +214,6 @@ class SchemaTester:
                     hint='Document the contents of the empty dictionary to match the response object.',
                 )
             for datum in data:
-                items_type = items['type']
-                logger.debug(f'test_array --> {items_type}')
                 self.test_schema_section(schema_section=items, data=datum, reference=f'{reference}.list')
 
     @staticmethod
@@ -231,7 +234,12 @@ class SchemaTester:
             for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
         )
 
-    def validate_response(self, response: td.Response):
+    def validate_response(
+        self,
+        response: td.Response,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ):
         """
         Verifies that an OpenAPI schema definition matches an API response.
 
@@ -250,17 +258,27 @@ class SchemaTester:
 
         try:
             response_schema = self.get_response_schema_section(response)
-            self.test_schema_section(schema_section=response_schema, data=response.json(), reference='init')
+            self.test_schema_section(
+                schema_section=response_schema,
+                data=response.json(),
+                reference='init',
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
         except (DocumentationError, CaseError) as e:
             raise AssertionError from e
 
     def test_case(self) -> APITestCase:
         validate_response = self.validate_response
 
-        def assert_response(response: td.Response) -> None:
+        def assert_response(
+            response: td.Response,
+            case_tester: Optional[Callable[[str], None]] = None,
+            ignore_case: Optional[List[str]] = None,
+        ) -> None:
             """
             Assert response matches the OpenAPI spec.
             """
-            validate_response(response=response)
+            validate_response(response=response, ignore_case=ignore_case)
 
         return cast(APITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))

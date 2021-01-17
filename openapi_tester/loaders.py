@@ -1,6 +1,5 @@
 import difflib
 import json
-import logging
 import re
 from json import dumps, loads
 from typing import Callable, Dict, List, Optional
@@ -15,8 +14,6 @@ from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
 from openapi_tester.exceptions import OpenAPISchemaError
-
-logger = logging.getLogger('openapi_tester')
 
 PARAMETERS_PATTERN = re.compile(r'({[\w]+})')
 
@@ -142,17 +139,14 @@ class BaseSchemaLoader:
         Resolves a Django path.
         """
         try:
-            logger.debug('Resolving path.')
             if '?' in endpoint_path:
                 endpoint_path = endpoint_path.split('?')[0]
             if endpoint_path == '' or endpoint_path[0] != '/':
-                logger.debug('Adding leading `/` to provided path')
                 endpoint_path = '/' + endpoint_path
             if len(endpoint_path) > 2 and endpoint_path[-1] == '/':
                 endpoint_path = endpoint_path[:-1]
             try:
                 resolved_route = resolve(endpoint_path)
-                logger.debug('Resolved %s successfully', endpoint_path)
             except Resolver404:
                 resolved_route = resolve(endpoint_path + '/')
                 endpoint_path += '/'
@@ -165,7 +159,6 @@ class BaseSchemaLoader:
                 endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(str(value)) :]
             return endpoint_path, resolved_route
         except Resolver404:
-            logger.warning('URL `%s` did not resolve successfully', endpoint_path)
             paths = self.get_endpoint_paths()
             closest_matches = ''.join(f'\n- {i}' for i in difflib.get_close_matches(endpoint_path, paths))
             if closest_matches:
@@ -187,7 +180,6 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         from drf_yasg.generators import OpenAPISchemaGenerator
         from drf_yasg.openapi import Info
 
-        logger.debug('Initialized drf-yasg loader schema')
         self.schema_generator = OpenAPISchemaGenerator(info=Info(title='', default_version=''))
 
     def load_schema(self) -> dict:
@@ -196,7 +188,6 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         """
         odict_schema = self.schema_generator.get_schema(None, True)
         schema = loads(dumps(odict_schema.as_odict()))
-        logger.debug('Successfully loaded schema')
         return schema
 
     def get_path_prefix(self) -> str:
@@ -228,7 +219,6 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         from drf_spectacular.generators import SchemaGenerator
 
         self.schema_generator = SchemaGenerator()
-        logger.debug('Initialized drf-spectacular loader schema')
 
     def load_schema(self) -> dict:
         """
@@ -260,7 +250,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
     def __init__(self, path: str):
         super().__init__()
         self.path = path
-        logger.debug('Initialized static loader schema')
 
     def load_schema(self) -> dict:
         """
@@ -270,14 +259,12 @@ class StaticSchemaLoader(BaseSchemaLoader):
         :raises: ImproperlyConfigured
         """
         try:
-            logger.debug('Fetching static schema from %s', self.path)
             with open(self.path) as f:
                 content = f.read()
                 if '.json' in self.path:
                     schema = json.loads(content)
                 else:
                     schema = yaml.load(content, Loader=yaml.FullLoader)
-            logger.debug('Successfully loaded schema')
             return schema
         except Exception as e:
             raise ImproperlyConfigured(

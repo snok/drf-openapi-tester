@@ -15,11 +15,11 @@ class SchemaToPythonConverter:
             self.faker = Faker()
         schema_type = schema['type']
         if schema_type == 'array':
-            self.result = self._iterate_schema_list(schema)
+            self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == 'object':
-            self.result = self._iterate_schema_dict(schema)
+            self.result = self._iterate_schema_dict(schema)  # type :ignore
         else:
-            self.result = self._to_mock_value(schema_type)
+            self.result = self._to_mock_value(schema_type)  # type :ignore
 
     def _to_mock_value(self, schema_type: Any) -> Any:
         if hasattr(self, 'faker'):
@@ -36,7 +36,7 @@ class SchemaToPythonConverter:
         else:
             return OPENAPI_PYTHON_MAPPING[schema_type]
 
-    def _iterate_schema_dict(self, schema_object: dict) -> dict:
+    def _iterate_schema_dict(self, schema_object: Any) -> Any:
         parsed_schema = {}
         if 'properties' in schema_object:
             properties = schema_object['properties']
@@ -54,14 +54,14 @@ class SchemaToPythonConverter:
                 parsed_schema[key] = self._to_mock_value(value['type'])
         return parsed_schema
 
-    def _iterate_schema_list(self, schema_array: dict) -> list:
+    def _iterate_schema_list(self, schema_array: Any) -> Any:
         parsed_items = []
         raw_items = schema_array['items']
         items_type = raw_items['type']
         if items_type == 'object':
-            parsed_items.append(self._iterate_schema_dict(raw_items))
+            parsed_items.append(self._iterate_schema_dict(raw_items))  # type :ignore
         elif items_type == 'array':
-            parsed_items.append(self._iterate_schema_list(raw_items))
+            parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
         else:
-            parsed_items.append(self._to_mock_value(raw_items['type']))
+            parsed_items.append(self._to_mock_value(raw_items['type']))  # type :ignore
         return parsed_items

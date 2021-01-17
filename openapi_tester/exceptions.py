@@ -43,18 +43,18 @@ class DocumentationError(Exception):
         Formats and returns a standardized error message for easy debugging.
 
         """
-        message = [
+        msg = [
             f'Error: {message}\n\n',
             f'Expected: {json.dumps(example_item)}\n\n',
             f'Received: {json.dumps(response)}\n\n',
         ]
         if hint:
-            message += [f'Hint: {hint}\n\n']
+            msg += [f'Hint: {hint}\n\n']
         if reference:
-            message += [
+            msg += [
                 f'Sequence: {reference}\n',
             ]
-        return ''.join(message)
+        return ''.join(msg)
 
 
 class CaseError(Exception):

@@ -1,21 +1,16 @@
-import logging
 from typing import Any, Callable
 
 from inflection import camelize, dasherize, underscore
 
 from openapi_tester.exceptions import CaseError
 
-logger = logging.getLogger('openapi_tester')
 
-
-def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str, str], None]:
+def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str], None]:
     """ factory function for creating testers """
 
     def tester(key: str) -> None:
         stripped = key.strip()
-        logger.debug(f'Verifying that key `{stripped}` is properly {casing}')
         if len(stripped) and not handler(stripped) == stripped:
-            logger.error(f'{stripped} is not properly {casing}')
             raise CaseError(key=key, case=casing, expected=handler(key))
 
     return tester
