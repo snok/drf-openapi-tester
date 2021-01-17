@@ -1,7 +1,7 @@
 import json
 import re
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import yaml
 from django.urls import path
@@ -32,14 +32,12 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
     return response
 
 
-def url_conf_factory(schema: dict) -> List[RoutePattern]:
-    urlpatterns = []
+def url_pattern_factory(schema: dict) -> Tuple[str, RoutePattern]:
     for url_fragment, path_object in schema['paths'].items():
-        parameterized_fragment = url_fragment.replace('{', '<').replace('}', '>')
         for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, url_fragment)):
-            parameterized_fragment = parameterized_fragment.replace(parameter, f'{parameter}:{parameter}')
-        urlpatterns.append(path(parameterized_fragment, APIView.as_view()))
-    return urlpatterns
+            parameter_name = parameter.replace('{', '').replace('}', '')
+            url_fragment = url_fragment.replace(parameter, f"<{parameter_name}:str>")
+        yield url_fragment, path(url_fragment, APIView.as_view())
 
 
 def iterate_schema(schema: dict) -> Tuple[Optional[dict], Optional[Response]]:

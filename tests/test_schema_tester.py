@@ -3,17 +3,14 @@ from typing import Callable
 from unittest import mock
 
 import pytest
-from django.urls import clear_url_caches
-
 from openapi_tester import (
-    BaseSchemaLoader,
     CaseError,
     DocumentationError,
     UndocumentedSchemaSectionError,
     is_pascal_case,
 )
 from openapi_tester.schema_tester import SchemaTester
-from tests.utils import CURRENT_PATH, iterate_schema, load_schema, response_factory, url_conf_factory
+from tests.utils import CURRENT_PATH, iterate_schema, load_schema, response_factory, url_pattern_factory
 
 tester = SchemaTester()
 parameterized_path = '/api/{version}/cars/correct'
@@ -108,7 +105,8 @@ def test_validate_response_failure_scenario_with_predefined_data(client):
         assert response.status_code == 200
         assert response.json() == item['expected_response']
         with pytest.raises(
-            DocumentationError, match='Error: The following properties are missing from the tested data: length, width'
+                DocumentationError,
+                match='Error: The following properties are missing from the tested data: length, width'
         ):
             tester.validate_response(response)
 
@@ -122,8 +120,8 @@ def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-        UndocumentedSchemaSectionError,
-        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.',
+            UndocumentedSchemaSectionError,
+            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.',
     ):
         tester.validate_response(response)
 
@@ -137,8 +135,8 @@ def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-        UndocumentedSchemaSectionError,
-        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.',
+            UndocumentedSchemaSectionError,
+            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.',
     ):
         tester.validate_response(response)
 
@@ -152,8 +150,8 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-        UndocumentedSchemaSectionError,
-        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
+            UndocumentedSchemaSectionError,
+            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
     ):
         tester.validate_response(response)
 
@@ -186,14 +184,19 @@ def test_validate_response_passed_in_ignored_case(client):
     )
 
 
-def test_reference_schema():
-    base_loader = BaseSchemaLoader()
+@mock.patch('django.urls.base.resolve')
+def test_reference_schema(mock_resolve):
+    drf_spectacular_tester = SchemaTester()
     for schema_file_name in ['openapi_v2_reference_schema.yaml', 'openapi_v3_reference_schema.yaml']:
         loaded_schema = load_schema(schema_file_name)
-        de_referenced_schema = base_loader.de_reference_schema(loaded_schema)
-        clear_url_caches()
-        with mock.patch('test_project.urls.urlpatterns', url_conf_factory(de_referenced_schema)):
-            for schema_section, response in iterate_schema(de_referenced_schema):
+        de_referenced_schema = drf_spectacular_tester.loader.de_reference_schema(loaded_schema)
+        with mock.patch("openapi_tester.loaders.DrfSpectacularSchemaLoader.load_schema", lambda _: loaded_schema):
+            for url_fragment, path_object in url_pattern_factory(de_referenced_schema):
+                mock_resolve.return_value = path_object
                 if schema_section and response:
                     tester.validate_response(response)
                     assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
+
+
+
+
