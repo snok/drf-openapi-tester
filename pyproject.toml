@@ -44,25 +44,26 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
-prance = "^0.20.0"
-openapi-spec-validator = "^0.2.9"
 djangorestframework = "*"
 inflection = "^0.5.1"
+openapi-spec-validator = "^0.2.9"
+prance = "^0.20.0"
+python = "^3.6.1"
 pyYAML = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
-drf-yasg = "^1.17.1"
 django = "^3.0"
+drf-spectacular = "^0.12.0"
+drf-yasg = "^1.17.1"
+Faker = "^5.6.1"
+flake8 = "*"
+ipython = "^7.16.1"
+pre-commit = "^2.9.3"
 pytest = "^6.2"
 pytest-cov = "2.10.1"
 pytest-django = "^4.1.0"
-flake8 = "*"
 sphinx = "^3.4.3"
 sphinx_rtd_theme = "^0.5.0"
-drf-spectacular = "^0.12.0"
-ipython = "^7.16.1"
-pre-commit = "^2.9.3"
 
 [tool.black]
 line-length = 120
@@ -74,7 +75,7 @@ profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
 line_length = 120
-known_third_party = ["django", "drf_spectacular", "drf_yasg", "inflection", "openapi_spec_validator", "prance", "pytest", "requests", "rest_framework", "yaml"]
+known_third_party = ["_temp", "django", "drf_spectacular", "drf_yasg", "inflection", "openapi_spec_validator", "prance", "pytest", "requests", "rest_framework", "yaml"]
 known_first_party = ["openapi_tester"]
 
 [build-system]
