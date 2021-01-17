@@ -164,7 +164,6 @@ class BaseSchemaLoader:
                 var_index = endpoint_path.rfind(str(value))
                 endpoint_path = endpoint_path[:var_index] + f'{{{key}}}' + endpoint_path[var_index + len(str(value)) :]
             return endpoint_path, resolved_route
-
         except Resolver404:
             logger.warning('URL `%s` did not resolve successfully', endpoint_path)
             paths = self.get_endpoint_paths()
