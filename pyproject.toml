@@ -2,9 +2,8 @@
 name = "django-openapi-tester"
 version = "2.2.1"  # Remember to also change in the  src/__init__.py
 description = "Django test utility for validating OpenAPI response documentation"
-authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
+authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 maintainers = [
-    "Na'aman Hirschfeld <nhirschfeld@gmail.com>",
     "Jonas Krüger Svensson <jonas-ks@hotmail.com>",
 ]
 license = "BSD-4-Clause"
@@ -75,7 +74,7 @@ profile = "black"
 multi_line_output = 3
 include_trailing_comma = true
 line_length = 120
-known_third_party = ["_temp", "django", "drf_spectacular", "drf_yasg", "inflection", "openapi_spec_validator", "prance", "pytest", "requests", "rest_framework", "yaml"]
+known_third_party = ["django", "drf_spectacular", "drf_yasg", "inflection", "openapi_spec_validator", "prance", "pytest", "requests", "rest_framework", "yaml"]
 known_first_party = ["openapi_tester"]
 
 [build-system]
