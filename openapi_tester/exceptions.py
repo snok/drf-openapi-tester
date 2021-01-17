@@ -41,7 +41,6 @@ class DocumentationError(AssertionError):
     def format(self, example_item: Any, response: Any, reference: str, message: str, hint: str) -> str:
         """
         Formats and returns a standardized error message for easy debugging.
-
         """
         msg = [
             f'Error: {message}\n\n',
