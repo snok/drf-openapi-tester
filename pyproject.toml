@@ -2,9 +2,8 @@
 name = "django-openapi-tester"
 version = "2.2.1"  # Remember to also change in the  src/__init__.py
 description = "Django test utility for validating OpenAPI response documentation"
-authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>"]
+authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 maintainers = [
-    "Na'aman Hirschfeld <nhirschfeld@gmail.com>",
     "Jonas Krüger Svensson <jonas-ks@hotmail.com>",
 ]
 license = "BSD-4-Clause"
@@ -18,9 +17,6 @@ classifiers = [
     'Environment :: Web Environment',
     'Framework :: Pytest',
     'Framework :: Django',
-    'Framework :: Django :: 2.2',
-    'Framework :: Django :: 3.0',
-    'Framework :: Django :: 3.1',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: BSD License',
     'Natural Language :: English',
@@ -44,25 +40,26 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.6.1"
-django = "^2.2 || ^3.0"
-prance = "^0.20.0"
-openapi-spec-validator = "^0.2.9"
 djangorestframework = "*"
 inflection = "^0.5.1"
+openapi-spec-validator = "^0.2.9"
+prance = "^0.20.0"
+python = "^3.6.1"
+pyYAML = "^5.3.1"
 
 [tool.poetry.dev-dependencies]
+django = "^3.0"
+drf-spectacular = "^0.12.0"
 drf-yasg = "^1.17.1"
-pyYAML = "^5.3.1"
+Faker = "^5.6.1"
+flake8 = "*"
+ipython = "^7.16.1"
+pre-commit = "^2.9.3"
 pytest = "^6.2"
 pytest-cov = "2.10.1"
 pytest-django = "^4.1.0"
-flake8 = "*"
 sphinx = "^3.4.3"
 sphinx_rtd_theme = "^0.5.0"
-drf-spectacular = "^0.12.0"
-ipython = "^7.16.1"
-pre-commit = "^2.9.3"
 
 [tool.black]
 line-length = 120

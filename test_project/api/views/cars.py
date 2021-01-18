@@ -34,6 +34,7 @@ class GoodCars(APIView):
 
 class BadCars(APIView):
     @staticmethod
+    @extend_schema(responses={200: CarSerializer(many=True)})
     @get_other_cars_auto_schema()
     def get(request: Request, version: int, **kwargs) -> Response:
         cars = [

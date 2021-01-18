@@ -1,36 +1,25 @@
-from copy import deepcopy
+import json
+from pathlib import Path
 
 import yaml
-from django.conf import settings as django_settings
+from rest_framework.response import Response
 
-from tests import yml_path
+from openapi_tester.schema_converter import SchemaToPythonConverter
 
-
-def patch_settings(key, value) -> dict:
-    patched_settings = deepcopy(django_settings.OPENAPI_TESTER)
-    patched_settings[key] = value
-    return patched_settings
+CURRENT_PATH = Path(__file__).resolve(strict=True).parent
 
 
-class MockRoute:
-    def __init__(self, x):
-        self.x = x
-        self.counter = 0
-        self.parameters = [2, 2]
-
-    def get_path(self):
-        self.counter += 1
-        if self.counter == 2:
-            raise IndexError
-        return self.x
-
-
-def ret_schema(*args, **kwargs):
-    with open(yml_path) as f:
+def load_schema(file_name: str) -> dict:
+    with open(str(CURRENT_PATH) + f'/schemas/{file_name}') as f:
         content = f.read()
-    return yaml.load(content, Loader=yaml.FullLoader)
+        if 'json' in file_name:
+            return json.loads(content)
+        else:
+            return yaml.load(content, Loader=yaml.FullLoader)
 
 
-def loader(path):
-    with open(str(django_settings.BASE_DIR.parent) + path) as f:
-        return yaml.load(f, Loader=yaml.FullLoader)
+def response_factory(schema: dict, path: str, method: str, status_code: int = 200) -> Response:
+    converted_schema = SchemaToPythonConverter(schema, with_faker=True)
+    response = Response(status=status_code, data=converted_schema)
+    response.request = dict(REQUEST_METHOD=method, PATH_INFO=path)
+    return response
