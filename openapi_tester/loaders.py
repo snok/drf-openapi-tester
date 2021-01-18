@@ -1,5 +1,6 @@
 import difflib
 import json
+import pathlib
 import re
 from json import dumps, loads
 from typing import Callable, Dict, List, Optional
@@ -188,8 +189,7 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         Loads generated schema from drf-yasg and returns it as a dict.
         """
         odict_schema = self.schema_generator.get_schema(None, True)
-        schema = loads(dumps(odict_schema.as_odict()))
-        return schema
+        return loads(dumps(odict_schema.as_odict()))
 
     def get_path_prefix(self) -> str:
         """
@@ -250,7 +250,7 @@ class StaticSchemaLoader(BaseSchemaLoader):
 
     def __init__(self, path: str):
         super().__init__()
-        self.path = path
+        self.path = path if not isinstance(path, pathlib.PosixPath) else str(path)
 
     def load_schema(self) -> dict:
         """
