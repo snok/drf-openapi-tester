@@ -1,11 +1,15 @@
+import pathlib
 from copy import deepcopy
 from typing import Callable
 from unittest import mock
+from unittest.mock import patch
 
 import pytest
+
 from openapi_tester import (
     CaseError,
     DocumentationError,
+    StaticSchemaLoader,
     UndocumentedSchemaSectionError,
     is_pascal_case,
 )
@@ -105,8 +109,7 @@ def test_validate_response_failure_scenario_with_predefined_data(client):
         assert response.status_code == 200
         assert response.json() == item['expected_response']
         with pytest.raises(
-                DocumentationError,
-                match='Error: The following properties are missing from the tested data: length, width'
+            DocumentationError, match='Error: The following properties are missing from the tested data: length, width'
         ):
             tester.validate_response(response)
 
@@ -120,8 +123,8 @@ def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-            UndocumentedSchemaSectionError,
-            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.',
+        UndocumentedSchemaSectionError,
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.',
     ):
         tester.validate_response(response)
 
@@ -135,8 +138,8 @@ def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-            UndocumentedSchemaSectionError,
-            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.',
+        UndocumentedSchemaSectionError,
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.',
     ):
         tester.validate_response(response)
 
@@ -150,8 +153,8 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
     monkeypatch.setattr(tester.loader, 'get_schema', _mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
-            UndocumentedSchemaSectionError,
-            match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
+        UndocumentedSchemaSectionError,
+        match=f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.',
     ):
         tester.validate_response(response)
 
@@ -190,7 +193,7 @@ def test_reference_schema(mock_resolve):
     for schema_file_name in ['openapi_v2_reference_schema.yaml', 'openapi_v3_reference_schema.yaml']:
         loaded_schema = load_schema(schema_file_name)
         de_referenced_schema = drf_spectacular_tester.loader.de_reference_schema(loaded_schema)
-        with mock.patch("openapi_tester.loaders.DrfSpectacularSchemaLoader.load_schema", lambda _: loaded_schema):
+        with mock.patch('openapi_tester.loaders.DrfSpectacularSchemaLoader.load_schema', lambda _: loaded_schema):
             for url_fragment, path_object in url_pattern_factory(de_referenced_schema):
                 mock_resolve.return_value = path_object
                 if schema_section and response:
@@ -198,5 +201,28 @@ def test_reference_schema(mock_resolve):
                     assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
 
 
+def mock_function(return_value):
+    def x(*args, **kwargs):
+        print('Mocked function called')
+        return return_value
+
+    return x
 
 
+file_path = pathlib.Path(__file__).parent.absolute() / 'schemas'
+
+
+def test_static_schema():
+    """
+    Trying to make this work, using the static loader, as that has the least amount of magic.
+    """
+    for schema_file in [file_path / 'openapi_v2_reference_schema.yaml', file_path / 'openapi_v3_reference_schema.yaml']:
+        tester = SchemaTester(schema_file_path=schema_file)
+        schema = tester.loader.load_schema()
+        de_referenced_schema = tester.loader.de_reference_schema(schema)
+        for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
+            if schema_section and response:
+                with patch.object(StaticSchemaLoader, 'parameterize_path', side_effect=mock_function(url_fragment)):
+                    tester.validate_response(response)  # <-- This fails because of allOf logic
+                    # schema_section={'type': 'object', 'allOf': [{'type': 'object', 'required': ['name'], 'properties': {'name': {'type': 'string'}, 'tag': {'type': 'string'}}}, {'required': ['id'], 'properties': {'id': {'type': 'integer', 'format': 'int64'}}}]}
+                    # assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)

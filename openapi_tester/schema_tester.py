@@ -59,7 +59,7 @@ class SchemaTester:
     def _check_openapi_type(schema_type: str, value: Any) -> bool:
         if schema_type == 'boolean':
             return isinstance(value, bool)
-        if schema_type == 'string' or schema_type == 'file':
+        if schema_type in ['string', 'file']:
             return isinstance(value, str)
         if schema_type == 'integer':
             return isinstance(value, int)
@@ -164,10 +164,7 @@ class SchemaTester:
                 reference=reference,
             )
         if schema_section_type == 'object':
-            if 'properties' in schema_section:
-                properties = schema_section['properties']
-            else:
-                properties = {'': schema_section['additionalProperties']}
+            properties = schema_section.get('properties', default={'': schema_section['additionalProperties']})
 
             response_keys = data.keys()
             schema_section_keys = properties.keys()

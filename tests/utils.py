@@ -36,7 +36,7 @@ def url_pattern_factory(schema: dict) -> Tuple[str, RoutePattern]:
     for url_fragment, path_object in schema['paths'].items():
         for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, url_fragment)):
             parameter_name = parameter.replace('{', '').replace('}', '')
-            url_fragment = url_fragment.replace(parameter, f"<{parameter_name}:str>")
+            url_fragment = url_fragment.replace(parameter, f'<{parameter_name}:str>')
         yield url_fragment, path(url_fragment, APIView.as_view())
 
 
@@ -44,6 +44,10 @@ def iterate_schema(schema: dict) -> Tuple[Optional[dict], Optional[Response]]:
     for url_fragment, path_object in schema['paths'].items():
         for method, method_object in path_object.items():
             for status_code, responses_object in method_object['responses'].items():
+                if status_code == 'default':
+                    # TODO: Handle this
+                    # Added this temporarily for schema v2 reference l62
+                    continue
                 schema_section = None
                 response = None
                 if 'content' in responses_object.keys():
@@ -51,5 +55,7 @@ def iterate_schema(schema: dict) -> Tuple[Optional[dict], Optional[Response]]:
                 elif 'schema' in responses_object.keys():
                     schema_section = responses_object['schema']
                 if schema_section:
-                    response = response_factory(schema_section, url_fragment, method, status_code)
-                yield schema_section, response
+                    response = response_factory(
+                        schema=schema_section, url_fragment=url_fragment, method=method, status_code=status_code
+                    )
+                yield schema_section, response, url_fragment
