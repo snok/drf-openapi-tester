@@ -1,15 +1,10 @@
 import json
-import re
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Generator, Optional, Tuple
 
 import yaml
-from django.urls import path
-from django.urls.resolvers import RoutePattern
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
 from openapi_tester.schema_converter import SchemaToPythonConverter
 
 CURRENT_PATH = Path(__file__).resolve(strict=True).parent
@@ -32,21 +27,12 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
     return response
 
 
-def url_pattern_factory(schema: dict) -> Tuple[str, RoutePattern]:
-    for url_fragment, path_object in schema['paths'].items():
-        for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, url_fragment)):
-            parameter_name = parameter.replace('{', '').replace('}', '')
-            url_fragment = url_fragment.replace(parameter, f'<{parameter_name}:str>')
-        yield url_fragment, path(url_fragment, APIView.as_view())
-
-
-def iterate_schema(schema: dict) -> Tuple[Optional[dict], Optional[Response]]:
+def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Response], str], None, None]:
     for url_fragment, path_object in schema['paths'].items():
         for method, method_object in path_object.items():
             for status_code, responses_object in method_object['responses'].items():
                 if status_code == 'default':
                     # TODO: Handle this
-                    # Added this temporarily for schema v2 reference l62
                     continue
                 schema_section = None
                 response = None
@@ -59,3 +45,7 @@ def iterate_schema(schema: dict) -> Tuple[Optional[dict], Optional[Response]]:
                         schema=schema_section, url_fragment=url_fragment, method=method, status_code=status_code
                     )
                 yield schema_section, response, url_fragment
+
+
+def pass_mock_value(return_value: Any) -> Any:
+    return lambda _: return_value

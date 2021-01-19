@@ -1,4 +1,4 @@
-from typing import Any, Callable, KeysView, List, Optional, Union, cast
+from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -48,12 +48,20 @@ class SchemaTester:
             tester(key)
 
     @staticmethod
-    def _merge_all_of(schema: dict) -> dict:
-        properties = {}
-        for entry in schema['allOf']:
+    def handle_all_of(**kwargs: dict) -> dict:
+        properties: Dict[str, Any] = {}
+        for entry in kwargs.pop('allOf'):
             for key, value in entry['properties'].items():
-                properties[key] = value
-        return properties
+                if key in properties:
+                    if isinstance(value, dict):
+                        properties[key] = {**properties[key], **value}
+                    elif isinstance(value, list):
+                        properties[key] = [*properties[key], *value]
+                    else:
+                        properties[key] = value
+                else:
+                    properties[key] = value
+        return {**kwargs, 'type': 'object', 'properties': properties}
 
     @staticmethod
     def _check_openapi_type(schema_type: str, value: Any) -> bool:
@@ -152,6 +160,10 @@ class SchemaTester:
         This method orchestrates the testing of a schema section
         """
 
+        if 'allOf' in schema_section:
+            merged_schema = self.handle_all_of(**schema_section)
+            schema_section = merged_schema
+
         schema_section_type = schema_section['type']
 
         if data is None and self.is_nullable(schema_section):
@@ -164,8 +176,13 @@ class SchemaTester:
                 reference=reference,
             )
         if schema_section_type == 'object':
-            properties = schema_section.get('properties', default={'': schema_section['additionalProperties']})
-
+            if 'properties' in schema_section:
+                properties = schema_section['properties']
+            elif 'additionalProperties' in schema_section:
+                properties = {'': schema_section['additionalProperties']}
+            else:
+                # FIXME: temporary
+                properties = {}
             response_keys = data.keys()
             schema_section_keys = properties.keys()
 
@@ -229,6 +246,7 @@ class SchemaTester:
                     reference=reference,
                     hint='Document the contents of the empty dictionary to match the response object.',
                 )
+
             for datum in data:
                 self.test_schema_section(
                     schema_section=items,
