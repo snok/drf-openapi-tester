@@ -81,11 +81,6 @@ paths:
       parameters: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
           description: ''
     post:
       operationId: CreateBadCars
@@ -192,11 +187,6 @@ paths:
       parameters: []
       responses:
         '200':
-          content:
-            application/json:
-              schema:
-                type: array
-                items: {}
           description: ''
     post:
       operationId: CreateBadTrucks
@@ -225,29 +215,3 @@ paths:
       responses:
         '204':
           description: ''
-  /{language}/api/v1/i18n:
-    get:
-      operationId: listLanguages
-      description: ''
-      parameters:
-        - name: language
-          in: path
-          required: true
-          schema:
-            type: string
-            enum: [en, de]
-          description: 'The response content language.'
-      responses:
-        '200':
-          description: ''
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  languages:
-                    type: array
-                    items:
-                      description: "French language"
-                      type: "string"
-                      example: "French"

@@ -16,7 +16,7 @@ def test_drf_yasg_get_schemas():
 
 
 def test_static_get_schema():
-    for ext in ['yml', 'json']:
+    for ext in ['yaml', 'json']:
         loader = StaticSchemaLoader(str(CURRENT_PATH) + f'/schemas/test_project_schema.{ext}')
         loader.get_schema()  # runs internal validation
 

@@ -7,6 +7,11 @@ class SchemaToPythonConverter:
     """ This class is used both by the DocumentationError format method and the various test suites """
 
     def __init__(self, schema: dict, with_faker: bool = False):
+        if 'allOf' in schema:
+            from openapi_tester.schema_tester import SchemaTester
+
+            merged_schema = SchemaTester.handle_all_of(**schema)
+            schema = merged_schema
         if with_faker:
             """ We are importing faker here to ensure this remains a dev dependency """
             from faker import Faker
@@ -38,10 +43,17 @@ class SchemaToPythonConverter:
 
     def _iterate_schema_dict(self, schema_object: Any) -> Any:
         parsed_schema = {}
+        if 'allOf' in schema_object:
+            from openapi_tester.schema_tester import SchemaTester
+
+            schema_object = SchemaTester.handle_all_of(**schema_object)
         if 'properties' in schema_object:
             properties = schema_object['properties']
-        else:
+        elif 'additionalProperties' in schema_object:
             properties = {'': schema_object['additionalProperties']}
+        else:
+            properties = {}
+
         for key, value in properties.items():
             value_type = value['type']
             if 'example' in value:
@@ -57,6 +69,10 @@ class SchemaToPythonConverter:
     def _iterate_schema_list(self, schema_array: Any) -> Any:
         parsed_items = []
         raw_items = schema_array['items']
+        if 'allOf' in raw_items.keys():
+            from openapi_tester.schema_tester import SchemaTester
+
+            raw_items = SchemaTester.handle_all_of(**raw_items)
         items_type = raw_items['type']
         if items_type == 'object':
             parsed_items.append(self._iterate_schema_dict(raw_items))  # type :ignore
