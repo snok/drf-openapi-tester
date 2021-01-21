@@ -35,7 +35,7 @@ jobs:
     - name: Test with pytest
       run: |
         export DJANGO_SETTINGS_MODULE=test_project.settings
-        poetry run pytest --cov=openapi_tester --verbose  --assert=plain --cov-report=xml
+        poetry run pytest --cov=openapi_tester --cov-report=xml
     - name: Upload coverage
       uses: codecov/codecov-action@v1
       with:
