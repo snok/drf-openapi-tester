@@ -7,13 +7,13 @@
     <a href="https://pypi.org/project/django-swagger-tester/">
         <img src="https://img.shields.io/pypi/v/django-swagger-tester.svg" alt="Package version">
     </a>
-    <a href="https://codecov.io/gh/snok/django-openapi-tester">
-        <img src="https://codecov.io/gh/snok/django-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
+    <a href="https://codecov.io/gh/snok/drf-openapi-tester">
+        <img src="https://codecov.io/gh/snok/drf-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
     </a>
-    <a href="https://pypi.org/project/django-openapi-tester/">
+    <a href="https://pypi.org/project/drf-openapi-tester/">
         <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
     </a>
-    <a href="https://pypi.python.org/pypi/django-openapi-tester">
+    <a href="https://pypi.python.org/pypi/drf-openapi-tester">
         <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
     </a>
     <a href="http://mypy-lang.org/">
@@ -239,7 +239,7 @@ TODO
 When found, errors will be raised in the following format:
 
 ```shell script
-openapi_tester.exceptions.SwaggerDocumentationError: Item is misspecified:
+openapi_tester.exceptions.DocumentationError: Item is misspecified:
 
 Summary
 -------------------------------------------------------------------------------------------
@@ -249,7 +249,7 @@ Error:      The following properties seem to be missing from your response body:
 Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
 Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
 
-Hint:       Remove the key(s) from you Swagger docs, or include it in your API response.
+Hint:       Remove the key(s) from you OpenAPI docs, or include it in your API response.
 Sequence:   init.list
 
 -------------------------------------------------------------------------------------------

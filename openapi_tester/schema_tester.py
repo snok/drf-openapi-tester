@@ -192,7 +192,7 @@ class SchemaTester:
                         f'`{key}`' for key in sorted(list(set(response_keys) - set(schema_section_keys)))
                     )
                     hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
-                    message = f'The following properties seem to be missing from your OpenAPI/Swagger documentation: {missing_keys}.'
+                    message = f'The following properties seem to be missing from your documentation: {missing_keys}.'
                 else:
                     missing_keys = ', '.join(
                         f'{key}' for key in sorted(list(set(schema_section_keys) - set(response_keys)))

@@ -14,12 +14,12 @@ jobs:
         with:
           python-version: 3.9
       - uses: snok/install-poetry@v1.1.1
-      - name: Publish django-openapi-tester to test-pypi
+      - name: Publish to test-pypi
         run: |
           poetry config repositories.test https://test.pypi.org/legacy/
           poetry config pypi-token.test ${{ secrets.TEST_PYPI_TOKEN }}
           poetry publish --build --no-interaction --repository test
-      - name: Publish django-openapi-tester to pypi
+      - name: Publish to pypi
         run: |
           poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
           poetry publish --build --no-interaction
