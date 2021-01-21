@@ -52,13 +52,10 @@ class SchemaTester:
         properties: Dict[str, Any] = {}
         for entry in kwargs.pop('allOf'):
             for key, value in entry['properties'].items():
-                if key in properties:
-                    if isinstance(value, dict):
-                        properties[key] = {**properties[key], **value}
-                    elif isinstance(value, list):
-                        properties[key] = [*properties[key], *value]
-                    else:
-                        properties[key] = value
+                if key in properties and isinstance(value, dict):
+                    properties[key] = {**properties[key], **value}
+                elif key in properties and isinstance(value, list):
+                    properties[key] = [*properties[key], *value]
                 else:
                     properties[key] = value
         return {**kwargs, 'type': 'object', 'properties': properties}
@@ -164,7 +161,10 @@ class SchemaTester:
             merged_schema = self.handle_all_of(**schema_section)
             schema_section = merged_schema
 
-        schema_section_type = schema_section['type']
+        schema_section_type = schema_section.get('type')
+        if not schema_section_type:
+            # Missing type means any type
+            return
 
         if data is None and self.is_nullable(schema_section):
             return
