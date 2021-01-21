@@ -1,5 +1,5 @@
 
-<p align="center"><h1 align='center'>Django OpenAPI Tester</h1></p>
+<p align="center"><h1 align='center'>DRF OpenAPI Tester</h1></p>
 <p align="center">
     <em>A test utility for validating API responses</em>
 </p>
@@ -22,17 +22,16 @@
 </p>
 
 
-Django OpenAPI Tester is a simple test utility. Its aim is to make it easy for
+DRF OpenAPI Tester is a simple test utility. Its aim is to make it easy for
 developers to catch and correct documentation errors in their OpenAPI schemas.
 
-Maintaining good documentation can be pretty boring, and proof reading your docs
-to make sure they're actually describing your API is worse.
+Maintaining good documentation is difficult, and shouldn't be done manually.
 By simply testing that your API responses match your schema definitions you can
 *know* that your schema reflects reality.
 
 ## OpenAPI Implementations
 
-This package currently supports:
+Whether we're able to test your schema depends on how it's implemented. We currently support:
 
 - Testing dynamically rendered OpenAPI schemas with [drf-yasg](https://github.com/axnsan12/drf-yasg)
 - Testing dynamically rendered OpenAPI schemas with [drf-spectacular](https://github.com/tfranzel/drf-spectacular)
@@ -47,7 +46,7 @@ required logic needed to load the OpenAPI schema.
 
 
 ```shell script
-pip install django-openapi-tester
+pip install drf-openapi-tester
 ```
 
 ## Features
@@ -57,10 +56,10 @@ with respect to your documented responses.
 If your schema correctly describes a response, nothing happens;
 if it doesn't, we throw an error.
 
-A second optional feature is checking the [case](https://en.wikipedia.org/wiki/Naming_convention_(programming)) of your
+The second, optional feature, is checking the [case](https://en.wikipedia.org/wiki/Naming_convention_(programming)) of your
 response keys. Checking that your responses are camel cased is
-probably the most common, but the package supplies case testers
-for the following:
+probably the most common standard, but the package supplies case testers
+for the following formats:
 
 - `camelCase`
 - `snake_case`
@@ -102,7 +101,7 @@ StaticSchemaLoader loader class, i.e., not `drf-yasg` or `drf-spectacular`.**
 
 ## The validate response method
 
-To test a response, you can use the `validate_response` method.
+To test a response, you call the `validate_response` method.
 
 ```python
 from .conftest import tester
@@ -113,8 +112,9 @@ def test_response_documentation(client):
     tester.validate_response(response=response)
 ```
 
-If you want to override the `ignore_case` list, or `case_tester`, you can pass
-this directly to the function.
+If you want to override the instantiated `ignore_case` list,
+or `case_tester` for a single test, you can pass these directly
+to the function.
 
 ```python
 from .conftest import tester
@@ -131,26 +131,26 @@ def test_response_documentation(client):
 
 ## Performing response validation in a DRF APIView
 
-In addition to using the `validate_response` method directly, there
-is also the possibility of calling it from within a subclassed APIView.
-Simply define the view class like this:
+In addition to using the `validate_response` method directly, we provide
+an APIView  with the possibility of validating your response by calling `self.assertResponse`.
+
+Simply define your view class like this:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
 from openapi_tester.case_testers import is_camel_case
 
 OpenAPITestCase = SchemaTester(case_tester=is_camel_case).test_case()
-```
 
-In a Django test, you are then able to validate your response like this:
 
-```python
 class TestApi(OpenAPITestCase):
 
     def validate_response_schema(self):
         response = self.client.get(...)
         self.assertResponse(response)
 ```
+
+The `assertResponse` method takes the same arguments as `validate_response`.
 
 ## Examples
 
@@ -234,6 +234,8 @@ class TestApi(OpenAPITestCase):
 
 ## Error messages
 
+TODO
+
 When found, errors will be raised in the following format:
 
 ```shell script
@@ -263,3 +265,5 @@ Sequence:   init.list
 In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 ## i18n
+
+Also TODO
