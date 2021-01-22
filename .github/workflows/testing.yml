@@ -51,7 +51,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-2
       - name: Install dependencies
         run: poetry install
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
@@ -65,6 +65,5 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          export DJANGO_SETTINGS_MODULE=test_project.settings
           poetry run pytest --cov=openapi_tester --verbose --assert=plain
           poetry run coverage report

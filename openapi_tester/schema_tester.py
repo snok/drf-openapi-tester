@@ -52,13 +52,10 @@ class SchemaTester:
         properties: Dict[str, Any] = {}
         for entry in kwargs.pop('allOf'):
             for key, value in entry['properties'].items():
-                if key in properties:
-                    if isinstance(value, dict):
-                        properties[key] = {**properties[key], **value}
-                    elif isinstance(value, list):
-                        properties[key] = [*properties[key], *value]
-                    else:
-                        properties[key] = value
+                if key in properties and isinstance(value, dict):
+                    properties[key] = {**properties[key], **value}
+                elif key in properties and isinstance(value, list):
+                    properties[key] = [*properties[key], *value]
                 else:
                     properties[key] = value
         return {**kwargs, 'type': 'object', 'properties': properties}
@@ -140,13 +137,12 @@ class SchemaTester:
             key=status_code,
             error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
         )
-        if 'openapi' in schema:
-            content_object = self._get_key_value(schema=status_code_object, key='content')
-            json_object = self._get_key_value(schema=content_object, key='application/json')
-            return self._get_key_value(schema=json_object, key='schema')
-        else:
+        if 'openapi' not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self._get_key_value(schema=status_code_object, key='schema')
+        content_object = self._get_key_value(schema=status_code_object, key='content')
+        json_object = self._get_key_value(schema=content_object, key='application/json')
+        return self._get_key_value(schema=json_object, key='schema')
 
     def test_schema_section(
         self,
