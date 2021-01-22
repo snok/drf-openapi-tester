@@ -137,13 +137,12 @@ class SchemaTester:
             key=status_code,
             error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
         )
-        if 'openapi' in schema:
-            content_object = self._get_key_value(schema=status_code_object, key='content')
-            json_object = self._get_key_value(schema=content_object, key='application/json')
-            return self._get_key_value(schema=json_object, key='schema')
-        else:
+        if 'openapi' not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self._get_key_value(schema=status_code_object, key='schema')
+        content_object = self._get_key_value(schema=status_code_object, key='content')
+        json_object = self._get_key_value(schema=content_object, key='application/json')
+        return self._get_key_value(schema=json_object, key='schema')
 
     def test_schema_section(
         self,
@@ -161,10 +160,7 @@ class SchemaTester:
             merged_schema = self.handle_all_of(**schema_section)
             schema_section = merged_schema
 
-        schema_section_type = schema_section.get('type')
-        if not schema_section_type:
-            # Missing type means any type
-            return
+        schema_section_type = schema_section['type']
 
         if data is None and self.is_nullable(schema_section):
             return
