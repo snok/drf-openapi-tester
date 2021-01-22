@@ -52,13 +52,22 @@ class SchemaToPythonConverter:
         elif 'additionalProperties' in schema_object:
             properties = {'': schema_object['additionalProperties']}
         else:
+            # TODO: (Q) should this be handled better?
             properties = {}
 
         for key, value in properties.items():
-            value_type = value['type']
             if 'example' in value:
                 parsed_schema[key] = value['example']
-            elif value_type == 'object':
+            elif 'anyOf' in value:
+                value = value['anyOf'][0]
+            elif 'oneOf' in value:
+                value = value['oneOf'][0]
+            value_type = value.get('type')
+            if not value_type and 'properties' in value:
+                value_type = 'object'
+            elif not value_type:
+                continue
+            if value_type == 'object':
                 parsed_schema[key] = self._iterate_schema_dict(value)
             elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
@@ -73,7 +82,11 @@ class SchemaToPythonConverter:
             from openapi_tester.schema_tester import SchemaTester
 
             raw_items = SchemaTester.handle_all_of(**raw_items)
-        items_type = raw_items['type']
+        items_type = raw_items.get('type')
+        if not items_type and 'properties' in raw_items:
+            items_type = 'object'
+        elif not items_type:
+            return []
         if items_type == 'object':
             parsed_items.append(self._iterate_schema_dict(raw_items))  # type :ignore
         elif items_type == 'array':

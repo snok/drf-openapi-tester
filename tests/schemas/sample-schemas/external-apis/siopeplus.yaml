@@ -1,0 +1,2333 @@
+components:
+  parameters:
+    codBanca:
+      description: codice ABI della BT
+      in: path
+      name: codBanca
+      required: true
+      schema:
+        type: string
+    codEnte:
+      description: codice IPA della PA
+      in: path
+      name: codEnte
+      required: true
+      schema:
+        type: string
+    dataProduzioneA:
+      description: Filtro dei risultati sulla data di produzione finale nel formato
+        `yyyy-MM-dd'T'HH:mm:ss.SSS`
+      in: query
+      name: dataProduzioneA
+      schema:
+        format: date-time
+        type: string
+    dataProduzioneDa:
+      description: Filtro dei risultati sulla data di produzione iniziale nel formato
+        `yyyy-MM-dd'T'HH:mm:ss.SSS`
+      in: query
+      name: dataProduzioneDa
+      schema:
+        format: date-time
+        type: string
+    dataUploadA:
+      description: Filtro dei risultati sulla data di upload finale nel formato `yyyy-MM-dd'T'HH:mm:ss.SSS`
+      in: query
+      name: dataUploadA
+      schema:
+        format: date-time
+        type: string
+    dataUploadDa:
+      description: Filtro dei risultati sulla data di upload iniziale nel formato
+        `yyyy-MM-dd'T'HH:mm:ss.SSS`
+      in: query
+      name: dataUploadDa
+      schema:
+        format: date-time
+        type: string
+    download:
+      description: Filtro dei risultati sul fatto che siano stati già scaricati o
+        meno.
+      in: query
+      name: download
+      schema:
+        type: boolean
+    idA2A:
+      description: identificativo A2A del tramite della PA che origina la richiesta
+      in: path
+      name: idA2A
+      required: true
+      schema:
+        type: string
+    pagina:
+      description: numero della pagina dei risultati richiesta
+      in: query
+      name: pagina
+      schema:
+        default: 1
+        format: integer
+        type: number
+    progEsitoApplicativo:
+      description: Progressivo assegnato da SIOPE+ all'atto dell'invio dell'esito
+        applicativo
+      in: path
+      name: progEsitoApplicativo
+      required: true
+      schema:
+        type: string
+    progFlusso:
+      description: Progressivo assegnato da SIOPE+ all'atto dell'invio del flusso
+        ordinativi
+      in: path
+      name: progFlusso
+      required: true
+      schema:
+        type: string
+    progGiornale:
+      description: Progressivo assegnato da SIOPE+ all'atto dell'invio del giornale
+        di cassa
+      in: path
+      name: progGiornale
+      required: true
+      schema:
+        type: string
+    progDisponibilita:
+      description: Progressivo assegnato da SIOPE+ all'atto dell'invio delle disponibilità
+        liquide
+      in: path
+      name: progDisponibilita
+      required: true
+      schema:
+        type: string
+  schemas:
+    FlussiPaginatiProduzione:
+      properties:
+        numPagine:
+          example: '123'
+          format: integer
+          type: number
+        numRisultati:
+          example: '12345'
+          format: integer
+          type: number
+        pagina:
+          example: '1'
+          format: integer
+          type: number
+        risultati:
+          items:
+            $ref: '#/components/schemas/FlussoDataProduzione'
+          type: array
+        risultatiPerPagina:
+          example: '100'
+          format: integer
+          type: number
+      type: object
+    FlussiPaginatiUpload:
+      properties:
+        numPagine:
+          example: '123'
+          format: integer
+          type: number
+        numRisultati:
+          example: '12345'
+          format: integer
+          type: number
+        pagina:
+          example: '1'
+          format: integer
+          type: number
+        risultati:
+          items:
+            $ref: '#/components/schemas/FlussoDataUpload'
+          type: array
+        risultatiPerPagina:
+          example: '100'
+          format: integer
+          type: number
+      type: object
+    FlussoDataProduzione:
+      properties:
+        dataProduzione:
+          description: data di produzione del flusso, nel formato `yyyy-MM-dd'T'HH:mm:ss.SSS`
+          example: '2016-12-12T15:44:59.789'
+          format: date-time
+          type: string
+        download:
+          description: flag che indica se il flusso sia già stato scaricato o meno
+          example: 'false'
+          type: boolean
+        location:
+          description: URL dove reperire il flusso inviato
+          format: uri
+          type: string
+        progFlusso:
+          description: progressivo assegnato al flusso da SIOPE+
+          example: '1234567890'
+          type: string
+      type: object
+    FlussoDataUpload:
+      properties:
+        dataUpload:
+          description: data di invio del flusso, nel formato `yyyy-MM-dd'T'HH:mm:ss.SSS`
+          example: '2016-12-12T15:44:59.789'
+          format: date-time
+          type: string
+        download:
+          description: flag che indica se il flusso sia già stato scaricato o meno
+          example: 'false'
+          type: boolean
+        location:
+          description: URL dove reperire il flusso inviato
+          format: uri
+          type: string
+        progFlusso:
+          description: progressivo assegnato al flusso da SIOPE+
+          example: '1234567890'
+          type: string
+      type: object
+openapi: 3.0.0
+info:
+  contact:
+    email: siopeplus@bancaditalia.it
+    name: Banca d'Italia - SIOPEPLUS
+    url: https://www.bancaditalia.it/compiti/tesoreria/plus-siope/index.html
+  description: |
+    #### Documentazione
+    SIOPE+ è l'infrastruttura che intermedia il colloquio tra le pubbliche amministrazioni e le banche tesoriere
+    con l'obiettivo di migliorare la qualità dei dati per il monitoraggio della spesa pubblica,
+    rilevare i tempi di pagamento dei debiti commerciali e aumentare l'efficienza del sistema dei pagamenti pubblici.
+
+    E' stato sviluppato dalla Banca d'Italia in collaborazione con:
+    - Ragioneria Generale di Stato;
+    - Agenzia per l'Italia Digitale.
+
+    #### Note
+    La documentazione ufficiale è descritta nel documento
+    "[Regole tecniche](http://www.rgs.mef.gov.it/_Documenti/VERSIONE-I/e-GOVERNME1/SIOPE/SIOPE/Regole_di_Colloquio.pdf)
+     per il colloquio telematico di Amministrazioni pubbliche e Tesorieri con SIOPE+"
+
+    L'utilizzo di SIOPE+ è permesso:
+
+      - in conformità alla [normativa di riferimento indicata nel sito](https://www.bancaditalia.it/compiti/tesoreria/plus-siope/index.html)
+      - nel rispetto delle summenzionate "Regole tecniche"
+
+
+    #### Informazioni tecniche ed esempi
+    ##### Autenticazione
+    L'accesso a SIOPE+ avviene previa autenticazione con certificato TLS.
+  license:
+    name: GPL v3.0
+    url: https://www.gnu.org/licenses/gpl-3.0.txt
+  termsOfService: https://www.bancaditalia.it/compiti/tesoreria/plus-siope/index.html
+  title: SIOPE+ API
+  version: 1.0.1
+  x-summary: SIOPE+ - trasmissione degli ordini d'incasso e pagamento tra amministrazioni
+    pubbliche e tesorieri.
+servers:
+- url: https://a2a.siopeplus.it/v1
+tags:
+- description: Giornale di Cassa
+  name: giornaleDiCassa
+- description: Flusso ordinativi
+  name: flussoOrdinativi
+- description: Esito Flusso ordinativi
+  name: esitoFlussoOrdinativi
+- description: Disponibilità liquide
+  name: disponibilitaLiquide
+paths:
+  /{idA2A}/BT/{codBanca}/esitoapplicativo/ack:
+    get:
+      description: |
+        TESORIERE: Lista Ack Messaggio Esito Applicativo relativi a tutti gli Enti
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codBanca'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack messaggio esito applicativo
+      tags:
+      - esitoApplicativo
+  /{idA2A}/BT/{codBanca}/flusso/:
+    get:
+      description: |
+        TESORIERE: Lista Flussi Ordinativi relativi a tutti gli Enti
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codBanca'
+      - $ref: '#/components/parameters/dataUploadDa'
+      - $ref: '#/components/parameters/dataUploadA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista Flussi Ordinativi relativi a tutti gli Enti
+      tags:
+      - flussoOrdinativi
+  /{idA2A}/BT/{codBanca}/flusso/esitoflusso/ack/:
+    get:
+      description: |
+        TESORIERE: Lista Ack Esito Flusso Ordinativi relativi a tutti gli Enti
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codBanca'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack esiti flusso ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/BT/{codBanca}/giornale/ack:
+    get:
+      description: |
+        TESORIERE: Lista Ack Giornale di cassa relativi a tutti gli Enti
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codBanca'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack giornale di cassa
+      tags:
+      - giornaleDiCassa
+
+  /{idA2A}/PA/{codEnte}/esitoapplicativo:
+    get:
+      description: |
+        ENTE: Lista messaggi Esito Applicativo relativi ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataUploadDa'
+      - $ref: '#/components/parameters/dataUploadA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista messaggi esiti applicativi
+      tags:
+      - esitoApplicativo
+    post:
+      description: |
+        TESORIERE: Upload Esito Applicativo relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      requestBody:
+        content:
+          application/zip:
+            schema:
+              format: binary
+              type: string
+        description: Esito applicativo in formato ZIP.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussoDataUpload'
+          description: Esito applicativo inviato con successo
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '413':
+          description: body della richiesta troppo grande
+        '415':
+          description: 'assenza dell''header della richiesta `Content-Type: application/zip`
+            o header valorizzato diversamente oppure body della richiesta non in formato
+            zip'
+        '422':
+          description: body della richiesta non aderente al suo schema XSD o comunque
+            di complessità troppo elevata
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '460':
+          description: identificativo A2A del tramite della PA oppure codice UNI_UO
+            della PA, entrambi specificati nel messaggio inviato, non ancora abilitato
+        '461':
+          description: identificativo A2A del tramite della BT oppure codice ABI della
+            BT, entrambi specificati nel messaggio inviato, non censiti in anagrafica
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Invio esito applicativo
+      tags:
+      - esitoApplicativo
+  /{idA2A}/PA/{codEnte}/esitoapplicativo/ack/:
+    get:
+      description: |
+        TESORIERE: Lista Ack Messaggio Esito Applicativo relativi ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack messaggio esito applicativo
+      tags:
+      - esitoApplicativo
+  /{idA2A}/PA/{codEnte}/esitoapplicativo/{progEsitoApplicativo}:
+    get:
+      description: |
+        ENTE: Download esito flusso ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progEsitoApplicativo'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Messaggio esito applicativo in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download messaggio di esito applicativo
+      tags:
+      - esitoApplicativo
+  /{idA2A}/PA/{codEnte}/esitoapplicativo/{progEsitoApplicativo}/ack:
+    get:
+      description: |
+        ENTE: Download Ack Messaggio Esito Applicativo relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progEsitoApplicativo'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Ack messaggio esito applicativo in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack messaggio esito applicativo
+      tags:
+      - esitoApplicativo
+  /{idA2A}/PA/{codEnte}/flusso:
+    get:
+      description: |
+        TESORIERE: Lista Flussi Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataUploadDa'
+      - $ref: '#/components/parameters/dataUploadA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista Flussi Ordinativi relativi ad uno specifico Ente
+      tags:
+      - flussoOrdinativi
+    post:
+      description: |
+        ENTE: Upload di un Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      requestBody:
+        content:
+          application/zip:
+            schema:
+              format: binary
+              type: string
+        description: Flusso ordinativi in formato ZIP.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussoDataUpload'
+          description: Flusso ordinativi inviato con successo
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '413':
+          description: body della richiesta troppo grande
+        '415':
+          description: 'assenza dell''header della richiesta `Content-Type: application/zip`
+            o header valorizzato diversamente oppure body della richiesta non in formato
+            zip'
+        '422':
+          description: body della richiesta non aderente al suo schema XSD o comunque
+            di complessità troppo elevata
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '460':
+          description: identificativo A2A del tramite della PA oppure codice UNI_UO
+            della PA, entrambi specificati nel messaggio inviato, non ancora abilitato
+        '461':
+          description: identificativo A2A del tramite della BT oppure codice ABI della
+            BT, entrambi specificati nel messaggio inviato, non censiti in anagrafica
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Invio flusso ordinativi
+      tags:
+      - flussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/ack/:
+    get:
+      description: |
+        ENTE: Lista Ack Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack flussi ordinativi
+      tags:
+      - flussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/esitoflusso:
+    get:
+      description: |
+        ENTE: Lista esiti Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista esiti flussi ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/esitoflusso/ack:
+    get:
+      description: |
+        TESORIERE: Lista Ack Esito Flusso Ordinativi relativi ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack esiti flusso ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/{progFlusso}:
+    get:
+      description: |
+        TESORIERE: Download Ack Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progFlusso'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Flusso ordinativi in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack flusso ordinativi
+      tags:
+      - flussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/{progFlusso}/ack:
+    get:
+      description: |
+        ENTE: Download Ack Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progFlusso'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Ack flusso ordinativi in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack flusso ordinativi
+      tags:
+      - flussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/{progFlusso}/esitoflusso:
+    get:
+      description: |
+        ENTE: Download esito flusso ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progFlusso'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Esito flusso ordinativi in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download esito flusso ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/{progFlusso}/esitoflusso/:
+    post:
+      description: |
+        TESORIERE: Upload Esito Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progFlusso'
+      requestBody:
+        content:
+          application/zip:
+            schema:
+              format: binary
+              type: string
+        description: Esito flusso ordinativi in formato ZIP.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussoDataUpload'
+          description: Flusso ordinativi inviato con successo
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '413':
+          description: body della richiesta troppo grande
+        '415':
+          description: 'assenza dell''header della richiesta `Content-Type: application/zip`
+            o header valorizzato diversamente oppure body della richiesta non in formato
+            zip'
+        '422':
+          description: body della richiesta non aderente al suo schema XSD o comunque
+            di complessità troppo elevata
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '460':
+          description: identificativo A2A del tramite della PA oppure codice UNI_UO
+            della PA, entrambi specificati nel messaggio inviato, non ancora abilitato
+        '461':
+          description: identificativo A2A del tramite della BT oppure codice ABI della
+            BT, entrambi specificati nel messaggio inviato, non censiti in anagrafica
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Invio esito flusso ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/PA/{codEnte}/flusso/{progFlusso}/esitoflusso/ack:
+    get:
+      description: |
+        TESORIERE: Download Ack Esito Flusso Ordinativi relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progFlusso'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Ack esito flusso ordinativi in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack esito flusso ordinativi
+      tags:
+      - esitoFlussoOrdinativi
+  /{idA2A}/PA/{codEnte}/giornale/:
+    get:
+      description: |
+        ENTE: Lista giornali di cassa relativa ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataUploadDa'
+      - $ref: '#/components/parameters/dataUploadA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista giornali di cassa
+      tags:
+      - giornaleDiCassa
+    post:
+      description: |
+        TESORIERE: Upload Giornale di cassa relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      requestBody:
+        content:
+          application/zip:
+            schema:
+              format: binary
+              type: string
+        description: Giornale di cassa in formato ZIP.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussoDataUpload'
+          description: Giornale di cassa inviato con successo
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '413':
+          description: body della richiesta troppo grande
+        '415':
+          description: 'assenza dell''header della richiesta `Content-Type: application/zip`
+            o header valorizzato diversamente oppure body della richiesta non in formato
+            zip'
+        '422':
+          description: body della richiesta non aderente al suo schema XSD o comunque
+            di complessità troppo elevata
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '460':
+          description: identificativo A2A del tramite della PA oppure codice UNI_UO
+            della PA, entrambi specificati nel messaggio inviato, non ancora abilitato
+        '461':
+          description: identificativo A2A del tramite della BT oppure codice ABI della
+            BT, entrambi specificati nel messaggio inviato, non censiti in anagrafica
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Invio giornale di cassa
+      tags:
+      - giornaleDiCassa
+  /{idA2A}/PA/{codEnte}/giornale/ack:
+    get:
+      description: |
+        TESORIERE: Lista Ack Giornale di cassa relativi ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack giornale di cassa
+      tags:
+      - giornaleDiCassa
+  /{idA2A}/PA/{codEnte}/giornale/{progGiornale}:
+    get:
+      description: |
+        ENTE: Download giornale di cassa relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progGiornale'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Giornale di cassa in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download giornale di cassa
+      tags:
+      - giornaleDiCassa
+  /{idA2A}/PA/{codEnte}/giornale/{progGiornale}/ack:
+    get:
+      description: |
+        TESORIERE: Download Ack Giornale di cassa relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progGiornale'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Ack flusso ordinativi in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack giornale di cassa
+      tags:
+      - giornaleDiCassa
+  /{idA2A}/PA/{codEnte}/disponibilita:
+    get:
+      description: |
+        ENTE: Lista disponibilità liquide relative ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataUploadDa'
+      - $ref: '#/components/parameters/dataUploadA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiUpload'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista disponibilità liquide
+      tags:
+      - disponibilitaLiquide
+    post:
+      description: |
+        TESORIERE: Upload Disponibilità liquide relative ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      requestBody:
+        content:
+          application/zip:
+            schema:
+              format: binary
+              type: string
+        description: Disponibilità liquide in formato ZIP.
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussoDataUpload'
+          description: Disponibilità liquide inviate con successo
+          headers:
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '413':
+          description: body della richiesta troppo grande
+        '415':
+          description: 'assenza dell''header della richiesta `Content-Type: application/zip`
+            o header valorizzato diversamente oppure body della richiesta non in formato
+            zip'
+        '422':
+          description: body della richiesta non aderente al suo schema XSD o comunque
+            di complessità troppo elevata
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '460':
+          description: identificativo A2A del tramite della PA oppure codice UNI_UO
+            della PA, entrambi specificati nel messaggio inviato, non ancora abilitato
+        '461':
+          description: identificativo A2A del tramite della BT oppure codice ABI della
+            BT, entrambi specificati nel messaggio inviato, non censiti in anagrafica
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Invio disponibilità liquide
+      tags:
+      - disponibilitaLiquide
+  /{idA2A}/PA/{codEnte}/disponibilita/ack:
+    get:
+      description: |
+        TESORIERE: Lista Ack Disponibilità liquide relative ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/dataProduzioneDa'
+      - $ref: '#/components/parameters/dataProduzioneA'
+      - $ref: '#/components/parameters/download'
+      - $ref: '#/components/parameters/pagina'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlussiPaginatiProduzione'
+          description: Ricerca completata con successo
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/json`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Lista ack disponibilità liquide
+      tags:
+      - disponibilitaLiquide
+
+  /{idA2A}/PA/{codEnte}/disponibilita/{progDisponibilita}:
+    get:
+      description: |
+        ENTE: Download disponibilità liquide relative ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progDisponibilita'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Disponibilità liquide in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download disponibilità liquide
+      tags:
+      - disponibilitaLiquide
+  /{idA2A}/PA/{codEnte}/disonibilita/{progDisponibilita}/ack:
+    get:
+      description: |
+        TESORIERE: Download Ack Disponibilità liquide relativo ad uno specifico Ente
+      parameters:
+      - $ref: '#/components/parameters/idA2A'
+      - $ref: '#/components/parameters/codEnte'
+      - $ref: '#/components/parameters/progDisponibilita'
+      responses:
+        '200':
+          content:
+            application/zip:
+              schema:
+                format: binary
+                type: string
+          description: Ack disponibilità liquide in formato ZIP
+        '400':
+          description: Bad Request
+        '401':
+          description: Identificativo A2A di chi origina la richiesta non ancora abilitato
+        '404':
+          description: Not Found
+        '406':
+          description: 'Assenza dell''header di richiesta `Accept: application/zip`'
+        '429':
+          description: richieste più frequenti di quanto consentito dalle regole di
+            throttling
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Limit:
+              description: The number of allowed requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Remaining:
+              description: The number of remaining requests in the current period
+              schema:
+                format: int32
+                type: integer
+            X-RateLimit-Reset:
+              description: The number of seconds left in the current period
+              schema:
+                format: int32
+                type: integer
+        '503':
+          description: Servizio non disponibile
+          headers:
+            Retry-After:
+              description: |-
+                Retry contacting the endpoint *at least* after seconds.
+                See https://tools.ietf.org/html/rfc7231#section-7.1.3
+              schema:
+                format: int32
+                type: integer
+        default:
+          description: Errore non atteso
+      summary: Download ack disponibilità liquide
+      tags:
+      - disponibilitaLiquide

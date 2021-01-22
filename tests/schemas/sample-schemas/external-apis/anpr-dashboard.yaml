@@ -1,0 +1,367 @@
+#
+# Questo e' un progetto d'esempio in formato OpenAPI 3.0 API Starter Kit.
+#
+# Stai per sviluppare un API? Segui attentamente questo template e
+#   potrai integrarla facilmente in Developers Italia.
+#
+openapi: 3.0.2
+info:
+  version: "1.0.0"
+  # Il `title` e' il nome del tuo prodotto/servizio!
+  # E' la prima cosa ad apparire in pagine web e cataloghi.
+  # Dev'essere chiaro e conciso.
+  title: |-
+    ANPR Dashboard API
+  x-summary: >-
+    Informazioni sulllo stato di ANPR.
+  description: |
+    #### Documentazione
+    ANPR è l'Anagrafe Nazionale della Popolazione Residente [anpr].
+
+    Con ANPR le amministrazioni possono dialogare in maniera efficiente
+    tra di loro avendo una fonte unica e certa per i dati dei cittadini.
+
+    ANPR consente ai cittadini di ottenere vantaggi immediati
+    quali la richiesta di certificati anagrafici in tutti i comuni,
+    cambio di residenza più semplice ed immediato ed
+    a breve la possibilità di ottenere certificati da un portale unico.
+
+    Queste API permettono di recuperare le informazioni
+    aggiornate su base periodica relative allo stato della migrazione
+    dei comuni italiani.
+
+
+    #### Note
+
+    Usa questa sezione per annotazioni specifiche, riferimenti normativi e/o
+    per manleve ed esclusioni di responsabilita' eventualmente non incluse in `termsOfService`.
+
+    #### Informazioni tecniche ed esempi
+
+    Qui e' possibile introdurre brevi informazioni tecniche ed esempi.
+    Attenzione: la `description` non sostituisce la documentazione di progetto,
+    deve pero' facilitare l'esecuzione delle prime richieste.
+
+
+    [//]: # (Riferimenti)
+
+    [anpr]: https://anpr.interno.it/
+
+  # I termini del servizio contengono un riferimento
+  #   a tutte le indicazioni e le note legali per l'utilizzo
+  #   del servizio, inclusi gli eventuali riferimenti utili al GDPR.
+  termsOfService: https://dashboard.anpr.it
+  # Chi posso contattare per informazioni sul servizio e sul suo stato?
+  contact:
+    email: roberto@teamdigitale.governo.it
+    name: Roberto Polli
+    url: https://twitter.com/ioggstream
+  x-project: anpr
+  # L'audience delle API. Attualmente e' definito solamente
+  #   la tipologia `public`.
+  x-audience:
+    - public
+  # Ogni API deve avere un UUID, invariante nel tempo e
+  #   rispetto al `title`.
+  x-api-id: b7e4f1be-747a-4378-9d5a-2174975f3e11
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  x-lifecycle:
+    maturity: developing
+# Una lista di `tag` utili a raggruppare le varie operazioni
+#   eseguite dalle API. Ogni `tag` puo' referenziare un link
+#   alla sua descrizione.
+tags:
+  - name: public
+    description: |-
+      Informazioni pubbliche sulla migrazione in ANPR.
+
+# Uno o piu' server di erogazione.
+#   Puo' essere utile indicare gli indirizzi di collaudo,
+#   sviluppo e test.
+servers:
+  - description: Produzione
+    url: https://dashboard.anpr.it/api/
+    x-healthCheck:
+      interval: 300
+      timeout: 10
+      url: https://dashboard.anpr.it/api/016024
+  - description: Development server
+    url: http://localhost:8080/api
+    x-sandbox: yes
+
+x-commons:
+  common-responses: &common-responses
+    '429':
+      $ref: '#/components/responses/429TooManyRequests'
+    '503':
+      $ref: '#/components/responses/503ServiceUnavailable'
+    default:
+      $ref: '#/components/responses/default'
+  common-headers: &common-headers
+    X-RateLimit-Limit:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/headers/X-RateLimit-Limit'
+    X-RateLimit-Remaining:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/headers/X-RateLimit-Remaining'
+    X-RateLimit-Reset:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/headers/X-RateLimit-Reset'
+#
+# Qui vanno tutti i path.
+#
+paths:
+  /comune/{istat_code}:
+    get:
+      summary: Recupera lo stato di migrazione di un comune.
+      description: |
+        Si connette ad IndicePA e recupera le informazioni su
+        un'amministrazione tramite il codice IPA.
+      operationId: get_comune
+      tags:
+      - public
+      parameters:
+        - $ref: "#/components/parameters/istat_code"
+      responses:
+        <<: *common-responses
+        '200':
+          description: |
+            Il comune  e' stato trovato e le informazioni sono state recuperate
+            con successo.
+          headers:
+            <<: *common-headers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Result'
+  /dashboard/data.json:
+    get:
+      summary: Mostra tutti i dati.
+      description: |
+        Recupera i dati di tutti i comuni.
+      operationId: get_all_data
+      tags:
+      - public
+      responses:
+        '200':
+          description: |
+            I dati di tutti i comuni sono stati ritornati con successo.
+          headers:
+            <<: *common-headers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Dump'
+
+components:
+  parameters:
+    istat_code:
+      name: istat_code
+      in: path
+      description: Il codice ISTAT del comune.
+      required: true
+      example: "016024"
+      schema:
+        type: string
+
+  responses:
+    # Predefined error codes for this API
+    400BadRequest:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/responses/400BadRequest'
+    404NotFound:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/responses/404NotFound'
+    429TooManyRequests:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/responses/429TooManyRequests'
+    503ServiceUnavailable:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/responses/503ServiceUnavailable'
+    default:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.5/definitions.yaml#/responses/default'
+
+  schemas:
+    Result:
+      properties:
+        result:
+          type: string
+        error:
+          type: string
+          default: ""
+        data:
+          $ref: '#/components/schemas/Comune'
+
+    Dump:
+      description: |-
+        Un file con tutte le statistiche della dashboard ANPR che include
+        i valori di riepilogo e lo stato puntuale dei comuni.
+      properties:
+        geojson:
+          $ref: '#/components/schemas/GeoJson'
+        summaries:
+          type: object
+          properties:
+            com_sub:
+              type: integer
+            pop_sub:
+              type: integer
+            com_pre:
+              type: integer
+            pop_pre:
+              type: integer
+            pop_aire:
+              type: integer
+            pop_pre_aire:
+              type: integer
+          required:
+            - com_sub
+            - pop_sub
+            - com_pre
+            - pop_pre
+            - pop_aire
+            - pop_pre_aire
+        fornitori:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fornitori'
+        charts:
+          properties:
+            subentro:
+              type: array
+              items:
+                $ref: '#/components/schemas/Chart'
+            presubentro:
+              type: array
+              items:
+                $ref: '#/components/schemas/Chart'
+    Chart:
+      type: object
+      properties:
+        date:
+          type: string
+        comuni:
+          type: integer
+        popolazione:
+          type: integer
+        popolazione_aire:
+          type: integer
+      required:
+        - date
+        - comuni
+        - popolazione
+        - popolazione_aire
+    GeoJson:
+      properties:
+        type:
+          type: string
+          example: Feature
+        features:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeoJsonFeature'
+    GeoJsonFeature:
+      description: |-
+        Informazioni sul comune e sue coordinate geografiche.
+      properties:
+        type:
+          type: string
+          enum:
+          - Feature
+        geometry:
+          $ref: https://geojson.org/schema/Point.json
+        properties:
+          $ref: '#/components/schemas/Properties'
+    Fornitori:
+      type: object
+      properties:
+        percentuale_comuni_subentrati:
+          type: integer
+        percentuale_comuni_in_presubentro:
+          type: integer
+        percentuale_comuni_inattivi:
+          type: integer
+        nome:
+          type: string
+      required:
+        - percentuale_comuni_subentrati
+        - percentuale_comuni_in_presubentro
+        - percentuale_comuni_inattivi
+        - nome
+    Properties:
+      description: |
+        Informazioni sullo stato di migrazione ANPR del comune.
+      type: object
+      properties:
+        PROVINCIA:
+          type: string
+        REGIONE:
+          type: string
+        ZONA:
+          type: string
+        data_presubentro:
+          type: string
+        data_subentro_preferita:
+          type: string
+        label:
+          type: string
+        popolazione:
+          type: integer
+        popolazione_aire:
+          type: integer
+        prima_data_subentro:
+          type: string
+        ultima_data_subentro:
+          type: string
+      required:
+        - PROVINCIA
+        - REGIONE
+        - ZONA
+        - data_presubentro
+        - data_subentro_preferita
+        - label
+        - popolazione
+        - popolazione_aire
+        - prima_data_subentro
+        - ultima_data_subentro
+      example:
+        PROVINCIA: Treviso
+        REGIONE: Veneto
+        ZONA: Nord-Est
+        data_presubentro: 29/11/2018
+        data_subentro_preferita: 07/10/2019
+        label: PEDEROBBA
+        popolazione: 7355
+        popolazione_aire: 0
+        prima_data_subentro: 07/10/2019
+        ultima_data_subentro: 11/10/2019
+
+    Comune:
+      description: |
+        Dati puntuali sullo stato di migrazione del comune e dell'eventuale
+        intervallo di subentro - se pianificato.
+      properties:
+        CodiceIstat:
+          type: string
+        Name:
+          type: string
+        DataSubentro:
+          type: string
+          format: date-time
+        DataAbilitazione:
+          type: string
+          format: date-time
+        DataPresubentro:
+          type: string
+          format: date-time
+        PianificazioneIntervalloSubentro:
+          $ref: '#/components/schemas/IntervalloSubentro'
+    IntervalloSubentro:
+      properties:
+        From:
+          type: string
+          format: date-time
+        To:
+          type: string
+          format: date-time
+        PreferredDate:
+          type: string
+          format: date-time
+        IP:
+          type: string
+          default: null

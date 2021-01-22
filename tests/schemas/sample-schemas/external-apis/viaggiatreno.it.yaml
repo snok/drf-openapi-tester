@@ -1,0 +1,1019 @@
+openapi: 3.0.2
+info:
+    title: viaggiatreno
+    version: 1.0.0
+    description: |
+        Descrittore non ufficiale OAS3 per le API erogate dal sito http://www.viaggiatreno.it/
+    termsOfService: http://www.viaggiatreno.it/viaggiatrenomobile/pages/noteLegali/noteLegali.jsp
+servers:
+    -
+        url: 'http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/'
+paths:
+    '/andamentoTreno/{andamentotrenoId}':
+        summary: Path used to manage a single AndamentoTreno.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an `AndamentoTreno`.
+            This path contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and
+            delete tasks, respectively.
+        get:
+            parameters:
+                -
+                    name: andamentotrenoId
+                    schema:
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AndamentoTreno'
+                    description: Successful response - returns a single `AndamentoTreno`.
+            operationId: getAndamentoTreno
+            summary: Get a AndamentoTreno
+            description: Gets the details of a single instance of a `AndamentoTreno`.
+    '/autocompletaStazione/{stazione}':
+        get:
+            responses:
+                '200':
+                    content:
+                        text/plain:
+                            examples:
+                                StazioniCodice:
+                                    value: |
+                                        LATIANO|S11606
+                                        LATINA|S08608
+                                        LATISANA LIGNANO B.|S03202
+                    description: |
+                        Una lista di stazioni che inizia per la stringa passata
+                        in `stazione`.
+        parameters:
+            -
+                name: stazione
+                schema:
+                    description: La parte iniziale del nome della stazione da ricercare.
+                    type: string
+                    example: LAT
+                in: path
+                required: true
+    '/fermata/{fermataId}':
+        summary: Path used to manage a single Fermata.
+        description: todo.
+        get:
+            parameters:
+                -
+                    name: fermataId
+                    description: A unique identifier for a `Fermata`.
+                    schema:
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Fermata'
+                    description: Successful response - returns a single `Fermata`.
+            operationId: getFermata
+            summary: Get a Fermata
+            description: Gets the details of a single instance of a `Fermata`.
+    '/elencoStazioni/{regione}':
+        get:
+            parameters:
+                -
+                    name: regione
+                    schema:
+                        format: int32
+                        type: number
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ElencoStazioni'
+                    description: elenco delle stazioni per regione
+    '/regione/{idStazione}':
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                format: int32
+                                type: integer
+                    description: Numeric identifier of the region
+            summary: ritorna la regione di appartenenza di una stazione.
+        parameters:
+            -
+                $ref: '#/components/parameters/IdStazione'
+    '/partenze/{idStazione}/{httpDate}':
+        get:
+            parameters:
+                -
+                    $ref: '#/components/parameters/IdStazione'
+                -
+                    name: httpDate
+                    schema:
+                        type: string
+                    in: path
+                    required: true
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Partenze'
+                    description: |
+                        Una lista di treni che partono dalla stazione indicata
+                        in un intervallo della data indicata.
+    '/dettagliostazione/{idStazione}/{regione}':
+        summary: Path used to manage a single DettaglioStazione.
+        description: >-
+            The REST endpoint/path used to get, update, and delete single instances of an
+            `DettaglioStazione`.  This path contains `GET`, `PUT`, and `DELETE` operations used to perform the
+            get, update, and delete tasks, respectively.
+        get:
+            responses:
+                '200':
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DettaglioStazione'
+                    description: Successful response - returns a single `DettaglioStazione`.
+            operationId: getDettaglioStazione
+            summary: Get a DettaglioStazione
+            description: Gets the details of a single instance of a `DettaglioStazione`.
+        parameters:
+            -
+                $ref: '#/components/parameters/IdStazione'
+            -
+                name: regione
+                schema:
+                    format: int32
+                    type: number
+                in: path
+                required: true
+components:
+    schemas:
+        AndamentoTreno:
+            title: Root Type for AndamentoTreno
+            description: ''
+            type: object
+            properties:
+                tipoTreno:
+                    type: string
+                orientamento:
+                    type: string
+                codiceCliente:
+                    format: int32
+                    type: integer
+                fermateSoppresse:
+                    type: string
+                dataPartenza:
+                    type: string
+                fermate:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Fermata'
+                anormalita:
+                    type: string
+                provvedimenti:
+                    type: string
+                segnalazioni:
+                    type: string
+                oraUltimoRilevamento:
+                    format: int32
+                    type: integer
+                stazioneUltimoRilevamento:
+                    type: string
+                idDestinazione:
+                    type: string
+                idOrigine:
+                    type: string
+                cambiNumero:
+                    type: array
+                    items:
+                        type: object
+                        properties:
+                            nuovoNumeroTreno:
+                                type: string
+                            stazione:
+                                type: string
+                hasProvvedimenti:
+                    type: boolean
+                descOrientamento:
+                    type: array
+                    items:
+                        type: string
+                compOraUltimoRilevamento:
+                    type: string
+                motivoRitardoPrevalente:
+                    type: string
+                descrizioneVCO:
+                    type: string
+                materiale_label:
+                    type: string
+                numeroTreno:
+                    format: int32
+                    type: integer
+                categoria:
+                    type: string
+                categoriaDescrizione:
+                    type: string
+                origine:
+                    type: string
+                codOrigine:
+                    type: string
+                destinazione:
+                    type: string
+                codDestinazione:
+                    type: string
+                origineEstera:
+                    type: string
+                destinazioneEstera:
+                    type: string
+                oraPartenzaEstera:
+                    type: string
+                oraArrivoEstera:
+                    type: string
+                tratta:
+                    format: int32
+                    type: integer
+                regione:
+                    format: int32
+                    type: integer
+                origineZero:
+                    type: string
+                destinazioneZero:
+                    type: string
+                orarioPartenzaZero:
+                    format: int32
+                    type: integer
+                orarioArrivoZero:
+                    format: int32
+                    type: integer
+                circolante:
+                    type: boolean
+                binarioEffettivoArrivoCodice:
+                    type: string
+                binarioEffettivoArrivoDescrizione:
+                    type: string
+                binarioEffettivoArrivoTipo:
+                    type: string
+                binarioProgrammatoArrivoCodice:
+                    type: string
+                binarioProgrammatoArrivoDescrizione:
+                    type: string
+                binarioEffettivoPartenzaCodice:
+                    type: string
+                binarioEffettivoPartenzaDescrizione:
+                    type: string
+                binarioEffettivoPartenzaTipo:
+                    type: string
+                binarioProgrammatoPartenzaCodice:
+                    type: string
+                binarioProgrammatoPartenzaDescrizione:
+                    type: string
+                subTitle:
+                    type: string
+                esisteCorsaZero:
+                    type: string
+                inStazione:
+                    type: boolean
+                haCambiNumero:
+                    type: boolean
+                nonPartito:
+                    type: boolean
+                provvedimento:
+                    format: int32
+                    type: integer
+                riprogrammazione:
+                    type: string
+                orarioPartenza:
+                    format: int32
+                    type: integer
+                orarioArrivo:
+                    format: int32
+                    type: integer
+                stazionePartenza:
+                    type: string
+                stazioneArrivo:
+                    type: string
+                statoTreno:
+                    type: string
+                corrispondenze:
+                    type: string
+                servizi:
+                    type: array
+                    items: {}
+                ritardo:
+                    format: int32
+                    type: integer
+                tipoProdotto:
+                    type: string
+                compOrarioPartenzaZeroEffettivo:
+                    type: string
+                compOrarioArrivoZeroEffettivo:
+                    type: string
+                compOrarioPartenzaZero:
+                    type: string
+                compOrarioArrivoZero:
+                    type: string
+                compOrarioArrivo:
+                    type: string
+                compOrarioPartenza:
+                    type: string
+                compNumeroTreno:
+                    type: string
+                compOrientamento:
+                    type: array
+                    items:
+                        type: string
+                compTipologiaTreno:
+                    type: string
+                compClassRitardoTxt:
+                    type: string
+                compClassRitardoLine:
+                    type: string
+                compImgRitardo2:
+                    type: string
+                compImgRitardo:
+                    type: string
+                compRitardo:
+                    type: array
+                    items:
+                        type: string
+                compRitardoAndamento:
+                    type: array
+                    items:
+                        type: string
+                compInStazionePartenza:
+                    type: array
+                    items:
+                        type: string
+                compInStazioneArrivo:
+                    type: array
+                    items:
+                        type: string
+                compOrarioEffettivoArrivo:
+                    type: string
+                compDurata:
+                    type: string
+                compImgCambiNumerazione:
+                    type: string
+            example:
+                tipoTreno: PG
+                codiceCliente: 2
+                fermate:
+                    -
+                        stazione: TORINO STURA
+                        id: S00228
+                        programmata: 1577596860000
+                        effettiva: 1577596950000
+                        ritardo: 2
+                        partenza_teorica: 1577596860000
+                        isNextChanged: false
+                        partenzaReale: 1577596950000
+                        ritardoPartenza: 2
+                        ritardoArrivo: 0
+                        progressivo: 1
+                        binarioEffettivoPartenzaCodice: '669'
+                        binarioEffettivoPartenzaTipo: '0'
+                        binarioEffettivoPartenzaDescrizione: '6'
+                        binarioProgrammatoPartenzaDescrizione: '6'
+                        tipoFermata: P
+                        visualizzaPrevista: true
+                        nextChanged: false
+                        nextTrattaType: 0
+                        actualFermataType: 1
+                    -
+                        stazione: ASTI
+                        id: S00462
+                        programmata: 1577601120000
+                        effettiva: 1577600940000
+                        ritardo: -3
+                        arrivo_teorico: 1577601120000
+                        isNextChanged: false
+                        arrivoReale: 1577600940000
+                        ritardoPartenza: 0
+                        ritardoArrivo: -3
+                        progressivo: 15
+                        binarioEffettivoArrivoCodice: '0'
+                        binarioEffettivoArrivoTipo: '0'
+                        binarioEffettivoArrivoDescrizione: '2'
+                        binarioProgrammatoArrivoDescrizione: '1'
+                        tipoFermata: A
+                        visualizzaPrevista: true
+                        nextChanged: false
+                        nextTrattaType: 2
+                        actualFermataType: 1
+                oraUltimoRilevamento: 1577600940000
+                stazioneUltimoRilevamento: ASTI
+                idDestinazione: S00462
+                idOrigine: S00228
+                cambiNumero:
+                    -
+                        nuovoNumeroTreno: '4641'
+                        stazione: TORINO LINGOTTO
+                hasProvvedimenti: false
+                descOrientamento:
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                compOraUltimoRilevamento: '07:29'
+                descrizioneVCO: ''
+                numeroTreno: 4640
+                categoria: REG
+                origine: TORINO STURA
+                destinazione: ASTI
+                tratta: 0
+                regione: 0
+                origineZero: TORINO STURA
+                destinazioneZero: ASTI
+                orarioPartenzaZero: 1577596860000
+                orarioArrivoZero: 1577601120000
+                circolante: true
+                subTitle: ''
+                esisteCorsaZero: '0'
+                inStazione: false
+                haCambiNumero: false
+                nonPartito: false
+                provvedimento: 0
+                orarioPartenza: 1577596860000
+                orarioArrivo: 1577601120000
+                servizi: []
+                ritardo: -3
+                tipoProdotto: ''
+                compOrarioPartenzaZeroEffettivo: '06:18'
+                compOrarioArrivoZeroEffettivo: '07:32'
+                compOrarioPartenzaZero: '06:21'
+                compOrarioArrivoZero: '07:32'
+                compOrarioArrivo: '07:32'
+                compOrarioPartenza: '06:21'
+                compNumeroTreno: REG 4640
+                compOrientamento:
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                    - '--'
+                compTipologiaTreno: regionale
+                compClassRitardoTxt: ''
+                compClassRitardoLine: regolare_line
+                compImgRitardo2: ''
+                compImgRitardo: /vt_static/img/legenda/icone_legenda/regolare.png
+                compRitardo:
+                    - anticipo 3 min.
+                    - advance 3 min.
+                    - 'Verfr&#252hung 3 Min.'
+                    - avance de 3 min.
+                    - adelanto de 3 min.
+                    - avans 3 min.
+                    - 繰上 3 分
+                    - 提前 3分钟
+                    - впереди на 3 минут
+                compRitardoAndamento:
+                    - con un anticipo di 3 min.
+                    - 3 minutes early
+                    - mit einem Vorsprung von 3 Min.
+                    - en avance de 3 min.
+                    - est&aacute; adelantado 3 min.
+                    - cu un avans de 3 min.
+                    - 3 分の繰上
+                    - 提前 3分钟
+                    - con un anticipo di 3 min.
+                compInStazionePartenza:
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                compInStazioneArrivo:
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                    - ''
+                compOrarioEffettivoArrivo: '/vt_static/img/legenda/icone_legenda/regolare.png07:29'
+                compDurata: 71
+                compImgCambiNumerazione: '&nbsp;&nbsp;'
+        Localita:
+            type: object
+            properties:
+                nomeLungo:
+                    type: string
+                nomeBreve:
+                    type: string
+                label:
+                    type: string
+                id:
+                    type: string
+            example:
+                nomeLungo: ASTI
+                nomeBreve: Asti
+                label: Asti
+                id: S00462
+        Fermata:
+            type: object
+            properties:
+                orientamento:
+                    type: string
+                kcNumTreno:
+                    type: string
+                stazione:
+                    type: string
+                id:
+                    type: string
+                listaCorrispondenze:
+                    type: string
+                programmata:
+                    format: int32
+                    type: integer
+                programmataZero:
+                    type: string
+                effettiva:
+                    format: int32
+                    type: integer
+                ritardo:
+                    format: int32
+                    type: integer
+                partenzaTeoricaZero:
+                    type: string
+                arrivoTeoricoZero:
+                    type: string
+                partenza_teorica:
+                    format: int32
+                    type: integer
+                arrivo_teorico:
+                    type: string
+                isNextChanged:
+                    type: boolean
+                partenzaReale:
+                    format: int32
+                    type: integer
+                arrivoReale:
+                    type: string
+                ritardoPartenza:
+                    format: int32
+                    type: integer
+                ritardoArrivo:
+                    format: int32
+                    type: integer
+                progressivo:
+                    format: int32
+                    type: integer
+                binarioEffettivoArrivoCodice:
+                    type: string
+                binarioEffettivoArrivoTipo:
+                    type: string
+                binarioEffettivoArrivoDescrizione:
+                    type: string
+                binarioProgrammatoArrivoCodice:
+                    type: string
+                binarioProgrammatoArrivoDescrizione:
+                    type: string
+                binarioEffettivoPartenzaCodice:
+                    type: string
+                binarioEffettivoPartenzaTipo:
+                    type: string
+                binarioEffettivoPartenzaDescrizione:
+                    type: string
+                binarioProgrammatoPartenzaCodice:
+                    type: string
+                binarioProgrammatoPartenzaDescrizione:
+                    type: string
+                tipoFermata:
+                    type: string
+                visualizzaPrevista:
+                    type: boolean
+                nextChanged:
+                    type: boolean
+                nextTrattaType:
+                    format: int32
+                    type: integer
+                actualFermataType:
+                    format: int32
+                    type: integer
+                materiale_label:
+                    type: string
+            example:
+                stazione: TORINO STURA
+                id: S00228
+                programmata: 1577596860000
+                effettiva: 1577596950000
+                ritardo: 2
+                partenza_teorica: 1577596860000
+                isNextChanged: false
+                partenzaReale: 1577596950000
+                ritardoPartenza: 2
+                ritardoArrivo: 0
+                progressivo: 1
+                binarioEffettivoPartenzaCodice: '669'
+                binarioEffettivoPartenzaTipo: '0'
+                binarioEffettivoPartenzaDescrizione: '6'
+                binarioProgrammatoPartenzaDescrizione: '6'
+                tipoFermata: P
+                visualizzaPrevista: true
+                nextChanged: false
+                nextTrattaType: 0
+                actualFermataType: 1
+        DettaglioZoomStazione:
+          type: object
+          properties:
+              codiceStazione:
+                  type: string
+              zoomStartRange:
+                  format: int32
+                  type: integer
+              zoomStopRange:
+                  format: int32
+                  type: integer
+              pinpointVisibile:
+                  type: boolean
+              pinpointVisible:
+                  type: boolean
+              labelVisibile:
+                  type: boolean
+              labelVisible:
+                  type: boolean
+              codiceRegione:
+                  type: string
+          example:
+              codiceStazione: S00462
+              zoomStartRange: 10
+              zoomStopRange: 11
+              pinpointVisibile: true
+              pinpointVisible: true
+              labelVisibile: true
+              labelVisible: true
+        DettaglioStazione:
+            description: ''
+            type: object
+            properties:
+                codReg:
+                    format: int32
+                    type: integer
+                tipoStazione:
+                    format: int32
+                    type: integer
+                dettZoomStaz:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/DettaglioZoomStazione'
+                pstaz:
+                    type: array
+                    items: {}
+                mappaCitta:
+                    type: object
+                    properties:
+                        urlImagePinpoint:
+                            type: string
+                        urlImageBaloon:
+                            type: string
+                codiceStazione:
+                    type: string
+                codStazione:
+                    type: string
+                lat:
+                    format: double
+                    type: number
+                lon:
+                    format: double
+                    type: number
+                latMappaCitta:
+                    format: int32
+                    type: integer
+                lonMappaCitta:
+                    format: int32
+                    type: integer
+                localita:
+                    $ref: '#/components/schemas/Localita'
+                esterno:
+                    type: boolean
+                offsetX:
+                    format: int32
+                    type: integer
+                offsetY:
+                    format: int32
+                    type: integer
+                nomeCitta:
+                    type: string
+            example:
+                codReg: 3
+                tipoStazione: 3
+                dettZoomStaz:
+                    -
+                        codiceStazione: S00462
+                        zoomStartRange: 8
+                        zoomStopRange: 9
+                        pinpointVisibile: true
+                        pinpointVisible: true
+                        labelVisibile: true
+                        labelVisible: true
+                    -
+                        codiceStazione: S00462
+                        zoomStartRange: 10
+                        zoomStopRange: 11
+                        pinpointVisibile: true
+                        pinpointVisible: true
+                        labelVisibile: true
+                        labelVisible: true
+                pstaz: []
+                mappaCitta:
+                    urlImagePinpoint: ''
+                    urlImageBaloon: ''
+                codiceStazione: S00462
+                codStazione: S00462
+                lat: 44.89479
+                lon: 8.208112
+                latMappaCitta: 0
+                lonMappaCitta: 0
+                localita:
+                    nomeLungo: ASTI
+                    nomeBreve: Asti
+                    label: Asti
+                    id: S00462
+                esterno: false
+                offsetX: -4
+                offsetY: 18
+                nomeCitta: Asti
+        ElencoStazioni:
+            description: ''
+            type: array
+            items:
+              $ref:  '#/components/schemas/DettaglioStazione'
+        Partenze:
+            description: ''
+            type: array
+            items:
+                type: object
+                properties:
+                    numeroTreno:
+                        format: int32
+                        type: integer
+                    categoria:
+                        type: string
+                    categoriaDescrizione:
+                        type: string
+                    origine:
+                        type: string
+                    codOrigine:
+                        type: string
+                    destinazione:
+                        type: string
+                    codDestinazione:
+                        type: string
+                    origineEstera:
+                        type: string
+                    destinazioneEstera:
+                        type: string
+                    oraPartenzaEstera:
+                        type: string
+                    oraArrivoEstera:
+                        type: string
+                    tratta:
+                        format: int32
+                        type: integer
+                    regione:
+                        format: int32
+                        type: integer
+                    origineZero:
+                        type: string
+                    destinazioneZero:
+                        type: string
+                    orarioPartenzaZero:
+                        type: string
+                    orarioArrivoZero:
+                        type: string
+                    circolante:
+                        type: boolean
+                    codiceCliente:
+                        format: int32
+                        type: integer
+                    binarioEffettivoArrivoCodice:
+                        type: string
+                    binarioEffettivoArrivoDescrizione:
+                        type: string
+                    binarioEffettivoArrivoTipo:
+                        type: string
+                    binarioEffettivoPartenzaCodice:
+                        type: string
+                    binarioEffettivoPartenzaDescrizione:
+                        type: string
+                    binarioEffettivoPartenzaTipo:
+                        type: string
+                    binarioProgrammatoPartenzaCodice:
+                        type: string
+                    binarioProgrammatoPartenzaDescrizione:
+                        type: string
+                    binarioProgrammatoArrivoCodice:
+                        type: string
+                    binarioProgrammatoArrivoDescrizione:
+                        type: string
+                    subTitle:
+                        type: string
+                    esisteCorsaZero:
+                        type: string
+                    orientamento:
+                        type: string
+                    inStazione:
+                        type: boolean
+                    haCambiNumero:
+                        type: boolean
+                    nonPartito:
+                        type: boolean
+                    provvedimento:
+                        format: int32
+                        type: integer
+                    riprogrammazione:
+                        type: string
+                    orarioPartenza:
+                        format: int32
+                        type: integer
+                    orarioArrivo:
+                        type: string
+                    stazionePartenza:
+                        type: string
+                    stazioneArrivo:
+                        type: string
+                    statoTreno:
+                        type: string
+                    corrispondenze:
+                        type: string
+                    servizi:
+                        type: string
+                    ritardo:
+                        format: int32
+                        type: integer
+                    tipoProdotto:
+                        type: string
+                    compOrarioPartenzaZeroEffettivo:
+                        type: string
+                    compOrarioArrivoZeroEffettivo:
+                        type: string
+                    compOrarioPartenzaZero:
+                        type: string
+                    compOrarioArrivoZero:
+                        type: string
+                    compOrarioArrivo:
+                        type: string
+                    compOrarioPartenza:
+                        type: string
+                    compNumeroTreno:
+                        type: string
+                    compOrientamento:
+                        type: array
+                        items:
+                            type: string
+                    compTipologiaTreno:
+                        type: string
+                    compClassRitardoTxt:
+                        type: string
+                    compClassRitardoLine:
+                        type: string
+                    compImgRitardo2:
+                        type: string
+                    compImgRitardo:
+                        type: string
+                    compRitardo:
+                        type: array
+                        items:
+                            type: string
+                    compRitardoAndamento:
+                        type: array
+                        items:
+                            type: string
+                    compInStazionePartenza:
+                        type: array
+                        items:
+                            type: string
+                    compInStazioneArrivo:
+                        type: array
+                        items:
+                            type: string
+                    compOrarioEffettivoArrivo:
+                        type: string
+                    compDurata:
+                        type: string
+                    compImgCambiNumerazione:
+                        type: string
+                    materiale_label:
+                        type: string
+            example:
+                -
+                    numeroTreno: 12312
+                    categoria: REG
+                    codOrigine: S09218
+                    destinazione: ROMA TERMINI
+                    tratta: 0
+                    regione: 0
+                    circolante: true
+                    codiceCliente: 2
+                    binarioEffettivoPartenzaCodice: '0'
+                    binarioEffettivoPartenzaDescrizione: '1'
+                    binarioEffettivoPartenzaTipo: '0'
+                    binarioProgrammatoPartenzaDescrizione: '1'
+                    inStazione: true
+                    haCambiNumero: false
+                    nonPartito: false
+                    provvedimento: 0
+                    riprogrammazione: 'N'
+                    orarioPartenza: 1577641320000
+                    ritardo: 0
+                    tipoProdotto: ''
+                    compOrarioPartenzaZeroEffettivo: 1122
+                    compOrarioPartenzaZero: 1122
+                    compOrarioPartenza: 1122
+                    compNumeroTreno: REG 12312
+                    compOrientamento:
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                        - '--'
+                    compTipologiaTreno: regionale
+                    compClassRitardoTxt: ''
+                    compClassRitardoLine: regolare_line
+                    compImgRitardo2: ''
+                    compImgRitardo: /vt_static/img/legenda/icone_legenda/regolare.png
+                    compRitardo:
+                        - in orario
+                        - on time
+                        - ünktlich
+                        - à l'heure
+                        - en horario
+                        - conform orarului
+                        - 定刻
+                        - 按时
+                        - по расписанию
+                    compRitardoAndamento:
+                        - in orario
+                        - on time
+                        - ünktlich
+                        - à l'heure
+                        - en horario
+                        - conform orarului
+                        - 定刻
+                        - 按时
+                        - по расписанию
+                    compInStazionePartenza:
+                        - Partito
+                        - Departed
+                        - angefährt
+                        - Partit
+                        - Salido
+                        - Plecat
+                        - 発車済
+                        - 已出发
+                        - отправленный
+                    compInStazioneArrivo:
+                        - Arrivato
+                        - Arrived
+                        - angekommen
+                        - Arrivé
+                        - Llegado
+                        - Sosit
+                        - 到着済
+                        - 已到达
+                        - прибывший
+                    compDurata: ''
+                    compImgCambiNumerazione: '&nbsp;&nbsp;'
+        IdStazione:
+            description: Id Stazione
+            type: string
+            example: S12878
+    parameters:
+        IdStazione:
+            example: S08608
+            name: idStazione
+            description: A unique identifier for a `DettaglioStazione`.
+            schema:
+                $ref: '#/components/schemas/IdStazione'
+            in: path
+            required: true

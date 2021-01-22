@@ -1,0 +1,460 @@
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  title: |
+    Repertorio Nazionale dei Dati Territoriali
+  description: |
+    Il Repertorio Nazionale dei Dati Territoriali è il [catalogo nazionale dei metadati riguardanti i dati territoriali e i servizi ad essi relativi](https://geodati.gov.it/geoportale/che-cos-e-il-rndt) disponibili presso le Pubbliche Amministrazioni.
+
+    #### Documentazione
+    Il catalogo è una base di dati d'interesse nazionale, istituita dall' [art. 59 del Codice dell'Amministrazione Digitale](https://cad.readthedocs.io/it/v2017-12-13/_rst/capo5_sezione2_art59.html).
+    La ricerca (ad esempio, di dati territoriali su "Latina") ritorna una serie di informazioni che includono:
+
+      - la descrizione dei dati, eg. *Cartografia catastale in scala 1:2000*
+      - la copertura geografica
+      - la data di creazione e/o pubblicazione e/o ultima modifica dei dati
+      - i contatti dell'ente che li pubblica, eg. *Agenzia delle Entrate Direzione Centrale Catasto* con la relativa email
+
+    #### Note
+
+    L'interfaccia REST è fornita a supporto delle attività di sviluppo e di accessibilità, mentre **l'interfaccia ufficiale
+    basata sulle indicazioni della [Direttiva INSPIRE](https://geodati.gov.it/geoportale/direttiva-inspire)** è descritta
+    [qui](https://geodati.gov.it/geoportale/manuale-rndt).
+
+    L'endpoint in formato [CSW - Catalogo dei Servizi Web](https://it.wikipedia.org/wiki/Catalog_Service_for_the_Web) è disponibile qui:
+
+    ```
+    http://geodati.gov.it/RNDT/csw
+    ```
+
+    #### Informazioni tecniche ed esempi
+
+    Di default, i dati sono ritornati in `xml`; utilizzare `f=json` per richiedere dati in formato JSON.
+
+    Query:
+
+    ```
+    http 'https://geodati.gov.it/RNDT/rest/find/document?max=5&searchText=natura&f=json'
+    ```
+
+  termsOfService: 'https://geodati.gov.it/geoportale/note-legali'
+  contact:
+    email: "info@rndt.gov.it"
+    name: "Agenzia per l'Italia Digitale"
+    url: "https://geodati.gov.it/geoportale/responsabile-procedimento-pubblicazione"
+  x-api-id: 81e79570-58ae-4cb0-b3f3-554a476a1fb9
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: public
+    description: Public search.
+    externalDocs:
+      url: >-
+        https://github.com/Esri/geoportal-server/wiki/REST-API-Syntax
+servers:
+  - description: Geodati Server.
+    url: >-
+      https://geodati.gov.it/RNDT/rest
+
+paths:
+  /find/document:
+    get:
+      summary: Search documents.
+      description: |
+        Search data into the catalog.
+      operationId: findDocument
+      tags:
+      - public
+      parameters:
+      - name: bbox
+        in: query
+        description: |
+          Query by extent specified as two pairs of coordinates (west-south and east-north).
+          Comma-delimited string of integers between -180,180 and -90, 90.
+        example: -179,-5,120,17
+        schema:
+          type: array
+          items:
+            type: integer
+          minItems: 4
+          maxItems: 4
+        explode: false
+        x-style: simple
+      - name: spatialRel
+        in: query
+        description: |
+          Query by spatial relationship. Used in conjunction with bbox parameter.
+          example: esriSpatialRelWithin
+        schema:
+          type: string
+          default: esriSpatialRelWithin
+          x-extensible-enum:
+          - esriSpatialRelWithin
+          - esriSpatialRelOverlaps
+      - name: searchText
+        in: query
+        description: |
+          Query by keyword. String value representing a keyword.
+          Note, as of version 1.1.1, you can use searchText=sys.schema.key to query
+          for documents that correspond to a specific metadata schema.
+
+          Eg:
+          ```
+          curl https://geodati.gov.it/RNDT/rest/find/document?searchText=INSPIRETheme:Idrografia&start=1&max=5&f=pjson
+          ```
+
+          For an exact match use double quotes. For example, see the syntax for two terms, `carta` and `geologica`:
+
+          - Exact: `searchText=title:"carta geologica"`
+          - Any: `searchText=title:carta geologica`
+          - All: `searchText=title:carta AND geologica`
+
+          example: `searchText=INSPIRETheme:Idrografia`
+        schema:
+          type: string
+
+      - name: contains
+        in: query
+        deprecated: true
+        description: |
+          Keyword concatenation options. This parameter is obsolete with the Lucene syntax (see Using Lucene Search Text Queries).
+        example: "Hawaii quads"
+        schema:
+          type: string
+      - name: contentType
+        in: query
+        description: |
+          Query by content type.  String value representing an Esri content type. See Javadoc for complete list.
+          example: TODO
+        schema:
+          type: string
+      - name: dataCategory
+        in: query
+        description: |
+          Query by data category (ISO 19115 themes).
+          Comma-delimited list of strings. Keywords identified by the ISO 19115 specification. See JavaDoc for complete list.
+        schema:
+          type: array
+          items:
+            type: string
+        explode: false
+        x-style: simple
+      - name: after
+        in: query
+        description: |
+          Query by date.
+          example: "2014-12-30"
+        schema:
+          type: string
+          format: date
+      - name: before
+        in: query
+        description: |
+          Query by date.
+          example: "2014-12-30"
+        example: TODO
+        schema:
+          type: string
+          format: date
+      - name: orderBy
+        in: query
+        description: |
+          Result sort options.
+        example: dateDescending
+        schema:
+          type: string
+          default: dateDescending
+          x-extensible-enum:
+          - dateDescending
+          - areaAscending
+          - areaDescending
+          - dateAscending
+          - format
+          - relevance
+          - title
+      - name: start
+        in: query
+        description: |
+          Specify which item to start the response with out of the entire resultset.
+          When used with the max parameter, this provides for pagination of the search results.
+        example: 12
+        schema:
+          type: integer
+      - name: max
+        in: query
+        required: true
+        description: |
+          Specify max number of records to retrieve.
+          There is a limit of max=100 on unqualified queries.
+          An 'unqualified query' is when there are no search parameters set.
+          The limit on qualified queries is max=5000. Default: 10.
+           When used with the start parameter, this provides for pagination of the search results.
+        example: 50
+        schema:
+          type: integer
+          default: 10
+      - name: geometryType
+        in: query
+        description: |
+          Defines how spatial data will be represented.
+        example: esriGeometryPolygon
+        schema:
+          type: string
+          default: esriGeometryPolygon
+          x-extensible-enum:
+          - esriGeometryPolygon
+          - esriGeometryPoint
+          - esriGeometryBox
+
+      - name: f
+        in: query
+        description: |
+          the response format.
+        example: json
+        schema:
+          type: string
+          default: georss
+          x-extensible-enum:
+          - georss
+          - atom
+          - json
+          - pjson
+          - xjson
+          - dcat (1.2.4)
+          - kml
+          - html
+          - htmlfragment
+          - searchpage (as of 1.1.1)
+          - CSV (as of 1.2)
+          - xjson
+
+      - name: style
+        in: query
+        description: |
+          CSS stylesheet for HTML results.
+          String value representing a URL to a stylesheet.
+        example: "https://geodati.gov.it/geoportale/templates/rndt/css/template.css"
+        schema:
+          type: string
+          format: url
+      - name: target
+        in: query
+        description: |
+          Behavior of links (open in same or new window).
+        schema:
+          type: string
+          x-extensible-enum:
+            - blank
+            - parent
+            - self
+            - top
+
+      - name: rid
+        in: query
+        description: |
+          Id associated with the repository. Multiple rid parameters
+          are allowed for comparing results between different repositories.
+        schema:
+          type: string
+
+      - name: rids
+        in: query
+        description: |
+          Comma Delimited rid. Can be used instead of the multiple rid parameters.
+        schema:
+          type: string
+
+      - name: maxSearchTimeMilliSec
+        in: query
+        description: |
+          Maximum amount of time allowed to retrieve results.
+        example: 5000
+        schema:
+          type: integer
+          default: 5000
+
+      - name: filter
+        in: query
+        description: |
+          Can apply a persistent filter to the search interface. See URL Filter Customization
+        schema:
+          type: string
+
+      responses:
+        '200':
+          description: |
+            A list of datasources.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref:  '#/components/schemas/Response'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '429':
+          $ref: '#/components/responses/429TooManyRequests'
+        '503':
+          $ref: '#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: '#/components/responses/default'
+
+components:
+  parameters:
+    limit:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/parameters/v3.yaml#/limit'
+    offset:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/parameters/v3.yaml#/offset'
+    sort:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/parameters/v3.yaml#/sort'
+
+  headers:
+    X-RateLimit-Limit:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/headers/v3.yaml#/X-RateLimit-Limit'
+    X-RateLimit-Remaining:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/headers/v3.yaml#/X-RateLimit-Remaining'
+    X-RateLimit-Reset:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/headers/v3.yaml#/X-RateLimit-Reset'
+
+  responses:
+    # Predefined error codes for this API
+    400BadRequest:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/responses/v3.yaml#/400BadRequest'
+    404NotFound:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/responses/v3.yaml#/404NotFound'
+    429TooManyRequests:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/responses/v3.yaml#/429TooManyRequests'
+    503ServiceUnavailable:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/responses/v3.yaml#/503ServiceUnavailable'
+    default:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/responses/v3.yaml#/default'
+
+  schemas:
+    Problem:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/schemas/problem.yaml#/Problem'
+    Response:
+      title: Root Type for Response
+      description: Geoportal response.
+      type: object
+      properties:
+        title:
+          type: string
+          example: Geoportal GeoRSS.
+        description:
+          type: string
+          example: Most recently updated documents
+        copyright:
+          type: string
+        updated:
+          format: date-time
+          type: string
+          example: "2018-05-14T09:07:55Z"
+        records:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+    Geometry:
+      title: Geometry
+      description: Geometry schema
+      type: object
+      properties:
+        coordinates:
+          type: array
+          items: {}
+          example:
+          - |-
+            - [12.7200248, 41.3830331]
+            - [12.7200248, 41.5616704]
+            - [13.0246195, 41.5616704]
+            - [13.0246195, 41.3830331]
+            - [12.7200248, 41.3830331]
+        type:
+          type: string
+          example: Polygon
+    Links:
+      title: Root Type for Links
+      description: The root of the Links type's schema.
+      type: object
+      properties:
+        href:
+          format: url
+          type: string
+          example: https://geodati.gov.it/geoportalRNDTPA/catalog/search/resource/details.page?uuid=age%3AD_E472_LATINA
+        type:
+          type: string
+          example: details
+        labelKey:
+          type: string
+          example: catalog.rest.viewDetails
+    PointOfContactOfData:
+      title: Root Type for PointOfContactOfData
+      description: The root of the PointOfContactOfData type's schema.
+      required:
+      - name
+      type: object
+      properties:
+        name:
+          type: string
+          example: Agenzia delle Entrate
+        email:
+          type: string
+          example: contatto@example.it
+        phone:
+          type: string
+    Record:
+      title: Root Type for Record
+      description: The root of the Record type's schema.
+      required:
+      - geometry
+      - bbox
+      - pointOfContactOfData
+      type: object
+      properties:
+        title:
+          type: string
+        id:
+          type: string
+        updated:
+          format: date-time
+          type: string
+          example: "2018-05-14T09:07:55Z"
+        summary:
+          type: string
+          example: Cartografia catastale
+        hierarchyLevel:
+          type: string
+          example: Dataset
+        responsibleOfData:
+          type: string
+          example: Agenzia delle Entrate
+        pointOfContactOfData:
+          $ref: '#/components/schemas/PointOfContactOfData'
+        keywords:
+          type: array
+          items:
+            type: string
+            example: Particelle catastali
+        bbox:
+          type: array
+          items:
+            format: double
+            type: number
+          example:
+          - 12.7200248
+          - 41.3830331
+          - 13.0246195
+          - 41.5616704
+        geometry:
+          $ref: '#/components/schemas/Geometry'
+        links:
+          type: array
+          items:
+            $ref: '#/components/schemas/Links'

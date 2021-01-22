@@ -1,0 +1,455 @@
+openapi: 3.0.0
+info:
+  title: API REST Dispositivi
+  version: '3.0'
+  x-summary: >
+    API per l'utilizzo dei servizi di gestione e trasmissione dei Corrispettivi.
+  description: |
+    API per l'utilizzo dei servizi di gestione e trasmissione dei Corrispettivi
+    dei Registratori Telematici.
+
+    ## Uso della firma XML
+
+    Dove è utilizzato il termine `file firmato` si fa riferimento ad un file in
+    formato xml firmato con Xml Signature conforme ad uno specifico elemento di
+    uno schema xml dove l'elemento `Signature` contiene la firma XML.
+
+    La definizione del formato della firma XML si trova in [xmldsig-core].
+
+    La firma XML è profilata per facilitare l'interoperabilità, in particolare:
+
+    - all'interno dell'elemento `Signature` non è presente l'elemento opzionale
+    `Object`
+
+    - all'interno dell'elemento `SignedInfo` è presente un unico elemento
+    `Reference` che identifica l'intero documento ( `URI=""` )
+
+    - viene utilizzato unicamente l'algoritmo di canonicalizzazione
+    `http://www.w3.org/TR/2001/REC-xml-c14n-20010315` come definito in [xml-c14n]
+
+
+    - viene utilizzato unicamente l'algoritmo di firma
+    `http://www.w3.org/2001/04/xmldsig-more#rsa-sha256` come definito in
+    [xmldsig-core]
+
+    - viene utilizzato unicamente l'algoritmo di hash
+    `http://www.w3.org/2001/04/xmlenc#sha256` come definito in [xmlenc-core]
+
+    - la trasformazione da applicare in fase di generazione della firma è quella
+    definita in [xmldsig-core] come
+    `http://www.w3.org/2000/09/xmldsig#envelopedsignature`
+
+    - l'elemento `KeyInfo` contiene unicamente il certificato della chiave di
+    firma
+
+    ## Allegati
+
+    Allegato [CodeList]
+
+    Schema [CorrispettiviMessaggiTypes_v1.0.xsd]
+
+    Specifiche originali su sito Agenzia Entrate [apirest-corrispettivi-dispositivi.yaml]
+
+    [//]: # (Riferimenti e URL)
+
+    [apirest-corrispettivi-dispositivi.yaml]: https://www.agenziaentrate.gov.it/portale/documents/20143/288260/APIREST+Corrispettivi+dispositivi+yaml_apirest-corrispettivi-dispositivi.yaml/54bdbe7c-c94d-ad7b-a42d-dd9ac48093eb
+    [xmldsig-core]: http://www.w3.org/TR/xmldsig-core/
+    [xml-c14n]: http://www.w3.org/TR/xml-c14n
+    [xmlenc-core]: http://www.w3.org/TR/xmlenc-core/
+    [CodeList]: https://www.agenziaentrate.gov.it/portale/documents/20143/288260/Allegato-Code-List-V.9.pdf/2013c654-150f-4ad2-1d9c-8f6c0f613b55
+    [CorrispettiviMessaggiTypes_v1.0.xsd]: https://www.agenziaentrate.gov.it/portale/documents/20143/343766/Provvedimento+28102016+trasmissione+telematica+corrispettivi_CorrispettiviMessaggiTypes_v1.0.xsd/2569977c-7b34-85c9-b598-191e3e605887
+
+  x-api-id: FIXME
+  contact:
+    url: https://www.agenziaentrate.gov.it/portale/Schede/Comunicazioni/Fatture+e+corrispettivi/Fatture+e+corrispettivi+ST/ST+invio+corrispettivi+Registratori+Telematici+temp/
+    name: Agenzia delle Entrate
+
+servers:
+  - url: 'https://api.corrispettivi.agenziaentrate.gov.it/v1'
+    description: Produzione
+externalDocs:
+  url: >-
+    https://www.agenziaentrate.gov.it/portale/Schede/Comunicazioni/Fatture+e+corrispettivi/Fatture+e+corrispettivi+ST/ST+invio+corrispettivi+Registratori+Telematici+temp/
+  description: Documentazione ufficiale sul sito di Agenzia delle Entrate.
+x-commons:
+  common-responses: &common-responses
+    '403':
+      description: Dispositivo non autorizzato alla richiesta
+    '429':
+      description: Superato il numero massimo di chiamate nell'unità di tempo
+    default:
+      description: Errore non previsto
+paths:
+  /dispositivi/:
+    post:
+      summary: Richiesta generazione del certificato per il dispositivo.
+      description: |
+        Richiede il certificato del dispositivo ed effettua il suo censimento,
+        per l'invio è necessario inviare un file firmato conforme all'elemento
+        `RichiestaCertificatoDispositivo` dello schema XSD
+        `CorrispettiviMessaggiType_1.0.xsd`.
+
+
+        Per ottenere il certificato è necessario richiamare il servizio fino
+        alla restituzione del codice http 201 ed il certificato in formato
+        X.509.
+
+
+        In caso di errore fare riferimento alla Tabella 1 dell'`Allegato  - `
+        [Code List].
+
+        Assicurarsi che i valori relativi al content-type siano conformi a quanto previsto:
+        * consumes: - application/xml
+        * produces: - application/xml
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/RichiestaCertificatoDispositivo'
+        description: certificato dispositivo
+        required: true
+      responses:
+        <<: *common-responses
+        '201':
+          description: |
+            Generazione certificato completata.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoRichiestaCertificatoDispositivo'
+        '202':
+          description: |
+            Generazione certificato in corso.
+        '406':
+          description: Parametri di input non validi
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoRichiestaCertificatoDispositivoErrore'
+        '409':
+          description: Certificato già censito
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoRichiestaCertificatoDispositivoErrore'
+
+    put:
+      summary: Attivazione del dispositivo.
+      description: |
+        Attiva il dispositivo associandolo al gestore, con il dettaglio del
+        verificatore che ha effettuato l'operazione.
+
+        Il file è un xml firmato col certificato del dispositivo e conforme
+        all'elemento `AttivaDispositivo` dello schema XSD
+        `CorrispettiviMessaggiType_1.0.xsd`.
+
+
+        In caso di errore fare riferimento alla Tabella 2
+        dell'[Allegato  - Code List]().
+
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/AttivaDispositivo'
+        description: dati attivazione
+        required: true
+      responses:
+        <<: *common-responses
+        '200':
+          description: |
+            Attivazione eseguita.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazione'
+        '406':
+          $ref: '#/components/responses/406OperazioneNonValida'
+        '409':
+          description: Dispositivo non attivabile
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazione409'
+
+  /dispositivi/corrispettivi/:
+    post:
+      summary: Invio dei corrispettivi.
+      description: >
+        Trasmette un file xml firmato con il certificato di firma del
+        dispositivo conforme all'elemento `DatiCorrispettivi` dello schema XSD
+        `CorrispettiviType_1.0.xsd`.
+
+
+        In caso di errore fare riferimento alla Tabella 3 dell'[Allegato  - Code List]().
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+              format: binary
+              description: >
+                File xml firmato con il certificato del dispositovo conforme
+                all'elemento `DatiCorrispettivi` dello schema
+                `CorrispettiviMessaggiType_1.0.xsd` contenente l'identificativo
+                operazione
+        required: true
+      responses:
+        '200':
+          description: |
+            Trasmissione eseguita.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazione'
+        '406':
+          $ref: '#/components/responses/406OperazioneNonValida'
+        '409':
+          $ref: '#/components/responses/409DispositivoNonValido'
+        <<: *common-responses
+
+  /dispositivi/datifatture/:
+    post:
+      summary: Invio i dati delle fatture.
+      description: |
+        Trasmette un file xml firmato con il certificato di firma del
+        dispositivo conforme all'elemento `DatiFattura` dello schema XSD
+        `DatiFattura_v1.0.xsd`.
+
+
+        In caso di errore fare riferimento alla Tabella 4 dell'
+        [Allegato  - Code List]().
+      responses:
+        '200':
+          description: |
+            Trasmissione eseguita.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazione'
+        '406':
+          $ref: '#/components/responses/406OperazioneNonValida'
+        '409':
+          $ref: '#/components/responses/409DispositivoNonValido'
+        <<: *common-responses
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EsitoOperazioneBody'
+        required: true
+  /dispositivi/scontrini/:
+    post:
+      summary: Invio gli scontrini parlanti.
+      description: >
+        Trasmette un file xml firmato con il certificato di firma del
+        dispositivo conforme all'elemento `Scontrino` dello schema XSD
+        `ScontriniType_v1.0.xsd`.
+
+
+        In caso di errore fare riferimento alla Tabella 5 dell' [Allegato  - Code List]().
+
+      responses:
+        '200':
+          description: |
+            Trasmissione eseguita.
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazione'
+        '406':
+          $ref: '#/components/responses/406OperazioneNonValida'
+        '409':
+          $ref: '#/components/responses/409DispositivoNonValido'
+        <<: *common-responses
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/Scontrino'
+        required: true
+  /dispositivi/evento/:
+    put:
+      summary: Invio di un evento da parte del dispositivo.
+      description: |
+        Invia un evento che modifica lo stato del dispositivo (i.e. guasto o
+        disattivazione).
+
+        Per i codici relativi alle tipologie di evento fare riferimento alla
+        Tabella 6 dell'`Allegato  - Code List`.
+
+        Per specificare il dettaglio dell'evento segnalato fare riferimento alla
+        Tabella 7 dell'`Allegato  - Code List`.
+
+        In caso di errore fare riferimento alla Tabella 8 dell'`Allegato  - Code
+        List`.
+
+      responses:
+        <<: *common-responses
+        '200':
+          description: anomalia registrata
+          content:
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/EsitoOperazioneErrore'
+        '409':
+          $ref: '#/components/responses/409DispositivoNonValido'
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              $ref: '#/components/schemas/EventoDispositivo'
+        required: true
+
+components:
+  responses:
+    406OperazioneNonValida:
+      description: Parametri di input non validi
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/EsitoOperazioneErrore'
+    409DispositivoNonValido:
+      description: Dispositivo non valido
+      content:
+        application/xml:
+          schema:
+            $ref: '#/components/schemas/EsitoOperazione409'
+
+  schemas:
+    EventoDispositivo:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+
+      type: string
+      format: binary
+      description: >
+        File xml firmato con il certificato del dispositovo conforme
+        all'elemento `EventoDispositivo` dello schema
+        `CorrispettiviMessaggiType_1.0.xsd` contenente l'identificativo
+        operazione
+
+    AttivaDispositivo:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+      type: string
+      format: binary
+      description: >
+        File xml firmato con il certificato del dispositovo conforme
+        all'elemento `AttivaDispositivo` dello schema XSD
+        `CorrispettiviMessaggiType_1.0.xsd`
+
+    Scontrino:
+      x-todo: url di ScontriniType_v1.0.xsd
+      type: string
+      format: binary
+      description: >
+        File xml firmato con il certificato del dispositovo conforme
+        all'elemento `Scontrino` dello schema `ScontriniType_v1.0.xsd`
+        contenente l'identificativo operazione
+
+    EsitoRichiestaCertificatoDispositivo:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+      type: string
+      format: binary
+      description: >
+        Restituisce un file xml firmato con il certificato del sistema
+        conforme all'elemento `EsitoRichiestaCertificatoDispositivo`
+        dello schema `CorrispettiviMessaggiType_1.0.xsd` contenente
+        l'identificativo operazione e il certificato X.509
+
+    EsitoRichiestaCertificatoDispositivoErrore:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+      type: string
+      format: binary
+      description: >
+        Restituisce un file xml firmato con il certificato del sistema
+        conforme all'elemento `EsitoRichiestaCertificatoDispositivo`
+        dello schema `CorrispettiviMessaggiType_1.0.xsd` contenente il
+        dettaglio degli errori riscontrati
+
+    EsitoOperazione:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+
+      type: string
+      format: binary
+      description: >
+        Il file xml resituito è firmato con il certificato del sistema
+        e conforme all'elemento `EsitoOperazione` dello schema
+        `CorrispettiviMessaggiType_1.0.xsd` contenente
+        l'identificativo dell'operazione
+
+    EsitoOperazioneBody:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+
+      type: string
+      format: binary
+      description: >
+        File xml firmato con il certificato del dispositovo conforme
+        all'elemento `EsitoOperazione` dello schema
+        `CorrispettiviMessaggiType_1.0.xsd` contenente l'identificativo
+        operazione
+
+
+    EsitoOperazioneErrore:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+
+      type: string
+      format: binary
+      description: >
+        Il file xml resituito è firmato con il certificato del sistema
+        e conforme all'elemento `EsitoOperazione` dello schema
+        `CorrispettiviMessaggiType_1.0.xsd` contenente il dettaglio
+        degli errori riscontrati
+
+    EsitoOperazione409:
+      externalDocs:
+        description: |
+          Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+      x-comment: |
+        nello yaml di AdE questa descrizione è associata ad un http status
+        code 409. La `description` però non indica la presenza di errori:
+        è corretto?
+
+      type: string
+      format: binary
+      description: >
+        Il file xml resituito è firmato con il certificato del sistema
+        e conforme all'elemento `EsitoOperazione` dello schema
+        `CorrispettiviMessaggiType_1.0.xsd` contenente
+        l'identificativo dell'operazione
+
+    RichiestaCertificatoDispositivo:
+      externalDocs:
+        description: |
+            Corrispettivi Messaggi - xsd
+        url: CorrispettiviMessaggiTypes_v1.0.xsd
+
+      type: string
+      format: binary
+      description: >
+        File xml conforme all'elemento `RichiestaCertificatoDispositivo`
+        dello schema XSD `CorrispettiviMessaggiType_1.0.xsd` firmato
+        utilizzando la XML Signature con il certificato di firma del
+        produttore e contenente la CSR (Certificate Signing Request). La
+        CSR dovrà avere nel CN l'identificativo univoco del dispositivo

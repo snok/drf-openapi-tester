@@ -1,0 +1,567 @@
+openapi: 3.0.0
+info:
+  version: 0.0.1beta
+  title: Bozza API esposizione osservazioni
+  x-summary: Osservazioni covid-19 per Unità Amministrativa
+  x-api-id: 6bd55174-6b64-4112-9d47-ed610b304cbf
+  termsOfService: https://null.example
+  contact:
+    name: Roberto Polli -
+    url: https://twitter.com/ioggstream
+    email: roberto@teamdigitale.governo.it
+  description: |-
+    Questa API permette di pubblicare delle collezioni di osservazioni di determinati parametri
+    associati a diverse unità amministrative con granularità griornaliera.
+
+    Le tipologie di unità amministrative supportate sono:
+    - comune, provinica (unità territoriale sovracomunale) regione.
+
+    Le osservazioni sono modellate utilizzanod l'ontologia italiana che permette di utilizzare
+    dei parametri univocamente determinati e dal significato ben definito.
+    Nella versione in beta attuale non è stato ancora definito il vocabolario dei parametri (observation parameter).
+    Gli erogatori possono col tempo aggiungere o rimuovere i parametri pubblicati.
+    La definizione dei parametri può essere recuperata tramite un apposito endpoint.
+    E' anche possibile ritornare insieme ad ogni singola osservazione dei metadati utili ad indicarne
+    il corretto significato.
+
+    Tramite la content-negotiation  ed i relativi header (Accept, Accept-Language) è possibile supportare:
+    - più lingue differenti (Eg. italiano e inglese);
+    - più media-type: application/json, application/geo+json e text/csv.
+    In particolare le response in geojson ritornano delle FeatureCollection dove ogni singola
+    collezione di dati è acclusa nelle properties di ogni feature.
+
+    Nota: una possibile semplificazione potrebbe permettere di ritornare un link al file geojson di riferimento.
+
+    La possibilità di fare ricerche è opzionale e supporta solo query limitate.
+
+    I path sono separati perché non è detto che la somma (eg. dei dati delle
+    province) corrisponda col totale
+
+    dei dati regionali a causa di possibili difficoltà nel campionamento o di
+    problematiche amministrative
+
+    (eg. trasferimenti, disallineamenti dovuti alla durata temporale dei
+    campionamenti, errori umani, ...).
+servers:
+- url: https://localhost/covid-19/v1
+  description: |-
+    development server
+  x-sandbox: true
+tags:
+  - name: data
+    description: Returns data.
+  - name: metadata
+    description: Returns metadata.
+x-commons:
+  common-responses: &common-responses
+    default:
+      $ref: '#/components/responses/default'
+    "429":
+      $ref: '#/components/responses/429'
+    "503":
+      $ref: '#/components/responses/503'
+
+
+paths:
+  /observations/administrative-units/{administrative_unit}/{administrative_unit_id}:
+    get:
+      tags:
+        - data
+      description: |-
+        Recupera una serie di osservazioni associate ad una unità amministrativa,
+        identificata dal codice istat.
+
+        Per recuperare osservazioni relative ad altre fonti possiamo definire
+        ulteriori endpoint.
+
+        Utilizzando questo modello di interfaccia, si limita l'esposizione
+        dei dati a dei profili ben specifici dove sono individuate
+        le unità amministrative di riferimento, i parametri di osservazione
+        esposti e gli intervalli temporali.
+        Questa scelta permette agli erogatori di individuare il perimetro
+        di esposizione desiderato.
+
+        E' possibile estendere questo modello ad altre fonti di dato (eg. le ASL)
+        o ad altre tipologie di dato aggiungendo nuovi endpoint,
+        o profilando tramite schemi autorizzativi (eg. openid connect) l'accessso
+        ai path.
+
+        Se i dati recuperabili da questo endpoint sono tutti pubblici, è possibile fare
+        caching sulle ricerche includendo anche i query-parameter. Se una parte dei dati deve essere
+        erogata tramite schemi autorizzativi il caching andrebbe o disabilitato o delegato a degli
+        endpoint destinati a profili pubblici.
+      operationId: observations.get_administrative_unit_data
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - name: administrative_unit
+        description: |-
+          The type of administrative unit, related to the
+          https://github.com/italia/daf-ontologie-vocabolari-controllati/tree/master/VocabolariControllati/territorial-classifications
+          vocabulary, in italian.
+        schema:
+          type: string
+          enum:
+          - regioni
+          - comuni
+          - province
+          example: regioni
+        in: path
+        required: true
+      - name: administrative_unit_id
+        description: |-
+          Administrative units use the Istat identifier.
+        schema:
+          type: string
+        examples:
+          Umbria:
+            summary: Umbria
+            value: 10
+        in: path
+        required: true
+      - name: metadata
+        in: query
+        description: |-
+          Include Observations metadata in the `_meta` property. This includes
+          administrative_unit information.
+        schema:
+          type: boolean
+          default: false
+      - name: recurse
+        in: query
+        description: |-
+          Returns observations from sub-administration units, eg. provinces and cities.
+          This feature can be disabled or delegated to another endpoint.
+          Json responses are enveloped in an object supporting the return of multiple datasets.
+        schema:
+          type: boolean
+          default: false
+      - name: embed
+        schema:
+          type: string
+        in: query
+      - name: phenomenon_time_start
+        in: query
+        schema:
+          $ref: '#/components/schemas/Temporal'
+      - name: phenomenon_time_end
+        in: query
+        schema:
+          $ref: '#/components/schemas/Temporal'
+      - name: parameter_ids
+        in: query
+        schema:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObservationParameterId'
+      responses:
+        <<: *common-responses
+        '200':
+          $ref: '#/components/responses/AdministrativeUnitDatasets'
+
+  /observation-parameters/{parameter_id}:
+    get:
+      description: |-
+        This endpoint helps to identify the semantic definition of an observation parameter.
+      operationId: observations.get_parameter
+      tags:
+        - metadata
+      parameters:
+      - $ref: '#/components/parameters/AcceptLanguage'
+      - name: parameter_id
+        schema:
+          $ref: '#/components/schemas/ObservationParameterId'
+        in: path
+        required: true
+      responses:
+        <<: *common-responses
+        "200":
+           description: Returns the information on a parameter.
+           content:
+             application/json:
+               schema:
+                 $ref: '#/components/schemas/ObservationParameter'
+
+
+components:
+
+  examples:
+    AdministrativeUnit:
+      summary: Una unità amministrativa
+      value: &AdministrativeUnitPerugia
+        country_id: ITA
+        country_name: Italia
+        region_id: '10'
+        region_name: Umbria
+        province_id: '054'
+        province_name: Perugia
+        province_acronym: PG
+        city_id: '054039'
+        city_name: Perugia
+    # CSV
+    OsservazioniComuneAllCSV:
+      summary: CSV Comune short
+      description: Dati di un comune con tutti i campi possibili
+      value: "
+        phenomenon_time,administrative_unit,administrative_unit_id,\
+          positive_cases_with_date,in_intensive_care,cumulative_hospitalized,cumulative_positives,isolamento_domiciliare,variazione_totale_positivi,nuovi_positivi,dimessi_guariti,deceduti,totale_casi,tamponi,casi_testati\n
+        2020-05-26,comune,054039,231,9,240,1369,1609,-62,4,1132,366,3107,48903,34428\n
+        "
+    ObservationsRegionCSV:
+      summary: Dati di una regione
+      description: Non ci sono  dati relativi a comune e provincia
+      value: |-
+        phenomenon_time,administrative_unit,administrative_unit_id,positive_cases_with_date,in_intensive_care,region_id,region_name
+        2020-05-20,regione,10, 10, 4,10,Umbria
+        2020-05-21,regione,10, 11, 3,10,Umbria
+        2020-05-22,regione,10,  8, 5,10,Umbria
+    ObservationsCityCSV:
+      summary: Dati di un comune
+      value: "\n
+        phenomenon_time,administrative_unit,administrative_unit_id,positive_cases_with_date,in_intensive_care,\
+          region_id,region_name,\
+          province_id,province_name,\
+          city_id,city_name\n
+        2020-05-20,comune,054039, 10, 4,10,Umbria,054,Perugia,054039,Perugia\n
+        2020-05-21,comune,054039, 11, 3,10,Umbria,054,Perugia,054039,Perugia\n
+        2020-05-22,comune,054039,  8, 5,10,Umbria,054,Perugia,054039,Perugia\n
+        "
+    ObservationShort:
+      summary: a single, short observation
+      value: &ObservationShort
+        phenomenon_time: 2020-05-26
+        parameter_id: positive_cases_with_date
+        value: 10
+    ObservationLong:
+      summary: an Observation with _embed fields
+      value: &ObservationLong
+        <<: *ObservationShort
+        generation_time: "2020-05-22"
+        feature_of_interest_id: patient
+        value_measurement_unit: people
+        _embedded:
+          parameter:
+              '@id': https://w3id.org/italia/data/observation-parameter/positive_cases_with_date
+              name: casi sintomatici con data inizio sintomi
+          feature_of_interest:
+            name: Paziente
+            '@id': https://w3id.org/italia/data/feature-of-interest/patient
+    ObservationsRegion:
+      summary: Osservazioni su una singola unità amministrativa.
+      value: &ObservationsRegion
+        _meta:
+          administrative_unit:
+            <<: *AdministrativeUnitPerugia
+          source:
+            IPA_code: r_umbria
+            description: Regione Umbria
+            url: https://www.indicepa.gov.it/ricerca/n-dettaglioservfe.php?cod_amm=r_umbria
+        items:
+        - value: 4
+          parameter_id: in_intensive_care
+          phenomenon_time: "2020-05-20"
+        - value: 3
+          parameter_id: in_intensive_care
+          phenomenon_time: "2020-05-21"
+          modified: "2020-05-21"
+        - value: 5
+          parameter_id: in_intensive_care
+          phenomenon_time: "2020-05-20"
+        - value: 11
+          parameter_id: positive_cases_with_date
+          phenomenon_time: "2020-05-21"
+          modified: "2020-05-21"
+        - value: 8
+          parameter: positive_cases_with_date
+          generation_time: "2020-05-22"
+          phenomenon_time: "2020-05-22"
+          modified: "2020-05-22"
+        - <<: *ObservationLong
+    DatasetRegion:
+      summary: Il dataset di una regione.
+      value: &DatasetRegion
+        items:
+          - <<: *ObservationsRegion
+    # GeoJson
+    GeoUmbria: &GeoUmbria
+      description:  https://ioggstream.github.io/api-confini-amministrativi/2020-01-01/generalizzata/comune/002082.geojson
+      summary: A geojson region
+      value:
+        type: "Feature"
+        geometry:
+          type: "Polygon"
+          coordinates: []
+        properties: {}
+    ObservationGeo:
+      summary: embedded geojson
+      value:
+        <<: *GeoUmbria
+        properties:
+          $ref: '#/components/examples/ObservationsRegion/value'
+    ObservationsRegionGeo:
+      summary: geojson embedded
+      value: &ObservationsRegionGeo
+        type: Feature
+        geometry: {}
+        properties:
+          <<: *ObservationsRegion
+    FeatureCollection:
+      summary: A geojson collection with observation-parameter data
+      value:
+        type: FeatureCollection
+        features:
+          - <<: *ObservationsRegionGeo
+  responses:
+    "429":
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.6/definitions.yaml#/responses/429TooManyRequests'
+    "503":
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.6/definitions.yaml#/responses/503ServiceUnavailable'
+    default:
+      $ref: 'https://teamdigitale.github.io/openapi/0.0.6/definitions.yaml#/responses/default'
+    AdministrativeUnitDatasets:
+      description: |-
+        Elenca delle collezioni di osservazioni
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ObservationDataset'
+          examples:
+            Regione:
+              $ref: '#/components/examples/DatasetRegion'
+        text/csv:
+          examples:
+            ComuneCSV:
+              $ref: '#/components/examples/ObservationsCityCSV'
+            RegioneCSV:
+              $ref: '#/components/examples/ObservationsRegionCSV'
+        application/geo+json:
+          schema:
+            $ref: '#/components/schemas/GeoJsonData'
+          examples:
+            FeatureCollection:
+              $ref: '#/components/examples/FeatureCollection'
+  parameters:
+    AcceptLanguage:
+      description: |-
+        Language selection is based on content-negotiation.
+        The adopted schema shows the subset of all the values
+        that are allowed.
+      in: header
+      schema:
+        $ref: '#/components/schemas/Language'
+      name: Accept-Language
+      example: "it"
+  schemas:
+    GeoJsonFeature:
+      $ref: 'https://geojson.org/schema/Feature.json'
+    GeoJsonData:
+      allOf:
+        - $ref: '#/components/schemas/GeoJsonFeature'
+        - properties:
+            properties:
+              $ref: '#/components/schemas/Observations'
+      example:
+        $ref: '#/components/examples/ObservationGeo'
+    Observations:
+      description: |-
+        This is a collection of observations, together with metadata useful
+        to define a set of common properties for all the observations.
+
+        For the AdministrativeUnit, metadata include locality information
+      properties:
+        _meta:
+          $ref: '#/components/schemas/Metadata'
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Observation'
+    ObservationDataset:
+      description: |-
+        An ObservationDataset contains a list of Observations: one for
+        each AdministrativeUnit.
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Observations'
+    Metadata:
+      description: |-
+        Metadata associated to a given observation collection.
+      properties:
+        administrative_unit:
+          $ref: '#/components/schemas/AdministrativeUnit'
+        phenomenon_time_start:
+          $ref: '#/components/schemas/Temporal'
+        phenomenon_time_end:
+          $ref: '#/components/schemas/Temporal'
+        source:
+          type: string
+          format: uri
+          description: |-
+            The information source.
+    Temporal:
+      description: A temporal data that can be a date or a date-time
+      oneOf:
+        - type: string
+          format: date
+        - type: string
+          format: date-time
+    ObservationParameterId:
+      type: string
+      description: A short string representing the parameter in a given namespace
+      enum: [positive_cases_with_date, hospitalized-with-symptoms,in_intensive_care,totale_ospedalizzati,
+             isolamento_domiciliare,totale_positivi,variazione_totale_positivi,nuovi_positivi,dimessi_guariti,
+             deceduti,totale_casi,tamponi,casi_testati]
+    ObservationParameter:
+      x-describedby: https://w3id.org/italia/onto/IoT/ObservationParameter
+      description: |-
+        Rappresenta un parametro (proprietà) dell'osservazione
+        di una caratteristica di interesse. Per esempio, se diciamo che
+        la temperatura della cucina è di 28 gradi celsius, la temperatura rappresenta l'attributo osservato.
+      properties:
+        "@id":
+          type: string
+          format: url
+        id:
+          $ref: '#/components/schemas/ObservationParameterId'
+        name:
+          type: string
+          description: |-
+            A long description of the parameter.
+        description:
+          type: string
+          description: |-
+            A very long and detailed description of the parameter.
+      example:
+        "@id": https://w3id.org/italia/data/observation-parameter/positive_cases_with_date
+        id: positive_cases_with_date
+        name: >-
+          casi sintomatici con data inizio sintomi
+    Language:
+      default: it
+      description: >-
+        Allowed language codes.
+      enum:
+      - it
+      - en
+      type: string
+    Observation:
+      type: object
+      additionalProperties: true
+      description: |-
+        An Observation. This scheme is extensible and supports both a minimum set of information,
+        eg
+
+        ```
+        value: 4
+        parameter_id: in_intensive_care
+        phenomenon_time: "2020-05-20"
+        ```
+
+        and extensive data and metadata via the `_embed` property, together with a wide range of
+        time-related data, allowing to annotate the modification time of the value or the measurement_unit.
+
+        ```
+        generation_time: "2020-05-22"
+        modified: 2020-05-30
+        feature_of_interest_id: patient
+        value_measurement_unit: people
+        _embedded:
+          parameter:
+             '@id': https://w3id.org/italia/data/observation-parameter/positive_cases_with_date
+             name: symptomatic cases with start date of symptoms.
+         feature_of_interest:
+           name: Patient
+           '@id': https://w3id.org/italia/data/feature-of-interest/patient
+        ```
+      required:
+      - parameter_id
+      - value
+      - phenomenon_time
+      properties:
+        uuid:
+          type: string
+          format: url
+        phenomenon_time:
+          $ref: '#/components/schemas/Temporal'
+        modified:
+          $ref: '#/components/schemas/Temporal'
+        generation_time:
+          $ref: '#/components/schemas/Temporal'
+        feature_of_interest_id:
+          type: string
+          description: |-
+            The observed feature, eg: a patient.
+        parameter_id:
+          type: string
+        value:
+          type: number
+          format: int64
+          example: 10
+        value_measurement_unit:
+          $ref: '#/components/schemas/MeasurementUnit'
+      example:
+        phenomenon_time: 2020-05-26
+        parameter_id: positive_cases_with_date
+        feature_of_interest_id: patient
+        value: 10
+        value_measurement_unit: units
+        _embedded:
+          parameter:
+              '@id': https://w3id.org/italia/data/observation-parameter/positive_cases_with_date
+              name: casi sintomatici con data inizio sintomi
+          feature_of_interest:
+              '@id': https://w3id.org/italia/data/observation-parameter/positive_cases_with_date
+              name: casi sintomatici con data inizio sintomi
+    MeasurementUnit:
+      x-describedby: https://w3id.org/italia/data/measurement-unit
+      type: string
+      enum:
+      - meter
+      - units
+      - people
+      description: |-
+        See https://w3id.org/italia/data/measurement-unit for a vocabulary
+        This is work-in-progress!
+    AdministrativeUnit:
+      type: object
+      description: |-
+        Una unità amministrativa con la sua descrizione.
+      example: &AdministrativeUnitExample
+        country_id: ITA
+        country_name: Italia
+        region_id: '10'
+        region_name: Umbria
+        province_id: '054'
+        province_name: Perugia
+        province_acronym: PG
+        city_id: '054039'
+        city_name: Perugia
+      required:
+        - country_id
+        - region_id
+      additionalProperties: true
+      properties:
+        country_id:
+          type: string
+          description: >-
+            vedi
+            https://github.com/italia/daf-ontologie-vocabolari-controllati/blob/master/VocabolariControllati/administrative-units/countries/italy/italy.ttl
+        country_name:
+          type: string
+          example: Italia
+        region_id:
+          type: string
+        region_name:
+          type: string
+        province_id:
+          type: string
+        province_name:
+          type: string
+        province_acronym:
+          type: string
+        city_name:
+          type: string
+        city_id:
+          type: string
+          description: |-
+            Codice Istat alfanumerico del comune.

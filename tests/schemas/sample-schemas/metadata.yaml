@@ -1,0 +1,128 @@
+#
+# Metatada catalog items extending OAS3 schemas
+#
+
+oas-3.0:
+  info:
+    type: object
+    required:
+    - x-api-id
+    - x-summary
+    - title
+    - version
+    - description
+    - termsOfService
+    - contact
+    - x-lifecycle
+    properties:
+      x-api-id:
+          $ref: '#/Api_id'
+      x-summary:
+        $ref: '#/Summary'
+      contact:
+        required:
+        - email
+        - name
+        - url
+      x-lifecycle:
+        $ref: '#/Lifecycle'
+  servers:
+    type: array
+    items:
+      properties:
+        x-healthCheck:
+          $ref: '#/HealthCheck'
+        x-sandbox:
+          $ref: '#/Sandbox'
+
+Sandbox:
+  type: boolean
+  description: An one-liner summary for the API
+
+Summary:
+  type: string
+  description: An one-liner summary for the API
+
+Api_id:
+  type: string
+  pattern: '[0-9a-f\-]+'
+  description: A unique id for the API
+
+Lifecycle:
+  required:
+  - maturity
+  properties:
+    published:
+      type: string
+      format: date
+    deprecated:
+      type: string
+      format: date
+    retired:
+      type: string
+      format: date
+    maturity:
+      type: string
+      enum: [proposal,developing,published,deprecated,retired]
+
+Catalog:
+  properties:
+    tag:
+      description: >-
+        A list of tags useful for catalog search purposes.
+      type: array
+      items:
+        type: string
+    category:
+      tag:
+        type: array
+        items:
+          type: string
+    context:
+      type: array
+      items:
+        $ref: '#/Context'
+    ecosystem:
+      type: array
+      items:
+        $ref: '#/Ecosystem'
+
+
+Context:
+  description: >-
+    WRITEME @stefkohub
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+
+Ecosystem:
+  description: >-
+    WRITEME @stefkohub
+  properties:
+    name:
+      type: string
+    description:
+      type: string
+    url:
+      type: string
+
+HealthCheck:
+  description: >-
+    HealthCheck informations for testing API status.
+  required:
+    - url
+    - interval
+    - timeout
+  properties:
+    url:
+      type: string
+      format: url
+      description: absolute or relative url to the healthcheck path
+    interval:
+      type: number
+      description: expected seconds between two checks
+    timeout:
+      type: number
+      description: expected timeout interval after which a request should timeout

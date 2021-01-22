@@ -1,0 +1,425 @@
+---
+openapi: 3.0.0
+info:
+  title: Aree Protette
+  x-summary: >-
+    Il servizio fornisce informazioni sui Parchi, riserve e monumenti naturali della Lombardia.
+  description: |-
+    #### Documentazione
+    Il servizio fornisce informazioni sui Parchi, riserve naturali e monumenti naturali della Regione Lombardia
+    censiti tramite il servizio Parchi e Riserve. Le informazioni restituite rispettano il tracciato standard del glossario E015 `venue`.
+
+    #### Note
+    Le API vengono erogate all'interno dell'[Ecosistema Digitale E015](http://www.e015.regione.lombardia.it/)
+     creato dalla Regione Lombardia per l'Expo e possono essere fruite solamente all'interno dell'ecosistema.
+
+    #### Informazioni tecniche ed esempi
+
+    I sistemi abilitati possono verificare il corretto funzionamento del servizio interrogando ogni 300 secondi
+    l'indirizzo seguente:
+
+    ```
+    'https://cercaareeprotette.e015.servizirl.it/e015_aree_protette/api/v1/venuesPAR:672'
+    ```
+
+  version: 1.0.0
+  termsOfService: 'http://www.e015.regione.lombardia.it/site/download-policy?id=159'
+  contact:
+    name: Technical Management Board di E015
+    url: 'http://www.e015.regione.lombardia.it/PE015/esplora-i-contenuti/i-servizi/aree-protette'
+    email: e015-tmb@regione.lombardia.it
+servers:
+- url: 'https://cercaareeprotette.e015.servizirl.it/e015_aree_protette/api/v1/venues'
+  description: Server accessibile previa autenticazione TLS all'interno del sistema
+    E015
+paths:
+  /venues:
+    get:
+      summary: Effettua una ricerca sui luoghi (aree protette) presenti nella banca
+        dati.
+      description: Effettua una ricerca sui luoghi (aree protette) presenti nella
+        banca dati.
+      responses:
+        200:
+          description: |-
+            Il metodo restituisce un elemento di tipo Venues. All’interno dell’elemento Description contenuto in `Venues` sono inserite informazioni  di paginazione
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VenueResponse'
+              examples:
+                VenuesExample:
+                  value: |
+                    Description:
+                    - value: {offset: '0', returned: 1, total: 1}
+                    Venue:
+                    - Abstract:
+                      - {lang: it, value: 'Ampia fascia perifluviale del Fiume Oglio caratterizzata da
+                          diverse lanche generate dal corso instabile del fiume. '}
+                      - {lang: en, value: Wide range perifluviale River Oglio characterized by several
+                          oxbows generated during unstable river.}
+                      AltId:
+                      - {type: geographic-entity-id, value: 'e015venue:51:51'}
+                      Description:
+                      - {formatted: false, lang: it, value: 'Ampia fascia perifluviale del Fiume Oglio
+                          caratterizzata da diverse lanche generate dal corso instabile del fiume. Le
+                          frequenti onde di piena sovvertono continuamente l''assetto idrografico, rivitalizzando
+                          vecchie lanche e creando nuovi isolotti ghiaiosi, sui quali si insedia un''interessante
+                          vegetazione pioniera e diversi stadi evolutivi.'}
+                      - {formatted: false, lang: en, value: 'wide range perifluviale River Oglio characterized
+                          by several oxbows generated during unstable river. The frequent flood waves
+                          continually subvert the trim basin, revitalizing old oxbows and creating new
+                          gravel islands, on which settles an interesting pioneer vegetation and different
+                          developmental stages.'}
+                      Id: {value: 'RM:561'}
+                      Name:
+                      - {lang: it, value: Bosco de l'Isola}
+                      - {lang: en, value: bosco dell'isola}
+                      Tag:
+                      - {lang: it, value: 'Application:RM:RISERVA'}
+                      - {type: flora, uri: '#5', value: Artemisia (Artemisia vulgaris L. - COMPOSITAE)}
+                      - {type: flora, uri: '#441', value: fiore roby (roby_flower)}
+                      - {type: fauna, uri: '#2', value: Airone azzurro maggiore (Ardea herodias ARDEIDAE)}
+                      - {type: fauna, uri: '#343', value: animale roby (roby animal)}
+        default:
+          description: Errore non atteso
+    parameters:
+    - '$ref': 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/parameters/v3.yaml#/limit'
+    - '$ref': 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.2/docs/parameters/v3.yaml#/offset'
+    - $ref: '#/components/parameters/lang'
+    - $ref: '#/components/parameters/f'
+    - $ref: '#/components/parameters/callback'
+    - name: venueName
+      in: query
+      schema:
+        type: string
+      description: 'Filtro per nome Area Protetta; case insensitive, tipo di confronto:
+        LIKE (corrispondenza parziale).'
+    - name: venueTag
+      in: query
+      schema:
+        type: string
+      description: 'Seleziona i soli luoghi associati al tag specificato, consente
+        ad esempio di selezionare:  solo Parchi impostando il filtro  venueTag= Application:PAR  solo
+        Monumenti impostando il filtro venueTag=Application:Monumento  solo Riserve
+        utilizzando il filtro venueTag=Application:RM:Riserva  Tipo di confronto:
+        LIKE (corrispondenza parziale).  il comune o i comuni in cui ricade l’area
+        protetta es: venueTag=Varese'
+    - name: service
+      in: query
+      schema:
+        type: string
+      description: |-
+        Filtro per servizio offerto nell’area protetta, nel formato <type>:<nome
+        servizio>; tipo di confronto EQUALS (corrispondenza esatta).  Se si prova
+        a passare il parametro service combinato in AND con il venueTag Apploication:PAR,
+        non essendoci services per i parchi, non restituisce nulla.
+  /venues/{id_venue}:
+    get:
+      responses:
+        200:
+          description: |-
+            Il metodo restituisce un elemento XML di tipo <Venue>, del quale sono popolati i medesimi campi descritti al paragrafo 2.1.2. della documentazione ufficiale.
+          content:
+            application/json:
+              examples:
+                VenueExample:
+                  value:
+                    Venue:
+                    - Id:
+                        value: RM:581
+                      AltId:
+                      - value: e015venue:100:M18
+                        type: geographic-entity-id
+                      Name:
+                      - value: PIETRA LUNA
+                        lang: it
+                      - value: pietra luna
+                        lang: en
+                      Description:
+                      - value: |-
+                          La Pietra Luna si trova ai margini del Piano Rancio, sul ciglio che guarda verso Bellagio a circa 950 m di altezza.
+                          E' un masso erratico di gneiss dalla forma piramidale che deve il suo curioso nome ad una mezzaluna incisa su un fianco, sicuramente di origine naturale, accompagnata dalle lettere P.L.D.B. (Pietra Luna di Bellagio) e dalla data 1782, che ricorda la fine di un periodo di controversie tra la popolazione di Bellagio e quella di Magreglio.
+                        lang: it
+                        formatted: false
+                      - value: |-
+                          La Pietra Luna is on the edge of the Piano Rancio, the side that faces the Bellagio at about 950 m high.
+                          It 'a boulder of gneiss from the pyramidal shape that owes its curious name to a crescent engraved on one side, certainly of natural origin, accompanied by the letters PLDB (Moon Stone Bellagio) and the date 1782, which commemorates the end of a period of dispute between the people of Bellagio and to Magreglio.
+                        lang: en
+                        formatted: false
+                      Abstract:
+                      - value: E' un masso erratico di gneiss dalla forma piramidale
+                          che deve il suo curioso nome ad una mezzaluna incisa su
+                          un fianco, sicuramente di origine naturale, accompagnata
+                          dalle lettere P.L.D.B. (Pietra Luna di Bellagio) e dalla
+                          data 1782, che ricorda la fine di un periodo di controversie
+                          tra la popolazione di Bellagio e quella di Magreglio.
+                        lang: it
+                      - lang: en
+                      Tag:
+                      - value: Application:RM:MONUMENTO PUNTUALE
+                        lang: it
+                      - value: BELLAGIO
+                        lang: it
+                      Category:
+                      - value: Statale
+                        lang: it
+                      Contact:
+                      - String: 3541023453
+                        Type: phone
+                      AvailableService:
+                      - value: Aree di sosta per camper
+                        lang: it
+                        type: mobilita
+                      - value: Campeggi
+                        lang: it
+                        type: tempo-libero
+                      Owner: 'roby_bellaggio via lecco, 222, BELLAGIO (CO) '
+                      MediaResource:
+                      - Name:
+                        - value: PIETRA LUNA_1
+                          lang: it
+                        Type: image
+                        MimeType: image/jpeg
+                        Uri: http://www.villapietraluna.com/files/contenuto_media/villa08.jpg
+                      - Name:
+                        - value: PIETRA LUNA_2
+                          lang: it
+                        Type: image
+                        MimeType: image/jpeg
+                        Uri: http://www.gruppoiit.lispa.it/RepoImage/services/rest/public/getImage?param=e015addinfo/svil/fiori-dal-basso-corbis-42-2704137321154f5c-9305-4a00-93dd-3500823c40d0.jpg
+                      - Name:
+                        - value: Sito Web
+                          lang: it
+                        Type: webpage
+                        MimeType: text/html
+                        Uri: www.pietraluna.it
+                      - Name:
+                        - value: BURL
+                          lang: it
+                        Type: webpage
+                        MimeType: text/html
+                        Uri: www.google.it
+                      MoreInfo:
+                      - value: 80 ha
+                        type: superficie
+                      - value: 950 m
+                        type: altitudine
+        default:
+          description: Errore non atteso
+    parameters:
+    - name: id_venue
+      in: path
+      required: true
+      schema:
+        type: string
+    - $ref: '#/components/parameters/lang'
+    - $ref: '#/components/parameters/f'
+    - $ref: '#/components/parameters/callback'
+  /venueServices:
+    get:
+      summary: Restituisce l’elenco dei servizi disponibili per riserve e monumenti.
+      responses:
+        200:
+          description: Ritorna un elenco multilingua di servizi.
+          content:
+            application/json:
+              schema:
+                properties:
+                  AvailableService:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ServizioAccoglienza'
+              examples:
+                AvaliableService:
+                  value:
+                    AvailableService:
+                    - value: Accessibilità disabili
+                      lang: it
+                      type: accoglienza
+                    - value: Info point
+                      lang: it
+                      type: accoglienza
+
+        default:
+          description: Errore non atteso
+    parameters:
+    - $ref: '#/components/parameters/lang'
+    - $ref: '#/components/parameters/f'
+    - $ref: '#/components/parameters/callback'
+    - name: type
+      in: query
+      schema:
+        type: string
+components:
+  parameters:
+    lang:
+      name: lang
+      in: query
+      schema:
+        type: string
+    callback:
+      description: Nome funzione callback per formato jsonp
+      name: callback
+      in: query
+      schema:
+        type: string
+    f:
+      description: Formato output (xml, json, jsonp)
+      name: f
+      in: query
+      schema:
+        type: string
+  schemas:
+    Record:
+      title: Root Type for Name
+      description: The root of the Name type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+        lang:
+          type: string
+    Tag:
+      title: Root Type for Tag
+      description: The root of the Tag type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          type: string
+        uri:
+          type: string
+    VenueResponse:
+      required:
+      - Description
+      - Venue
+      properties:
+        Description:
+          type: array
+          items:
+            $ref: '#/components/schemas/Description'
+        Venue:
+          type: array
+          items:
+            $ref: '#/components/schemas/Venue'
+    InnerDescription:
+      title: Root Type for Description
+      description: The root of the Description type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+        lang:
+          type: string
+        formatted:
+          type: boolean
+    Description:
+      title: Root Type for Description
+      description: The root of the Description type's schema.
+      type: object
+      properties:
+        total:
+          format: int32
+          type: integer
+        returned:
+          format: int32
+          type: integer
+        offset:
+          format: int32
+          type: integer
+    Id:
+      title: Root Type for Id
+      description: The root of the Id type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+    AltId:
+      title: Root Type for AltId
+      description: The root of the AltId type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+        type:
+          type: string
+    Venue:
+      description: The root of the Venue type's schema.
+      required:
+      - Abstract
+      - Description
+      - Tag
+      - AltId
+      - Id
+      - Name
+      type: object
+      properties:
+        Id:
+          $ref: '#/components/schemas/Id'
+          properties:
+            value:
+              type: string
+        AltId:
+          type: array
+          items:
+            $ref: '#/components/schemas/AltId'
+        Name:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        Description:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        Abstract:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        Tag:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+        Category:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        Contact: {}
+        AvailableService: {}
+        Owner:
+          type: string
+        MediaResource:
+          type: array
+          items:
+            $ref: '#/components/schemas/MediaResource'
+        MoreInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/AltId'
+    MediaResource:
+      title: Root Type for MediaResource
+      description: The root of the MediaResource type's schema.
+      type: object
+      properties:
+        Name:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
+        Type:
+          type: string
+        MimeType:
+          type: string
+        Uri:
+          type: string
+    ServizioAccoglienza:
+      title: Root Type for ServizioAccoglienza
+      description: The root of the ServizioAccoglienza type's schema.
+      type: object
+      properties:
+        value:
+          type: string
+        lang:
+          type: string
+        type:
+          type: string

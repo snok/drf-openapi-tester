@@ -90,7 +90,6 @@ class SchemaTester:
         :raises: IndexError
         """
         try:
-
             return schema[key]
         except KeyError:
             raise UndocumentedSchemaSectionError(
@@ -163,9 +162,12 @@ class SchemaTester:
         if 'allOf' in schema_section:
             merged_schema = self.handle_all_of(**schema_section)
             schema_section = merged_schema
-
-        schema_section_type = schema_section['type']
-
+        schema_section_type = schema_section.get('type')
+        if not schema_section_type and 'properties' in schema_section:
+            schema_section_type = 'object'
+        elif not schema_section_type:
+            # FIXME: not handled at present
+            return
         if data is None and self.is_nullable(schema_section):
             return
         if data is None or not self._check_openapi_type(schema_section_type, data):

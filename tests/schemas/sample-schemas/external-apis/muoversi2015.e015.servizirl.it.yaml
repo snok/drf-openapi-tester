@@ -1,0 +1,665 @@
+---
+openapi: 3.0.0
+info:
+  title: Muoversi in Lombardia
+  x-summary: Il servizio fornisce una soluzione di viaggio intermodale utilizzando il trasporto pubblico in Lombardia.
+  description: |-
+    #### Documentazione
+    Il servizio mette a disposizione informazioni georeferenziate relative agli orari
+    del Trasporto Pubblico Locale in Regione Lombardia, restituendo delle soluzioni
+    di viaggio partenza/arrivo personalizzate sia per modalita' di trasporto (bus, treno, metro etc.)
+    che per numero e tempi di interscambio.
+
+
+    #### Note
+    Le API vengono erogate all'interno dell'[Ecosistema Digitale E015](http://www.e015.regione.lombardia.it/)
+     creato dalla Regione Lombardia per l'Expo e possono essere fruite solamente all'interno dell'ecosistema.
+
+    La revisione delle API e' prevista entro il 31/12/2020.
+    In assenza di revisione, verranno dismesse entro il 31/03/2021.
+
+    #### Informazioni tecniche ed esempi
+
+    I sistemi abilitati possono verificare il corretto funzionamento del servizio interrogando ogni 300 secondi
+    l'indirizzo seguente:
+
+    ```
+    'https://muoversi2015.e015.servizirl.it/planner/rest/soluzioniJson/e015Search?param=milano&maxResult=1'
+    ```
+  contact:
+    name: Technical Management Board di E015
+    url: http://www.e015.regione.lombardia.it/PE015/esplora-i-contenuti/i-servizi/muoversi-lombardia
+    email: e015-tmb@regione.lombardia.it
+  version: 1.0.0
+  termsOfService: >-
+    http://www.e015.regione.lombardia.it/site/download-policy?id=13
+servers:
+- url: https://muoversi2015.e015.servizirl.it/planner/rest/soluzioniJson
+  description: Server accessibile dall'ecosistema E015
+paths:
+  /e015Search:
+    get:
+      description: Sulla base del testo inserito per effettuare la ricerca, il servizio
+        restituisce una lista di punti, ognuno dei quali corredato da una descrizione,
+        una tipologia e la coppia di coordinate che ne individua la posizione.
+      responses:
+        200:
+          description: I luoghi corrspondenti a una ricerca.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Search'
+        default:
+          description: Errore non atteso
+    parameters:
+    - name: param
+      in: query
+      required: true
+      schema:
+        type: string
+    - name: maxResult
+      in: query
+      schema:
+        type: integer
+        format: int32
+        maximum: 200
+  /e015Solution:
+    get:
+      description: Sulla base del testo inserito per effettuare la ricerca, il servizio
+        restituisce una lista di punti, ognuno dei quali corredato da una descrizione,
+        una tipologia e la coppia di coordinate che ne individua la posizione.
+      responses:
+        200:
+          description: Una lista di soluzioni di viaggio.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Solution'
+        default:
+          description: Errore non gestito
+    parameters:
+    - name: param
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/SolutionRequest'
+      example: >-
+        {%22richiesta%22:{%22from%22:%22Milano,Via%20Torquato%20Taramelli,%2024%22,%20%22fromX%22:%20%229.19399499%22,%20%22fromY%22:%20%2245.49122488%22,%20%22to%22:%20%22Busto%20Arsizio%20Fs,%20Stazione%22,%20%22toX%22:%20%228.864713%22,%20%22toY%22:%20%2245.615788%22,%20%22date%22:%20%2220/12/2017%22,%20%22when%22:%20%2211:20%22,%20%22options%22:%20[%221%22,%222%22,%223%22,%224%22,%225%22,%226%22],%20%22changeNumber%22:%20%22-1%22,%20%22durationChange%22:%20%22-1%22%20},%20%22lang%22:%20%22it%22%20}
+    - name: maxResult
+      in: query
+      schema:
+        type: integer
+        format: int32
+        maximum: 200
+  /e015Timetable:
+    get:
+      description: Sulla base del testo inserito per effettuare la ricerca, il servizio
+        restituisce una lista di punti, ognuno dei quali corredato da una descrizione,
+        una tipologia e la coppia di coordinate che ne individua la posizione.
+      responses:
+        200:
+          description: La lista con gli orari di passaggio del mezzo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timetable'
+        default:
+          description: Errore non gestito
+    parameters:
+    - name: param
+      in: query
+      schema:
+        type: string
+
+components:
+  schemas:
+    Search:
+      properties:
+        stato:
+          enum:
+          - -1
+          - 0
+          type: string
+        points:
+          type: array
+          items:
+            $ref: '#/components/schemas/Point'
+        error:
+          type: array
+          items: {}
+    Errore:
+      description: Un messaggio d'errore.
+      type: object
+      properties:
+        codice:
+          type: string
+        descrizione:
+          type: string
+      example:
+      - { "codice": "ER001", "descrizione": "Formato della stringa del campo param non valida: il numero di caratteri deve essere compreso tra 2 e 100" }
+      - { "codice": "ER900", "descrizione": "Request Not Valid" }
+    Point:
+      description: Un punto sulla mappa.
+      type: object
+      properties:
+        label:
+          type: string
+        type:
+          type: string
+        x:
+          '$ref': '#/components/schemas/Longitudine'
+        y:
+          '$ref': '#/components/schemas/Latitudine'
+      example:
+        label: Rogoredo M3
+        type: areadifermata
+        x: 9.237421
+        y: 45.433681
+    SolutionRequest:
+      description: Schema di una richiesta per una soluzione di viaggio.
+      type: object
+      properties:
+        richiesta:
+          type: object
+          properties:
+            from:
+              type: string
+            fromX:
+              '$ref': '#/components/schemas/Longitudine'
+            fromY:
+              '$ref': '#/components/schemas/Latitudine'
+            to:
+              type: string
+            toX:
+              '$ref': '#/components/schemas/Longitudine'
+            toY:
+              '$ref': '#/components/schemas/Latitudine'
+            date:
+              description: Data in formato `dd/mm/yyyy`
+              type: string
+            when:
+              description: Ora in formato `hh:mm`
+              type: string
+            options:
+              description: Se non ammissibile, ritorna `ER013`
+              type: array
+              items:
+                type: number
+                minimum: 1
+                maximum: 6
+            changeNumber:
+              description: Se non ammissibile, ritorna `ER014`
+              type: number
+              default: -1
+              minimum: -1
+              maximum: 3
+            durationChange:
+              type: string
+        lang:
+          type: string
+    Fermata:
+      description: Una fermata.
+      type: object
+      properties:
+        idFermata:
+          type: string
+        nome:
+          type: string
+        arrivo:
+          type: string
+        partenza:
+          type: string
+        x:
+          '$ref': '#/components/schemas/Longitudine'
+        y:
+          '$ref': '#/components/schemas/Latitudine'
+      example:
+        idFermata: "1"
+        nome: "Milano, Zara M3 M5"
+        arrivo: ""
+        partenza: "11:54"
+        x: 9.19289
+        y: 45.492599
+    Tratta:
+      description: La tratta di un viaggio, con mezzi e durata.
+      type: object
+      properties:
+        idTratta:
+          type: string
+        durata:
+          type: string
+        linea:
+          type: string
+        gestore:
+          type: string
+        mezzo:
+          description: |-
+            1=Treno
+            2=Metro
+            3=Bus
+            4=Tram
+            5=Battello
+            6=Altro (funivia)
+            ""=Tratto a piedi
+          type: string
+        partenza:
+          type: string
+        oraPartenza:
+          type: string
+        xPartenza:
+          '$ref': '#/components/schemas/Longitudine'
+        yPartenza:
+          '$ref': '#/components/schemas/Latitudine'
+        arrivo:
+          type: string
+        oraArrivo:
+          type: string
+        xArrivo:
+          '$ref': '#/components/schemas/Longitudine'
+        yArrivo:
+          '$ref': '#/components/schemas/Latitudine'
+        note:
+          type: string
+        listaFermate:
+          type: array
+          items:
+            $ref: '#/components/schemas/Fermata'
+    Percorso:
+      description: Un percorso, fatto di cambi e fermate.
+      type: object
+      properties:
+        idPercorso:
+          type: string
+        durata:
+          type: string
+        numeroCambi:
+          type: string
+        mezziPercorso:
+          type: array
+          items: {}
+        partenza:
+          type: string
+        oraPartenza:
+          type: string
+        xPartenza:
+          '$ref': '#/components/schemas/Longitudine'
+        yPartenza:
+          '$ref': '#/components/schemas/Latitudine'
+        arrivo:
+          type: string
+        oraArrivo:
+          type: string
+        xArrivo:
+          '$ref': '#/components/schemas/Longitudine'
+        yArrivo:
+          '$ref': '#/components/schemas/Latitudine'
+        listaTratte:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tratta'
+    Longitudine:
+      description: >-
+        Coordinata x del punto espressa nel sistema di riferimento WGS84
+      type: number
+      format: double
+      minimum: -180
+      maximum: 180
+      example: 9.19289
+    Latitudine:
+      description: >-
+        Coordinata y del punto espressa nel sistema di riferimento WGS84
+      type: number
+      format: double
+      minimum: -90
+      maximum: 90
+      example: 45.492599
+    Solution:
+      description: 'Un elenco con le soluzioni di viaggio.'
+      required:
+      - richiesta
+      - listaPercorsi
+      properties:
+        stato:
+          type: string
+        lang:
+          type: string
+        richiesta:
+          $ref: '#/components/schemas/SolutionRequest'
+        listaPercorsi:
+          type: array
+          items:
+            $ref: '#/components/schemas/Percorso'
+        listaErrori:
+          type: array
+          items: {}
+        listaPartenze:
+          type: array
+          items: {}
+      example:
+        lang: it
+        listaErrori: []
+        listaPartenze: []
+        listaPercorsi:
+        - arrivo: Busto Arsizio Fs, Stazione
+          durata: 00:44
+          idPercorso: '1'
+          listaTratte:
+          - arrivo: Milano, Zara M3 M5
+            durata: 00:06
+            gestore: ''
+            idTratta: '1'
+            linea: ''
+            listaFermate: []
+            mezzo: ''
+            note: ''
+            oraArrivo: '11:26'
+            oraPartenza: '11:20'
+            partenza: Milano, Via Torquato Taramelli, 24
+            xArrivo: '9.19289'
+            xPartenza: '9.193987'
+            yArrivo: '45.492599'
+            yPartenza: '45.491215'
+          - arrivo: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            durata: 00:02
+            gestore: 'ATM     '
+            idTratta: '2'
+            linea: M5 A
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Zara M3 M5', partenza: '11:26', x: '9.19289', y: '45.492599'}
+            - {arrivo: '11:27', idFermata: '2', nome: 'Milano, Isola M5', partenza: '11:27', x: '9.191335', y: '45.487332'}
+            - {arrivo: '11:28', idFermata: '3', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '', x: '9.186705', y: '45.484123'}
+            mezzo: '2'
+            note: 'Direzione: "milano, san siro stadio m5, v. harar"'
+            oraArrivo: '11:28'
+            oraPartenza: '11:26'
+            partenza: Milano, Zara M3 M5
+            xArrivo: '9.186705'
+            xPartenza: '9.19289'
+            yArrivo: '45.484123'
+            yPartenza: '45.492599'
+          - arrivo: Busto Arsizio Fs, Stazione
+            durata: 00:29
+            gestore: 'TRENORD '
+            idTratta: '3'
+            linea: ''
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '11:32', x: '9.186705', y: '45.484123'}
+            - {arrivo: '11:44', idFermata: '2', nome: 'Rho, Fiera, Expo ( M1, Stazione Ferroviaria)', partenza: '11:45', x: '9.086745', y: '45.518794'}
+            - {arrivo: '11:56', idFermata: '3', nome: 'Legnano, Stazione', partenza: '11:57', x: '8.91062', y: '45.593782'}
+            - {arrivo: '12:01', idFermata: '4', nome: 'Busto Arsizio Fs, Stazione', partenza: '', x: '8.864712', y: '45.615788'}
+            mezzo: '1'
+            note: 'Direzione: "varese, p.le trieste, staz. ferrov. fs" - Numero Tre'
+            oraArrivo: '12:01'
+            oraPartenza: '11:32'
+            partenza: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            xArrivo: '8.864712'
+            xPartenza: '9.186705'
+            yArrivo: '45.615788'
+            yPartenza: '45.484123'
+          mezziPercorso: ['2', '1']
+          numeroCambi: '1'
+          oraArrivo: '12:04'
+          oraPartenza: '11:20'
+          partenza: Milano, Via Torquato Taramelli, 24
+          xArrivo: '8.864712'
+          xPartenza: '9.193987'
+          yArrivo: '45.615779'
+          yPartenza: '45.491215'
+        - arrivo: Busto Arsizio Fs, Stazione
+          durata: 00:46
+          idPercorso: '2'
+          listaTratte:
+          - arrivo: Milano, Zara M3 M5
+            durata: 00:06
+            gestore: ''
+            idTratta: '1'
+            linea: ''
+            listaFermate: []
+            mezzo: ''
+            note: ''
+            oraArrivo: '11:42'
+            oraPartenza: '11:36'
+            partenza: Milano, Via Torquato Taramelli, 24
+            xArrivo: '9.19289'
+            xPartenza: '9.193987'
+            yArrivo: '45.492599'
+            yPartenza: '45.491215'
+          - arrivo: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            durata: 00:02
+            gestore: 'ATM     '
+            idTratta: '2'
+            linea: M5 A
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Zara M3 M5', partenza: '11:42', x: '9.19289', y: '45.492599'}
+            - {arrivo: '11:43', idFermata: '2', nome: 'Milano, Isola M5', partenza: '11:43', x: '9.191335', y: '45.487332'}
+            - {arrivo: '11:44', idFermata: '3', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '', x: '9.186705', y: '45.484123'}
+            mezzo: '2'
+            note: 'Direzione: "milano, san siro stadio m5, v. harar"'
+            oraArrivo: '11:44'
+            oraPartenza: '11:42'
+            partenza: Milano, Zara M3 M5
+            xArrivo: '9.186705'
+            xPartenza: '9.19289'
+            yArrivo: '45.484123'
+            yPartenza: '45.492599'
+          - arrivo: Busto Arsizio Fs, Stazione
+            durata: 00:30
+            gestore: TRENITALIA
+            idTratta: '3'
+            linea: ''
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '11:49', x: '9.186705', y: '45.484123'}
+            - {arrivo: '11:58', idFermata: '2', nome: 'Rho, Fiera, Expo ( M1, Stazione Ferroviaria)', partenza: '11:59', x: '9.086745', y: '45.518794'}
+            - {arrivo: '12:19', idFermata: '3', nome: 'Busto Arsizio Fs, Stazione', partenza: '', x: '8.864712', y: '45.615788'}
+            mezzo: '1'
+            note: 'Direzione: "domodossola, stazione" - Numero Treno: 10410'
+            oraArrivo: '12:19'
+            oraPartenza: '11:49'
+            partenza: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            xArrivo: '8.864712'
+            xPartenza: '9.186705'
+            yArrivo: '45.615788'
+            yPartenza: '45.484123'
+          mezziPercorso: ['2', '1']
+          numeroCambi: '1'
+          oraArrivo: '12:22'
+          oraPartenza: '11:36'
+          partenza: Milano, Via Torquato Taramelli, 24
+          xArrivo: '8.864712'
+          xPartenza: '9.193987'
+          yArrivo: '45.615779'
+          yPartenza: '45.491215'
+        - arrivo: Busto Arsizio Fs, Stazione
+          durata: 00:59
+          idPercorso: '3'
+          listaTratte:
+          - arrivo: Milano, Zara M3 M5
+            durata: 00:06
+            gestore: ''
+            idTratta: '1'
+            linea: ''
+            listaFermate: []
+            mezzo: ''
+            note: ''
+            oraArrivo: '11:54'
+            oraPartenza: '11:48'
+            partenza: Milano, Via Torquato Taramelli, 24
+            xArrivo: '9.19289'
+            xPartenza: '9.193987'
+            yArrivo: '45.492599'
+            yPartenza: '45.491215'
+          - arrivo: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            durata: 00:02
+            gestore: 'ATM'
+            idTratta: '2'
+            linea: M5 A
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Zara M3 M5', partenza: '11:54', x: '9.19289', y: '45.492599'}
+            - {arrivo: '11:55', idFermata: '2', nome: 'Milano, Isola M5', partenza: '11:55', x: '9.191335', y: '45.487332'}
+            - {arrivo: '11:56', idFermata: '3', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '', x: '9.186705', y: '45.484123'}
+            mezzo: '2'
+            note: 'Direzione: "milano, san siro stadio m5, v. harar"'
+            oraArrivo: '11:56'
+            oraPartenza: '11:54'
+            partenza: Milano, Zara M3 M5
+            xArrivo: '9.186705'
+            xPartenza: '9.19289'
+            yArrivo: '45.484123'
+            yPartenza: '45.492599'
+          - arrivo: Busto Arsizio Fs, Stazione
+            durata: 00:42
+            gestore: 'TRENORD '
+            idTratta: '3'
+            linea: S5
+            listaFermate:
+            - {arrivo: '', idFermata: '1', nome: 'Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria', partenza: '12:02', x: '9.186705', y: '45.484123'}
+            - {arrivo: '12:05', idFermata: '2', nome: 'Milano, Lancetti, Stazione', partenza: '12:06', x: '9.176269', y: '45.494982'}
+            - {arrivo: '12:08', idFermata: '3', nome: 'Milano, Villapizzone, Stazione, Bivio Ghisolfa', partenza: '12:09', x: '9.15145', y: '45.501669'}
+            - {arrivo: '12:11', idFermata: '4', nome: 'Milano, Certosa, Stazione', partenza: '12:12', x: '9.13357', y: '45.507135'}
+            - {arrivo: '12:16', idFermata: '5', nome: 'Rho, Fiera, Expo ( M1, Stazione Ferroviaria)', partenza: '12:17', x: '9.086745', y: '45.518794'}
+            - {arrivo: '12:23', idFermata: '6', nome: "Rho, P.za Libert\xE0, Stazione Ferroviaria", partenza: '12:24', x: '9.043525', y: '45.524295'}
+            - {arrivo: '12:27', idFermata: '7', nome: 'Vanzago, Pogliano,Stazione', partenza: '12:28', x: '8.995649', y: '45.525275'}
+            - {arrivo: '12:32', idFermata: '8', nome: 'Parabiago, Stazione', partenza: '12:33', x: '8.946235', y: '45.55253'}
+            - {arrivo: '12:35', idFermata: '9', nome: 'Canegrate, Stazione', partenza: '12:36', x: '8.926639', y: '45.569223'}
+            - {arrivo: '12:39', idFermata: '10', nome: 'Legnano, Stazione', partenza: '12:40', x: '8.91062', y: '45.593782'}
+            - {arrivo: '12:44', idFermata: '11', nome: 'Busto Arsizio Fs, Stazione', partenza: '', x: '8.864712', y: '45.615788'}
+            mezzo: '1'
+            note: 'Direzione: "varese, p.le trieste, staz. ferrov. fs" - Numero Tre'
+            oraArrivo: '12:44'
+            oraPartenza: '12:02'
+            partenza: Milano, Garibaldi Fs, M2 M5, Stazione Ferroviaria
+            xArrivo: '8.864712'
+            xPartenza: '9.186705'
+            yArrivo: '45.615788'
+            yPartenza: '45.484123'
+          mezziPercorso: ['2', '1']
+          numeroCambi: '1'
+          oraArrivo: '12:47'
+          oraPartenza: '11:48'
+          partenza: Milano, Via Torquato Taramelli, 24
+          xArrivo: '8.864712'
+          xPartenza: '9.193987'
+          yArrivo: '45.615779'
+          yPartenza: '45.491215'
+        richiesta:
+          changeNumber: '-1'
+          date: 20/12/2017
+          durationChange: '-1'
+          from: Milano, Via Torquato Taramelli, 24
+          fromX: '9.19399499'
+          fromY: '45.49122488'
+          options: ['1', '2', '3', '4', '5', '6']
+          tipoData: '0'
+          to: Busto Arsizio Fs, Stazione
+          toX: '8.864713'
+          toY: '45.615788'
+          when: '11:20'
+        stato: '0'
+    TimetableRequest:
+      properties:
+        lang:
+          type: string
+        richiesta:
+          properties:
+            date:
+              description: 'Data in formato `dd/mm/yyyy`'
+              type: string
+            when:
+              description: 'Ora in formato `hh:mm`'
+              type: string
+            options:
+              description: 'Se non ammissibile, ritorna `ER013`'
+              type: array
+              items:
+                type: number
+                minimum: 1
+                maximum: 6
+            tipoData:
+              type: number
+              description: "0=data e orario si riferiscono alla partenza (default)\n1=data e orario si riferiscono all’arrivo"
+            stop:
+              type: string
+      example:
+        lang: it
+        richiesta:
+          stop: 'Milano, Affori M3, Stazione Ferroviaria'
+          date: 20/12/2017
+          when: '14:20'
+          options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
+          - '6'
+          tipoData: '0'
+    Orario:
+      properties:
+        time:
+          type: string
+        line:
+          type: string
+        run:
+          type: string
+        transport:
+          type: string
+      example:
+        time: '14:20'
+        line: '52 A'
+        run: 'MILANO, Greco Pirelli, Stazione'
+        transport: '3'
+    TimetableFermata:
+      properties:
+        id:
+          type: string
+        stop:
+          type: string
+        x:
+          $ref: '#/components/schemas/Longitudine'
+        y:
+          $ref: '#/components/schemas/Latitudine'
+      example:
+        id: '1'
+        stop: 'Milano, Affori M3, Stazione Ferroviaria'
+        x: '9.167727'
+        y: '45.521221'
+    Timetable:
+      properties:
+        stato:
+          type: string
+        lang:
+          type: string
+        richiesta:
+          $ref: '#/components/schemas/TimetableRequest'
+        listaOrari:
+          type: array
+          items:
+            $ref: '#/components/schemas/Orario'
+        listaErrori:
+          type: array
+          items:
+            $ref: '#/components/schemas/Errore'
+        listaFermate:
+          type: array
+          items:
+            $ref: '#/components/schemas/TimetableFermata'
+      example:
+        stato: '-1'
+        lang: it
+        richiesta:
+          date: "20.12.2017"
+          options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+          - '5'
+          - '6'
+          when: '14:20'
+          tipoData: '0'
+          stop: 'Milano, Affori M3, Stazione Ferroviaria'
+        listaOrari: []
+        listaErrori:
+        - codice: ER011
+          descrizione: 'Formato campo date non valido: inserire una data nel formato dd/mm/aaaa'
+        listaFermate: []
