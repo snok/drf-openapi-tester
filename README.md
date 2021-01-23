@@ -22,6 +22,7 @@
 </p>
 
 
+
 DRF OpenAPI Tester is a simple test utility. Its aim is to make it easy for
 developers to catch and correct documentation errors in their OpenAPI schemas.
 
@@ -29,9 +30,10 @@ Maintaining good documentation is difficult, and shouldn't be done manually.
 By simply testing that your API responses match your schema definitions you can
 *know* that your schema reflects reality.
 
-## OpenAPI Implementations
+### Supported OpenAPI Implementations
 
-Whether we're able to test your schema depends on how it's implemented. We currently support:
+Whether we're able to test your schema or not, depends on how it's implemented.
+We currently support the following:
 
 - Testing dynamically rendered OpenAPI schemas with [drf-yasg](https://github.com/axnsan12/drf-yasg)
 - Testing dynamically rendered OpenAPI schemas with [drf-spectacular](https://github.com/tfranzel/drf-spectacular)
