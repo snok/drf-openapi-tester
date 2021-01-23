@@ -154,7 +154,7 @@ class SchemaTester:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self._get_key_value(schema=status_code_object, key='schema')
 
-    def test_schema_section(
+    def test_schema_section(  # noqa: C901
         self,
         schema_section: dict,
         data: Any,
