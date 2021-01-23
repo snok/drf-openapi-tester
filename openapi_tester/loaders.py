@@ -263,8 +263,4 @@ class StaticSchemaLoader(BaseSchemaLoader):
             raise ImproperlyConfigured('Unable to read the schema file. Please make sure the path setting is correct.')
         with open(self.path) as f:
             content = f.read()
-            if '.json' in self.path:
-                schema = json.loads(content)
-            else:
-                schema = yaml.load(content)
-            return schema
+            return json.loads(content) if '.json' in self.path else yaml.load(content, Loader=yaml.FullLoader)
