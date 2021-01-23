@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import difflib
 import json
 import pathlib
 import re
+from collections.abc import Callable
 from json import dumps, loads
-from typing import Callable, Dict, List, Optional
+from typing import Optional
 from urllib.parse import ParseResult
 
 import yaml
@@ -94,8 +97,8 @@ class BaseSchemaLoader:
         except ResolutionError as e:
             raise OpenAPISchemaError('infinite recursion error') from e
 
-    def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
-        normalized_paths: Dict[str, dict] = {}
+    def normalize_schema_paths(self, schema: dict) -> dict[str, dict]:
+        normalized_paths: dict[str, dict] = {}
         for key, value in schema['paths'].items():
             if '{' in key:
                 normalized_paths[key] = value
@@ -130,7 +133,7 @@ class BaseSchemaLoader:
         return path
 
     @staticmethod
-    def get_endpoint_paths() -> List[str]:
+    def get_endpoint_paths() -> list[str]:
         """
         Returns a list of endpoint paths.
         """

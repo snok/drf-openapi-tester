@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import os
 from pathlib import Path
-from typing import List
 
 from django.utils.translation import gettext_lazy as _
 
@@ -9,7 +10,7 @@ SECRET_KEY = ')t^bn_szx-tce^+lqg(@p8(8jt4c582fr)*ns3s3m0q^3p*$#8'
 
 DEBUG = True
 
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS: list[str] = []
 
 INSTALLED_APPS = [
     'django.contrib.contenttypes',

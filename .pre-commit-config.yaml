@@ -27,6 +27,11 @@ repos:
     rev: v2.2.0
     hooks:
       - id: seed-isort-config
+  - repo: https://github.com/sondrelg/pep585-upgrade
+    rev: '927066c'
+    hooks:
+    - id: upgrade-type-hints
+      args: [ '--futures=true' ]
   - repo: https://github.com/pycqa/isort
     rev: 5.7.0
     hooks:
@@ -40,6 +45,6 @@ repos:
         language: python
         additional_dependencies: [pygments, restructuredtext_lint]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.790"
+    rev: "v0.800"
     hooks:
       - id: mypy

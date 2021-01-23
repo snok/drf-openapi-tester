@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, Generator, Optional, Tuple
+from typing import Any, Optional
 
 import yaml
 from rest_framework.response import Response
@@ -27,7 +30,7 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
     return response
 
 
-def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Response], str], None, None]:
+def iterate_schema(schema: dict) -> Generator[tuple[Optional[dict], Optional[Response], str], None, None]:
     for url_fragment, path_object in schema['paths'].items():
         for method, method_object in path_object.items():
             for status_code, responses_object in method_object['responses'].items():

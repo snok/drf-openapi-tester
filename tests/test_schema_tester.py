@@ -1,5 +1,7 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from copy import deepcopy
-from typing import Callable
 from unittest.mock import patch
 
 import pytest

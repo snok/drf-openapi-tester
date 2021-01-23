@@ -1,4 +1,7 @@
-from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
+from __future__ import annotations
+
+from collections.abc import Callable, KeysView
+from typing import Any, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -17,7 +20,7 @@ class SchemaTester:
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        ignore_case: Optional[list[str]] = None,
         schema_file_path: Optional[str] = None,
     ) -> None:
         """
@@ -40,7 +43,7 @@ class SchemaTester:
             raise ImproperlyConfigured('No loader is configured.')
 
     def _test_key_casing(
-        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
+        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[list[str]] = None
     ) -> None:
         tester = case_tester or getattr(self, 'case_tester', None)
         ignore_case = [*self.ignore_case, *(ignore_case or [])]
@@ -49,7 +52,7 @@ class SchemaTester:
 
     @staticmethod
     def handle_all_of(**kwargs: dict) -> dict:
-        properties: Dict[str, Any] = {}
+        properties: dict[str, Any] = {}
         for entry in kwargs.pop('allOf'):
             for key, value in entry['properties'].items():
                 if key in properties:
@@ -154,7 +157,7 @@ class SchemaTester:
         data: Any,
         reference: str,
         case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        ignore_case: Optional[list[str]] = None,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
@@ -278,7 +281,7 @@ class SchemaTester:
         self,
         response: td.Response,
         case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        ignore_case: Optional[list[str]] = None,
     ):
         """
         Verifies that an OpenAPI schema definition matches an API response.
@@ -308,7 +311,7 @@ class SchemaTester:
         def assert_response(
             response: td.Response,
             case_tester: Optional[Callable[[str], None]] = None,
-            ignore_case: Optional[List[str]] = None,
+            ignore_case: Optional[list[str]] = None,
         ) -> None:
             """
             Assert response matches the OpenAPI spec.
