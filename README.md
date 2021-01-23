@@ -234,27 +234,18 @@ class TestApi(OpenAPITestCase):
 
 ## Error messages
 
-TODO
-
 When found, errors will be raised in the following format:
 
 ```shell script
 openapi_tester.exceptions.DocumentationError: Item is misspecified:
 
-Summary
--------------------------------------------------------------------------------------------
+Expected:   {'name': 'Saab', 'height': 'medium'}
 
-Error:      The following properties seem to be missing from your response body: length, width.
-
-Expected:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height', 'width': 'Very wide', 'length': '2 meters'}
-Received:   {'name': 'Saab', 'color': 'Yellow', 'height': 'Medium height'}
+Received:   {'name': 'Saab'}
 
 Hint:       Remove the key(s) from you OpenAPI docs, or include it in your API response.
+
 Sequence:   init.list
-
--------------------------------------------------------------------------------------------
-
-* If you need more details: set `verbose=True`
 ```
 
 - `Expected` describes the response data
@@ -263,7 +254,3 @@ Sequence:   init.list
 - `Sequence` will indicate how the response tester iterated through the data structure, before finding the error.
 
 In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
-
-## i18n
-
-Also TODO
