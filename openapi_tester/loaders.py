@@ -92,7 +92,7 @@ class BaseSchemaLoader:
             resolver.resolve_references()
             return resolver.specs
         except ResolutionError as e:
-            raise OpenAPISchemaError('infinite recursion error') from e
+            raise OpenAPISchemaError(e.args[0]) from e
 
     def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
         normalized_paths: Dict[str, dict] = {}
@@ -259,15 +259,12 @@ class StaticSchemaLoader(BaseSchemaLoader):
         :return: Schema contents as a dict
         :raises: ImproperlyConfigured
         """
-        try:
-            with open(self.path) as f:
-                content = f.read()
-                if '.json' in self.path:
-                    schema = json.loads(content)
-                else:
-                    schema = yaml.load(content, Loader=yaml.FullLoader)
+        if not self.path:
+            raise ImproperlyConfigured('Unable to read the schema file. Please make sure the path setting is correct.')
+        with open(self.path) as f:
+            content = f.read()
+            if '.json' in self.path:
+                schema = json.loads(content)
+            else:
+                schema = yaml.load(content)
             return schema
-        except Exception as e:
-            raise ImproperlyConfigured(
-                'Unable to read the schema file. Please make sure the path setting is correct.'
-            ) from e

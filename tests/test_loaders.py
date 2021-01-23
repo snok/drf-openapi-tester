@@ -1,5 +1,4 @@
 import pytest
-from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester.loaders import BaseSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from tests.utils import CURRENT_PATH
@@ -21,7 +20,7 @@ def test_static_get_schema():
         loader.get_schema()  # runs internal validation
 
     loader = StaticSchemaLoader(str(CURRENT_PATH) + '/schemas/lol.fun')
-    with pytest.raises(ImproperlyConfigured):
+    with pytest.raises(FileNotFoundError):
         loader.get_schema()
 
 

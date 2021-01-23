@@ -1,0 +1,128 @@
+---
+openapi: 3.0.2
+info:
+  title: Codici ATECO
+  x-summary: Ricerca dei codici ATECO.
+  x-api-id: b0a103e0-491d-4805-bc4a-ea755268b720
+  version: 1.0.0
+  description: |-
+    ## ATECO
+
+    ATECO è il servizio che offre all'impresa e ai professionisti un quadro d'insieme degli adempimenti amministrativi necessari per svolgere legittimamente l’attività di impresa.
+
+    Con ATECO è possibile:
+
+    - ricercare i codici ATECO per l'attività che l’impresa intende svolgere;
+    - conoscere le norme che regolano e disciplinano la propria attività, a livello nazionale e regionale;
+    - conoscere i requisiti richiesti e gli adempimenti necessari per avviarla;
+    - approfondire la raccolta delle informazioni e della modulistica, con il collegamento diretto allo
+      Sportello Unico delle Attività Produttive (SUAP) di riferimento.
+
+    Attraverso i codici ATECO 2007, è possibile definire e classificare la propria attività per:
+
+    - denunciarla correttamente e pubblicarla in modo esatto e puntuale attraverso la visura camerale;
+    - aggiornarla in modo standardizzato ai fini fiscali, contributivi e statistici.
+
+  contact:
+    email: redazione.ateco@infocamere.it
+    name: ATECO
+    url: http://ateco.infocamere.it/
+  termsOfService: http://informative.infocamere.it/ateco
+servers:
+- url: http://ateco.infocamere.it/ateq20
+paths:
+  "/beServices/ricerca-attivita.json":
+    get:
+      summary: Ricerca il codice ATECO di un'attività.
+      description: >-
+        Ritorna un dizionario con le sigle ed i nomi delle province.
+        Se il campo di ricerca non è presente o non è valido ritorna un dizionario vuoto.
+      operationId: getAttivita
+      parameters:
+      - name: comune
+        in: query
+        required: true
+        description: codice catastale del comune
+        schema:
+          type: string
+          example: E472
+      - name: attivita
+        in: query
+        required: true
+        description: il nome dell'attività
+        example: pescheria
+        schema:
+          type: string
+      - name: v
+        in: query
+        required: true
+        description: versione
+        example: 1577100079402
+        schema:
+          type: number
+          format: int64
+      responses:
+        200:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListaAttivitaDichiarate'
+          description: >-
+            Successo: ritorna la descrizione delle attività corrispondenti.
+        default:
+          $ref: '#/components/responses/default'
+
+components:
+  responses:
+    400BadRequest:
+      $ref: https://teamdigitale.github.io/openapi/master/definitions.yaml#/responses/400BadRequest
+    default:
+      $ref: https://teamdigitale.github.io/openapi/master/definitions.yaml#/responses/default
+  schemas:
+    ListaAttivitaDichiarate:
+      properties:
+        listaAttivitaDichiarate:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttivitaDichiarata'
+    AttivitaDichiarata:
+      properties:
+        nome:
+         type: string
+         example: pescheria
+        ambito:
+          type: array
+          items:
+            $ref: '#/components/schemas/Ambito'
+    Ambito:
+      properties:
+        nome:
+          type: string
+          example: Ittica
+        codici:
+          type: array
+          items:
+            $ref: '#/components/schemas/Codice'
+    Codice:
+      properties:
+        id:
+          type: string
+          description: il codice ATECO
+          example: '47.23'
+        nome:
+          type: string
+          example:  'Commercio al dettaglio di pesci, crostacei e molluschi in esercizi specializzati'
+        noteInclusioneHtml:
+          type: string
+          example: '<UL><LI class=''punto_elenco''><P>commercio al dettaglio di pesci, altri prodotti ittici e prodotti derivati.</P></LI></UL>'
+        noteEsclusioneHtml:
+          type: string
+          example: ''
+        ambito:
+          type: array
+          items:
+            type: object
+        esclusione:
+          type: array
+          items:
+            type: object

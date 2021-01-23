@@ -1,0 +1,214 @@
+#
+# Questo e' un progetto d'esempio in formato OpenAPI 3.0 API Starter Kit.
+#
+# Stai per sviluppare un API? Segui attentamente questo template e
+#   potrai integrarla facilmente in Developers Italia.
+#
+openapi: 3.0.0
+info:
+  version: "1.0.0"
+  # Il `title` e' il nome del tuo prodotto/servizio!
+  # E' la prima cosa ad apparire in pagine web e cataloghi.
+  # Dev'essere chiaro e conciso.
+  title: |-
+    Starter Kit API
+  x-summary: >-
+    Una linea che descrive la nostra API per il catalogo.
+  description: |
+    #### Documentazione
+    Qui devi inserire la documentazione principale del servizio.
+    Il testo dev'essere diviso in piu' parti, tutte scritte in Markdown.
+
+    Questa sezione e' informativa:
+
+      * cosa fanno queste API?
+      * chi puo' beneficiarne?
+      * perche' sono utili?
+
+    ##### Sottosezioni
+    E' possibile utilizzare - con criterio - delle sottosezioni.
+
+    #### Note
+
+    Usa questa sezione per annotazioni specifiche, riferimenti normativi e/o
+    per manleve ed esclusioni di responsabilita' eventualmente non incluse in `termsOfService`.
+
+    #### Informazioni tecniche ed esempi
+
+    Qui e' possibile introdurre brevi informazioni tecniche ed esempi.
+    Attenzione: la `description` non sostituisce la documentazione di progetto,
+    deve pero' facilitare l'esecuzione delle prime richieste.
+
+  # I termini del servizio contengono un riferimento
+  #   a tutte le indicazioni e le note legali per l'utilizzo
+  #   del servizio, inclusi gli eventuali riferimenti utili al GDPR.
+  termsOfService: 'http://swagger.io/terms/'
+  # Chi posso contattare per informazioni sul servizio e sul suo stato?
+  contact:
+    email: robipolli@gmail.com
+    name: Roberto Polli
+    url: https://twitter.com/ioggstream
+  # L'audience delle API. Attualmente e' definito solamente
+  #   la tipologia `public`.
+  x-audience:
+    - public
+  # Ogni API deve avere un UUID, invariante nel tempo e
+  #   rispetto al `title`.
+  x-api-id: 71afb493-b5a1-44ed-a997-991c217f520c
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+  x-lifecycle:
+    maturity: developing
+# Una lista di `tag` utili a raggruppare le varie operazioni
+#   eseguite dalle API. Ogni `tag` puo' referenziare un link
+#   alla sua descrizione.
+tags:
+  - name: public
+    description: Retrieve informations
+    externalDocs:
+      url: http://docs.my-api.com/pet-operations.htm
+# Uno o piu' server di erogazione.
+#   Puo' essere utile indicare gli indirizzi di collaudo,
+#   sviluppo e test.
+servers:
+  - description: Test server
+    url: https://api.example.com/ipa/v1
+    x-sandbox: yes
+    x-healthCheck:
+      interval: 5
+      timeout: 10
+      url: https://foo/status
+  - description: Development server
+    url: https://localhost:8443/ipa/v1
+#
+# Qui vanno tutti i path.
+#
+paths:
+  /indicepa/{ipa_code}:
+    get:
+      summary: Recupera le informazioni su una PA.
+      description: |
+        Si connette ad IndicePA e recupera le informazioni su
+        un'amministrazione tramite il codice IPA.
+      operationId: get_ipa
+      tags:
+      - public
+      parameters:
+        - $ref: "#/components/parameters/ipa_code"
+      responses:
+        '200':
+          description: |
+            La PA e' stata trovata e le informazioni sono state recuperate
+            con successo.
+          # Questi headder di throttling sono obbligatori e definiti
+          #   nel Nuovo modello di interoperabilità.
+          headers:
+            X-RateLimit-Limit:
+              $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PA'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '429':
+          $ref: '#/components/responses/429TooManyRequests'
+        '503':
+          $ref: '#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: '#/components/responses/default'
+  /indicepa:
+    get:
+      summary: Ricerca una PA per nome.
+      description: |
+        Si connette ad IndicePA e ricerca una PA per nome.
+      operationId: search_ipa
+      tags:
+      - public
+      parameters:
+        - $ref: "#/components/parameters/name"
+        - $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/limit'
+        - $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/offset'
+        - $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/sort'
+      responses:
+        '200':
+          description: |
+            La PA e' stata trovata e le informazioni sono state recuperate
+            con successo.
+          headers:
+            X-RateLimit-Limit:
+              $ref: '#/components/headers/X-RateLimit-Limit'
+            X-RateLimit-Remaining:
+              $ref: '#/components/headers/X-RateLimit-Remaining'
+            X-RateLimit-Reset:
+              $ref: '#/components/headers/X-RateLimit-Reset'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PA'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '429':
+          $ref: '#/components/responses/429TooManyRequests'
+        '503':
+          $ref: '#/components/responses/503ServiceUnavailable'
+        default:
+          $ref: '#/components/responses/default'
+
+components:
+  parameters:
+    ipa_code:
+      name: ipa_code
+      in: path
+      description: Il codice IPA dell'amministrazione.
+      required: true
+      example: asl_lt
+      schema:
+        type: string
+    name:
+      name: name
+      in: query
+      description: La stringa da ricercare nel nome dell'amministrazione.
+      required: true
+      example: Latina
+      schema:
+        type: string
+
+  headers:
+    X-RateLimit-Limit:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Limit'
+    X-RateLimit-Remaining:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Remaining'
+    X-RateLimit-Reset:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Reset'
+    Retry-After:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/Retry-After'
+
+  responses:
+    # Predefined error codes for this API
+    400BadRequest:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/400BadRequest'
+    404NotFound:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/404NotFound'
+    429TooManyRequests:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/429TooManyRequests'
+    503ServiceUnavailable:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/503ServiceUnavailable'
+    default:
+      $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/default'
+
+  schemas:
+    # Problem:
+    #  $ref: 'https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/schemas/Problem'
+    PA:
+      type: object
+      description: Una Pubblica Amministrazione.

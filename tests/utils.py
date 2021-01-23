@@ -30,21 +30,25 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
 def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Response], str], None, None]:
     for url_fragment, path_object in schema['paths'].items():
         for method, method_object in path_object.items():
-            for status_code, responses_object in method_object['responses'].items():
-                if status_code == 'default':
-                    # TODO: Handle this
-                    continue
-                schema_section = None
-                response = None
-                if 'content' in responses_object.keys():
-                    schema_section = responses_object['content']['application/json']['schema']
-                elif 'schema' in responses_object.keys():
-                    schema_section = responses_object['schema']
-                if schema_section:
-                    response = response_factory(
-                        schema=schema_section, url_fragment=url_fragment, method=method, status_code=status_code
-                    )
-                yield schema_section, response, url_fragment
+            if method.lower() != 'parameters':
+                for status_code, responses_object in method_object['responses'].items():
+                    if status_code == 'default':
+                        # TODO: Handle this
+                        continue
+                    schema_section = None
+                    response = None
+                    try:
+                        if 'content' in responses_object.keys():
+                            schema_section = responses_object['content']['application/json']['schema']
+                        elif 'schema' in responses_object.keys():
+                            schema_section = responses_object['schema']
+                    except KeyError:
+                        pass
+                    if schema_section:
+                        response = response_factory(
+                            schema=schema_section, url_fragment=url_fragment, method=method, status_code=status_code
+                        )
+                    yield schema_section, response, url_fragment
 
 
 def pass_mock_value(return_value: Any) -> Any:

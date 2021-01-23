@@ -79,20 +79,26 @@ class SchemaTester:
     def _get_key_value(schema: dict, key: str, error_addon: str = '') -> dict:
         """
         Indexes schema by string variable.
-
-        :param schema: Schema to index
-        :param key: Variable to index by
-        :param error_addon: Additional error info to be included in the printed error message
-        :return: Indexed schema
-        :raises: IndexError
         """
         try:
-
             return schema[key]
         except KeyError:
             raise UndocumentedSchemaSectionError(
                 f'Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}'
             )
+
+    @staticmethod
+    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon='') -> dict:
+        """
+        Indexes schema by string variable.
+        """
+        if str(status_code) in schema:
+            return schema[str(status_code)]
+        elif int(status_code) in schema:
+            return schema[int(status_code)]
+        raise UndocumentedSchemaSectionError(
+            f'Error: Unsuccessfully tried to index the OpenAPI schema by `{status_code}`. {error_addon}'
+        )
 
     def _route_error_text_addon(self, paths: KeysView) -> str:
         route_error_text = ''
@@ -106,7 +112,7 @@ class SchemaTester:
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        return f'\n\nDocumented responses include: {", ".join(response_status_codes)}. Is the `{status_code}` response documented?'
+        return f'\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. Is the `{status_code}` response documented?'
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
@@ -132,9 +138,9 @@ class SchemaTester:
             schema=route_object, key=method.lower(), error_addon=self._method_error_text_addon(route_object.keys())
         )
         responses_object = self._get_key_value(schema=method_object, key='responses')
-        status_code_object = self._get_key_value(
+        status_code_object = self._get_status_code(
             schema=responses_object,
-            key=status_code,
+            status_code=status_code,
             error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
         )
         if 'openapi' not in schema:
@@ -144,7 +150,7 @@ class SchemaTester:
         json_object = self._get_key_value(schema=content_object, key='application/json')
         return self._get_key_value(schema=json_object, key='schema')
 
-    def test_schema_section(
+    def test_schema_section(  # noqa: C901
         self,
         schema_section: dict,
         data: Any,
@@ -159,9 +165,12 @@ class SchemaTester:
         if 'allOf' in schema_section:
             merged_schema = self.handle_all_of(**schema_section)
             schema_section = merged_schema
-
-        schema_section_type = schema_section['type']
-
+        schema_section_type = schema_section.get('type')
+        if not schema_section_type and 'properties' in schema_section:
+            schema_section_type = 'object'
+        elif not schema_section_type:
+            # FIXME: not handled at present
+            return
         if data is None and self.is_nullable(schema_section):
             return
         if data is None or not self._check_openapi_type(schema_section_type, data):
@@ -185,13 +194,13 @@ class SchemaTester:
             if len(schema_section_keys) != len(response_keys):
                 if len(response_keys) > len(schema_section_keys):
                     missing_keys = ', '.join(
-                        f'`{key}`' for key in sorted(list(set(response_keys) - set(schema_section_keys)))
+                        str(key) for key in sorted(list(set(response_keys) - set(schema_section_keys)))
                     )
                     hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
                     message = f'The following properties seem to be missing from your documentation: {missing_keys}.'
                 else:
                     missing_keys = ', '.join(
-                        f'{key}' for key in sorted(list(set(schema_section_keys) - set(response_keys)))
+                        str(key) for key in sorted(list(set(schema_section_keys) - set(response_keys)))
                     )
                     hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
                     message = f'The following properties are missing from the tested data: {missing_keys}.'
@@ -234,7 +243,7 @@ class SchemaTester:
                 )
         elif schema_section_type == 'array':
             items = schema_section['items']
-            if not items and data is not None:
+            if items is None and data is not None:
                 raise DocumentationError(
                     message='Mismatched content. Response array contains data, when schema is empty.',
                     response=data,

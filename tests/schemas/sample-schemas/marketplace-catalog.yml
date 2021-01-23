@@ -1,0 +1,321 @@
+openapi: 3.0.0
+servers:
+  - description: SwaggerHub API Auto Mocking
+    url: >-
+      https://virtserver.swaggerhub.com/ioggstream_italia/marketplace-italia/0.0.1
+info:
+  description: Test
+  version: 0.0.1
+  title: Interfaccia Standard Marketplace API
+  contact:
+    email: roberto@teamdigitale.governo.it
+  license:
+    name: Apache 2.0
+    url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+tags:
+  - name: catalogo
+    description: Qualsiasi cosa circa il catalogo API
+  - name: stats
+    description: Circa le statistiche di utilizzo
+  - name: security
+    description: Per richiedere un'API Key
+paths:
+  /catalogo:
+    post:
+      tags:
+        - catalogo
+      summary: Aggiungi un nuovo end-point API al catalogo
+      description: >-
+        Con questa operazione è possibile aggiungere al catalogo esposto al
+        marketplace una nuova API di dominio
+      operationId: addCatalogo
+      responses:
+        '405':
+          description: Invalid input
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/APIs'
+        description: oggetto API che si vuole aggiungere al catalogo
+        required: true
+    get:
+      tags:
+        - catalogo
+      summary: Lista di tutte le API pubblicate dal medesimo servizio
+      description: >-
+        Con questa operazione è possibile listare tutte le API messe a
+        disposizione dallo specifico erogatore
+      operationId: showCatalogo
+      parameters:
+        - $ref: '#/components/parameters/limit'
+        - $ref: '#/components/parameters/offset'
+      responses:
+        '200':
+          headers: &common_headers
+            X-RateLimit-Limit:
+              $ref: "#/components/headers/X-RateLimit-Limit"
+            X-RateLimit-Remaining:
+              $ref: "#/components/headers/X-RateLimit-Remaining"
+            X-RateLimit-Reset:
+              $ref: "#/components/headers/X-RateLimit-Reset"
+
+          description: Lista API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIs'
+        '404':
+          $ref: '#/components/responses/APIsDoesNotExistResponse'
+        '500':
+          $ref: '#/components/responses/Standard500ErrorResponse'
+  '/catalogo/{id}':
+    get:
+      tags:
+        - catalogo
+      summary: Lettura dei metadati caratteristici di ogni API esposta
+      description: >-
+        Con questa operazione è possibile leggere tutti i meta dati di una
+        singola API esposta dall'erogatore
+      operationId: showSingolaAPI
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          <<: *common_headers
+          description: Meta data API
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/APIs'
+        '404':
+          $ref: '#/components/responses/APIsDoesNotExistResponse'
+        '500':
+          $ref: '#/components/responses/Standard500ErrorResponse'
+  /stats:
+    get:
+      tags:
+        - stats
+      summary: >-
+        Recupera per tutte le API registrate dall'erogatore le statistiche di
+        base
+      description: >-
+        Statistiche esposte per singola API: Numero di accessi totali, media
+        giornaliera, numero errori totali, media giornaliera
+      operationId: statsAPI
+      responses:
+        '200':
+          description: Stats API
+          <<: *common_headers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stats'
+        '404':
+          $ref: '#/components/responses/StatsDoesNotExistsResponse'
+        '500':
+          $ref: '#/components/responses/Standard500ErrorResponse'
+  /getKey:
+    post:
+      tags:
+        - security
+      summary: Richiedi un'API Key per accedere alle API  della PA erogatotrice
+      description: >-
+        E' possibile chiedere la generazione di un API Key da utilizzare poi per
+        autenticare le chiamate alle API erogate dalla PA che gestisce questa
+        serie di API
+      operationId: apikey
+      responses:
+        '200':
+          description: API key generata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+        '404':
+          $ref: '#/components/responses/APIsDoesNotExistResponse'
+        '500':
+          $ref: '#/components/responses/Standard500ErrorResponse'
+        '501':
+          $ref: '#/components/responses/UsernameAlreadyExists'
+        default:
+          description: API key generata con successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKey'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetKey'
+        description: Creazione di una API Key
+        required: true
+components:
+  schemas:
+    API:
+      type: object
+      required:
+        - api_endpoint
+        - id
+        - openapi_url
+      properties:
+        api_endpoint:
+          description: URI dell'endpoint della singola API
+          type: string
+          format: url
+          example: 'https://api.server.it/path/api-handler'
+        id:
+          description: Id univoco interno della singola API
+          type: string
+          format: uuid
+          example: 15
+        openapi_url:
+          type: string
+          format: url
+          description: Link al documento swagger/OpenAPI di specifica
+          example: 'https://api.server.it/swagger/api-handler'
+        Description:
+          type: string
+          description: Overview dello scopo della singola API
+          example: Questo handler API permetter la creazione di un utente...
+        Parameters:
+          type: array
+          items:
+            properties:
+              name:
+                type: string
+            type: object
+        httpVerb:
+          type: string
+          example: GET
+          enum:
+            - GET
+            - POST
+            - PUT
+            - DELETE
+          description: Quale HTTP verb è associato alla singola API
+        responses:
+          type: string
+          properties:
+            parameters:
+              enum:
+                - '200'
+                - '404'
+                - '500'
+                - '501'
+    APIs:
+      type: array
+      items:
+        $ref: '#/components/schemas/API'
+    SingleAPIStats:
+      type: array
+      items:
+        properties:
+          id:
+            type: string
+            format: uuid
+            description: API uuid from #/info/x-api-id
+          api_endpoint:
+            type: string
+            format: uri
+            description: API endpoint
+          request_count:
+            type: integer
+            format: int64
+            description: cumulative number of requests since the service startup.
+          http_request_size_bytes_max:
+            type: integer
+            format: int64
+            description: Max request size allowed
+          availability_per_30d:
+            type: number
+            format: float
+            description: "% of time when the service was available during the last 30 days."
+          http_response_success_rate_1d:
+            type: number
+            format: float
+            description: "% of successful call during the last 24 hours."
+          expected_response_time_seconds_85pp:
+            type: number
+            format: float
+            description: Expected response time at 85pp
+          responsiveness_per_30d:
+            type: number
+            format: float
+            description: |-
+              "% of time when 85% of the requests was served before the deadline expiration."
+        type: object
+    Stats:
+      type: array
+      items:
+        $ref: '#/components/schemas/SingleAPIStats'
+    GetKey:
+      type: object
+      properties:
+        username:
+          type: string
+          description: username a cui associare la nuova appkey
+          example: grossi
+        name:
+          type: string
+          description: Nome del richiedente
+          example: Guido
+        surname:
+          type: string
+          description: Cognome del richiedente
+          example: Rossi
+        email:
+          type: string
+          description: eMail del richidente
+          example: g.rossi@emailente.it
+        phone:
+          type: string
+          description: Telefono del richiedente
+          example: '0611111111'
+      xml:
+        name: GetKey
+    ApiKey:
+      type: object
+      properties:
+        apikey:
+          type: string
+          example: AIzaSyDHeXm6n1hyGIEO_wgscTYUBDJcMmqgOtA
+    Problem:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/schemas/Problem"
+
+  responses:
+    Standard500ErrorResponse:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/default"
+    APIsDoesNotExistResponse:
+      description: API non esistenti per questo erogatore.
+    StatsDoesNotExistsResponse:
+      description: Stats non esisteti per queste API dell'erogatore.
+    UsernameAlreadyExists:
+      description: Username already existing
+    429TooManyRequests:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/429TooManyRequests"
+    503ServiceUnavailable:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/responses/503ServiceUnavailable"
+
+  headers:
+    X-RateLimit-Limit:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Limit"
+    X-RateLimit-Remaining:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Remaining"
+    X-RateLimit-Reset:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/headers/X-RateLimit-Reset"
+  parameters:
+    id:
+      name: id
+      in: path
+      description: l'ID dell'API che si vuole analizzare
+      required: true
+      schema:
+        type: integer
+    limit:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/limit"
+    offset:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/offset"
+    sort:
+      $ref: "https://raw.githubusercontent.com/teamdigitale/openapi/0.0.3/docs/definitions.yaml#/parameters/sort"

@@ -1,0 +1,662 @@
+openapi: 3.0.0
+info:
+  version: '2.0.0'
+  title: 'ISTAT SDMX RESTful API'
+  x-api-id: 4d35fcf9-f059-4e46-bb95-889b8c0dee53
+  x-summary: Accesso ai dati ISTAT tramite interfaccia REST SDMX
+  contact:
+    url: https://www.istat.it/it/metodi-e-strumenti/web-service-sdmx
+    name: ISTAT
+  termsOfService: https://www.istat.it/it/metodi-e-strumenti/web-service-sdmx
+
+  description: |-
+    ## DOCUMENTAZIONE
+    Il [Single Exit Point](https://www.istat.it/it/metodi-e-strumenti/web-service-sdmx)
+    (SEP) è una API esposta dall'Istituto Nazionale di Statistica (Istat)
+    per permettere l'accesso in modalità machine-to-machine ai dati memorizzati nel
+    database di diffusione [I.Stat](http://dati.istat.it).
+    Il servizio, gratuito e liberamente disponibile, consente agli enti e alle organizzazioni
+    di formulare specifiche richieste (query), di effettuare il download dei dati di interesse
+    e di accoglierli agevolmente nei propri sistemi (basi dati, portali web ecc.).
+    La ricerca delle statistiche correntemente prodotte dall’Istat è facilitata da una
+    catalogazione per temi.
+
+    ## NOTE
+    Il meccanismo query/download si basa sullo standard [SDMX (Statistical Data and
+    Metadata eXchange)](https://sdmx.org) sviluppato da sette organizzazioni internazionali (Bank for
+    International Settlements, European Central Bank, Eurostat, International Monetary
+    Fund, Organisation for Economic Cooperation and Development (OECD), United
+    Nations Statistical Division, World Bank) per facilitare lo scambio e la condivisione di
+    dati e metadati statistici.
+
+    Dal 2013 SDMX è diventato uno standard ISO (IS 17369).
+
+    SDMX è anche alla base del progetto [Hub della statistica pubblica](https://www.sistan.it/index.php?id=580)
+    per la condivisione,
+    l'integrazione e la diffusione di macrodati prodotti dai soggetti del Sistema Statistico
+    Nazionale (Sistan) o da altri enti produttori di statistiche che svolgono funzioni o
+    servizi d'interesse pubblico.
+    SDMX si basa su un solido modello informativo adottato anche dal W3C per la
+    descrizione dei dati multidimensionali in ambito Linked Open Data attraverso l'[RDF
+    Data Cube Vocabolary](https://www.w3.org/TR/vocab-data-cube).
+
+    ## INFORMAZIONI TECNICHE ED ESEMPI
+    Essendo l'API SEP basata sullo standard SDMX, per la relativa documentazione tecnica
+    si può far riferimento alle [specifiche ufficiali sdmx-rest](https://github.com/sdmx-twg/sdmx-rest/tree/master/v2_1/ws/rest/docs)
+    o al [Wiki dedicato](https://github.com/sdmx-twg/sdmx-rest/wiki).
+    Il SEP attraverso il protocollo REST offre la possibilità di ricevere dati e metadati in
+    vari formati: XML, JSON, CSV, RDF
+
+    Il formato può essere scelto attraverso HTTP content negotiation mechanism oppure,
+    nel caso specifico del SEP, aggiungendo un ulteriore parametro (format) alla query
+    REST. Per esempio:
+    -  estrarre la lista dei dataflow disponibili in formato json:
+
+    ```
+    curl 'http://sdmx.istat.it/SDMXWS/rest/dataflow?format=jsonstructure'
+    ```
+
+    - estrarre il dataset dell’Indice della Produzione industriale in formato json:
+
+    ```
+    curl 'http://sdmx.istat.it/SDMXWS/rest/data/IT1,115_333,1.2?startPeriod=2018&endPeriod=2018&format=jsondata'
+    ```
+
+    AUTENTICAZIONE
+    Le richieste non richiedono autenticazione.
+
+tags:
+- name: data
+  description: Recupero dei dataset
+- name: metadata
+  description: Recupero di metadati e strutture
+x-commons:
+  common_responses: &common_responses
+    '304':
+      $ref: '#/components/responses/304'
+    '400':
+      $ref: '#/components/responses/400'
+    '406':
+      $ref: '#/components/responses/406'
+    '413':
+      $ref: '#/components/responses/413'
+    '414':
+      $ref: '#/components/responses/414'
+    'default':
+      $ref: '#/components/responses/default'
+    '503':
+      $ref: '#/components/responses/503'
+
+servers:
+  - url: 'http://sdmx.istat.it/sdmxws/rest'
+    description: SDMX REST URL di produzione
+
+paths:
+  /data/{flow}/{key}:
+    get:
+      summary: 'Data query'
+      tags:
+      - data
+      description: |-
+        Recupera un dataset nei formati supportati.
+      parameters:
+        - $ref: '#/components/parameters/flow'
+        - $ref: '#/components/parameters/key'
+        - $ref: '#/components/parameters/startPeriod'
+        - $ref: '#/components/parameters/endPeriod'
+        - $ref: '#/components/parameters/updatedAfter'
+        - $ref: '#/components/parameters/firstNObservations'
+        - $ref: '#/components/parameters/lastNObservations'
+        - $ref: '#/components/parameters/dimensionAtObservation'
+        - $ref: '#/components/parameters/detail'
+        - $ref: '#/components/parameters/includeHistory'
+        - $ref: '#/components/parameters/accept-language'
+        - $ref: '#/components/parameters/if-modified-since'
+      responses:
+        <<: *common_responses
+        '200':
+          $ref: '#/components/responses/200'
+
+
+  /availableconstraint/{flow}/{key}/{componentID}:
+    get:
+      summary: 'Data availability query'
+      tags:
+      - metadata
+      description: |-
+        Mostra la disponibilita' di dati e dei metadati associati.
+      parameters:
+        - $ref: '#/components/parameters/flow'
+        - $ref: '#/components/parameters/key'
+        - $ref: '#/components/parameters/componentID'
+        - $ref: '#/components/parameters/mode'
+        - $ref: '#/components/parameters/acreferences'
+        - $ref: '#/components/parameters/startPeriod'
+        - $ref: '#/components/parameters/endPeriod'
+        - $ref: '#/components/parameters/updatedAfter'
+        - $ref: '#/components/parameters/accept-language'
+        - $ref: '#/components/parameters/if-modified-since'
+      responses:
+        <<: *common_responses
+        '200':
+          $ref: '#/components/responses/200-struct'
+
+  /dataflow/{agencyID}/{resourceID}/{version}:
+    get:
+      summary: 'Dataflow query'
+      description: |-
+        Mostra le informazioni sul dataflow.
+
+        Eg. Il dataflow dell'Indice di produzione industriale
+         ha `resourceID=115_333`
+      tags:
+      - metadata
+      parameters:
+        - $ref: '#/components/parameters/agencies'
+        - $ref: '#/components/parameters/resourceIDs'
+        - $ref: '#/components/parameters/versions'
+        - $ref: '#/components/parameters/references'
+        - $ref: '#/components/parameters/structDetail'
+        - $ref: '#/components/parameters/accept-language'
+        - $ref: '#/components/parameters/if-modified-since'
+      responses:
+        <<: *common_responses
+        '200':
+          $ref: '#/components/responses/200-struct'
+
+  /datastructure/{agencyID}/{resourceID}/{version}:
+    get:
+      summary: 'Datastructure query'
+      description: |-
+         Mostra le informazioni sulla struttura dei dati.
+
+         Eg. La struttura data utilizzata dal dataflow associato
+         all'Indice di produzione industriale
+         ha `resourceID=DCSC_INDXPRODIND_1`.
+
+         Una datastructure può essere usata da più dataflow.
+      tags:
+      - metadata
+      parameters:
+        - $ref: '#/components/parameters/agencies'
+        - $ref: '#/components/parameters/resourceIDs'
+        - $ref: '#/components/parameters/versions'
+        - $ref: '#/components/parameters/references'
+        - $ref: '#/components/parameters/structDetail'
+        - $ref: '#/components/parameters/accept-language'
+        - $ref: '#/components/parameters/if-modified-since'
+      responses:
+        <<: *common_responses
+        '200':
+          $ref: '#/components/responses/200-struct'
+
+
+  /{structureType}/{agencyID}/{resourceID}/{version}:
+    get:
+      summary: 'Structure query'
+      description: |-
+         Mostra informazioni strutturali sui dati. In questa casistica ricadono i path ulteriori rispetto a datastructure e dataflow.
+      tags:
+      - metadata
+      parameters:
+        - $ref: '#/components/parameters/structureType'
+        - $ref: '#/components/parameters/agencies'
+        - $ref: '#/components/parameters/resourceIDs'
+        - $ref: '#/components/parameters/versions'
+        - $ref: '#/components/parameters/references'
+        - $ref: '#/components/parameters/structDetail'
+        - $ref: '#/components/parameters/accept-language'
+        - $ref: '#/components/parameters/if-modified-since'
+      responses:
+        <<: *common_responses
+        '200':
+          $ref: '#/components/responses/200-struct'
+
+components:
+  examples:
+    DatastructureResourceId:
+      summary: resourceID per datastructure
+      value: DCSC_INDXPRODIND_1
+    DataflowResourceId:
+      summary: resourceID per dataflow
+      value: >-
+        '115_333'
+
+  schemas:
+    SDMXPeriod:
+      type: string
+      pattern: '^\d{4}-?((\d{2}(-\d{2})?)|A1|S[1|2]|Q[1-4]|T[1-3]|M(0[1-9]|1[0-2])|W(0[1-9]|[1-4][0-9]|5[0-3])|D(0[0-9][1-9]|[1-2][0-9][0-9]|3[0-5][0-9]|36[0-6]))?$'
+      description: |-
+        Can be expressed using 8601 dates or SDMX reporting periods.
+
+        Examples:
+
+        2000: Year (ISO 8601)
+        2000-01: Month (ISO 8601)
+        2000-01-01: Date (ISO 8601)
+        2000-Q1: Quarter (SDMX)
+        2000-W01: Week (SDMX)
+        2000-S1: Semester (SDMX)
+        2000-D001: Day (SDMX)
+      example: "2000-10"
+  parameters:
+    flow:
+      in: path
+      name: flow
+      description: |
+        The **statistical domain** (aka dataflow) of the data to be returned.
+
+        Examples:
+
+        * `115_333`: The ID of the domain
+        * `IT1,115_333`: The IT1 domain, maintained by the ISTAT
+        * `IT1,115_333,1.2`: Version 1.2 of the 115_333 domain, maintained by ISTAT
+      required: true
+      schema:
+        type: string
+        pattern: '^([a-zA-Z][a-zA-Z\d_-]*(\.[a-zA-Z][a-zA-Z\d_-]*)*,)?[a-zA-Z\d_@$-]+(,(latest|(\d+(\.\d+)*)))?$'
+        example: "IT1,115_333,1.2"
+    key:
+      in: path
+      name: key
+      description: |
+        The (possibly partial) **key identifying the data to be returned**.
+
+        The keyword `all` can be used to indicate that all data belonging to the specified dataflow and provided by the specified provider must be returned.
+
+        The examples below are based on the following key: Frequency, Country, Component of inflation, Unit of measure.
+         * `M.DE.000000.ANR`: Full key, matching exactly one series, i.e. the monthly (`M`) rates of change (`ANR`) of overall inflation (`000000`) in Germany (`DE`).
+         * `A+M.DE.000000.ANR`: Retrieves both annual and monthly data (`A+M`), matching exactly two series
+         * `A+M..000000.ANR`: The second dimension is wildcarded, and it wil therefore match the annual and monthly rates of change of overall inflation in any country.
+      required: true
+      schema:
+        type: string
+        pattern: '^([\.A-Za-z\d_@$-]+(\+[A-Za-z\d_@$-]+)*)*$'
+        example: "..N..IND_PROD2"
+    provider:
+      in: path
+      name: provider
+      description: |
+        The **provider of the data** to be retrieved.
+
+        The keyword `all` can be used to indicate that all data matching the supplied key and belonging to the specified dataflow and provided by any data provider must be returned.
+
+        Examples:
+
+        * `IT1`: Data provided by ISTAT
+      required: true
+      schema:
+        type: string
+        pattern: '^(([A-Za-z][A-Za-z\d_-]*)(\.[A-Za-z][A-Za-z\d_-]*)*,)?[A-Za-z\d_@$-]+(\+([A-Za-z][A-Za-z\d_-]*(\.[A-Za-z][A-Za-z\d_-]*)*,)?[A-Za-z\d_@$-]+)*$'
+        example: "IT1"
+    structureType:
+      in: path
+      name: structureType
+      description: |
+        The type of structural metadata to be retrieved (e.g. codelist, datastructure, etc.).
+
+        The keyword `all` can be used to indicate that any type of artefact can be returned.
+      required: true
+      schema:
+        type: string
+        enum: [datastructure, metadatastructure, dataflow, metadataflow, provisionagreement, structureset, process, categorisation, contentconstraint, allowedconstraint, attachmentconstraint, conceptscheme, codelist, categoryscheme, hierarchicalcodelist, organisationscheme, agencyscheme, dataproviderscheme, dataconsumerscheme, organisationunitscheme, transformationscheme, rulesetscheme, userdefinedoperatorscheme, customtypescheme, namepersonalisationscheme, vtlmappingscheme, all]
+    itemSchemeType:
+      in: path
+      name: itemSchemeType
+      description: |
+        The type of item schemes to be retrieved (e.g. codelist, concept scheme, etc.).
+
+        The keyword `all` can be used to indicate that any type of item scheme can be returned.
+      required: true
+      schema:
+        type: string
+        enum: [conceptscheme, codelist, categoryscheme, hierarchicalcodelist, organisationscheme, agencyscheme, dataproviderscheme, dataconsumerscheme, organisationunitscheme, transformationscheme, rulesetscheme, userdefinedoperatorscheme, customtypescheme, namepersonalisationscheme, vtlmappingscheme, all]
+    context:
+      in: path
+      name: context
+      description: |
+        The value of this parameter determines the **constraints taken into account** when generating the schema.
+
+        Possible options are:
+
+        * `datastructure`: Constraints attached to the DSD are applied.
+        * `metadatastructure`: Constraints attached to the MSD are applied.
+        * `dataflow`: Constraints attached to the dataflow and to the DSD used in the dataflow are applied.
+        * `metadataflow`: Constraints attached to the metadataflow and to the MSD used in the metadataflow are applied.
+        * `provisionagreement`: Constraints attached to the provision agreement, as well as to the dataflow or metadafalow used in the agreement and the DSD or MSD used in the dataflow or metadataflow are applied.
+      required: true
+      schema:
+        type: string
+        enum: [datastructure, metadatastructure, dataflow, metadataflow, provisionagreement]
+        example: dataflow
+    agencyID:
+      in: path
+      name: agencyID
+      description: The agency maintaining the artefact used to generate the schema to be returned.
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z\d_-]*(\.[A-Za-z][A-Za-z\d_-]*)*$'
+        example: IT1
+    resourceID:
+      in: path
+      name: resourceID
+      description: The id of the artefact used to generate the schema to be returned.
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z\d_@$-]+$'
+        example: "115_333"
+    version:
+      in: path
+      name: version
+      description: |
+        The version of the artefact used to generate the schema to be returned.
+
+        The keyword `latest` can be used to return the latest production version of the matching resource.
+      required: true
+      schema:
+        type: string
+        pattern: '^(latest|[\d]+(\.[\d]+)*)$'
+    agencies:
+      in: path
+      name: agencyID
+      description: |
+        The agency maintaining the artefact to be returned.
+
+        It is possible to set more than one agency, using `+` as separator (e.g. BIS+ECB).
+
+        The keyword `all` can be used to indicate that artefacts maintained by any maintenance agency should be returned.
+      required: true
+      schema:
+        type: string
+        pattern: '^(([A-Za-z][A-Za-z\d_-]*)(\.[A-Za-z][A-Za-z\d_-]*)*,)?[A-Za-z\d_@$-]+(\+([A-Za-z][A-Za-z\d_-]*(\.[A-Za-z][A-Za-z\d_-]*)*,)?[A-Za-z\d_@$-]+)*$'
+        example: IT1
+    resourceIDs:
+      in: path
+      name: resourceID
+      description: |
+        The id of the artefact to be returned.
+
+        It is possible to set more than one id, using `+` as separator (e.g. CL_FREQ+CL_CONF_STATUS).
+
+        The keyword `all` can be used to indicate that any artefact of the specified resource type, {agencyID} and {version} should be returned.
+      required: true
+      schema:
+        type: string
+        pattern: '^([A-Za-z\d_@$-]+(\+[A-Za-z\d_@$-]+)*)*$'
+      examples:
+        dataflow:
+          $ref: '#/components/examples/DataflowResourceId'
+        datastructure:
+          $ref: '#/components/examples/DatastructureResourceId'
+
+    versions:
+      in: path
+      name: version
+      description: |
+        The version of the artefact to be returned.
+
+        It is possible to set more than one version, using `+` as separator (e.g. 1.0+2.1).
+
+        The keyword `all` can be used to return all versions of the matching resource.
+
+        The keyword `latest` can be used to return the latest production version of the matching resource.
+      required: true
+      schema:
+        type: string
+        pattern: '^(all|latest|[\d]+(\.[\d]+)*(\+[\d]+(\.[\d]+)*)*)$'
+        example: "1.2"
+    items:
+      in: path
+      name: itemID
+      description: |
+        The id of the item to be returned.
+
+        It is possible to set more than one id, using `+` as separator (e.g. A+Q+M).
+
+        The keyword `all` can be used to return all items of the matching resource.
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z\d_@$-]+(\.[A-Za-z\d_@$-]+)*(\+[A-Za-z\d_@$-]+(\.[A-Za-z\d_@$-]+)*)*$'
+    componentID:
+      in: path
+      name: componentID
+      description: |
+        The id of the Dimension for which to obtain availability information about. Use all to indicate that data availability should be provided for all dimensions.
+      required: true
+      schema:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z\d_-]*$'
+    startPeriod:
+      in: query
+      name: startPeriod
+      description: |
+        The start of the period for which results should be supplied (inclusive).
+      required: false
+      schema:
+        $ref: '#/components/schemas/SDMXPeriod'
+      example: "2000-01"
+
+    endPeriod:
+      in: query
+      name: endPeriod
+      description: |
+        The end of the period for which results should be supplied (inclusive).
+
+      required: false
+      schema:
+        $ref: '#/components/schemas/SDMXPeriod'
+    updatedAfter:
+      in: query
+      name: updatedAfter
+      description: |
+        The last time the query was performed by the client.
+
+        The response should include the latest version of what has changed in the database since that point in time (i.e. additions, revisions or deletions since the last time the query was performed).
+      required: false
+      schema:
+        type: string
+        format: date-time
+    firstNObservations:
+      in: query
+      name: firstNObservations
+      description: |
+        The maximum number of observations to be returned starting from the oldest one
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        format: int32
+    lastNObservations:
+      in: query
+      name: lastNObservations
+      description: |
+        The maximum number of observations to be returned starting from the most recent one
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        format: int32
+    dimensionAtObservation:
+      in: query
+      name: dimensionAtObservation
+      description: |
+        Indicates **how the data should be packaged**.
+
+        The options are:
+
+        * `TIME_PERIOD`: A timeseries view
+        * The ID of any other dimension: A cross-sectional view of the data
+        * `AllDimensions`: A flat view of the data.
+      required: false
+      schema:
+        type: string
+        pattern: '^[A-Za-z][A-Za-z\d_-]*$'
+        default: TIME_PERIOD
+    detail:
+      in: query
+      name: detail
+      description: |
+        The **amount of information** to be returned.
+
+        Possible options are:
+
+        * `full`: All data and documentation
+        * `dataonly`: Everything except attributes
+        * `serieskeysonly`: The series keys. This is useful to return the series that match a certain query, without returning the actual data (e.g. overview page)
+        * `nodata`: The series, including attributes and annotations, without observations.
+      required: false
+      schema:
+        type: string
+        enum: [full, dataonly, serieskeysonly, nodata]
+        default: full
+        example: serieskeysonly
+    includeHistory:
+      in: query
+      name: includeHistory
+      description: |
+        Retrieve **previous versions of the data**.
+
+        When `true`, the response will contain up to two datasets per dissemination, one containing new or updated values and one containing the deleted data (if any).
+      required: false
+      schema:
+        type: boolean
+        default: false
+    explicitMeasure:
+      in: query
+      name: explicitMeasure
+      description: |
+        For cross-sectional data validation, indicates whether observations are strongly typed
+      required: false
+      schema:
+        type: boolean
+        default: false
+    structDetail:
+      in: query
+      name: detail
+      description: |
+        The amount of information to be returned.
+
+        Possible values are:
+
+        * `allstubs`: All artefacts should be returned as stubs, containing only identification information, as well as the artefacts' name
+        * `referencestubs`: Referenced artefacts should be returned as stubs, containing only identification information, as well as the artefacts' name
+        * `referencepartial`: Referenced item schemes should only include items used by the artefact to be returned. For example, a concept scheme would only contain the concepts used in a DSD, and its isPartial flag would be set to `true`
+        * `allcompletestubs`: All artefacts should be returned as complete stubs, containing identification information, the artefacts' name, description, annotations and isFinal information
+        * `referencecompletestubs`: Referenced artefacts should be returned as complete stubs, containing identification information, the artefacts' name, description, annotations and isFinal information
+        * `full`: All available information for all artefacts should be returned
+      required: false
+      schema:
+        type: string
+        enum: [allstubs, referencestubs, referencepartial, allcompletestubs, referencecompletestubs, full]
+        default: full
+        example: full
+    references:
+      in: query
+      name: references
+      description: |
+        Instructs the web service to return (or not) the artefacts referenced by the artefact to be returned.
+
+        Possible values are:
+
+        * `none`: No references will be returned
+        * `parents`: Returns the artefacts that use the artefact matching the query
+        * `parentsandsiblings`: Returns the artefacts that use the artefact matching the query, as well as the artefacts referenced by these artefacts
+        * `children`: Returns the artefacts referenced by the artefact to be returned
+        * `descendants`: References of references, up to any level, will be returned
+        * `all`: The combination of parentsandsiblings and descendants
+        * In addition, a concrete type of resource may also be used (for example, references=codelist).
+      required: false
+      schema:
+        type: string
+        enum: [none, parents, parentsandsiblings, children, descendants, all, datastructure, metadatastructure, categoryscheme, conceptscheme, codelist, hierarchicalcodelist, organisationscheme, agencyscheme, dataproviderscheme, dataconsumerscheme, organisationunitscheme, dataflow, metadataflow, reportingtaxonomy, provisionagreement, structureset, process, categorisation, contentconstraint, actualconstraint, allowedconstraint, attachmentconstraint]
+        default: none
+    mode:
+      in: query
+      name: mode
+      description: |
+        Instructs the web service to return a ContentConstraint which defines a Cube Region containing values which will be returned by executing the query (mode="exact") vs a Cube Region showing what values remain valid selections that could be added to the data query (mode="available"). A valid selection is one which results in one or more series existing for the selected value, based on the current data query selection state defined by the current path parameters.
+      required: false
+      schema:
+        type: string
+        enum: [exact, available]
+        default: exact
+    acreferences:
+      in: query
+      name: references
+      description: |
+        Instructs the web service to return (or not) the artefacts referenced by the ContentConstraint to be returned.
+      required: false
+      schema:
+        type: string
+        enum: [none, all, datastructure, conceptscheme, codelist, dataproviderscheme, dataflow]
+        default: all
+    accept-language:
+      in: header
+      name: Accept-Language
+      description: |
+        Specifies the client's preferred language.
+      schema:
+        type: string
+    if-modified-since:
+      in: header
+      name: If-Modified-Since
+      description: |
+        Instructs to return the content matching the query only if it has changed since the supplied timestamp.
+      schema:
+        type: string
+        format: date-time
+
+  responses:
+    '200':
+      description: OK
+      content:
+        application/vnd.sdmx.genericdata+xml;version=2.1:
+          schema:
+            type: string
+        application/vnd.sdmx.structurespecificdata+xml;version=2.1:
+          schema:
+            type: string
+        application/vnd.sdmx.generictimeseriesdata+xml;version=2.1:
+          schema:
+            type: string
+        application/vnd.sdmx.structurespecifictimeseriesdata+xml;version=2.1:
+          schema:
+            type: string
+        application/vnd.sdmx.data+csv;version=1.0.0:
+          schema:
+            type: string
+        application/vnd.sdmx.data+json;version=1.0:
+          schema:
+            type: string
+    '200-schemas':
+      description: OK
+      content:
+        application/vnd.sdmx.schema+xml;version=2.1:
+          schema:
+            type: string
+    '200-struct':
+      description: OK
+      content:
+        application/vnd.sdmx.structure+xml;version=2.1:
+          schema:
+            type: string
+        application/vnd.sdmx.structure+json;version=1.0:
+          schema:
+            type: string
+    '304':
+      description: No changes
+    '400':
+      description: Bad syntax
+    '406':
+      description: Not acceptable
+    '413':
+      description: Request entity too large
+    '414':
+      description: URI too long
+    'default':
+      description: Internal server error
+    '503':
+      description: Service unavailable

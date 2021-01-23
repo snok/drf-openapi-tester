@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+    title: Cartografia Catastale WMS
+    version: 1.3.0
+    termsOfService: >-
+      https://www.agenziaentrate.gov.it/portale/documents/20143/260417/Manuale+consultazione+cartografia_Documentazione+descrittiva+del+servizio+di+consultazione+della+cartografia+catastale+20180611.pdf/35e955f7-2344-56c8-1157-8f7567531660
+    contact:
+      name: >-
+          Agenzia delle Entrate – Direzione Centrale Servizi Catastali, Cartografici e di Pubblicità
+          Immobiliare
+      url: >-
+          https://www.agenziaentrate.gov.it/portale/it/web/guest/schede/fabbricatiterreni/consultazione-cartografia-catastale/servizio-consultazione-cartografia
+      email: assistenzaweb@agenziaentrate.it
+    license:
+      name: CC-BY 4.0
+      url: 'https://creativecommons.org/licenses/by/4.0/'
+    x-summary: >-
+      Agenzia delle Entrate - Servizio di consultazione della cartografia catastale WMS. Le informazioni
+      sono allineate con la banca dati cartografica del Catasto, costantemente aggiornata in modalità
+      automatica mediante gli atti tecnici predisposti dai professionisti abilitati. Licenza CC BY 4.0.
+      L'Agenzia è l'amministrazione titolare dei dati. La citazione della titolarità è sempre obbligatoria
+      in caso d'uso.
+    x-audience:
+        - public
+    x-api-id: 00000000-0000-0000-0000-000000000000
+
+    description: |-
+        ## Che cos'è
+
+        La consultazione libera della cartografia catastale consiste nella navigazione di molti contenuti
+        delle mappe catastali in maniera dinamica.
+
+
+        Le informazioni sono allineate con la banca dati cartografica del Catasto, costantemente aggiornata in
+        modalità automatica mediante gli atti tecnici predisposti dai professionisti abilitati. Non sono
+        esposte le mappe sottoposte a vincoli di riservatezza o quelle sulle quali sono in corso interventi di
+        manutenzione.
+
+
+        L’Agenzia delle Entrate, in attuazione della Direttiva europea INSPIRE - INfrastructure for SPatial
+        InfoRmation in Europe, mette a disposizione due servizi per la consultazione della cartografia      catastale:
+
+        * Consultazione cartografia catastale WMS: basata sullo standard Web Map Service 1.3.0, è fruibile
+        utilizzando un software GIS (Geographic Information System) o specifiche applicazioni a disposizione
+        dell’utente
+
+        * Geoportale cartografico catastale: è una piattaforma che consente la ricerca e la visualizzazione
+        delle particelle presenti sulla mappa del Catasto dei Terreni.
+
+
+        Il servizio copre l’intero territorio nazionale, ad eccezione dei territori nei quali il Catasto è
+        gestito,  per delega dello Stato, dalle Province Autonome di Trento e di Bolzano.
+
+        ## URL delle funzionalità (capabilities)
+
+        ```
+        https://wms.cartografia.agenziaentrate.gov.it/inspire/wms/ows01.php?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetCapabilities
+        ```
+
+
+
+        ## Sistemi di riferimento
+
+        Il servizio rende consultabili i dati nel Sistema di riferimento geodetico
+        nazionale (Decreto 10 novembre 2011) costituito dalla realizzazione ETRF2000 - all'epoca 2008.0 - del
+        Sistema di riferimento geodetico europeo ETRS89, identificativo EPSG. : 6706. Ai soli fini di una
+        migliore fruibilità del servizio in ambito INSPIRE, sono disponibili i Sistemi di riferimento relativi
+        alla realizzazione ETRF89 (codici EPSG 4258, 25832, 25833, 25834, 3044, 3045, 3046).
+
+        ## Statistiche
+
+        In un'ottica di continuo miglioramento, l’Agenzia monitora costantemente l’utilizzo e le prestazioni
+        dei servizi online di consultazione della cartografia catastale per garantirne la qualità e
+        l'efficienza.
+        I dati e le statistiche relative all’uso del servizio sono aggiornati quotidianamente.
+        [Consulta le Statistiche sull'uso del servizio WMS](https://geoportale.cartografia.agenziaentrate.gov.it/age-inspire/srv/ita/catalog.search#/statistiche?scrollTo=#statistiche-WMS)
+
+
+
+        ## Livelli di servizio
+
+        Il Servizio di consultazione è stato progettato, secondo la direttiva INSPIRE sui servizi WMS, per
+        rispondere senza interruzioni orarie. L’Agenzia a garanzia del servizio ha previsto un limite massimo
+        di richieste contemporanee di consultazione, raggiunto il quale l’interrogazione deve essere ripetuta.
+        Il servizio non espone le mappe sottoposte a vincoli di riservatezza o quelle sulle quali sono in
+        corso interventi di manutenzione.
+
+        ## Utilizzo dei dati
+
+        Il servizio di consultazione della cartografia catastale è disponibile con licenza CC-BY 4.0.
+        L’Agenzia delle Entrate non è responsabile per qualunque tipo di danno diretto,  indiretto o
+        accidentale derivante dall’impiego delle informazioni raccolte tramite questo servizio.
+
+        L’Agenzia, inoltre, è l’amministrazione titolare dei dati; in caso di uso dei dati è obbligatorio
+        citarne la titolarità.
+
+        ## Contatti e assistenza
+
+        Per maggiori informazioni si può consultare il manuale: [Servizio di Consultazione della cartografia
+        catastale - Web Map Service (WMS) - pdf](https://www.agenziaentrate.gov.it/portale/documents/20143/260417/Manuale+consultazione+cartografia_Documentazione+descrittiva+del+servizio+di+consultazione+della+cartografia+catastale+20180611.pdf/35e955f7-2344-56c8-1157-8f7567531660)
+
+        Per quesiti relativi al servizio consultare [le risposte alle domande più frequenti(FAQ)](https://www.agenziaentrate.gov.it/portale/web/guest/schede/fabbricatiterreni/consultazione-cartografia-catastale/servizio-consultazione-cartografia/risposte-alle-domande-frequenti)
+        Per altri
+        quesiti o segnalazioni scrivere all’indirizzo: assistenzaweb@agenziaentrate.it
+
+        Per informazioni o segnalazioni relative ai dati della cartografia catastale,
+        rivolgersi agli [Uffici
+        provinciali - Territorio](https://wwwt.agenziaentrate.gov.it/servizi/UfficiProvinciali/index.php)
+
+
+servers:
+    -
+        url: 'https://wms.cartografia.agenziaentrate.gov.it/inspire/wms'
+        description: Produzione
+paths:
+    /ows01.php:
+        get:
+            parameters:
+            - name: SERVICE
+              in: query
+              schema:
+                type: string
+                default: WMS
+            - name: VERSION
+              in: query
+              schema:
+                $ref: '#/components/schemas/Version'
+            - name: REQUEST
+              in: query
+              schema:
+                $ref: '#/components/schemas/Request'
+
+            tags:
+                - public
+            responses:
+                '200':
+                    headers:
+                        X-Global-Transaction-ID:
+                            schema:
+                                type: string
+                                example: 73b8ec385f71bae55c30209f
+                    content:
+                        text/xml: {}
+                    description: |
+                        La specifica WMS 1.3 ritorna status code 200 sia in caso di successo
+                        che di errore.
+
+                        Gli errori ritornano
+            operationId: get_echo
+            summary: Mostra le capabilities del servizio in formato WMS
+            description: >
+                Questo path mostra tutte le funzionalità del servizio
+
+                in formato WMS compatibilmente con le specifiche INSPIRE.
+
+
+                Per ulteriori informazioni si veda il
+                [Manuale](https://www.agenziaentrate.gov.it/portale/documents/20143/260417/Manuale+consultazione+cartografia_Documentazione+descrittiva+del+servizio+di+consultazione+della+cartografia+catastale+20180611.pdf/35e955f7-2344-56c8-1157-8f7567531660)
+components:
+    schemas:
+        Version:
+          description: |-
+            La versione dello standard WMS adottato è la 1.3.0.
+            È possibile utilizzare anche le precedenti
+            versioni 1.1.x
+          type: string
+          default: 1.3.0
+        Request:
+          description: |-
+              Sono ammesse le seguenti operazioni:
+              - GetMap con dimensione massima 2048 x 2048
+              - GetCapabilities
+              - GetFeatureInfo sui layer “Particelle”, “Mappe”
+              - GetLegendGraphic
+          enum:
+              - GetCapabilities
+              - GetMap
+              - GetFeatureInfo
+              - GetLegentGraphic
+          type: string
+          default: GetCapabilities
+        ServiceExceptionReport:
+            type: string
+            externalDocs:
+                description: an error type
+                url: 'http://cite.opengeospatial.org/OGCTestData/wfs/1.0.0/schemas/OGC-1.0.0/OGC-exception.xsd'
+            example: |-
+                <?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+                <ServiceExceptionReport version="1.1.1">
+                  <ServiceException code="InvalidFormat"><![CDATA[Richiesta  non valida]]>
+                  </ServiceException>
+                </ServiceExceptionReport>
+tags:
+    -
+        name: public
+        description: Consultazione
