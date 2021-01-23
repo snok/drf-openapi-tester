@@ -3,7 +3,6 @@ from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
-from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
@@ -289,7 +288,6 @@ class SchemaTester:
         :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
                  ``openapi_tester.exceptions.CaseError`` for case errors.
         """
-
         if not isinstance(response, Response):
             raise ValueError('expected response to be an instance of DRF Response')
 
@@ -302,10 +300,11 @@ class SchemaTester:
             ignore_case=ignore_case,
         )
 
-    def test_case(self) -> APITestCase:
+    def test_case(self) -> td.APITestCase:
         validate_response = self.validate_response
 
         def assert_response(
+            _,
             response: td.Response,
             case_tester: Optional[Callable[[str], None]] = None,
             ignore_case: Optional[List[str]] = None,
@@ -315,4 +314,4 @@ class SchemaTester:
             """
             validate_response(response=response, case_tester=case_tester, ignore_case=ignore_case)
 
-        return cast(APITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))
+        return cast(td.APITestCase, type('OpenAPITestCase', (td.APITestCase,), {'assertResponse': assert_response}))

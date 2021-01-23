@@ -40,7 +40,16 @@ else:
     the type checker does not actually run the code.
     """
     # noinspection PyUnresolvedReferences
+    from abc import ABCMeta, abstractmethod
+
+    # noinspection PyUnresolvedReferences
     from rest_framework.response import Response
+    from rest_framework.test import APITestCase as DRFAPITestCase
 
     # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
+
+    class APITestCase(DRFAPITestCase, metaclass=ABCMeta):
+        @abstractmethod
+        def assertResponse(self) -> None:
+            pass
