@@ -18,8 +18,9 @@ jobs:
         run: |
           poetry config repositories.test https://test.pypi.org/legacy/
           poetry config pypi-token.test ${{ secrets.TEST_PYPI_TOKEN }}
-          poetry publish --build --no-interaction --repository test
+          poetry publish --build --no-interaction --repository test --dry-run
       - name: Publish to pypi
         run: |
+          poetry config repositories.pypi https://upload.pypi.org/
           poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-          poetry publish --build --no-interaction
+          poetry publish --build --no-interaction --repository pypi --dry-run
