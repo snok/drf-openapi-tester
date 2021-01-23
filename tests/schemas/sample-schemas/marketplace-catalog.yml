@@ -231,11 +231,11 @@ components:
           availability_per_30d:
             type: number
             format: float
-            description: % of time when the service was available during the last 30 days.
+            description: "% of time when the service was available during the last 30 days."
           http_response_success_rate_1d:
             type: number
             format: float
-            description: % of successful call during the last 24 hours.
+            description: "% of successful call during the last 24 hours."
           expected_response_time_seconds_85pp:
             type: number
             format: float
@@ -244,7 +244,7 @@ components:
             type: number
             format: float
             description: |-
-              % of time when 85% of the requests was served before the deadline expiration.
+              "% of time when 85% of the requests was served before the deadline expiration."
         type: object
     Stats:
       type: array

@@ -18,7 +18,9 @@ class SchemaToPythonConverter:
 
             Faker.seed(0)
             self.faker = Faker()
-        schema_type = schema['type']
+        schema_type = schema.get('type')
+        if not schema_type and 'properties' in schema:
+            schema_type = 'object'
         if schema_type == 'array':
             self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == 'object':

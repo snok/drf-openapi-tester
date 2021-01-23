@@ -209,6 +209,7 @@ def test_sample_schemas():
             tester = SchemaTester(schema_file_path=filename)
             schema = tester.loader.load_schema()
             de_referenced_schema = tester.loader.de_reference_schema(schema)
+            tester.loader.schema = de_referenced_schema
             for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
                 if schema_section and response:
                     with patch.object(

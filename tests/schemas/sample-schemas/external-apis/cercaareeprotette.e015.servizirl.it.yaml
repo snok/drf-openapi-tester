@@ -385,8 +385,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Record'
-        Contact: {}
-        AvailableService: {}
         Owner:
           type: string
         MediaResource:
