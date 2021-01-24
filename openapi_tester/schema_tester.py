@@ -150,7 +150,7 @@ class SchemaTester:
         json_object = self._get_key_value(schema=content_object, key='application/json')
         return self._get_key_value(schema=json_object, key='schema')
 
-    def test_schema_section(  # noqa: C901
+    def test_schema_section(
         self,
         schema_section: dict,
         data: Any,
@@ -161,7 +161,6 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-
         if 'allOf' in schema_section:
             merged_schema = self.handle_all_of(**schema_section)
             schema_section = merged_schema
@@ -169,7 +168,6 @@ class SchemaTester:
         if not schema_section_type and 'properties' in schema_section:
             schema_section_type = 'object'
         elif not schema_section_type:
-            # FIXME: not handled at present
             return
         if data is None and self.is_nullable(schema_section):
             return
@@ -181,85 +179,117 @@ class SchemaTester:
                 reference=reference,
             )
         if schema_section_type == 'object':
-            if 'properties' in schema_section:
-                properties = schema_section['properties']
-            elif 'additionalProperties' in schema_section:
-                properties = {'': schema_section['additionalProperties']}
-            else:
-                # FIXME: temporary
-                properties = {}
-            response_keys = data.keys()
-            schema_section_keys = properties.keys()
-
-            if len(schema_section_keys) != len(response_keys):
-                if len(response_keys) > len(schema_section_keys):
-                    missing_keys = ', '.join(
-                        str(key) for key in sorted(list(set(response_keys) - set(schema_section_keys)))
-                    )
-                    hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
-                    message = f'The following properties seem to be missing from your documentation: {missing_keys}.'
-                else:
-                    missing_keys = ', '.join(
-                        str(key) for key in sorted(list(set(schema_section_keys) - set(response_keys)))
-                    )
-                    hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
-                    message = f'The following properties are missing from the tested data: {missing_keys}.'
-                raise DocumentationError(
-                    message=message,
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                    hint=hint,
-                )
-
-            for schema_key, response_key in zip(schema_section_keys, response_keys):
-                self._test_key_casing(schema_key, case_tester, ignore_case)
-                self._test_key_casing(response_key, case_tester, ignore_case)
-                if schema_key not in response_keys:
-                    raise DocumentationError(
-                        message=f'Schema key `{schema_key}` was not found in the tested data.',
-                        response=data,
-                        schema=schema_section,
-                        reference=reference,
-                        hint='You need to add the missing schema key to the response, or remove it from the documented response.',
-                    )
-                if response_key not in schema_section_keys:
-                    raise DocumentationError(
-                        message=f'Key `{response_key}` not found in the OpenAPI schema.',
-                        response=data,
-                        schema=schema_section,
-                        reference=reference,
-                        hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
-                    )
-
-                schema_value = properties[schema_key]
-                response_value = data[schema_key]
-                self.test_schema_section(
-                    schema_section=schema_value,
-                    data=response_value,
-                    reference=f'{reference}.dict:key:{schema_key}',
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+            self._test_openapi_type_object(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
         elif schema_section_type == 'array':
-            items = schema_section['items']
-            if items is None and data is not None:
+            self._test_openapi_type_array(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+
+    def _test_openapi_type_object(
+        self,
+        schema_section: dict,
+        data: dict,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]],
+        ignore_case: Optional[List[str]],
+    ) -> None:
+        if 'properties' in schema_section:
+            properties = schema_section['properties']
+        elif 'additionalProperties' in schema_section:
+            properties = {'': schema_section['additionalProperties']}
+        else:
+            # FIXME: temporary
+            properties = {}
+        response_keys = data.keys()
+        schema_section_keys = properties.keys()
+
+        if len(schema_section_keys) != len(response_keys):
+            if len(response_keys) > len(schema_section_keys):
+                missing_keys = ', '.join(
+                    str(key) for key in sorted(list(set(response_keys) - set(schema_section_keys)))
+                )
+                hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
+                message = f'The following properties seem to be missing from your documentation: {missing_keys}.'
+            else:
+                missing_keys = ', '.join(
+                    str(key) for key in sorted(list(set(schema_section_keys) - set(response_keys)))
+                )
+                hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
+                message = f'The following properties are missing from the tested data: {missing_keys}.'
+            raise DocumentationError(
+                message=message,
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint=hint,
+            )
+
+        for schema_key, response_key in zip(schema_section_keys, response_keys):
+            self._test_key_casing(schema_key, case_tester, ignore_case)
+            self._test_key_casing(response_key, case_tester, ignore_case)
+            if schema_key not in response_keys:
                 raise DocumentationError(
-                    message='Mismatched content. Response array contains data, when schema is empty.',
+                    message=f'Schema key `{schema_key}` was not found in the tested data.',
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint='Document the contents of the empty dictionary to match the response object.',
+                    hint='You need to add the missing schema key to the response, or remove it from the documented response.',
+                )
+            if response_key not in schema_section_keys:
+                raise DocumentationError(
+                    message=f'Key `{response_key}` not found in the OpenAPI schema.',
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                    hint='You need to add the missing schema key to your documented response, or stop returning it in your API.',
                 )
 
-            for datum in data:
-                self.test_schema_section(
-                    schema_section=items,
-                    data=datum,
-                    reference=f'{reference}.list',
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+            schema_value = properties[schema_key]
+            response_value = data[schema_key]
+            self.test_schema_section(
+                schema_section=schema_value,
+                data=response_value,
+                reference=f'{reference}.dict:key:{schema_key}',
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+
+    def _test_openapi_type_array(
+        self,
+        schema_section: dict,
+        data: dict,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]],
+        ignore_case: Optional[List[str]],
+    ) -> None:
+        items = schema_section['items']
+        if items is None and data is not None:
+            raise DocumentationError(
+                message='Mismatched content. Response array contains data, when schema is empty.',
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint='Document the contents of the empty dictionary to match the response object.',
+            )
+
+        for datum in data:
+            self.test_schema_section(
+                schema_section=items,
+                data=datum,
+                reference=f'{reference}.list',
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
 
     @staticmethod
     def is_nullable(schema_item: dict) -> bool:
@@ -320,4 +350,4 @@ class SchemaTester:
             """
             validate_response(response=response, case_tester=case_tester, ignore_case=ignore_case)
 
-        return cast(APITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))
+        return cast(td.OpenAPITestCase, type('OpenAPITestCase', (APITestCase,), {'assertResponse': assert_response}))

@@ -1,7 +1,7 @@
 # flake8: noqa
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable, List, Optional
 
 
 class Exporter:
@@ -43,4 +43,16 @@ else:
     from rest_framework.response import Response
 
     # noinspection PyUnresolvedReferences
+    from rest_framework.test import APITestCase
+
+    # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
+
+    class OpenAPITestCase(APITestCase):
+        def assertResponse(
+            self,
+            response: Response,
+            case_tester: Optional[Callable[[str], None]] = None,
+            ignore_case: Optional[List[str]] = None,
+        ) -> None:
+            ...
