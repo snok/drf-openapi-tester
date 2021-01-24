@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Optional
 
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 
@@ -21,14 +21,17 @@ class SchemaToPythonConverter:
         schema_type = schema.get('type')
         if not schema_type and 'properties' in schema:
             schema_type = 'object'
+
         if schema_type == 'array':
             self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == 'object':
             self.result = self._iterate_schema_dict(schema)  # type :ignore
         else:
-            self.result = self._to_mock_value(schema_type)  # type :ignore
+            self.result = self._to_mock_value(schema_type, schema.get('enum'))  # type :ignore
 
-    def _to_mock_value(self, schema_type: Any) -> Any:
+    def _to_mock_value(self, schema_type: Any, enum: Optional[List[Any]]) -> Any:
+        if enum:
+            return enum[0]
         if hasattr(self, 'faker'):
             faker_handlers = {
                 'boolean': self.faker.pybool,
@@ -74,7 +77,7 @@ class SchemaToPythonConverter:
             elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
-                parsed_schema[key] = self._to_mock_value(value['type'])
+                parsed_schema[key] = self._to_mock_value(value['type'], value.get('enum'))
         return parsed_schema
 
     def _iterate_schema_list(self, schema_array: Any) -> Any:
@@ -94,5 +97,5 @@ class SchemaToPythonConverter:
         elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
         else:
-            parsed_items.append(self._to_mock_value(items_type))  # type :ignore
+            parsed_items.append(self._to_mock_value(items_type, raw_items.get('enum')))  # type :ignore
         return parsed_items

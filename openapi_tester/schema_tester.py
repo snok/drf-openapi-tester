@@ -61,7 +61,9 @@ class SchemaTester:
         return {**kwargs, 'type': 'object', 'properties': properties}
 
     @staticmethod
-    def _check_openapi_type(schema_type: str, value: Any) -> bool:
+    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]]) -> bool:
+        if enum:
+            return value in enum
         if schema_type == 'boolean':
             return isinstance(value, bool)
         if schema_type in ['string', 'file']:
@@ -167,13 +169,15 @@ class SchemaTester:
         schema_section_type = schema_section.get('type')
         if not schema_section_type and 'properties' in schema_section:
             schema_section_type = 'object'
-        elif not schema_section_type:
+        if not schema_section_type or (not data and self.is_nullable(schema_section)):
             return
-        if data is None and self.is_nullable(schema_section):
-            return
-        if data is None or not self._check_openapi_type(schema_section_type, data):
+        if data is None or not self._check_openapi_type(schema_section_type, data, schema_section.get('enum')):
+            if 'enum' in schema_section:
+                message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
+            else:
+                message = f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.'
             raise DocumentationError(
-                message=f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.',
+                message=message,
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -208,7 +212,6 @@ class SchemaTester:
         elif 'additionalProperties' in schema_section:
             properties = {'': schema_section['additionalProperties']}
         else:
-            # FIXME: temporary
             properties = {}
         response_keys = data.keys()
         schema_section_keys = properties.keys()
