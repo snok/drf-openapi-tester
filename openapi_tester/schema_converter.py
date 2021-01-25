@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, List, Optional
 
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
@@ -27,12 +28,20 @@ class SchemaToPythonConverter:
         elif schema_type == 'object':
             self.result = self._iterate_schema_dict(schema)  # type :ignore
         else:
-            self.result = self._to_mock_value(schema_type, schema.get('enum'))  # type :ignore
+            self.result = self._to_mock_value(schema_type, schema.get('enum'), schema.get('format'))  # type :ignore
 
-    def _to_mock_value(self, schema_type: Any, enum: Optional[List[Any]]) -> Any:
-        if enum:
-            return enum[0]
+    def _to_mock_value(self, schema_type: Any, enum: Optional[List[Any]], format: Optional[str]) -> Any:
         if hasattr(self, 'faker'):
+            if enum:
+                return enum[0]
+            elif format:
+                if schema_type == 'string':
+                    if format == 'date':
+                        return datetime.now().date().isoformat()
+                    elif format == 'date-time':
+                        return datetime.now().isoformat()
+                    elif format == 'bytes':
+                        return self.faker.pystr().encode('utf-8')
             faker_handlers = {
                 'boolean': self.faker.pybool,
                 'string': self.faker.pystr,
@@ -57,7 +66,6 @@ class SchemaToPythonConverter:
         elif 'additionalProperties' in schema_object:
             properties = {'': schema_object['additionalProperties']}
         else:
-            # TODO: (Q) should this be handled better?
             properties = {}
 
         for key, value in properties.items():
@@ -77,7 +85,7 @@ class SchemaToPythonConverter:
             elif value_type == 'array':
                 parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
             else:
-                parsed_schema[key] = self._to_mock_value(value['type'], value.get('enum'))
+                parsed_schema[key] = self._to_mock_value(value['type'], value.get('enum'), value.get('format'))
         return parsed_schema
 
     def _iterate_schema_list(self, schema_array: Any) -> Any:
@@ -97,5 +105,7 @@ class SchemaToPythonConverter:
         elif items_type == 'array':
             parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
         else:
-            parsed_items.append(self._to_mock_value(items_type, raw_items.get('enum')))  # type :ignore
+            parsed_items.append(
+                self._to_mock_value(items_type, raw_items.get('enum'), raw_items.get('format'))
+            )  # type :ignore
         return parsed_items

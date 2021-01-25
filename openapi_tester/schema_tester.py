@@ -87,12 +87,7 @@ class SchemaTester:
             return isinstance(value, int)
         if schema_type == 'number':
             if format in ['double', 'float']:
-                number_and_decimal_list = str(value).split('.')
-                is_float = isinstance(value, float)
-                if format == 'double':
-                    has_two_decimal_places = is_float and len(number_and_decimal_list[1]) == 2
-                    return is_float and has_two_decimal_places
-                return is_float
+                return isinstance(value, float)
             return isinstance(value, (int, float))
         if schema_type == 'object':
             return isinstance(value, dict)
@@ -198,6 +193,8 @@ class SchemaTester:
         ):
             if 'enum' in schema_section:
                 message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
+            elif 'format' in schema_section:
+                message = f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
             else:
                 message = f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.'
             raise DocumentationError(
