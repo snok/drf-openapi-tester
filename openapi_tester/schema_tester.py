@@ -2,6 +2,7 @@ from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
+from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
@@ -61,16 +62,37 @@ class SchemaTester:
         return {**kwargs, 'type': 'object', 'properties': properties}
 
     @staticmethod
-    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]]) -> bool:
+    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], format: Optional[str]) -> bool:
         if enum:
             return value in enum
         if schema_type == 'boolean':
             return isinstance(value, bool)
         if schema_type in ['string', 'file']:
-            return isinstance(value, str)
+            if format == 'bytes':
+                return isinstance(value, bytes)
+            is_str = isinstance(value, str)
+            if format in ['date', 'date-time']:
+                if format == 'date':
+                    parser = parse_date
+                else:
+                    parser = parse_datetime
+                try:
+                    parser(value)
+                    valid = True
+                except ValueError:
+                    valid = False
+                return is_str and valid
+            return is_str
         if schema_type == 'integer':
             return isinstance(value, int)
         if schema_type == 'number':
+            if format in ['double', 'float']:
+                number_and_decimal_list = str(value).split('.')
+                is_float = isinstance(value, float)
+                if format == 'double':
+                    has_two_decimal_places = is_float and len(number_and_decimal_list[1]) == 2
+                    return is_float and has_two_decimal_places
+                return is_float
             return isinstance(value, (int, float))
         if schema_type == 'object':
             return isinstance(value, dict)
@@ -171,7 +193,9 @@ class SchemaTester:
             schema_section_type = 'object'
         if not schema_section_type or (not data and self.is_nullable(schema_section)):
             return
-        if data is None or not self._check_openapi_type(schema_section_type, data, schema_section.get('enum')):
+        if data is None or not self._check_openapi_type(
+            schema_section_type, data, schema_section.get('enum'), schema_section.get('format')
+        ):
             if 'enum' in schema_section:
                 message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
             else:
