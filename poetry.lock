@@ -92,11 +92,11 @@ python-versions = ">=3.6.1"
 
 [[package]]
 name = "chardet"
-version = "4.0.0"
+version = "3.0.4"
 description = "Universal encoding detector for Python 2 and 3"
 category = "main"
 optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+python-versions = "*"
 
 [[package]]
 name = "colorama"
@@ -325,7 +325,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 
 [[package]]
 name = "inflection"
-version = "0.5.1"
+version = "0.4.0"
 description = "A port of Ruby on Rails inflector to Python"
 category = "main"
 optional = false
@@ -531,24 +531,24 @@ dev = ["pre-commit", "tox"]
 
 [[package]]
 name = "prance"
-version = "0.20.2"
+version = "0.16.2"
 description = "Resolving Swagger/OpenAPI 2.0 and 3.0.0 Parser"
 category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
-chardet = ">=4.0,<5.0"
-PyYAML = ">=5.3,<6.0"
-requests = ">=2.25,<3.0"
-semver = ">=2.13,<3.0"
-six = ">=1.15,<2.0"
+chardet = ">=3.0,<4.0"
+PyYAML = ">=5.1,<6.0"
+requests = ">=2.21,<3.0"
+semver = ">=2.8,<3.0"
+six = ">=1.12,<2.0"
 
 [package.extras]
 cli = ["click (>=7.0,<8.0)"]
-dev = ["tox (>=3.21)", "bumpversion (>=0.6)", "pytest (>=6.2)", "pytest-cov (>=2.11)", "flake8 (>=3.8)", "pep8-naming (>=0.11)", "flake8-quotes (>=3.2)", "flake8-docstrings (>=1.5)", "sphinx (>=3.4)", "towncrier (>=19.2)"]
+dev = ["tox (>=3.7)", "bumpversion (>=0.5)", "pytest (>=4.2)", "pytest-cov (>=2.6)", "flake8 (>=3.7)", "pep8-naming (>=0.8)", "flake8-quotes (>=1.0)", "flake8-docstrings (>=1.3)", "sphinx (>=1.8)", "towncrier (>=19.2)"]
 flex = ["flex (>=6.13,<7.0)"]
-icu = ["PyICU (>=2.4,<3.0)"]
+icu = ["PyICU (>=2.2,<3.0)"]
 osv = ["openapi-spec-validator (>=0.2.1)"]
 ssv = ["swagger-spec-validator (>=2.4,<3.0)"]
 
@@ -1009,7 +1009,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6.1"
-content-hash = "947c675be8d1e3f6a4f7f65a5306c321ea20e426dc8de70b4c61aa87708f1461"
+content-hash = "21a9c83f94238ad8c2968d8cacbdfcb2c95168cc901c1d73ae04a8e707cce913"
 
 [metadata.files]
 alabaster = [
@@ -1053,8 +1053,8 @@ cfgv = [
     {file = "cfgv-3.2.0.tar.gz", hash = "sha256:cf22deb93d4bcf92f345a5c3cd39d3d41d6340adc60c78bbbd6588c384fda6a1"},
 ]
 chardet = [
-    {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
-    {file = "chardet-4.0.0.tar.gz", hash = "sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa"},
+    {file = "chardet-3.0.4-py2.py3-none-any.whl", hash = "sha256:fc323ffcaeaed0e0a02bf4d117757b98aed530d9ed4531e3e15460124c106691"},
+    {file = "chardet-3.0.4.tar.gz", hash = "sha256:84ab92ed1c4d4f16916e05906b6b75a6c0fb5db821cc65e70cbd64a3e2a5eaae"},
 ]
 colorama = [
     {file = "colorama-0.4.4-py2.py3-none-any.whl", hash = "sha256:9f47eda37229f68eee03b24b9748937c7dc3868f906e8ba69fbcbdd3bc5dc3e2"},
@@ -1180,8 +1180,8 @@ importlib-resources = [
     {file = "importlib_resources-5.1.0.tar.gz", hash = "sha256:bfdad047bce441405a49cf8eb48ddce5e56c696e185f59147a8b79e75e9e6380"},
 ]
 inflection = [
-    {file = "inflection-0.5.1-py2.py3-none-any.whl", hash = "sha256:f38b2b640938a4f35ade69ac3d053042959b62a0f1076a5bbaa1b9526605a8a2"},
-    {file = "inflection-0.5.1.tar.gz", hash = "sha256:1a29730d366e996aaacffb2f1f1cb9593dc38e2ddd30c91250c6dde09ea9b417"},
+    {file = "inflection-0.4.0-py2.py3-none-any.whl", hash = "sha256:9a15d3598f01220e93f2207c432cfede50daff53137ce660fb8be838ef1ca6cc"},
+    {file = "inflection-0.4.0.tar.gz", hash = "sha256:32a5c3341d9583ec319548b9015b7fbdf8c429cbcb575d326c33ae3a0e90d52c"},
 ]
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
@@ -1280,8 +1280,8 @@ pluggy = [
     {file = "pluggy-0.13.1.tar.gz", hash = "sha256:15b2acde666561e1298d71b523007ed7364de07029219b604cf808bfa1c765b0"},
 ]
 prance = [
-    {file = "prance-0.20.2-py2.py3-none-any.whl", hash = "sha256:dc79bf29af07d630e7d8119bad8440ab85aed49ada5a0705f08e469afeffa35f"},
-    {file = "prance-0.20.2.tar.gz", hash = "sha256:4ffcddae6218cf6753a02af36ca9fb1c92eec4689441789ee2e9963230882388"},
+    {file = "prance-0.16.2-py2.py3-none-any.whl", hash = "sha256:659145e865aff32d4ee8957e5e65233bf1192fe2ddd11ce2ee6d3c9e908b7d57"},
+    {file = "prance-0.16.2.tar.gz", hash = "sha256:6c71755a3497639cb29548189632ca7e6335ca90bf74f8e3443a0d386b957041"},
 ]
 pre-commit = [
     {file = "pre_commit-2.9.3-py2.py3-none-any.whl", hash = "sha256:6c86d977d00ddc8a60d68eec19f51ef212d9462937acf3ea37c7adec32284ac0"},
