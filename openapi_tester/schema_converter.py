@@ -8,7 +8,7 @@ class SchemaToPythonConverter:
     """ This class is used both by the DocumentationError format method and the various test suites """
 
     def __init__(self, schema: dict, with_faker: bool = False):
-        while any([keyword in schema for keyword in ["allOf", "oneOf", "anyOf"]]):
+        while any(keyword in schema for keyword in ["allOf", "oneOf", "anyOf"]):
             if "allOf" in schema:
                 from openapi_tester.schema_tester import SchemaTester
 
@@ -25,12 +25,13 @@ class SchemaToPythonConverter:
             Faker.seed(0)
             self.faker = Faker()
         schema_type = schema.get("type")
-        if not schema_type and "properties" in schema:
-            schema_type = "object"
-        elif not schema_type:
-            raise ValueError(
-                f"Schema type is not specified and cannot be inferred, please make sure to definte the type key for schema: {schema}"
-            )
+        if not schema_type:
+            if "properties" in schema:
+                schema_type = "object"
+            else:
+                raise ValueError(
+                    f"Schema type is not specified and cannot be inferred, please make sure to definte the type key for schema: {schema}"
+                )
         if schema_type == "array":
             self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == "object":
@@ -39,29 +40,28 @@ class SchemaToPythonConverter:
             self.result = self._to_mock_value(schema_type, schema.get("enum"), schema.get("format"))  # type :ignore
 
     def _to_mock_value(self, schema_type: Any, enum: Optional[List[Any]], format: Optional[str]) -> Any:
-        if hasattr(self, "faker"):
-            if enum:
-                return enum[0]
-            elif format:
-                if schema_type == "string":
-                    if format == "date":
-                        return datetime.now().date().isoformat()
-                    elif format == "date-time":
-                        return datetime.now().isoformat()
-                    elif format == "bytes":
-                        return self.faker.pystr().encode("utf-8")
-            faker_handlers = {
-                "boolean": self.faker.pybool,
-                "string": self.faker.pystr,
-                "file": self.faker.pystr,
-                "array": self.faker.pylist,
-                "object": self.faker.pydict,
-                "integer": self.faker.pyint,
-                "number": self.faker.pyfloat,
-            }
-            return faker_handlers[schema_type]()
-        else:
+        if not hasattr(self, "faker"):
             return OPENAPI_PYTHON_MAPPING[schema_type]
+        if enum:
+            return enum[0]
+        elif format:
+            if schema_type == "string":
+                if format == "date":
+                    return datetime.now().date().isoformat()
+                elif format == "date-time":
+                    return datetime.now().isoformat()
+                elif format == "bytes":
+                    return self.faker.pystr().encode("utf-8")
+        faker_handlers = {
+            "boolean": self.faker.pybool,
+            "string": self.faker.pystr,
+            "file": self.faker.pystr,
+            "array": self.faker.pylist,
+            "object": self.faker.pydict,
+            "integer": self.faker.pyint,
+            "number": self.faker.pyfloat,
+        }
+        return faker_handlers[schema_type]()
 
     def _iterate_schema_dict(self, schema_object: Any) -> Any:
         parsed_schema = {}
@@ -104,10 +104,11 @@ class SchemaToPythonConverter:
 
             raw_items = SchemaTester.handle_all_of(**raw_items)
         items_type = raw_items.get("type")
-        if not items_type and "properties" in raw_items:
-            items_type = "object"
-        elif not items_type:
-            return []
+        if not items_type:
+            if "properties" in raw_items:
+                items_type = "object"
+            else:
+                return []
         if items_type == "object":
             parsed_items.append(self._iterate_schema_dict(raw_items))  # type :ignore
         elif items_type == "array":
