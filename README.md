@@ -1,7 +1,7 @@
 
 <p align="center"><h1 align='center'>DRF OpenAPI Tester</h1></p>
 <p align="center">
-    <em>A test utility for validating API responses</em>
+    <em>A test utility for validating response documentation</em>
 </p>
 <p align="center">
     <a href="https://pypi.org/project/django-swagger-tester/">
@@ -21,8 +21,6 @@
     </a>
 </p>
 
-
-
 DRF OpenAPI Tester is a simple test utility. Its aim is to make it easy for
 developers to catch and correct documentation errors in their OpenAPI schemas.
 
@@ -30,9 +28,32 @@ Maintaining good documentation is difficult, and shouldn't be done manually.
 By simply testing that your API responses match your schema definitions you can
 *know* that your schema reflects reality.
 
-### Supported OpenAPI Implementations
+## How does it work?
 
-Whether we're able to test your schema or not, depends on how it's implemented.
+Testing your schema is as simple as calling `validate_response` at the end
+of a regular test.
+
+```python
+from openapi_tester.case_testers import is_camel_case
+from openapi_tester.schema_tester import SchemaTester
+
+schema_tester = SchemaTester(case_tester=is_camel_case)
+
+
+def test_response_documentation(client):
+    response = client.get('api/v1/test/1')
+
+    assert response.status_code == 200
+    assert response.json() == expected_response
+
+    schema_tester.validate_response(response=response)
+```
+
+See docs further down for more details.
+
+## Supported OpenAPI Implementations
+
+Whether we're able to test your schema or not will depend on how it's implemented.
 We currently support the following:
 
 - Testing dynamically rendered OpenAPI schemas with [drf-yasg](https://github.com/axnsan12/drf-yasg)
@@ -40,8 +61,10 @@ We currently support the following:
 - Testing any implementation which generates a static yaml or json file (e.g., like [DRF](https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas))
 
 If you're using another method to generate your schema and
-would like to use this package, feel free to add an issue, or
-create a PR. Adding a new implementation is as easy as adding the
+would like to use this package, feel free to add an issue or
+create a PR.
+
+Adding a new implementation is as easy as adding the
 required logic needed to load the OpenAPI schema.
 
 ## Installation
@@ -99,7 +122,7 @@ See the response tester description for info about ignoring keys for individal r
 ### Schema file path
 
 This is the path to your OpenAPI schema. **This is only required if you use the
-StaticSchemaLoader loader class, i.e., not `drf-yasg` or `drf-spectacular`.**
+StaticSchemaLoader loader class, i.e., you're not using `drf-yasg` or `drf-spectacular`.**
 
 ## The validate response method
 
@@ -109,8 +132,7 @@ To test a response, you call the `validate_response` method.
 from .conftest import tester
 
 def test_response_documentation(client):
-    route = 'api/v1/test/1'
-    response = client.get(route)
+    response = client.get('api/v1/test/1')
     tester.validate_response(response=response)
 ```
 
@@ -165,8 +187,7 @@ from openapi_tester.case_testers import is_camel_case
 tester = SchemaTester(case_tester=is_camel_case)
 
 def test_200_response_documentation(client):
-    route = 'api/v1/test/1'
-    response = client.get(route)
+    response = client.get('api/v1/test/1')
 
     assert response.status_code == 200
     assert response.json() == expected_response
@@ -185,8 +206,6 @@ tester = SchemaTester(case_tester=is_camel_case)
 
 class MyApiTest(APITestCase):
 
-    path = '/api/v1/test/'
-
     def setUp(self) -> None:
         user, _ = User.objects.update_or_create(username='test_user')
         self.client.force_authenticate(user=user)
@@ -195,7 +214,7 @@ class MyApiTest(APITestCase):
         """
         Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
         """
-        response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
+        response = self.client.get('/api/v1/test/', headers={'Content-Type': 'application/json'})
         expected_response = [...]
 
         self.assertEqual(response.status_code, 200)
@@ -215,8 +234,6 @@ OpenAPITestCase = SchemaTester(case_tester=is_camel_case).test_case()
 
 class TestApi(OpenAPITestCase):
 
-    path = '/api/v1/test/'
-
     def setUp(self) -> None:
         user, _ = User.objects.update_or_create(username='test_user')
         self.client.force_authenticate(user=user)
@@ -225,7 +242,7 @@ class TestApi(OpenAPITestCase):
         """
         Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
         """
-        response = self.client.get(self.path, headers={'Content-Type': 'application/json'})
+        response = self.client.get('/api/v1/test/', headers={'Content-Type': 'application/json'})
         expected_response = [...]
 
         self.assertEqual(response.status_code, 200)
@@ -256,3 +273,7 @@ Sequence:   init.list
 - `Sequence` will indicate how the response tester iterated through the data structure, before finding the error.
 
 In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
+
+### Supporting the project
+
+Please leave a ✭ if this project helped you 👏 and contributions are always welcome!
