@@ -1,0 +1,128 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Swagger Petstore
+  description: A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification
+  termsOfService: http://swagger.io/terms/
+  contact:
+    name: Swagger API Team
+    email: apiteam@swagger.io
+    url: http://swagger.io
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: http://petstore.swagger.io/api
+paths:
+  /one-of-aliens:
+    get:
+      operationId: findAlients
+      responses:
+        '200':
+          description: alient response
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/Flower'
+                  - $ref: '#/components/schemas/Pet'
+                  - $ref: '#/components/schemas/Alien'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /any-of-aliens:
+    get:
+      operationId: findAlients
+      responses:
+        '200':
+          description: alient response
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  - $ref: '#/components/schemas/Flower'
+                  - $ref: '#/components/schemas/Pet'
+                  - $ref: '#/components/schemas/Alien'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Pet:
+      allOf:
+        - $ref: '#/components/schemas/NewPet'
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: integer
+              format: int64
+
+    NewPet:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        tag:
+          type: string
+
+    Flower:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        leaves:
+          type: integer
+        tag:
+          type: string
+
+    Alien:
+      type: object
+      required:
+        - name
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        tag:
+          type: string
+        color:
+          type: string
+        weapons:
+          type: array
+          items:
+            type: string
+        pets:
+          type: "array"
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Pet'
+              - $ref: '#/components/schemas/Alien'
+              - $ref: '#/components/schemas/Pet'
+              - $ref: '#/components/schemas/Flower'
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string

@@ -61,6 +61,36 @@ class SchemaTester:
                     properties[key] = value
         return {**kwargs, 'type': 'object', 'properties': properties}
 
+    def handle_one_of(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ):
+        valid = False
+        for option in schema_section['oneOf']:
+            try:
+                self.test_schema_section(
+                    schema_section=option,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+                valid = True
+                break
+            except DocumentationError:
+                continue
+        if not valid:
+            raise DocumentationError(
+                message=f"expected data to match oneOf schema types: {schema_section['oneOf']}",
+                response=data,
+                schema=schema_section,
+                reference=reference,
+            )
+
     @staticmethod
     def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], format: Optional[str]) -> bool:
         if enum:
@@ -180,45 +210,54 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-        if 'allOf' in schema_section:
-            merged_schema = self.handle_all_of(**schema_section)
-            schema_section = merged_schema
-        schema_section_type = schema_section.get('type')
-        if not schema_section_type and 'properties' in schema_section:
-            schema_section_type = 'object'
-        if not schema_section_type or (not data and self.is_nullable(schema_section)):
-            return
-        if data is None or not self._check_openapi_type(
-            schema_section_type, data, schema_section.get('enum'), schema_section.get('format')
-        ):
-            if 'enum' in schema_section:
-                message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
-            elif 'format' in schema_section:
-                message = f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
-            else:
-                message = f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.'
-            raise DocumentationError(
-                message=message,
-                response=data,
-                schema=schema_section,
-                reference=reference,
-            )
-        if schema_section_type == 'object':
-            self._test_openapi_type_object(
+        if 'oneOf' in schema_section and data is not None:
+            self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-        elif schema_section_type == 'array':
-            self._test_openapi_type_array(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        else:
+            if 'allOf' in schema_section:
+                merged_schema = self.handle_all_of(**schema_section)
+                schema_section = merged_schema
+            schema_section_type = schema_section.get('type')
+            if not schema_section_type and 'properties' in schema_section:
+                schema_section_type = 'object'
+            if not schema_section_type or (not data and self.is_nullable(schema_section)):
+                return
+            if data is None or not self._check_openapi_type(
+                schema_section_type, data, schema_section.get('enum'), schema_section.get('format')
+            ):
+                if 'enum' in schema_section:
+                    message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
+                elif 'format' in schema_section:
+                    message = f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
+                else:
+                    message = f'Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}.'
+                raise DocumentationError(
+                    message=message,
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                )
+            if schema_section_type == 'object':
+                self._test_openapi_type_object(
+                    schema_section=schema_section,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+            elif schema_section_type == 'array':
+                self._test_openapi_type_array(
+                    schema_section=schema_section,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
 
     def _test_openapi_type_object(
         self,

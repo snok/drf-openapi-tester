@@ -8,11 +8,16 @@ class SchemaToPythonConverter:
     """ This class is used both by the DocumentationError format method and the various test suites """
 
     def __init__(self, schema: dict, with_faker: bool = False):
-        if 'allOf' in schema:
-            from openapi_tester.schema_tester import SchemaTester
+        while any([keyword in schema for keyword in ['allOf', 'oneOf', 'anyOf']]):
+            if 'allOf' in schema:
+                from openapi_tester.schema_tester import SchemaTester
 
-            merged_schema = SchemaTester.handle_all_of(**schema)
-            schema = merged_schema
+                merged_schema = SchemaTester.handle_all_of(**schema)
+                schema = merged_schema
+            if 'oneOf' in schema:
+                schema = schema['oneOf'][0]
+            if 'anyOf' in schema:
+                schema = schema['anyOf'][0]
         if with_faker:
             """ We are importing faker here to ensure this remains a dev dependency """
             from faker import Faker
@@ -22,7 +27,10 @@ class SchemaToPythonConverter:
         schema_type = schema.get('type')
         if not schema_type and 'properties' in schema:
             schema_type = 'object'
-
+        elif not schema_type:
+            raise ValueError(
+                f'Schema type is not specified and cannot be inferred, please make sure to definte the type key for schema: {schema}'
+            )
         if schema_type == 'array':
             self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == 'object':
