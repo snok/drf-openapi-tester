@@ -69,7 +69,7 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ):
-        valid = False
+        matches = 0
         for option in schema_section['oneOf']:
             try:
                 self.test_schema_section(
@@ -79,13 +79,12 @@ class SchemaTester:
                     case_tester=case_tester,
                     ignore_case=ignore_case,
                 )
-                valid = True
-                break
+                matches += 1
             except DocumentationError:
                 continue
-        if not valid:
+        if matches != 1:
             raise DocumentationError(
-                message=f"expected data to match oneOf schema types: {schema_section['oneOf']}",
+                message=f'expected data to match one and only one of schema types, received {matches} matches.',
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -107,8 +106,8 @@ class SchemaTester:
                 else:
                     parser = parse_datetime
                 try:
-                    parser(value)
-                    valid = True
+                    result = parser(value)
+                    valid = result is not None
                 except ValueError:
                     valid = False
                 return is_str and valid
@@ -288,7 +287,7 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip(properties.keys(), response_keys):
+        for schema_key, response_key in zip([key for key in properties.keys() if key in response_keys], response_keys):
             self._test_key_casing(schema_key, case_tester, ignore_case)
             self._test_key_casing(response_key, case_tester, ignore_case)
             if schema_key in required_keys and schema_key not in response_keys:
