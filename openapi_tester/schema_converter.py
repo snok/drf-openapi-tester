@@ -1,3 +1,5 @@
+import random
+import typing as t
 from datetime import datetime
 from typing import Any, List, Optional
 
@@ -66,12 +68,32 @@ class SchemaToPythonConverter:
         }
         return faker_handlers[schema_type]()
 
-    def _iterate_schema_dict(self, schema_object: Any) -> Any:
+    def _handle_any_of(self, any_of_list: t.List[dict]) -> dict:
+        """ generate any of mock data """
+        schema = {}
+        selected_items = random.sample(any_of_list, random.randint(1, len(any_of_list)))
+        for item in selected_items:
+            for key, value in item.items():
+                if key not in schema:
+                    schema[key] = value
+                elif isinstance(value, dict):
+                    schema[key] = {**schema[key], **value}
+                elif isinstance(value, list):
+                    schema[key] = [*schema[key], *value]
+                else:
+                    continue
+        return schema
+
+    def _iterate_schema_dict(self, schema_object: dict) -> Any:
         parsed_schema = {}
         if "allOf" in schema_object:
             from openapi_tester.schema_tester import SchemaTester
 
             schema_object = SchemaTester.handle_all_of(**schema_object)
+        if "anyOf" in schema_object:
+            schema_object = self._handle_any_of(schema_object["anyOf"])
+        if "oneOf" in schema_object:
+            schema_object = schema_object["oneOf"][0]
         if "properties" in schema_object:
             properties = schema_object["properties"]
         elif "additionalProperties" in schema_object:
@@ -83,7 +105,7 @@ class SchemaToPythonConverter:
             if "example" in value:
                 parsed_schema[key] = value["example"]
             elif "anyOf" in value:
-                value = value["anyOf"][0]
+                value = self._handle_any_of(value["anyOf"])
             elif "oneOf" in value:
                 value = value["oneOf"][0]
             value_type = value.get("type")
@@ -101,7 +123,7 @@ class SchemaToPythonConverter:
 
     def _iterate_schema_list(self, schema_array: Any) -> Any:
         parsed_items = []
-        raw_items = schema_array["items"]
+        raw_items = schema_array.get("items", {})
         if "allOf" in raw_items.keys():
             from openapi_tester.schema_tester import SchemaTester
 
