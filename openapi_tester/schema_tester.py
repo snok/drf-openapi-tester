@@ -273,22 +273,13 @@ class SchemaTester:
             properties = {'': schema_section['additionalProperties']}
         else:
             properties = {}
+        required_keys = schema_section['required'] if 'required' in schema_section else list(properties.keys())
         response_keys = data.keys()
-        schema_section_keys = properties.keys()
 
-        if len(schema_section_keys) != len(response_keys):
-            if len(response_keys) > len(schema_section_keys):
-                missing_keys = ', '.join(
-                    str(key) for key in sorted(list(set(response_keys) - set(schema_section_keys)))
-                )
-                hint = 'Add the key(s) to your OpenAPI docs, or stop returning it in your view.'
-                message = f'The following properties seem to be missing from your documentation: {missing_keys}.'
-            else:
-                missing_keys = ', '.join(
-                    str(key) for key in sorted(list(set(schema_section_keys) - set(response_keys)))
-                )
-                hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
-                message = f'The following properties are missing from the tested data: {missing_keys}.'
+        if len([key for key in response_keys if key in required_keys]) != len(required_keys):
+            missing_keys = ', '.join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
+            hint = 'Remove the key(s) from your OpenAPI docs, or include it in your API response.'
+            message = f'The following properties are missing from the tested data: {missing_keys}.'
             raise DocumentationError(
                 message=message,
                 response=data,
@@ -297,10 +288,10 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip(schema_section_keys, response_keys):
+        for schema_key, response_key in zip(properties.keys(), response_keys):
             self._test_key_casing(schema_key, case_tester, ignore_case)
             self._test_key_casing(response_key, case_tester, ignore_case)
-            if schema_key not in response_keys:
+            if schema_key in required_keys and schema_key not in response_keys:
                 raise DocumentationError(
                     message=f'Schema key `{schema_key}` was not found in the tested data.',
                     response=data,
@@ -308,7 +299,7 @@ class SchemaTester:
                     reference=reference,
                     hint='You need to add the missing schema key to the response, or remove it from the documented response.',
                 )
-            if response_key not in schema_section_keys:
+            if response_key not in properties:
                 raise DocumentationError(
                     message=f'Key `{response_key}` not found in the OpenAPI schema.',
                     response=data,
