@@ -5,11 +5,11 @@ on:
     types: [published]
 
 jobs:
-  build-and-publish:
+  build-and-publish-test:
     name: Build and publish
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
         with:
           python-version: 3.9
@@ -18,9 +18,18 @@ jobs:
         run: |
           poetry config repositories.test https://test.pypi.org/legacy/
           poetry config pypi-token.test ${{ secrets.TEST_PYPI_TOKEN }}
-          poetry publish --build --no-interaction --repository test --dry-run
+          poetry publish --build --no-interaction --repository test
+  build-and-publish:
+    needs: build-and-publish-test
+    name: Build and publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      - uses: snok/install-poetry@v1.1.1
       - name: Publish to pypi
         run: |
-          poetry config repositories.pypi https://upload.pypi.org/
           poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-          poetry publish --build --no-interaction --repository pypi --dry-run
+          poetry publish --build --no-interaction
