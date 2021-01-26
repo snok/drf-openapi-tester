@@ -100,7 +100,7 @@ class SchemaTester:
             if format == 'bytes':
                 return isinstance(value, bytes)
             is_str = isinstance(value, str)
-            if format in ['date', 'date-time']:
+            if is_str and format in ['date', 'date-time']:
                 if format == 'date':
                     parser = parse_date
                 else:
@@ -110,7 +110,7 @@ class SchemaTester:
                     valid = result is not None
                 except ValueError:
                     valid = False
-                return is_str and valid
+                return valid
             return is_str
         if schema_type == 'integer':
             return isinstance(value, int)
