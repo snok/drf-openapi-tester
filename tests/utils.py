@@ -11,9 +11,9 @@ CURRENT_PATH = Path(__file__).resolve(strict=True).parent
 
 
 def load_schema(file_name: str) -> dict:
-    with open(str(CURRENT_PATH) + f'/schemas/{file_name}') as f:
+    with open(str(CURRENT_PATH) + f"/schemas/{file_name}") as f:
         content = f.read()
-        if 'json' in file_name:
+        if "json" in file_name:
             return json.loads(content)
         else:
             return yaml.load(content, Loader=yaml.FullLoader)
@@ -28,20 +28,20 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
 
 
 def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Response], str], None, None]:
-    for url_fragment, path_object in schema['paths'].items():
+    for url_fragment, path_object in schema["paths"].items():
         for method, method_object in path_object.items():
-            if method.lower() != 'parameters':
-                for status_code, responses_object in method_object['responses'].items():
-                    if status_code == 'default':
+            if method.lower() != "parameters":
+                for status_code, responses_object in method_object["responses"].items():
+                    if status_code == "default":
                         # TODO: Handle this
                         continue
                     schema_section = None
                     response = None
                     try:
-                        if 'content' in responses_object.keys():
-                            schema_section = responses_object['content']['application/json']['schema']
-                        elif 'schema' in responses_object.keys():
-                            schema_section = responses_object['schema']
+                        if "content" in responses_object.keys():
+                            schema_section = responses_object["content"]["application/json"]["schema"]
+                        elif "schema" in responses_object.keys():
+                            schema_section = responses_object["schema"]
                     except KeyError:
                         pass
                     if schema_section:

@@ -15,11 +15,11 @@ def test_drf_yasg_get_schemas():
 
 
 def test_static_get_schema():
-    for ext in ['yaml', 'json']:
-        loader = StaticSchemaLoader(str(CURRENT_PATH) + f'/schemas/test_project_schema.{ext}')
+    for ext in ["yaml", "json"]:
+        loader = StaticSchemaLoader(str(CURRENT_PATH) + f"/schemas/test_project_schema.{ext}")
         loader.get_schema()  # runs internal validation
 
-    loader = StaticSchemaLoader(str(CURRENT_PATH) + '/schemas/lol.fun')
+    loader = StaticSchemaLoader(str(CURRENT_PATH) + "/schemas/lol.fun")
     with pytest.raises(FileNotFoundError):
         loader.get_schema()
 
@@ -27,11 +27,11 @@ def test_static_get_schema():
 def test_base_loader_get_route():
     for _loader in [BaseSchemaLoader, DrfYasgSchemaLoader, DrfSpectacularSchemaLoader]:
         loader = _loader()
-        assert loader.parameterize_path('/api/v1/items/') == '/api/{version}/items'
-        assert loader.parameterize_path('/api/v1/items') == '/api/{version}/items'
-        assert loader.parameterize_path('api/v1/items/') == '/api/{version}/items'
-        assert loader.parameterize_path('api/v1/items') == '/api/{version}/items'
-        assert loader.parameterize_path('/api/v1/snake-case/') == '/api/{version}/snake-case/'
-        assert loader.parameterize_path('/api/v1/snake-case') == '/api/{version}/snake-case/'
-        assert loader.parameterize_path('api/v1/snake-case/') == '/api/{version}/snake-case/'
-        assert loader.parameterize_path('api/v1/snake-case') == '/api/{version}/snake-case/'
+        assert loader.parameterize_path("/api/v1/items/") == "/api/{version}/items"
+        assert loader.parameterize_path("/api/v1/items") == "/api/{version}/items"
+        assert loader.parameterize_path("api/v1/items/") == "/api/{version}/items"
+        assert loader.parameterize_path("api/v1/items") == "/api/{version}/items"
+        assert loader.parameterize_path("/api/v1/snake-case/") == "/api/{version}/snake-case/"
+        assert loader.parameterize_path("/api/v1/snake-case") == "/api/{version}/snake-case/"
+        assert loader.parameterize_path("api/v1/snake-case/") == "/api/{version}/snake-case/"
+        assert loader.parameterize_path("api/v1/snake-case") == "/api/{version}/snake-case/"

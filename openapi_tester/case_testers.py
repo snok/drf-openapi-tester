@@ -28,7 +28,7 @@ def _kebabize(s: str) -> str:
     return dasherize(underscore(s))
 
 
-is_camel_case = _create_tester('camelCased', _camelize)
-is_kebab_case = _create_tester('kebab-cased', _kebabize)
-is_pascal_case = _create_tester('PascalCased', _pascalize)
-is_snake_case = _create_tester('snake_cased', underscore)
+is_camel_case = _create_tester("camelCased", _camelize)
+is_kebab_case = _create_tester("kebab-cased", _kebabize)
+is_pascal_case = _create_tester("PascalCased", _pascalize)
+is_snake_case = _create_tester("snake_cased", underscore)

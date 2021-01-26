@@ -9,4 +9,4 @@ class Vehicles(APIView):
     def post(self, request, version: int):
         serializer = VehicleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        return Response({'success': 'this is a response'}, 201)
+        return Response({"success": "this is a response"}, 201)

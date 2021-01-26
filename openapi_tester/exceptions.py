@@ -14,8 +14,8 @@ class DocumentationError(AssertionError):
         message: str,
         response: Any,
         schema: dict,
-        hint: str = '',
-        reference: str = '',
+        hint: str = "",
+        reference: str = "",
     ) -> None:
         converted_schema = SchemaToPythonConverter(schema or {}).result
         super().__init__(
@@ -43,17 +43,17 @@ class DocumentationError(AssertionError):
         Formats and returns a standardized error message for easy debugging.
         """
         msg = [
-            f'Error: {message}\n\n',
-            f'Expected: {json.dumps(example_item)}\n\n',
-            f'Received: {json.dumps(response)}\n\n',
+            f"Error: {message}\n\n",
+            f"Expected: {json.dumps(example_item)}\n\n",
+            f"Received: {json.dumps(response)}\n\n",
         ]
         if hint:
-            msg += [f'Hint: {hint}\n\n']
+            msg += [f"Hint: {hint}\n\n"]
         if reference:
             msg += [
-                f'Sequence: {reference}\n',
+                f"Sequence: {reference}\n",
             ]
-        return ''.join(msg)
+        return "".join(msg)
 
 
 class CaseError(AssertionError):
@@ -62,7 +62,7 @@ class CaseError(AssertionError):
     """
 
     def __init__(self, key: str, case: str, expected: str) -> None:
-        super().__init__(f'The response key `{key}` is not properly {case}. Expected value: {expected}')
+        super().__init__(f"The response key `{key}` is not properly {case}. Expected value: {expected}")
 
 
 class OpenAPISchemaError(Exception):
