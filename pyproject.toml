@@ -9,28 +9,31 @@ readme = "README.md"
 homepage = "https://github.com/snok/drf-openapi-tester"
 repository = "https://github.com/snok/drf-openapi-tester"
 documentation = "https://github.com/snok/drf-openapi-tester"
-keywords = ['openapi', 'swagger', 'api', 'testing', 'docs', 'documentation', 'django']
+keywords = ["openapi", "swagger", "api", "testing", "docs", "documentation", "django"]
 classifiers = [
-    'Development Status :: 4 - Beta',  # TODO: Update when pushing v1
-    'Environment :: Web Environment',
-    'Framework :: Pytest',
-    'Framework :: Django',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: BSD License',
-    'Natural Language :: English',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Topic :: Software Development',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Software Development :: Libraries :: Application Frameworks',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-    'Topic :: Documentation',
-    'Topic :: Software Development :: Testing',
-    'Topic :: Software Development :: Testing :: Unit',
+    "Development Status :: 4 - Beta",  # TODO: Update when pushing v1
+    "Environment :: Web Environment",
+    "Framework :: Pytest",
+    "Framework :: Django",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Documentation",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Testing :: Unit",
+    "Topic :: Utilities",
+    "Typing :: Typed",
 ]
 include = ["CHANGELOG.rst"]
 packages = [
@@ -39,18 +42,17 @@ packages = [
 
 [tool.poetry.dependencies]
 djangorestframework = "*"
-inflection = "^0.5.1"
+django = "^2.2 || ^3.0"
+inflection = "^0.4.0"
 openapi-spec-validator = "^0.2.9"
-prance = "^0.20.0"
-python = "^3.6.1"
-pyYAML = "^5.3.1"
+prance = "^0.16.0"
+python = "^3.7"
+pyYAML = "*"
 
 [tool.poetry.dev-dependencies]
-django = "^2.2 || ^3.0"
 drf-spectacular = "^0.13.1"
 drf-yasg = "^1.17.1"
 Faker = "^5.6.5"
-flake8 = "*"
 ipython = "^7.16.1"
 pre-commit = "^2.9.3"
 pytest = "^6.2"
