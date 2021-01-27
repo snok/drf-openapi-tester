@@ -22,16 +22,32 @@ def test_minimum_violated():
         tester.test_schema_section(example_schema_integer, 2, "")
 
 
-def test_exactly_minimum():
+def test_exclusives():
     """ The minimum is included, unless specified """
+
     # Pass when set to minimum
-    tester.test_schema_section({"type": "integer", "minimum": 3}, 3, "")
+    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False}
+    tester.test_schema_section(schema, 3, "")
+
+    # Fail when we exclude the minimum
+    schema["exclusiveMinimum"] = True
     with pytest.raises(
         DocumentationError,
         match="Mismatched content. Response integer violates the minimum value defined in the schema",
     ):
-        # Fail when we exclude the minimum
-        tester.test_schema_section({"type": "integer", "minimum": 3, "exclusiveMinimum": True}, 3, "")
+        tester.test_schema_section(schema, 3, "")
+
+    # Fail when we exclude the maximum
+    schema["exlusiveMaximum"] = True
+    with pytest.raises(
+        DocumentationError,
+        match="Mismatched content. Response integer violates the minimum value defined in the schema",
+    ):
+        tester.test_schema_section(schema, 5, "")
+
+    # Pass when we include the maximum
+    schema["exlusiveMaximum"] = False
+    tester.test_schema_section(schema, 5, "")
 
 
 def test_maximum_violated():
@@ -65,3 +81,14 @@ def test_wrong_type():
         tester.test_schema_section(example_schema_integer, ("test",), "")
     with pytest.raises(DocumentationError, match="expected int but received float."):
         tester.test_schema_section(example_schema_integer, 2.3, "")
+
+
+def test_multiple_of():
+    # Pass
+    schema = {"multipleOf": 5, "type": "integer"}
+    for integer in [5, 10, 15, 20, 25]:
+        tester.test_schema_section(schema, integer, "")
+
+    # Fail
+    with pytest.raises(DocumentationError, match="The response integer must be a multiple of 5, but is 7."):
+        tester.test_schema_section(schema, 7, "")
