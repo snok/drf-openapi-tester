@@ -96,3 +96,15 @@ def test_bad_byte():
 
 
 # endregion: special formats
+
+
+def test_pattern():
+    """ The a regex pattern can be passed to describe how a string should look """
+    schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
+
+    # Should pass
+    tester.test_schema_section(schema, "123-45-6789", "")
+
+    # Should fail
+    with pytest.raises(DocumentationError, match="string did not match the specified regex pattern"):
+        tester.test_schema_section(schema, "test", "")
