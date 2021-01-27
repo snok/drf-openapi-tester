@@ -24,8 +24,6 @@ class SchemaTester:
         """
         Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
 
-        :param schema: Response/request OpenAPI schema section
-        :param data: API response/request data
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
@@ -101,10 +99,7 @@ class SchemaTester:
                 return isinstance(value, bytes)
             is_str = isinstance(value, str)
             if is_str and format in ["date", "date-time"]:
-                if format == "date":
-                    parser = parse_date
-                else:
-                    parser = parse_datetime
+                parser = parse_date if format == "date" else parse_datetime
                 try:
                     result = parser(value)
                     valid = result is not None
@@ -148,7 +143,8 @@ class SchemaTester:
             f"Error: Unsuccessfully tried to index the OpenAPI schema by `{status_code}`. {error_addon}"
         )
 
-    def _route_error_text_addon(self, paths: KeysView) -> str:
+    @staticmethod
+    def _route_error_text_addon(paths: KeysView) -> str:
         route_error_text = ""
         pretty_routes = "\n\t• ".join(paths)
         route_error_text += f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}"
