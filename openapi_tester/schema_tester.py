@@ -13,8 +13,6 @@ from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoad
 
 
 class SchemaTester:
-    """ SchemaTester class """
-
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
@@ -22,8 +20,11 @@ class SchemaTester:
         schema_file_path: Optional[str] = None,
     ) -> None:
         """
-        Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
+        Iterates through an OpenAPI schema object and API response to check that they match at every level.
 
+        :param case_tester: An optional callable that validates schema and response keys
+        :param ignore_case: An optional list of keys for the case_tester to ignore
+        :schema_file_path: The file path to an OpenAPI yaml or json file. Only passed when using a static schema loader
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
@@ -90,17 +91,17 @@ class SchemaTester:
             )
 
     @staticmethod
-    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], format: Optional[str]) -> bool:
+    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], _format: Optional[str]) -> bool:
         if enum:
             return value in enum
         if schema_type == "boolean":
             return isinstance(value, bool)
         if schema_type in ["string", "file"]:
-            if format == "bytes":
+            if _format == "byte":
                 return isinstance(value, bytes)
             is_str = isinstance(value, str)
-            if is_str and format in ["date", "date-time"]:
-                parser = parse_date if format == "date" else parse_datetime
+            if is_str and _format in ["date", "date-time"]:
+                parser = parse_date if _format == "date" else parse_datetime
                 try:
                     result = parser(value)
                     valid = result is not None
@@ -111,7 +112,7 @@ class SchemaTester:
         if schema_type == "integer":
             return isinstance(value, int)
         if schema_type == "number":
-            if format in ["double", "float"]:
+            if _format in ["double", "float"]:
                 return isinstance(value, float)
             return isinstance(value, (int, float))
         if schema_type == "object":
@@ -152,11 +153,15 @@ class SchemaTester:
 
     @staticmethod
     def _method_error_text_addon(methods: KeysView) -> str:
-        return f'\n\nAvailable methods include: {", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")}.'
+        str_methods = ", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")
+        return f"\n\nAvailable methods include: {str_methods}."
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        return f'\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. Is the `{status_code}` response documented?'
+        return (
+            f'\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. '
+            f"Is the `{status_code}` response documented?"
+        )
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
@@ -292,7 +297,8 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to the response, or remove it from the documented response.",
+                    hint="You need to add the missing schema key to the response, "
+                    "or remove it from the documented response.",
                 )
             if response_key not in properties:
                 raise DocumentationError(
@@ -300,7 +306,8 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to your documented response, or stop returning it in your API.",
+                    hint="You need to add the missing schema key to your documented "
+                    "response, or stop returning it in your API.",
                 )
 
             schema_value = properties[schema_key]
@@ -331,6 +338,7 @@ class SchemaTester:
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
 
+        # noinspection PyTypeChecker
         for datum in data:
             self.test_schema_section(
                 schema_section=items,
