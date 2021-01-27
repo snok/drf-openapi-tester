@@ -23,7 +23,7 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
     converted_schema = SchemaToPythonConverter(schema, with_faker=True).result
     response = Response(status=status_code, data=converted_schema)
     response.request = dict(REQUEST_METHOD=method, PATH_INFO=url_fragment)
-    response.json = lambda: converted_schema
+    response.json = lambda: converted_schema  # type: ignore
     return response
 
 
