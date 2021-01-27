@@ -91,7 +91,7 @@ class SchemaToPythonConverter:
             if value_type == "object":
                 parsed_schema[key] = self._iterate_schema_dict(value)
             elif value_type == "array":
-                parsed_schema[key] = self._iterate_schema_list(value)  # type: ignore
+                parsed_schema[key] = self._iterate_schema_list(value)
             else:
                 parsed_schema[key] = self._to_mock_value(value["type"], value.get("enum"), value.get("format"))
         return parsed_schema

@@ -29,12 +29,13 @@ class SchemaTester:
         self.case_tester = case_tester
         self.ignore_case = ignore_case or []
 
+        self.loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
         if schema_file_path is not None:
-            self.loader = StaticSchemaLoader(schema_file_path)  # type: ignore
+            self.loader = StaticSchemaLoader(schema_file_path)
         elif "drf_spectacular" in settings.INSTALLED_APPS:
-            self.loader = DrfSpectacularSchemaLoader()  # type: ignore
+            self.loader = DrfSpectacularSchemaLoader()
         elif "drf_yasg" in settings.INSTALLED_APPS:
-            self.loader = DrfYasgSchemaLoader()  # type: ignore
+            self.loader = DrfYasgSchemaLoader()
         else:
             raise ImproperlyConfigured("No loader is configured.")
 
@@ -115,8 +116,7 @@ class SchemaTester:
             return isinstance(value, (int, float))
         if schema_type == "object":
             return isinstance(value, dict)
-        if schema_type == "array":
-            return isinstance(value, list)
+        return isinstance(value, list)
 
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
