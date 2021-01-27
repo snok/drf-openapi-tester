@@ -30,15 +30,8 @@ repos:
     rev: 5.7.0
     hooks:
       - id: isort
-  - repo: local
-    hooks:
-      - id: rst
-        name: rst
-        entry: rst-lint --encoding utf-8
-        files: ^(CHANGELOG.rst|README.rst|CONTRIBUTING.rst|CONTRIBUTORS.rst|docs/configuration.rst|docs/index.rst|docs/implementation.rst|docs/installation.rst)$
-        language: python
-        additional_dependencies: [pygments, restructuredtext_lint]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v0.800"
+    rev: 'v0.800'
     hooks:
       - id: mypy
+        additional_dependencies: [django, djangorestframework, inflection, openapi-spec-validator, prance, pyYAML, django-stubs, djangorestframework-stubs, drf_yasg, drf-spectacular]
