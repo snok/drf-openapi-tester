@@ -40,19 +40,13 @@ else:
     the type checker does not actually run the code.
     """
     # noinspection PyUnresolvedReferences
-    from rest_framework.response import Response as RFResponse
+    from rest_framework.response import Response
 
     # noinspection PyUnresolvedReferences
     from rest_framework.test import APITestCase
 
     # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
-
-    class Response(RFResponse):
-        request: dict
-
-        def json(self):
-            ...
 
     class OpenAPITestCase(APITestCase):
         def assertResponse(
