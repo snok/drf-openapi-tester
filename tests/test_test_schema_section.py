@@ -9,7 +9,7 @@ example_schema_integer = {"type": "integer", "minimum": 3, "maximum": 5}
 example_integer = 3
 example_schema_number = {"type": "number", "minimum": 3, "maximum": 5}
 example_number = 3.2
-example_schema_object = {"type": "object", "properties": {"value": {"type": "integer"}}}
+example_schema_object = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
 example_object = {"value": 1}
 example_schema_string = {"type": "string", "minLength": 3, "maxLength": 5}
 example_string = "str"
@@ -204,9 +204,15 @@ def test_multiple_of():
 
 
 def test_response_is_missing_keys():
-    """ Missing keys in a response object should raise an error """
+    # TODO: Make this pass (not implemented yet)
+    # If a required key is missing, we should raise an error
+    required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
     with pytest.raises(DocumentationError, match="The following properties are missing from the tested data: value"):
-        tester.test_schema_section(example_schema_object, {})
+        tester.test_schema_section(required_key, {})
+
+    # If not required, it should pass
+    optional_key = {"type": "object", "properties": {"value": {"type": "integer"}}}
+    tester.test_schema_section(optional_key, {})
 
 
 def test_schema_object_is_missing_keys():
