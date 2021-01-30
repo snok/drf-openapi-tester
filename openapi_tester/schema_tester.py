@@ -13,26 +13,6 @@ from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, Un
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
 
-def validate_pattern(schema_section: dict, data: str, reference: str):
-    """
-    Validates a string pattern.
-
-    We don't check for string type here, because we assume the schema has already been validated.
-    """
-    try:
-        compiled_pattern = re.compile(schema_section["pattern"])
-    except re.error as e:
-        raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
-
-    if not compiled_pattern.match(data):
-        raise DocumentationError(
-            message=f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}",
-            response=data,
-            schema=schema_section,
-            reference=reference,
-        )
-
-
 class SchemaTester:
     def __init__(
         self,
@@ -139,6 +119,26 @@ class SchemaTester:
         if schema_type == "object":
             return isinstance(value, dict)
         return isinstance(value, list)
+
+    @staticmethod
+    def _validate_pattern(schema_section: dict, data: str, reference: str):
+        """
+        Validates a string pattern.
+
+        We don't check for string type here, because we assume the schema has already been validated.
+        """
+        try:
+            compiled_pattern = re.compile(schema_section["pattern"])
+        except re.error as e:
+            raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
+
+        if not compiled_pattern.match(data):
+            raise DocumentationError(
+                message=f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}",
+                response=data,
+                schema=schema_section,
+                reference=reference,
+            )
 
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
@@ -263,7 +263,7 @@ class SchemaTester:
                     reference=reference,
                 )
             if "pattern" in schema_section:
-                validate_pattern(schema_section, data, reference)
+                self._validate_pattern(schema_section, data, reference)
             if schema_section_type == "object":
                 self._test_openapi_type_object(
                     schema_section=schema_section,
@@ -319,7 +319,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="It is missing from the response or vice versa.",
+                    hint="The response should contain this key or the documentation should change.",
                 )
             if response_key not in properties:
                 raise DocumentationError(
@@ -327,7 +327,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="It is missing from the response or vice versa.",
+                    hint="The response should contain this key or the documentation should change.",
                 )
 
             schema_value = properties[schema_key]
