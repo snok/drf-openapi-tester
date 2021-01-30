@@ -1,6 +1,6 @@
 import pytest
 
-from openapi_tester import DocumentationError, SchemaTester
+from openapi_tester import DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 
 example_schema_array = {"type": "array", "items": {"type": "string"}}
@@ -125,15 +125,19 @@ def test_byte():
 
 
 def test_pattern():
-    # TODO: Make this pass (not implemented yet)
     """ The a regex pattern can be passed to describe how a string should look """
     schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
 
     # Should pass
     tester.test_schema_section(schema, "123-45-6789")
 
-    # Should fail
-    with pytest.raises(DocumentationError, match="string did not match the specified regex pattern"):
+    # Bad pattern should fail
+    with pytest.raises(DocumentationError, match="Error: String 'test' does not validate using the specified pattern:"):
+        tester.test_schema_section(schema, "test")
+
+    # And if we get compile errors, we need to handle this too
+    schema = {"type": "string", "pattern": r"**"}
+    with pytest.raises(OpenAPISchemaError):
         tester.test_schema_section(schema, "test")
 
 

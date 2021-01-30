@@ -1,3 +1,4 @@
+import re
 from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
@@ -8,8 +9,28 @@ from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
-from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
+
+
+def validate_pattern(schema_section: dict, data: str, reference: str):
+    """
+    Validates a string pattern.
+
+    We don't check for string type here, because we assume the schema has already been validated.
+    """
+    try:
+        compiled_pattern = re.compile(schema_section["pattern"])
+    except re.error as e:
+        raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
+
+    if not compiled_pattern.match(data):
+        raise DocumentationError(
+            message=f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}",
+            response=data,
+            schema=schema_section,
+            reference=reference,
+        )
 
 
 class SchemaTester:
@@ -241,6 +262,8 @@ class SchemaTester:
                     schema=schema_section,
                     reference=reference,
                 )
+            if "pattern" in schema_section:
+                validate_pattern(schema_section, data, reference)
             if schema_section_type == "object":
                 self._test_openapi_type_object(
                     schema_section=schema_section,
