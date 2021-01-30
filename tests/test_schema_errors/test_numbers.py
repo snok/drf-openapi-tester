@@ -13,7 +13,7 @@ tester = SchemaTester()
 
 def test_nothing_wrong():
     """ This should always pass """
-    tester.test_schema_section(example_schema_number, example_number, "")
+    tester.test_schema_section(example_schema_number, example_number)
 
 
 def test_minimum_violated():
@@ -22,7 +22,7 @@ def test_minimum_violated():
         DocumentationError,
         match="Mismatched content. Response number violates the minimum value defined in the schema",
     ):
-        tester.test_schema_section(example_schema_number, 2, "")
+        tester.test_schema_section(example_schema_number, 2)
 
 
 def test_exclusives():
@@ -30,7 +30,7 @@ def test_exclusives():
 
     # Pass when set to minimum
     schema = {"type": "number", "minimum": 3, "exclusiveMinimum": False}
-    tester.test_schema_section(schema, 3, "")
+    tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the minimum
     schema["exclusiveMinimum"] = True
@@ -38,7 +38,7 @@ def test_exclusives():
         DocumentationError,
         match="Mismatched content. Response integer violates the minimum value defined in the schema",
     ):
-        tester.test_schema_section(schema, 3, "")
+        tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the maximum
     schema["exlusiveMaximum"] = True
@@ -46,11 +46,11 @@ def test_exclusives():
         DocumentationError,
         match="Mismatched content. Response integer violates the minimum value defined in the schema",
     ):
-        tester.test_schema_section(schema, 5, "")
+        tester.test_schema_section(schema, 5)
 
     # Pass when we include the maximum
     schema["exlusiveMaximum"] = False
-    tester.test_schema_section(schema, 5, "")
+    tester.test_schema_section(schema, 5)
 
 
 def test_maximum_violated():
@@ -58,7 +58,7 @@ def test_maximum_violated():
     with pytest.raises(
         DocumentationError, match="Mismatched content. Response number violates the maximum value defined in the schema"
     ):
-        tester.test_schema_section(example_schema_number, 6, "")
+        tester.test_schema_section(example_schema_number, 6)
 
 
 def test_null():
@@ -76,22 +76,22 @@ def test_nullable():
 def test_wrong_type():
     """ Type mismatches should raise errors """
     with pytest.raises(DocumentationError, match="expected int or float but received dict."):
-        tester.test_schema_section(example_schema_number, {}, "")
+        tester.test_schema_section(example_schema_number, {})
     with pytest.raises(DocumentationError, match="expected int or float but received list."):
-        tester.test_schema_section(example_schema_number, [], "")
+        tester.test_schema_section(example_schema_number, [])
     with pytest.raises(DocumentationError, match="expected int or float but received tuple."):
-        tester.test_schema_section(example_schema_number, ("test",), "")
+        tester.test_schema_section(example_schema_number, ("test",))
 
 
 def test_multiple_of():
     # Pass
     schema = {"multipleOf": 5, "type": "number"}
     for number in [5, 10, 15, 20, 25]:
-        tester.test_schema_section(schema, number, "")
+        tester.test_schema_section(schema, number)
 
     # Fail
     with pytest.raises(DocumentationError, match="The response number must be a multiple of 5, but is 7."):
-        tester.test_schema_section(schema, 7, "")
+        tester.test_schema_section(schema, 7)
 
 
 # endregion: number

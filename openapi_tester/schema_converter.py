@@ -33,7 +33,7 @@ class SchemaToPythonConverter:
             else:
                 raise ValueError(
                     f"Schema type is not specified and cannot be inferred, "
-                    f"please make sure to definte the type key for schema: {schema}"
+                    f"please make sure to defined the type key for schema: {schema}"
                 )
         if schema_type == "array":
             self.result = self._iterate_schema_list(schema)  # type :ignore

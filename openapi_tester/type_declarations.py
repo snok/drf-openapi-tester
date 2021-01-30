@@ -1,3 +1,4 @@
+# flake8: noqa
 import sys
 from typing import TYPE_CHECKING, Callable, List, Optional
 
@@ -37,10 +38,14 @@ else:
     We don't have to worry about circular imports here, since
     the type checker does not actually run the code.
     """
-    from rest_framework.response import Response  # noqa: F401
-    from rest_framework.test import APITestCase  # noqa: F401
+    # noinspection PyUnresolvedReferences
+    from rest_framework.response import Response
 
-    from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader  # noqa: F401
+    # noinspection PyUnresolvedReferences
+    from rest_framework.test import APITestCase
+
+    # noinspection PyUnresolvedReferences
+    from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
 
     class OpenAPITestCase(APITestCase):
         def assertResponse(

@@ -59,14 +59,11 @@ def test_maximum_violated():
         tester.test_schema_section(example_schema_integer, 6, "")
 
 
-def test_null():
-    """ A null value should always raise an error """
+def test_nullable():
+    # A null value should always raise an error
     with pytest.raises(DocumentationError, match="Mismatched types, expected int but received NoneType"):
         tester.test_schema_section(example_schema_integer, None, reference="")
-
-
-def test_nullable():
-    """ A null value is allowed when the integer is nullable """
+    # Unless the schema specifies it should be nullable
     schema = {"type": "integer", "nullable": True}
     tester.test_schema_section(schema, None, reference="")
 

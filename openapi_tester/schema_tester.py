@@ -158,10 +158,7 @@ class SchemaTester:
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        return (
-            f'\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. '
-            f"Is the `{status_code}` response documented?"
-        )
+        return f'\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. '
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
@@ -203,13 +200,15 @@ class SchemaTester:
         self,
         schema_section: dict,
         data: Any,
-        reference: str,
+        reference: Optional[str] = None,
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
         """
+        if reference is None:
+            reference = ""
         if "oneOf" in schema_section and data is not None:
             self.handle_one_of(
                 schema_section=schema_section,
@@ -297,8 +296,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to the response, "
-                    "or remove it from the documented response.",
+                    hint="It is missing from the response or vice versa.",
                 )
             if response_key not in properties:
                 raise DocumentationError(
@@ -306,8 +304,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to your documented "
-                    "response, or stop returning it in your API.",
+                    hint="It is missing from the response or vice versa.",
                 )
 
             schema_value = properties[schema_key]
@@ -338,7 +335,6 @@ class SchemaTester:
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
 
-        # noinspection PyTypeChecker
         for datum in data:
             self.test_schema_section(
                 schema_section=items,
