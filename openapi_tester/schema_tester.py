@@ -255,18 +255,35 @@ class SchemaTester:
 
     @staticmethod
     def _validate_multiple_of(schema_section: dict, data: Union[int, float]) -> Union[Optional[str], bool]:
-        str_multiple = schema_section.get("multipleOf")
+        multiple = schema_section.get("multipleOf")
 
-        if not str_multiple:
+        if multiple is None:
             return False
 
-        try:
-            multiple_of = int(str_multiple) if int(str_multiple) == float(str_multiple) else float(str_multiple)
-        except ValueError:
-            raise OpenAPISchemaError("Unable to parse multipleOf as a number")
+        if not data % multiple == 0:
+            return f"The response value {data} should be a multiple of {multiple}"
 
-        if not data % multiple_of == 0:
-            return f"The response value {data} should be a multiple of {multiple_of}"
+    @staticmethod
+    def _validate_min_and_max(schema_section: dict, data: Union[int, float]) -> Union[Optional[str], bool]:
+        minimum = schema_section.get("minimum")
+        if minimum is not None:
+            exclusive_minimum = schema_section.get("exclusiveMinimum")
+            if not exclusive_minimum:
+                if data < minimum:
+                    return f"The response value {data} exceeds the minimum allowed value of {minimum}"
+            else:
+                if data <= minimum:
+                    return f"The response value {data} exceeds the minimum allowed value of {minimum + 1}"
+
+        maximum = schema_section.get("maximum")
+        if maximum is not None:
+            exclusive_maximum = schema_section.get("exclusiveMaximum")
+            if not exclusive_maximum:
+                if data > maximum:
+                    return f"The response value {data} exceeds the maximum allowed value of {maximum}"
+            else:
+                if data >= maximum:
+                    return f"The response value {data} exceeds the maximum allowed value of {maximum - 1}"
 
     def test_schema_section(
         self,
@@ -304,6 +321,7 @@ class SchemaTester:
                 self._validate_pattern,
                 self._validate_enum,
                 self._validate_multiple_of,
+                self._validate_min_and_max,
             ]
             for validator in validators:
                 error = validator(schema_section, data)

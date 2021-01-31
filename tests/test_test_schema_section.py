@@ -142,31 +142,30 @@ def test_pattern():
 
 
 def test_exclusives():
-    # TODO: Make this pass (not implemented yet)
     """ The minimum is included, unless specified """
 
     # Pass when set to minimum
-    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False}
+    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False, "maximum": 5}
     tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the minimum
     schema["exclusiveMinimum"] = True
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response integer violates the minimum value defined in the schema",
+        match="The response value 3 exceeds the minimum allowed value of 4",
     ):
         tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the maximum
-    schema["exlusiveMaximum"] = True
+    schema["exclusiveMaximum"] = True
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response integer violates the minimum value defined in the schema",
+        match="The response value 5 exceeds the maximum allowed value of 4",
     ):
         tester.test_schema_section(schema, 5)
 
     # Pass when we include the maximum
-    schema["exlusiveMaximum"] = False
+    schema["exclusiveMaximum"] = False
     tester.test_schema_section(schema, 5)
 
 
