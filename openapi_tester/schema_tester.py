@@ -240,7 +240,7 @@ class SchemaTester:
         valid = True
         schema_type: str = schema_section["type"]
         if schema_type in ["string", "file"]:
-            valid = isinstance(data, str)
+            valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
             valid = isinstance(data, int)
         elif schema_type == "number":
