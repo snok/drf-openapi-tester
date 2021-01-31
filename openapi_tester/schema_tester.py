@@ -221,15 +221,13 @@ class SchemaTester:
         self,
         schema_section: dict,
         data: Any,
-        reference: Optional[str] = None,
+        reference: str = "",
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
         """
-        if reference is None:
-            reference = ""
         if "oneOf" in schema_section and data is not None:
             self.handle_one_of(
                 schema_section=schema_section,
