@@ -41,14 +41,6 @@ class SchemaTester:
         else:
             raise ImproperlyConfigured("No loader is configured.")
 
-    def _test_key_casing(
-        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
-    ) -> None:
-        tester = case_tester or getattr(self, "case_tester", None)
-        ignore_case = [*self.ignore_case, *(ignore_case or [])]
-        if tester and key not in ignore_case:
-            tester(key)
-
     @staticmethod
     def handle_all_of(**kwargs: dict) -> dict:
         properties: Dict[str, Any] = {}
@@ -86,55 +78,6 @@ class SchemaTester:
         if matches != 1:
             raise DocumentationError(
                 message=f"expected data to match one and only one of schema types, received {matches} matches.",
-                response=data,
-                schema=schema_section,
-                reference=reference,
-            )
-
-    @staticmethod
-    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], _format: Optional[str]) -> bool:
-        if enum:
-            return value in enum
-        if schema_type == "boolean":
-            return isinstance(value, bool)
-        if schema_type in ["string", "file"]:
-            if _format == "byte":
-                return isinstance(value, bytes)
-            is_str = isinstance(value, str)
-            if is_str and _format in ["date", "date-time"]:
-                parser = parse_date if _format == "date" else parse_datetime
-                try:
-                    result = parser(value)
-                    valid = result is not None
-                except ValueError:
-                    valid = False
-                return valid
-            return is_str
-        if schema_type == "integer":
-            return isinstance(value, int)
-        if schema_type == "number":
-            if _format in ["double", "float"]:
-                return isinstance(value, float)
-            return isinstance(value, (int, float))
-        if schema_type == "object":
-            return isinstance(value, dict)
-        return isinstance(value, list)
-
-    @staticmethod
-    def _validate_pattern(schema_section: dict, data: str, reference: str):
-        """
-        Validates a string pattern.
-
-        We don't check for string type here, because we assume the schema has already been validated.
-        """
-        try:
-            compiled_pattern = re.compile(schema_section["pattern"])
-        except re.error as e:
-            raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
-
-        if not compiled_pattern.match(data):
-            raise DocumentationError(
-                message=f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}",
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -191,10 +134,8 @@ class SchemaTester:
         path = response.request["PATH_INFO"]
         method = response.request["REQUEST_METHOD"]
         status_code = str(response.status_code)
-
         schema = self.loader.get_schema()
         parameterized_path = self.loader.parameterize_path(path)
-
         paths_object = self._get_key_value(schema=schema, key="paths")
         route_object = self._get_key_value(
             schema=paths_object,
@@ -216,6 +157,101 @@ class SchemaTester:
         content_object = self._get_key_value(schema=status_code_object, key="content")
         json_object = self._get_key_value(schema=content_object, key="application/json")
         return self._get_key_value(schema=json_object, key="schema")
+
+    @staticmethod
+    def is_nullable(schema_item: dict) -> bool:
+        """
+        Checks if the item is nullable.
+
+        OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
+        OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
+
+        :param schema_item: schema item
+        :return: whether or not the item can be None
+        """
+        openapi_schema_3_nullable = "nullable"
+        swagger_2_nullable = "x-nullable"
+        return any(
+            nullable_key in schema_item and schema_item[nullable_key]
+            for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
+        )
+
+    def _validate_key_casing(
+        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
+    ) -> None:
+        tester = case_tester or getattr(self, "case_tester", None)
+        ignore_case = [*self.ignore_case, *(ignore_case or [])]
+        if tester and key not in ignore_case:
+            tester(key)
+
+    @staticmethod
+    def _validate_enum(schema_section: dict, data: str) -> Union[Optional[str], bool]:
+        if "enum" not in schema_section:
+            return False
+
+        enum = schema_section.get("enum")
+        if enum and data not in enum:
+            return (
+                f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
+            )
+
+    @staticmethod
+    def _validate_pattern(schema_section: dict, data: str) -> Union[Optional[str], bool]:
+        if "pattern" not in schema_section:
+            return False
+        try:
+            compiled_pattern = re.compile(schema_section["pattern"])
+        except re.error as e:
+            raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
+        if not compiled_pattern.match(data):
+            return f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}"
+
+    @staticmethod
+    def _validate_format(schema_section: dict, data: str) -> Union[Optional[str], bool]:
+        format = schema_section.get("format")
+        if not format:
+            return False
+
+        valid = True
+        if format in ["double", "float"]:
+            valid = isinstance(data, float)
+        elif format == "byte":
+            valid = isinstance(data, bytes)
+        elif format == "date":
+            try:
+                result = parse_date(format)
+                valid = result is not None
+            except ValueError:
+                valid = False
+        elif format == "date-time":
+            try:
+                result = parse_datetime(format)
+                valid = result is not None
+            except ValueError:
+                valid = False
+        if not valid:
+            return f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
+
+    def _validate_openapi_type(self, schema_section: dict, data: str) -> Union[Optional[str], bool]:
+        valid = True
+        schema_type = schema_section.get("type")
+        if schema_type in ["string", "file"]:
+            valid = isinstance(data, str)
+        elif schema_type == "integer":
+            valid = isinstance(data, int)
+        elif schema_type == "number":
+            valid = isinstance(data, (int, float))
+        elif schema_type == "object":
+            valid = isinstance(data, dict)
+        elif schema_type == "array":
+            valid = isinstance(data, list)
+        if data is None:
+            valid = self.is_nullable(schema_section)
+        if not valid:
+            return (
+                f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_type]} "
+                f"but received {type(data).__name__}."
+            )
 
     def test_schema_section(
         self,
@@ -245,25 +281,21 @@ class SchemaTester:
             schema_section_type = schema_section.get("type")
             if not schema_section_type and "properties" in schema_section:
                 schema_section_type = "object"
-            if not schema_section_type or (not data and self.is_nullable(schema_section)):
+            if not schema_section_type:
+                # No schema type == any schema type, so we return early
                 return
-            if data is None or not self._check_openapi_type(
-                schema_section_type, data, schema_section.get("enum"), schema_section.get("format")
-            ):
-                if "enum" in schema_section:
-                    message = f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
-                elif "format" in schema_section:
-                    message = f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
-                else:
-                    message = f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received {type(data).__name__}."
-                raise DocumentationError(
-                    message=message,
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                )
-            if "pattern" in schema_section:
-                self._validate_pattern(schema_section, data, reference)
+
+            validators = [
+                self._validate_openapi_type,
+                self._validate_format,
+                self._validate_pattern,
+                self._validate_enum,
+            ]
+            for validator in validators:
+                error = validator(schema_section, data)
+                if isinstance(error, str):
+                    raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
+
             if schema_section_type == "object":
                 self._test_openapi_type_object(
                     schema_section=schema_section,
@@ -311,8 +343,8 @@ class SchemaTester:
             )
 
         for schema_key, response_key in zip([key for key in properties.keys() if key in response_keys], response_keys):
-            self._test_key_casing(schema_key, case_tester, ignore_case)
-            self._test_key_casing(response_key, case_tester, ignore_case)
+            self._validate_key_casing(schema_key, case_tester, ignore_case)
+            self._validate_key_casing(response_key, case_tester, ignore_case)
             if schema_key in required_keys and schema_key not in response_keys:
                 raise DocumentationError(
                     message=f"Schema key `{schema_key}` was not found in the tested data.",
@@ -366,24 +398,6 @@ class SchemaTester:
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-
-    @staticmethod
-    def is_nullable(schema_item: dict) -> bool:
-        """
-        Checks if the item is nullable.
-
-        OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
-        OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
-
-        :param schema_item: schema item
-        :return: whether or not the item can be None
-        """
-        openapi_schema_3_nullable = "nullable"
-        swagger_2_nullable = "x-nullable"
-        return any(
-            nullable_key in schema_item and schema_item[nullable_key]
-            for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
-        )
 
     def validate_response(
         self,
