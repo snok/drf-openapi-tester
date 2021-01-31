@@ -393,7 +393,8 @@ class SchemaTester:
                 missing_keys = ", ".join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
                 message = f"The following properties are missing from the tested data: {missing_keys}."
-            response_keys.remove(required_key)
+            else:
+                response_keys.remove(required_key)
         for response_key in response_keys:
             if response_key not in properties:
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
@@ -408,10 +409,10 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip([key for key in properties.keys() if key in response_keys], response_keys):
+        for schema_key, response_key in zip([key for key in properties.keys() if key in data.keys()], data.keys()):
             self._validate_key_casing(schema_key, case_tester, ignore_case)
             self._validate_key_casing(response_key, case_tester, ignore_case)
-            if schema_key in required_keys and schema_key not in response_keys:
+            if schema_key in required_keys and schema_key not in data.keys():
                 raise DocumentationError(
                     message=f"Schema key `{schema_key}` was not found in the tested data.",
                     response=data,
