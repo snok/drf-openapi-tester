@@ -234,7 +234,7 @@ class SchemaTester:
 
     def _validate_openapi_type(self, schema_section: dict, data: str) -> Union[Optional[str], bool]:
         valid = True
-        schema_type = schema_section.get("type")
+        schema_type: str = schema_section["type"]
         if schema_type in ["string", "file"]:
             valid = isinstance(data, str)
         elif schema_type == "integer":
@@ -252,6 +252,21 @@ class SchemaTester:
                 f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_type]} "
                 f"but received {type(data).__name__}."
             )
+
+    @staticmethod
+    def _validate_multiple_of(schema_section: dict, data: Union[int, float]) -> Union[Optional[str], bool]:
+        str_multiple = schema_section.get("multipleOf")
+
+        if not str_multiple:
+            return False
+
+        try:
+            multiple_of = int(str_multiple) if int(str_multiple) == float(str_multiple) else float(str_multiple)
+        except ValueError:
+            raise OpenAPISchemaError("Unable to parse multipleOf as a number")
+
+        if not data % multiple_of == 0:
+            return f"The response value {data} should be a multiple of {multiple_of}"
 
     def test_schema_section(
         self,
@@ -288,6 +303,7 @@ class SchemaTester:
                 self._validate_format,
                 self._validate_pattern,
                 self._validate_enum,
+                self._validate_multiple_of,
             ]
             for validator in validators:
                 error = validator(schema_section, data)

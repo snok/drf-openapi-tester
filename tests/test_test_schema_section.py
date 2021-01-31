@@ -193,17 +193,14 @@ def test_minimum_violated():
 
 
 def test_multiple_of():
-    # TODO: Make this pass (not implemented yet)
-    for num, _type in [(5, "integer"), (5.00, "number")]:
+    for num, _type in [(5, "integer"), (5, "number")]:
         # Pass
         schema = {"multipleOf": num, "type": _type}
         for integer in [5, 10, 15, 20, 25]:
             tester.test_schema_section(schema, integer)
 
         # Fail
-        with pytest.raises(
-            DocumentationError, match=f"The response integer must be a multiple of {num}, but is {num + 2}."
-        ):
+        with pytest.raises(DocumentationError, match=f"The response value {num + 2} should be a multiple of {num}"):
             tester.test_schema_section(schema, num + 2)
 
 
