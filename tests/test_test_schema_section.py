@@ -78,21 +78,19 @@ def test_wrong_type():
 
 
 def test_min_length_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to minlength limitations should raise an error """
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response string violates the minimum string " "length defined in the schema",
+        match="The length of aa exceeds the minimum allowed length of 3",
     ):
         tester.test_schema_section(example_schema_string, "a" * 2)
 
 
 def test_max_length_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to maxlength limitations should raise an error """
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response string violates the maximum string " "length defined in the schema",
+        match="The length of aaaaaa exceeds the maximum allowed length of 5",
     ):
         tester.test_schema_section(example_schema_string, "a" * 6)
 
@@ -170,23 +168,21 @@ def test_exclusives():
 
 
 def test_maximum_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to maximum limitations should raise an error """
     for num, schema in [(6, example_schema_integer), (6.12, example_schema_number)]:
         with pytest.raises(
             DocumentationError,
-            match="Mismatched content. Response integer violates the maximum value defined in the schema",
+            match=f"The response value {num} exceeds the maximum allowed value of 5",
         ):
             tester.test_schema_section(schema, num)
 
 
 def test_minimum_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to minimum limitations should raise an error """
     for num, schema in [(2, example_schema_integer), (2.22, example_schema_number)]:
         with pytest.raises(
             DocumentationError,
-            match="Mismatched content. Response integer violates the minimum value defined in the schema",
+            match=f"The response value {num} exceeds the minimum allowed value of 3",
         ):
             tester.test_schema_section(schema, num)
 
