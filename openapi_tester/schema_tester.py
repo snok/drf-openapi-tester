@@ -380,19 +380,26 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        if "properties" in schema_section:
-            properties = schema_section["properties"]
-        elif "additionalProperties" in schema_section:
+        properties = schema_section.get("properties", {})
+        if "additionalProperties" in schema_section:
             properties = {"": schema_section["additionalProperties"]}
-        else:
-            properties = {}
-        required_keys = schema_section["required"] if "required" in schema_section else list(properties.keys())
-        response_keys = data.keys()
 
-        if len([key for key in response_keys if key in required_keys]) != len(required_keys):
-            missing_keys = ", ".join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
-            hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-            message = f"The following properties are missing from the tested data: {missing_keys}."
+        required_keys = schema_section.get("required", [])
+        response_keys = list(data.keys())
+
+        message, hint = "", ""
+        for required_key in required_keys:
+            if required_key not in response_keys:
+                missing_keys = ", ".join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
+                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                message = f"The following properties are missing from the tested data: {missing_keys}."
+            response_keys.remove(required_key)
+        for response_key in response_keys:
+            if response_key not in properties:
+                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                message = f"The following properties was found in the response, but is missing from the schema definition: {response_key}."
+
+        if message:
             raise DocumentationError(
                 message=message,
                 response=data,

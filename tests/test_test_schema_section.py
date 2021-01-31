@@ -200,7 +200,6 @@ def test_multiple_of():
 
 
 def test_response_is_missing_keys():
-    # TODO: Make this pass (not implemented yet)
     # If a required key is missing, we should raise an error
     required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
     with pytest.raises(DocumentationError, match="The following properties are missing from the tested data: value"):
@@ -212,8 +211,10 @@ def test_response_is_missing_keys():
 
 
 def test_schema_object_is_missing_keys():
-    # TODO: Make this pass (not implemented yet)
     """ Excess keys in a response should raise an error """
-    with pytest.raises(DocumentationError):
+    with pytest.raises(
+        DocumentationError,
+        match="The following properties was found in the response, but is missing from the schema definition: value",
+    ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
