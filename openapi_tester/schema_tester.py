@@ -185,11 +185,11 @@ class SchemaTester:
             tester(key)
 
     @staticmethod
-    def _validate_enum(schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
         enum = schema_section.get("enum")
 
         if enum is None:
-            return False
+            return None
 
         if data not in enum:
             return (
@@ -197,11 +197,11 @@ class SchemaTester:
             )
 
     @staticmethod
-    def _validate_pattern(schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
         pattern = schema_section.get("pattern")
 
         if pattern is None:
-            return False
+            return None
 
         try:
             compiled_pattern = re.compile(schema_section["pattern"])
@@ -211,10 +211,10 @@ class SchemaTester:
             return f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}"
 
     @staticmethod
-    def _validate_format(schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_format(schema_section: dict, data: Any) -> Optional[str]:
         format = schema_section.get("format")
         if not format:
-            return False
+            return None
 
         valid = True
         if format in ["double", "float"]:
@@ -236,7 +236,7 @@ class SchemaTester:
         if not valid:
             return f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
 
-    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
         schema_type: str = schema_section["type"]
         if schema_type in ["string", "file"]:
@@ -258,17 +258,17 @@ class SchemaTester:
             )
 
     @staticmethod
-    def _validate_multiple_of(schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_multiple_of(schema_section: dict, data: Any) -> Optional[str]:
         multiple = schema_section.get("multipleOf")
 
         if multiple is None:
-            return False
+            return None
 
         if not data % multiple == 0:
             return f"The response value {data} should be a multiple of {multiple}"
 
     @staticmethod
-    def _validate_min_and_max(schema_section: dict, data: Any) -> Union[Optional[str], bool]:
+    def _validate_min_and_max(schema_section: dict, data: Any) -> Optional[str]:
         minimum = schema_section.get("minimum")
         if minimum is not None:
             exclusive_minimum = schema_section.get("exclusiveMinimum")
@@ -290,7 +290,7 @@ class SchemaTester:
                     return f"The response value {data} exceeds the maximum allowed value of {maximum - 1}"
 
     @staticmethod
-    def _validate_length(schema_section: dict, data: str) -> Union[Optional[str], bool]:
+    def _validate_length(schema_section: dict, data: str) -> Optional[str]:
         min_length = schema_section.get("minLength")
         if min_length is not None:
             if len(data) < min_length:
