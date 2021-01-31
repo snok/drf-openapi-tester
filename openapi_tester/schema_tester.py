@@ -186,10 +186,7 @@ class SchemaTester:
 
     @staticmethod
     def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
-        enum = schema_section.get("enum")
-        if not enum:
-            return None
-        if data not in enum:
+        if data not in schema_section.get("enum", []):
             return (
                 f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
             )
