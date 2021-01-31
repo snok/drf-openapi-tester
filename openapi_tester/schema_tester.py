@@ -1,3 +1,4 @@
+import re
 from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
@@ -8,13 +9,11 @@ from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
-from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
 
 class SchemaTester:
-    """ SchemaTester class """
-
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
@@ -22,8 +21,11 @@ class SchemaTester:
         schema_file_path: Optional[str] = None,
     ) -> None:
         """
-        Iterates through an OpenAPI schema objet and an API response/request object to check that they match at every level.
+        Iterates through an OpenAPI schema object and API response to check that they match at every level.
 
+        :param case_tester: An optional callable that validates schema and response keys
+        :param ignore_case: An optional list of keys for the case_tester to ignore
+        :schema_file_path: The file path to an OpenAPI yaml or json file. Only passed when using a static schema loader
         :raises: openapi_tester.exceptions.DocumentationError or ImproperlyConfigured
         """
         self.case_tester = case_tester
@@ -90,17 +92,17 @@ class SchemaTester:
             )
 
     @staticmethod
-    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], format: Optional[str]) -> bool:
+    def _check_openapi_type(schema_type: str, value: Any, enum: Optional[List[Any]], _format: Optional[str]) -> bool:
         if enum:
             return value in enum
         if schema_type == "boolean":
             return isinstance(value, bool)
         if schema_type in ["string", "file"]:
-            if format == "bytes":
+            if _format == "byte":
                 return isinstance(value, bytes)
             is_str = isinstance(value, str)
-            if is_str and format in ["date", "date-time"]:
-                parser = parse_date if format == "date" else parse_datetime
+            if is_str and _format in ["date", "date-time"]:
+                parser = parse_date if _format == "date" else parse_datetime
                 try:
                     result = parser(value)
                     valid = result is not None
@@ -111,12 +113,32 @@ class SchemaTester:
         if schema_type == "integer":
             return isinstance(value, int)
         if schema_type == "number":
-            if format in ["double", "float"]:
+            if _format in ["double", "float"]:
                 return isinstance(value, float)
             return isinstance(value, (int, float))
         if schema_type == "object":
             return isinstance(value, dict)
         return isinstance(value, list)
+
+    @staticmethod
+    def _validate_pattern(schema_section: dict, data: str, reference: str):
+        """
+        Validates a string pattern.
+
+        We don't check for string type here, because we assume the schema has already been validated.
+        """
+        try:
+            compiled_pattern = re.compile(schema_section["pattern"])
+        except re.error as e:
+            raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
+
+        if not compiled_pattern.match(data):
+            raise DocumentationError(
+                message=f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}",
+                response=data,
+                schema=schema_section,
+                reference=reference,
+            )
 
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
@@ -152,11 +174,12 @@ class SchemaTester:
 
     @staticmethod
     def _method_error_text_addon(methods: KeysView) -> str:
-        return f'\n\nAvailable methods include: {", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")}.'
+        str_methods = ", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")
+        return f"\n\nAvailable methods include: {str_methods}."
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        return f'\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. Is the `{status_code}` response documented?'
+        return f'\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. '
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
@@ -198,13 +221,15 @@ class SchemaTester:
         self,
         schema_section: dict,
         data: Any,
-        reference: str,
+        reference: Optional[str] = None,
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
         """
+        if reference is None:
+            reference = ""
         if "oneOf" in schema_section and data is not None:
             self.handle_one_of(
                 schema_section=schema_section,
@@ -237,6 +262,8 @@ class SchemaTester:
                     schema=schema_section,
                     reference=reference,
                 )
+            if "pattern" in schema_section:
+                self._validate_pattern(schema_section, data, reference)
             if schema_section_type == "object":
                 self._test_openapi_type_object(
                     schema_section=schema_section,
@@ -292,7 +319,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to the response, or remove it from the documented response.",
+                    hint="The response should contain this key or the documentation should change.",
                 )
             if response_key not in properties:
                 raise DocumentationError(
@@ -300,7 +327,7 @@ class SchemaTester:
                     response=data,
                     schema=schema_section,
                     reference=reference,
-                    hint="You need to add the missing schema key to your documented response, or stop returning it in your API.",
+                    hint="The response should contain this key or the documentation should change.",
                 )
 
             schema_value = properties[schema_key]
