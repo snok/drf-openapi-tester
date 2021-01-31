@@ -223,13 +223,13 @@ class SchemaTester:
             valid = isinstance(data, bytes)
         elif format == "date":
             try:
-                result = parse_date(format)
+                result = parse_date(data)
                 valid = result is not None
             except ValueError:
                 valid = False
         elif format == "date-time":
             try:
-                result = parse_datetime(format)
+                result = parse_datetime(data)
                 valid = result is not None
             except ValueError:
                 valid = False
@@ -312,7 +312,23 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-        if "oneOf" in schema_section and data is not None:
+        schema_section_type = schema_section.get("type")
+        if not schema_section_type and "properties" in schema_section:
+            schema_section_type = "object"
+        if schema_section_type is None or data is None and self.is_nullable(schema_section):
+            # If there`s no type, any response is permitted so we return early
+            # If data is None and nullable, we also return early
+            return
+        if data is None:
+            raise DocumentationError(
+                message=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received NoneType",
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="Document the contents of the empty dictionary to match the response object.",
+            )
+
+        if "oneOf" in schema_section:
             self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
@@ -324,12 +340,6 @@ class SchemaTester:
             if "allOf" in schema_section:
                 merged_schema = self.handle_all_of(**schema_section)
                 schema_section = merged_schema
-            schema_section_type = schema_section.get("type")
-            if not schema_section_type and "properties" in schema_section:
-                schema_section_type = "object"
-            if not schema_section_type:
-                # No schema type == any schema type, so we return early
-                return
 
             validators = [
                 self._validate_openapi_type,
@@ -430,9 +440,18 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         items = schema_section["items"]
+
+        error = ""
         if items is None and data is not None:
+            error = "Mismatched content. Response list contains data when the schema is empty."
+        elif data is None and not self.is_nullable(schema_section):
+            error = "Mismatched content. Expected list but found NoneType"
+        elif data is None:
+            return
+
+        if error:
             raise DocumentationError(
-                message="Mismatched content. Response array contains data, when schema is empty.",
+                message=error,
                 response=data,
                 schema=schema_section,
                 reference=reference,

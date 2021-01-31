@@ -42,7 +42,7 @@ def test_nullable():
         # A null value should always raise an error
         with pytest.raises(
             DocumentationError,
-            match=f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema['type']]} but received NoneType",
+            match=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema['type']]} but received NoneType",
         ):
             tester.test_schema_section(schema, None)
 
