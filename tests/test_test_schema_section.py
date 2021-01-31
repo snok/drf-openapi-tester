@@ -200,9 +200,9 @@ def test_multiple_of():
 
 
 def test_response_is_missing_keys():
-    # If a required key is missing, we should raise an error
-    required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
     with pytest.raises(DocumentationError, match="The following properties are missing from the tested data: value"):
+        # If a required key is missing, we should raise an error
+        required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
         tester.test_schema_section(required_key, {})
 
     # If not required, it should pass
