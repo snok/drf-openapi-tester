@@ -77,11 +77,38 @@ class SchemaTester:
                 continue
         if matches != 1:
             raise DocumentationError(
-                message=f"expected data to match one and only one of schema types, received {matches} matches.",
+                message=f"expected data to match one and only one of the oneOf schema types; found {matches} matches.",
                 response=data,
                 schema=schema_section,
                 reference=reference,
             )
+
+    def handle_any_of(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ):
+        for option in schema_section["anyOf"]:
+            try:
+                self.test_schema_section(
+                    schema_section=option,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+                return
+            except DocumentationError:
+                continue
+        raise DocumentationError(
+            message="expected data to match one or more of the anyOf schema types.",
+            response=data,
+            schema=schema_section,
+            reference=reference,
+        )
 
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
@@ -264,7 +291,7 @@ class SchemaTester:
         if multiple is None:
             return None
 
-        if not data % multiple == 0:
+        if data % multiple != 0:
             return f"The response value {data} should be a multiple of {multiple}"
 
     @staticmethod
@@ -292,14 +319,12 @@ class SchemaTester:
     @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
         min_length = schema_section.get("minLength")
-        if min_length is not None:
-            if len(data) < min_length:
-                return f"The length of {data} exceeds the minimum allowed length of {min_length}"
+        if min_length is not None and len(data) < min_length:
+            return f"The length of {data} exceeds the minimum allowed length of {min_length}"
 
         max_length = schema_section.get("maxLength")
-        if max_length is not None:
-            if len(data) > max_length:
-                return f"The length of {data} exceeds the maximum allowed length of {max_length}"
+        if max_length is not None and len(data) > max_length:
+            return f"The length of {data} exceeds the maximum allowed length of {max_length}"
 
     def test_schema_section(
         self,
@@ -330,6 +355,14 @@ class SchemaTester:
 
         if "oneOf" in schema_section:
             self.handle_one_of(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+        elif "anyOf" in schema_section:
+            self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
@@ -381,10 +414,11 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        properties = schema_section.get("properties", {})
-        if "additionalProperties" in schema_section:
-            properties = {"": schema_section["additionalProperties"]}
+        if schema_section.get("additionalProperties"):
+            # TODO: Make sure this is handled appropriately
+            return
 
+        properties = schema_section.get("properties", {})
         required_keys = schema_section.get("required", [])
         response_keys = list(data.keys())
 
@@ -397,7 +431,7 @@ class SchemaTester:
                 response_keys.remove(required_key)
         for response_key in response_keys:
             if response_key not in properties:
-                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                hint = "Remove the key from your API response, or include it in your OpenAPI docs."
                 message = (
                     f"The following property was found in the response, "
                     f"but is missing from the schema definition: {response_key}."
