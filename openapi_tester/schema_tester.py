@@ -236,7 +236,9 @@ class SchemaTester:
 
     def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
-        schema_type: str = schema_section["type"]
+        schema_type = schema_section.get("type")
+        if not schema_type:
+            return None
         if schema_type in ["string", "file"]:
             valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
@@ -313,7 +315,7 @@ class SchemaTester:
         schema_section_type = schema_section.get("type")
         if not schema_section_type and "properties" in schema_section:
             schema_section_type = "object"
-        if schema_section_type is None or data is None and self.is_nullable(schema_section):
+        if schema_section_type is None or (data is None and self.is_nullable(schema_section)):
             # If there`s no type, any response is permitted so we return early
             # If data is None and nullable, we also return early
             return
@@ -348,6 +350,7 @@ class SchemaTester:
                 self._validate_min_and_max,
                 self._validate_length,
             ]
+
             for validator in validators:
                 error = validator(schema_section, data)
                 if isinstance(error, str):
@@ -388,15 +391,17 @@ class SchemaTester:
         message, hint = "", ""
         for required_key in required_keys:
             if required_key not in response_keys:
-                missing_keys = ", ".join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-                message = f"The following properties are missing from the tested data: {missing_keys}."
+                message = f"The following property is missing from the tested data: {required_key}."
             else:
                 response_keys.remove(required_key)
         for response_key in response_keys:
             if response_key not in properties:
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-                message = f"The following properties was found in the response, but is missing from the schema definition: {response_key}."
+                message = (
+                    f"The following property was found in the response, "
+                    f"but is missing from the schema definition: {response_key}."
+                )
 
         if message:
             raise DocumentationError(
@@ -407,10 +412,10 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip([key for key in properties.keys() if key in data.keys()], data.keys()):
+        for schema_key, response_key in zip([key for key in properties if key in data], data):
             self._validate_key_casing(schema_key, case_tester, ignore_case)
             self._validate_key_casing(response_key, case_tester, ignore_case)
-            if schema_key in required_keys and schema_key not in data.keys():
+            if schema_key in required_keys and schema_key not in data:
                 raise DocumentationError(
                     message=f"Schema key `{schema_key}` was not found in the tested data.",
                     response=data,

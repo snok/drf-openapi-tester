@@ -109,7 +109,7 @@ def test_validate_response_failure_scenario_with_predefined_data(client):
         assert response.status_code == 200
         assert response.json() == item["expected_response"]
         with pytest.raises(
-            DocumentationError, match="Error: The following properties are missing from the tested data: length, width"
+            DocumentationError, match="Error: The following property is missing from the tested data: width"
         ):
             tester.validate_response(response)
 
