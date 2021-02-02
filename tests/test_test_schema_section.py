@@ -1,7 +1,19 @@
 import pytest
 
 from openapi_tester import DocumentationError, OpenAPISchemaError, SchemaTester
-from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
+from openapi_tester.constants import (
+    EXCESS_RESPONSE_KEY_ERROR,
+    MISSING_RESPONSE_KEY_ERROR,
+    NONE_ERROR,
+    OPENAPI_PYTHON_MAPPING,
+    VALIDATE_FORMAT_ERROR,
+    VALIDATE_MAX_LENGTH_ERROR,
+    VALIDATE_MAXIMUM_ERROR,
+    VALIDATE_MIN_LENGTH_ERROR,
+    VALIDATE_MINIMUM_ERROR,
+    VALIDATE_MULTIPLE_OF_ERROR,
+    VALIDATE_TYPE_ERROR,
+)
 
 example_schema_array = {"type": "array", "items": {"type": "string"}}
 example_array = ["string"]
@@ -41,8 +53,7 @@ def test_nullable():
     for schema in example_schema_types:
         # A null value should always raise an error
         with pytest.raises(
-            DocumentationError,
-            match=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema['type']]} but received NoneType",
+            DocumentationError, match=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema["type"]])
         ):
             tester.test_schema_section(schema, None)
 
@@ -72,26 +83,21 @@ def test_wrong_type():
                 continue
 
             with pytest.raises(
-                DocumentationError, match=f"expected {schema_python_type} but received {response_python_type}."
+                DocumentationError,
+                match=VALIDATE_TYPE_ERROR.format(expected=schema_python_type, received=response_python_type),
             ):
                 tester.test_schema_section(schema, response)
 
 
 def test_min_length_violated():
     """ Not adhering to minlength limitations should raise an error """
-    with pytest.raises(
-        DocumentationError,
-        match="The length of aa exceeds the minimum allowed length of 3",
-    ):
+    with pytest.raises(DocumentationError, match=VALIDATE_MIN_LENGTH_ERROR.format(data="a" * 2, min_length=3)):
         tester.test_schema_section(example_schema_string, "a" * 2)
 
 
 def test_max_length_violated():
     """ Not adhering to maxlength limitations should raise an error """
-    with pytest.raises(
-        DocumentationError,
-        match="The length of aaaaaa exceeds the maximum allowed length of 5",
-    ):
+    with pytest.raises(DocumentationError, match=VALIDATE_MAX_LENGTH_ERROR.format(data="a" * 6, max_length=5)):
         tester.test_schema_section(example_schema_string, "a" * 6)
 
 
@@ -100,7 +106,7 @@ def test_date_format():
     tester.test_schema_section({"type": "string", "format": "date"}, "2040-01-01")
 
     # This is invalid
-    with pytest.raises(DocumentationError, match="expected a value with the format date but received 01-31-2019"):
+    with pytest.raises(DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date", received="01-31-2019")):
         tester.test_schema_section({"type": "string", "format": "date"}, "01-31-2019")
 
 
@@ -110,7 +116,7 @@ def test_datetime():
 
     # This is invalid
     with pytest.raises(
-        DocumentationError, match="expected a value with the format date-time but received 2040-01-01 0800"
+        DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date-time", received="2040-01-01 0800")
     ):
         tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 0800")
 
@@ -118,7 +124,7 @@ def test_datetime():
 def test_byte():
     tester.test_schema_section({"type": "string", "format": "byte"}, b"test")
 
-    with pytest.raises(DocumentationError, match="expected a value with the format byte but received test"):
+    with pytest.raises(DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="byte", received="test")):
         tester.test_schema_section({"type": "string", "format": "byte"}, "test")
 
 
@@ -148,18 +154,12 @@ def test_exclusives():
 
     # Fail when we exclude the minimum
     schema["exclusiveMinimum"] = True
-    with pytest.raises(
-        DocumentationError,
-        match="The response value 3 exceeds the minimum allowed value of 4",
-    ):
+    with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_ERROR.format(data=3, minimum=4)):
         tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the maximum
     schema["exclusiveMaximum"] = True
-    with pytest.raises(
-        DocumentationError,
-        match="The response value 5 exceeds the maximum allowed value of 4",
-    ):
+    with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_ERROR.format(data=5, maximum=4)):
         tester.test_schema_section(schema, 5)
 
     # Pass when we include the maximum
@@ -170,20 +170,14 @@ def test_exclusives():
 def test_maximum_violated():
     """ Not adhering to maximum limitations should raise an error """
     for num, schema in [(6, example_schema_integer), (6.12, example_schema_number)]:
-        with pytest.raises(
-            DocumentationError,
-            match=f"The response value {num} exceeds the maximum allowed value of 5",
-        ):
+        with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_ERROR.format(data=num, maximum=5)):
             tester.test_schema_section(schema, num)
 
 
 def test_minimum_violated():
     """ Not adhering to minimum limitations should raise an error """
     for num, schema in [(2, example_schema_integer), (2.22, example_schema_number)]:
-        with pytest.raises(
-            DocumentationError,
-            match=f"The response value {num} exceeds the minimum allowed value of 3",
-        ):
+        with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_ERROR.format(data=num, minimum=3)):
             tester.test_schema_section(schema, num)
 
 
@@ -195,14 +189,14 @@ def test_multiple_of():
             tester.test_schema_section(schema, integer)
 
         # Fail
-        with pytest.raises(DocumentationError, match=f"The response value {num + 2} should be a multiple of {num}"):
+        with pytest.raises(DocumentationError, match=VALIDATE_MULTIPLE_OF_ERROR.format(data=num + 2, multiple=num)):
             tester.test_schema_section(schema, num + 2)
 
 
 def test_response_is_missing_keys():
-    with pytest.raises(DocumentationError, match="The following properties are missing from the tested data: value"):
-        # If a required key is missing, we should raise an error
-        required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+    # If a required key is missing, we should raise an error
+    required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+    with pytest.raises(DocumentationError, match=MISSING_RESPONSE_KEY_ERROR.format(missing_key="value")):
         tester.test_schema_section(required_key, {})
 
     # If not required, it should pass
@@ -214,7 +208,7 @@ def test_schema_object_is_missing_keys():
     """ Excess keys in a response should raise an error """
     with pytest.raises(
         DocumentationError,
-        match="The following properties was found in the response, but is missing from the schema definition: value",
+        match=EXCESS_RESPONSE_KEY_ERROR.format(excess_key="value"),
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
