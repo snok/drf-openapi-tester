@@ -8,7 +8,25 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
-from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
+from openapi_tester.constants import (
+    EXCESS_RESPONSE_KEY_ERROR,
+    INVALID_PATTERN_ERROR,
+    MISSING_RESPONSE_KEY_ERROR,
+    NONE_ERROR,
+    ONE_OF_ERROR,
+    OPENAPI_PYTHON_MAPPING,
+    UNDOCUMENTED_SCHEMA_SECTION_ERROR,
+    VALIDATE_ENUM_ERROR,
+    VALIDATE_FORMAT_ERROR,
+    VALIDATE_MAX_LENGTH_ERROR,
+    VALIDATE_MAXIMUM_ERROR,
+    VALIDATE_MIN_LENGTH_ERROR,
+    VALIDATE_MINIMUM_ERROR,
+    VALIDATE_MULTIPLE_OF_ERROR,
+    VALIDATE_PATTERN_ERROR,
+    VALIDATE_RESPONSE_TYPE_ERROR,
+    VALIDATE_TYPE_ERROR,
+)
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 
@@ -77,7 +95,7 @@ class SchemaTester:
                 continue
         if matches != 1:
             raise DocumentationError(
-                message=f"expected data to match one and only one of schema types, received {matches} matches.",
+                message=ONE_OF_ERROR.format(matches),
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -91,9 +109,7 @@ class SchemaTester:
         try:
             return schema[key]
         except KeyError:
-            raise UndocumentedSchemaSectionError(
-                f"Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
-            )
+            raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key, error_addon))
 
     @staticmethod
     def _get_status_code(schema: dict, status_code: Union[str, int], error_addon="") -> dict:
@@ -104,9 +120,7 @@ class SchemaTester:
             return schema[str(status_code)]
         elif int(status_code) in schema:
             return schema[int(status_code)]
-        raise UndocumentedSchemaSectionError(
-            f"Error: Unsuccessfully tried to index the OpenAPI schema by `{status_code}`. {error_addon}"
-        )
+        raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(status_code, error_addon))
 
     @staticmethod
     def _route_error_text_addon(paths: KeysView) -> str:
@@ -122,7 +136,8 @@ class SchemaTester:
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        return f'\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {", ".join([str(key) for key in response_status_codes])}. '
+        keys = ", ".join([str(key) for key in response_status_codes])
+        return f"\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {keys}. "
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
@@ -186,10 +201,13 @@ class SchemaTester:
 
     @staticmethod
     def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
-        if data not in schema_section.get("enum", []):
-            return (
-                f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
-            )
+        enum = schema_section.get("enum")
+
+        if not enum:
+            return None
+
+        if data not in enum:
+            return VALIDATE_ENUM_ERROR.format(enum=schema_section["enum"], received=str(data))
 
     @staticmethod
     def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
@@ -201,9 +219,9 @@ class SchemaTester:
         try:
             compiled_pattern = re.compile(schema_section["pattern"])
         except re.error as e:
-            raise OpenAPISchemaError(f"String pattern is not valid regex: {schema_section['pattern']}") from e
+            raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern)) from e
         if not compiled_pattern.match(data):
-            return f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}"
+            return VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
 
     @staticmethod
     def _validate_format(schema_section: dict, data: Any) -> Optional[str]:
@@ -229,7 +247,7 @@ class SchemaTester:
             except ValueError:
                 valid = False
         if not valid:
-            return f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
+            return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
     def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
@@ -249,20 +267,17 @@ class SchemaTester:
         if data is None:
             valid = self.is_nullable(schema_section)
         if not valid:
-            return (
-                f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema_type]} "
-                f"but received {type(data).__name__}."
+            return VALIDATE_TYPE_ERROR.format(
+                expected=OPENAPI_PYTHON_MAPPING[schema_type], received=type(data).__name__
             )
 
     @staticmethod
     def _validate_multiple_of(schema_section: dict, data: Any) -> Optional[str]:
         multiple = schema_section.get("multipleOf")
-
         if multiple is None:
             return None
-
         if not data % multiple == 0:
-            return f"The response value {data} should be a multiple of {multiple}"
+            return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
 
     @staticmethod
     def _validate_min_and_max(schema_section: dict, data: Any) -> Optional[str]:
@@ -271,32 +286,30 @@ class SchemaTester:
             exclusive_minimum = schema_section.get("exclusiveMinimum")
             if not exclusive_minimum:
                 if data < minimum:
-                    return f"The response value {data} exceeds the minimum allowed value of {minimum}"
+                    return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum)
             else:
                 if data <= minimum:
-                    return f"The response value {data} exceeds the minimum allowed value of {minimum + 1}"
+                    return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum + 1)
 
         maximum = schema_section.get("maximum")
         if maximum is not None:
             exclusive_maximum = schema_section.get("exclusiveMaximum")
             if not exclusive_maximum:
                 if data > maximum:
-                    return f"The response value {data} exceeds the maximum allowed value of {maximum}"
+                    return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum)
             else:
                 if data >= maximum:
-                    return f"The response value {data} exceeds the maximum allowed value of {maximum - 1}"
+                    return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum - 1)
 
     @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
         min_length = schema_section.get("minLength")
-        if min_length is not None:
-            if len(data) < min_length:
-                return f"The length of {data} exceeds the minimum allowed length of {min_length}"
+        if min_length is not None and len(data) < min_length:
+            return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
 
         max_length = schema_section.get("maxLength")
-        if max_length is not None:
-            if len(data) > max_length:
-                return f"The length of {data} exceeds the maximum allowed length of {max_length}"
+        if max_length is not None and len(data) > max_length:
+            return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
 
     def test_schema_section(
         self,
@@ -318,7 +331,7 @@ class SchemaTester:
             return
         if data is None:
             raise DocumentationError(
-                message=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received NoneType",
+                message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section_type]),
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -389,16 +402,13 @@ class SchemaTester:
         for required_key in required_keys:
             if required_key not in response_keys:
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-                message = f"The following property is missing from the tested data: {required_key}."
+                message = MISSING_RESPONSE_KEY_ERROR.format(missing_key=required_key)
             else:
                 response_keys.remove(required_key)
         for response_key in response_keys:
             if response_key not in properties:
                 hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-                message = (
-                    f"The following property was found in the response, "
-                    f"but is missing from the schema definition: {response_key}."
-                )
+                message = EXCESS_RESPONSE_KEY_ERROR.format(excess_key=response_key)
 
         if message:
             raise DocumentationError(
@@ -453,7 +463,7 @@ class SchemaTester:
         if items is None and data is not None:
             error = "Mismatched content. Response list contains data when the schema is empty."
         elif data is None and not self.is_nullable(schema_section):
-            error = "Mismatched content. Expected list but found NoneType"
+            error = NONE_ERROR.format(expected="list")
         elif data is None:
             return
 
@@ -492,7 +502,7 @@ class SchemaTester:
         """
 
         if not isinstance(response, Response):
-            raise ValueError("expected response to be an instance of DRF Response")
+            raise ValueError(VALIDATE_RESPONSE_TYPE_ERROR)
 
         response_schema = self.get_response_schema_section(response)
         self.test_schema_section(

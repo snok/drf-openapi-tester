@@ -10,3 +10,24 @@ OPENAPI_PYTHON_MAPPING = {
     "number": f"{int.__name__} or {float.__name__}",
 }
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
+
+# Validation errors
+VALIDATE_FORMAT_ERROR = "Mismatched values, expected a value with the format {expected} but received {received}."
+VALIDATE_PATTERN_ERROR = "String '{data}' does not validate using the specified pattern: {pattern}"
+INVALID_PATTERN_ERROR = "String pattern is not valid regex: {pattern}"
+VALIDATE_ENUM_ERROR = "Mismatched values, expected a member of the enum {enum} but received {received}."
+VALIDATE_TYPE_ERROR = "Mismatched types, expected {expected} but received {received}."
+VALIDATE_MULTIPLE_OF_ERROR = "The response value {data} should be a multiple of {multiple}"
+VALIDATE_MINIMUM_ERROR = "The response value {data} exceeds the minimum allowed value of {minimum}"
+VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
+VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed length of {min_length}"
+VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"
+
+VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
+NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
+MISSING_RESPONSE_KEY_ERROR = "The following properties are missing from the tested data: {missing_key}."
+EXCESS_RESPONSE_KEY_ERROR = (
+    "The following properties was found in the response, but is missing from the schema definition: {excess_key}."
+)
+UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
+ONE_OF_ERROR = "expected data to match one and only one of schema types, received {matches} matches."
