@@ -37,6 +37,7 @@ class DocumentationError(AssertionError):
                 return sorted(data_object)
             except TypeError:
                 return data_object
+        return data_object
 
     @staticmethod
     def format(example_item: Any, response: Any, reference: str, message: str, hint: str) -> str:

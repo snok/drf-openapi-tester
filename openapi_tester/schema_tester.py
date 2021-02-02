@@ -185,20 +185,22 @@ class SchemaTester:
             tester(key)
 
     @staticmethod
-    def _validate_enum(schema_section: dict, data: str) -> Union[Optional[str], bool]:
-        if "enum" not in schema_section:
-            return False
-
+    def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
         enum = schema_section.get("enum")
-        if enum and data not in enum:
+        if not enum:
+            return None
+        if data not in enum:
             return (
                 f'Mismatched values, expected a member of the enum {schema_section["enum"]} but received {str(data)}.'
             )
 
     @staticmethod
-    def _validate_pattern(schema_section: dict, data: str) -> Union[Optional[str], bool]:
-        if "pattern" not in schema_section:
-            return False
+    def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
+        pattern = schema_section.get("pattern")
+
+        if pattern is None:
+            return None
+
         try:
             compiled_pattern = re.compile(schema_section["pattern"])
         except re.error as e:
@@ -207,10 +209,10 @@ class SchemaTester:
             return f"String '{data}' does not validate using the specified pattern: {schema_section['pattern']}"
 
     @staticmethod
-    def _validate_format(schema_section: dict, data: str) -> Union[Optional[str], bool]:
+    def _validate_format(schema_section: dict, data: Any) -> Optional[str]:
         format = schema_section.get("format")
         if not format:
-            return False
+            return None
 
         valid = True
         if format in ["double", "float"]:
@@ -219,24 +221,26 @@ class SchemaTester:
             valid = isinstance(data, bytes)
         elif format == "date":
             try:
-                result = parse_date(format)
+                result = parse_date(data)
                 valid = result is not None
             except ValueError:
                 valid = False
         elif format == "date-time":
             try:
-                result = parse_datetime(format)
+                result = parse_datetime(data)
                 valid = result is not None
             except ValueError:
                 valid = False
         if not valid:
             return f'Mismatched values, expected a value with the format {schema_section["format"]} but received {str(data)}.'
 
-    def _validate_openapi_type(self, schema_section: dict, data: str) -> Union[Optional[str], bool]:
+    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
         schema_type = schema_section.get("type")
+        if not schema_type:
+            return None
         if schema_type in ["string", "file"]:
-            valid = isinstance(data, str)
+            valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
             valid = isinstance(data, int)
         elif schema_type == "number":
@@ -253,6 +257,50 @@ class SchemaTester:
                 f"but received {type(data).__name__}."
             )
 
+    @staticmethod
+    def _validate_multiple_of(schema_section: dict, data: Any) -> Optional[str]:
+        multiple = schema_section.get("multipleOf")
+
+        if multiple is None:
+            return None
+
+        if not data % multiple == 0:
+            return f"The response value {data} should be a multiple of {multiple}"
+
+    @staticmethod
+    def _validate_min_and_max(schema_section: dict, data: Any) -> Optional[str]:
+        minimum = schema_section.get("minimum")
+        if minimum is not None:
+            exclusive_minimum = schema_section.get("exclusiveMinimum")
+            if not exclusive_minimum:
+                if data < minimum:
+                    return f"The response value {data} exceeds the minimum allowed value of {minimum}"
+            else:
+                if data <= minimum:
+                    return f"The response value {data} exceeds the minimum allowed value of {minimum + 1}"
+
+        maximum = schema_section.get("maximum")
+        if maximum is not None:
+            exclusive_maximum = schema_section.get("exclusiveMaximum")
+            if not exclusive_maximum:
+                if data > maximum:
+                    return f"The response value {data} exceeds the maximum allowed value of {maximum}"
+            else:
+                if data >= maximum:
+                    return f"The response value {data} exceeds the maximum allowed value of {maximum - 1}"
+
+    @staticmethod
+    def _validate_length(schema_section: dict, data: str) -> Optional[str]:
+        min_length = schema_section.get("minLength")
+        if min_length is not None:
+            if len(data) < min_length:
+                return f"The length of {data} exceeds the minimum allowed length of {min_length}"
+
+        max_length = schema_section.get("maxLength")
+        if max_length is not None:
+            if len(data) > max_length:
+                return f"The length of {data} exceeds the maximum allowed length of {max_length}"
+
     def test_schema_section(
         self,
         schema_section: dict,
@@ -264,7 +312,23 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-        if "oneOf" in schema_section and data is not None:
+        schema_section_type = schema_section.get("type")
+        if not schema_section_type and "properties" in schema_section:
+            schema_section_type = "object"
+        if schema_section_type is None or (data is None and self.is_nullable(schema_section)):
+            # If there`s no type, any response is permitted so we return early
+            # If data is None and nullable, we also return early
+            return
+        if data is None:
+            raise DocumentationError(
+                message=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema_section_type]} but received NoneType",
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="Document the contents of the empty dictionary to match the response object.",
+            )
+
+        if "oneOf" in schema_section:
             self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
@@ -276,19 +340,17 @@ class SchemaTester:
             if "allOf" in schema_section:
                 merged_schema = self.handle_all_of(**schema_section)
                 schema_section = merged_schema
-            schema_section_type = schema_section.get("type")
-            if not schema_section_type and "properties" in schema_section:
-                schema_section_type = "object"
-            if not schema_section_type:
-                # No schema type == any schema type, so we return early
-                return
 
             validators = [
                 self._validate_openapi_type,
                 self._validate_format,
                 self._validate_pattern,
                 self._validate_enum,
+                self._validate_multiple_of,
+                self._validate_min_and_max,
+                self._validate_length,
             ]
+
             for validator in validators:
                 error = validator(schema_section, data)
                 if isinstance(error, str):
@@ -319,19 +381,29 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        if "properties" in schema_section:
-            properties = schema_section["properties"]
-        elif "additionalProperties" in schema_section:
+        properties = schema_section.get("properties", {})
+        if "additionalProperties" in schema_section:
             properties = {"": schema_section["additionalProperties"]}
-        else:
-            properties = {}
-        required_keys = schema_section["required"] if "required" in schema_section else list(properties.keys())
-        response_keys = data.keys()
 
-        if len([key for key in response_keys if key in required_keys]) != len(required_keys):
-            missing_keys = ", ".join(str(key) for key in sorted(list(set(required_keys) - set(response_keys))))
-            hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
-            message = f"The following properties are missing from the tested data: {missing_keys}."
+        required_keys = schema_section.get("required", [])
+        response_keys = list(data.keys())
+
+        message, hint = "", ""
+        for required_key in required_keys:
+            if required_key not in response_keys:
+                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                message = f"The following property is missing from the tested data: {required_key}."
+            else:
+                response_keys.remove(required_key)
+        for response_key in response_keys:
+            if response_key not in properties:
+                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                message = (
+                    f"The following property was found in the response, "
+                    f"but is missing from the schema definition: {response_key}."
+                )
+
+        if message:
             raise DocumentationError(
                 message=message,
                 response=data,
@@ -340,10 +412,10 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip([key for key in properties.keys() if key in response_keys], response_keys):
+        for schema_key, response_key in zip([key for key in properties if key in data], data):
             self._validate_key_casing(schema_key, case_tester, ignore_case)
             self._validate_key_casing(response_key, case_tester, ignore_case)
-            if schema_key in required_keys and schema_key not in response_keys:
+            if schema_key in required_keys and schema_key not in data:
                 raise DocumentationError(
                     message=f"Schema key `{schema_key}` was not found in the tested data.",
                     response=data,
@@ -379,9 +451,18 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         items = schema_section["items"]
+
+        error = ""
         if items is None and data is not None:
+            error = "Mismatched content. Response list contains data when the schema is empty."
+        elif data is None and not self.is_nullable(schema_section):
+            error = "Mismatched content. Expected list but found NoneType"
+        elif data is None:
+            return
+
+        if error:
             raise DocumentationError(
-                message="Mismatched content. Response array contains data, when schema is empty.",
+                message=error,
                 response=data,
                 schema=schema_section,
                 reference=reference,

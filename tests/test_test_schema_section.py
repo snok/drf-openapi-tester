@@ -42,7 +42,7 @@ def test_nullable():
         # A null value should always raise an error
         with pytest.raises(
             DocumentationError,
-            match=f"Mismatched types, expected {OPENAPI_PYTHON_MAPPING[schema['type']]} but received NoneType",
+            match=f"Mismatched content. Expected {OPENAPI_PYTHON_MAPPING[schema['type']]} but received NoneType",
         ):
             tester.test_schema_section(schema, None)
 
@@ -78,21 +78,19 @@ def test_wrong_type():
 
 
 def test_min_length_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to minlength limitations should raise an error """
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response string violates the minimum string " "length defined in the schema",
+        match="The length of aa exceeds the minimum allowed length of 3",
     ):
         tester.test_schema_section(example_schema_string, "a" * 2)
 
 
 def test_max_length_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to maxlength limitations should raise an error """
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response string violates the maximum string " "length defined in the schema",
+        match="The length of aaaaaa exceeds the maximum allowed length of 5",
     ):
         tester.test_schema_section(example_schema_string, "a" * 6)
 
@@ -142,76 +140,69 @@ def test_pattern():
 
 
 def test_exclusives():
-    # TODO: Make this pass (not implemented yet)
     """ The minimum is included, unless specified """
 
     # Pass when set to minimum
-    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False}
+    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False, "maximum": 5}
     tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the minimum
     schema["exclusiveMinimum"] = True
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response integer violates the minimum value defined in the schema",
+        match="The response value 3 exceeds the minimum allowed value of 4",
     ):
         tester.test_schema_section(schema, 3)
 
     # Fail when we exclude the maximum
-    schema["exlusiveMaximum"] = True
+    schema["exclusiveMaximum"] = True
     with pytest.raises(
         DocumentationError,
-        match="Mismatched content. Response integer violates the minimum value defined in the schema",
+        match="The response value 5 exceeds the maximum allowed value of 4",
     ):
         tester.test_schema_section(schema, 5)
 
     # Pass when we include the maximum
-    schema["exlusiveMaximum"] = False
+    schema["exclusiveMaximum"] = False
     tester.test_schema_section(schema, 5)
 
 
 def test_maximum_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to maximum limitations should raise an error """
     for num, schema in [(6, example_schema_integer), (6.12, example_schema_number)]:
         with pytest.raises(
             DocumentationError,
-            match="Mismatched content. Response integer violates the maximum value defined in the schema",
+            match=f"The response value {num} exceeds the maximum allowed value of 5",
         ):
             tester.test_schema_section(schema, num)
 
 
 def test_minimum_violated():
-    # TODO: Make this pass (not implemented yet)
     """ Not adhering to minimum limitations should raise an error """
     for num, schema in [(2, example_schema_integer), (2.22, example_schema_number)]:
         with pytest.raises(
             DocumentationError,
-            match="Mismatched content. Response integer violates the minimum value defined in the schema",
+            match=f"The response value {num} exceeds the minimum allowed value of 3",
         ):
             tester.test_schema_section(schema, num)
 
 
 def test_multiple_of():
-    # TODO: Make this pass (not implemented yet)
-    for num, _type in [(5, "integer"), (5.00, "number")]:
+    for num, _type in [(5, "integer"), (5, "number")]:
         # Pass
         schema = {"multipleOf": num, "type": _type}
         for integer in [5, 10, 15, 20, 25]:
             tester.test_schema_section(schema, integer)
 
         # Fail
-        with pytest.raises(
-            DocumentationError, match=f"The response integer must be a multiple of {num}, but is {num + 2}."
-        ):
+        with pytest.raises(DocumentationError, match=f"The response value {num + 2} should be a multiple of {num}"):
             tester.test_schema_section(schema, num + 2)
 
 
 def test_response_is_missing_keys():
-    # TODO: Make this pass (not implemented yet)
-    # If a required key is missing, we should raise an error
-    required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
     with pytest.raises(DocumentationError, match="The following properties are missing from the tested data: value"):
+        # If a required key is missing, we should raise an error
+        required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
         tester.test_schema_section(required_key, {})
 
     # If not required, it should pass
@@ -220,8 +211,10 @@ def test_response_is_missing_keys():
 
 
 def test_schema_object_is_missing_keys():
-    # TODO: Make this pass (not implemented yet)
     """ Excess keys in a response should raise an error """
-    with pytest.raises(DocumentationError):
+    with pytest.raises(
+        DocumentationError,
+        match="The following properties was found in the response, but is missing from the schema definition: value",
+    ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
