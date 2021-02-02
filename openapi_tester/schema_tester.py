@@ -11,6 +11,7 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     EXCESS_RESPONSE_KEY_ERROR,
     INVALID_PATTERN_ERROR,
+    MISSING_PROPERTY_KEY_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
     ONE_OF_ERROR,
@@ -386,25 +387,40 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        properties = schema_section.get("properties", {})
-        if schema_section.get("additionalProperties"):
-            # TODO: Double check this
-            return
 
+        properties = schema_section.get("properties", {})
         required_keys = schema_section.get("required", [])
         response_keys = list(data.keys())
 
+        # Checks and assumptions made below:
+
+        # 1. In the definitions above, we assume the `properties` section of the schema describes all keys,
+        # meaning we should never find response keys missing from this set.
+        # 2. Similarly, required keys must be a subset of properties; we should never find required keys that
+        # are not described in the properties.
+        # 3. Lastly, the response should contain *at minimum* all required keys, and keys outside of this
+        # section should exist in the properties
+        # 4. As a bonus check, we check the case of all keys
+
         message, hint = "", ""
         for required_key in required_keys:
+
             if required_key not in response_keys:
                 hint = "Remove the key from your OpenAPI docs, or include it in your API response."
                 message = MISSING_RESPONSE_KEY_ERROR.format(missing_key=required_key)
             else:
+                # Pop keys here, so we can iterate through remaining keys afterwards; this lets us
+                # efficiently verify that no excess keys exist the the properties definition
                 response_keys.remove(required_key)
-        for response_key in response_keys:
-            if response_key not in properties:
+
+            if required_key not in properties:
+                hint = "Document the property in your OpenAPI docs, or remove it from required."
+                message = MISSING_PROPERTY_KEY_ERROR.format(missing_key=required_key)
+
+        for remaining_response_key in response_keys:
+            if remaining_response_key not in properties:
                 hint = "Remove the key from your API response, or include it in your OpenAPI docs."
-                message = EXCESS_RESPONSE_KEY_ERROR.format(excess_key=response_key)
+                message = EXCESS_RESPONSE_KEY_ERROR.format(excess_key=remaining_response_key)
 
         if message:
             raise DocumentationError(
@@ -415,35 +431,23 @@ class SchemaTester:
                 hint=hint,
             )
 
-        for schema_key, response_key in zip([key for key in properties if key in data], data):
-            self._validate_key_casing(schema_key, case_tester, ignore_case)
-            self._validate_key_casing(response_key, case_tester, ignore_case)
-            if schema_key in required_keys and schema_key not in data:
-                raise DocumentationError(
-                    message=f"Schema key `{schema_key}` was not found in the tested data.",
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                    hint="The response should contain this key or the documentation should change.",
-                )
-            if response_key not in properties:
-                raise DocumentationError(
-                    message=f"Key `{response_key}` not found in the OpenAPI schema.",
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                    hint="The response should contain this key or the documentation should change.",
-                )
+        # Now that we know all response keys and required keys match the property keys
+        # both in value and formatting, we can check the case for all properties in one go
+        for key in properties:
+            self._validate_key_casing(key, case_tester, ignore_case)
 
-            schema_value = properties[schema_key]
-            response_value = data[schema_key]
-            self.test_schema_section(
-                schema_section=schema_value,
-                data=response_value,
-                reference=f"{reference}.dict:key:{schema_key}",
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            # And if it's contained in the response, we further validate
+            # the responses values against the schema definitions
+            if key in data:
+                schema_value = properties[key]
+                response_value = data[key]
+                self.test_schema_section(
+                    schema_section=schema_value,
+                    data=response_value,
+                    reference=f"{reference}.dict:key:{key}",
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
 
     def _test_openapi_type_array(
         self,

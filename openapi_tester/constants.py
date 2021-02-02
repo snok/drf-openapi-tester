@@ -26,6 +26,9 @@ VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed le
 VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
 NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
 MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
+MISSING_PROPERTY_KEY_ERROR = (
+    "The following key was found in your required properties, but is missing from properties: {missing_key}"
+)
 EXCESS_RESPONSE_KEY_ERROR = (
     "The following property was found in the response, but is missing from the schema definition: {excess_key}."
 )
