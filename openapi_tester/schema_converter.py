@@ -1,7 +1,7 @@
 import random
 import typing as t
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Any
 
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 
@@ -42,21 +42,37 @@ class SchemaToPythonConverter:
         elif schema_type == "object":
             self.result = self._iterate_schema_dict(schema)  # type :ignore
         else:
-            self.result = self._to_mock_value(schema_type, schema.get("enum"), schema.get("format"))  # type :ignore
+            self.result = self._to_mock_value(schema)  # type :ignore
 
-    def _to_mock_value(self, schema_type: Any, enum: Optional[List[Any]], _format: Optional[str]) -> Any:
+    def _to_mock_value(self, schema_object) -> Any:
+        format = schema_object.get("format")
+        schema_type = schema_object.get("type")
+        enum = schema_object.get("enum")
         if not hasattr(self, "faker"):
             return OPENAPI_PYTHON_MAPPING[schema_type]
+
         if enum:
             return enum[0]
-        elif _format:
+        elif format:
             if schema_type == "string":
-                if _format == "date":
+                if format == "date":
                     return datetime.now().date().isoformat()
-                elif _format == "date-time":
+                elif format == "date-time":
                     return datetime.now().isoformat()
-                elif _format == "byte":
+                elif format == "byte":
                     return self.faker.pystr().encode("utf-8")
+        if "maximum" in schema_object or "minimum" in schema_object:
+            limits = {}
+            max_value = schema_object.get("maximum")
+            if max_value:
+                limits["max_value"] = max_value - (1 if schema_object.get("excludeMaximum") else 0)
+            min_value = schema_object.get("minimum")
+            if min_value:
+                limits["min_value"] = min_value + (1 if schema_object.get("excludeMinimum") else 0)
+            if schema_type == "integer":
+                return self.faker.pyint(**limits)
+            else:
+                return self.faker.pyfloat(**limits)
         faker_handlers = {
             "boolean": self.faker.pybool,
             "string": self.faker.pystr,
@@ -118,7 +134,7 @@ class SchemaToPythonConverter:
             elif value_type == "array":
                 parsed_schema[key] = self._iterate_schema_list(value)
             else:
-                parsed_schema[key] = self._to_mock_value(value["type"], value.get("enum"), value.get("format"))
+                parsed_schema[key] = self._to_mock_value(value)
         return parsed_schema
 
     def _iterate_schema_list(self, schema_array: Any) -> Any:
@@ -139,7 +155,5 @@ class SchemaToPythonConverter:
         elif items_type == "array":
             parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
         else:
-            parsed_items.append(
-                self._to_mock_value(items_type, raw_items.get("enum"), raw_items.get("format"))
-            )  # type :ignore
+            parsed_items.append(self._to_mock_value(raw_items))  # type :ignore
         return parsed_items
