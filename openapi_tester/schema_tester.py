@@ -146,32 +146,29 @@ class SchemaTester:
         :param response: DRF Response Instance
         :return Response schema
         """
-        path = response.request["PATH_INFO"]
-        method = response.request["REQUEST_METHOD"]
-        status_code = str(response.status_code)
         schema = self.loader.get_schema()
-        parameterized_path = self.loader.parameterize_path(path)
-        paths_object = self._get_key_value(schema=schema, key="paths")
+        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
+        paths_object = self._get_key_value(schema, "paths")
         route_object = self._get_key_value(
-            schema=paths_object,
-            key=parameterized_path,
-            error_addon=self._route_error_text_addon(paths_object.keys()),
+            paths_object,
+            parameterized_path,
+            self._route_error_text_addon(paths_object.keys()),
         )
         method_object = self._get_key_value(
-            schema=route_object, key=method.lower(), error_addon=self._method_error_text_addon(route_object.keys())
+            route_object, response.request["REQUEST_METHOD"].lower(), self._method_error_text_addon(route_object.keys())
         )
-        responses_object = self._get_key_value(schema=method_object, key="responses")
+        responses_object = self._get_key_value(method_object, "responses")
         status_code_object = self._get_status_code(
-            schema=responses_object,
-            status_code=status_code,
-            error_addon=self._responses_error_text_addon(status_code, responses_object.keys()),
+            responses_object,
+            response.status_code,
+            self._responses_error_text_addon(response.status_code, responses_object.keys()),
         )
         if "openapi" not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
-            return self._get_key_value(schema=status_code_object, key="schema")
-        content_object = self._get_key_value(schema=status_code_object, key="content")
-        json_object = self._get_key_value(schema=content_object, key="application/json")
-        return self._get_key_value(schema=json_object, key="schema")
+            return self._get_key_value(status_code_object, "schema")
+        content_object = self._get_key_value(status_code_object, "content")
+        json_object = self._get_key_value(content_object, "application/json")
+        return self._get_key_value(json_object, "schema")
 
     @staticmethod
     def is_nullable(schema_item: dict) -> bool:
@@ -212,14 +209,12 @@ class SchemaTester:
     @staticmethod
     def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
         pattern = schema_section.get("pattern")
-
-        if pattern is None:
+        if not pattern:
             return None
-
         try:
-            compiled_pattern = re.compile(schema_section["pattern"])
+            compiled_pattern = re.compile(pattern)
         except re.error as e:
-            raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern)) from e
+            raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern=pattern)) from e
         if not compiled_pattern.match(data):
             return VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
 
@@ -276,7 +271,7 @@ class SchemaTester:
         multiple = schema_section.get("multipleOf")
         if multiple is None:
             return None
-        if not data % multiple == 0:
+        if data % multiple != 0:
             return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
 
     @staticmethod
@@ -392,8 +387,9 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         properties = schema_section.get("properties", {})
-        if "additionalProperties" in schema_section:
-            properties = {"": schema_section["additionalProperties"]}
+        if schema_section.get("additionalProperties"):
+            # TODO: Double check this
+            return
 
         required_keys = schema_section.get("required", [])
         response_keys = list(data.keys())
@@ -401,13 +397,13 @@ class SchemaTester:
         message, hint = "", ""
         for required_key in required_keys:
             if required_key not in response_keys:
-                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                hint = "Remove the key from your OpenAPI docs, or include it in your API response."
                 message = MISSING_RESPONSE_KEY_ERROR.format(missing_key=required_key)
             else:
                 response_keys.remove(required_key)
         for response_key in response_keys:
             if response_key not in properties:
-                hint = "Remove the key(s) from your OpenAPI docs, or include it in your API response."
+                hint = "Remove the key from your API response, or include it in your OpenAPI docs."
                 message = EXCESS_RESPONSE_KEY_ERROR.format(excess_key=response_key)
 
         if message:

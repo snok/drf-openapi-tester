@@ -25,9 +25,9 @@ VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed le
 
 VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
 NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
-MISSING_RESPONSE_KEY_ERROR = "The following properties are missing from the tested data: {missing_key}."
+MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
 EXCESS_RESPONSE_KEY_ERROR = (
-    "The following properties was found in the response, but is missing from the schema definition: {excess_key}."
+    "The following property was found in the response, but is missing from the schema definition: {excess_key}."
 )
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
-ONE_OF_ERROR = "expected data to match one and only one of schema types, received {matches} matches."
+ONE_OF_ERROR = "Expected data to match one and only one of oneOf schema types; found {matches} matches."
