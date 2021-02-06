@@ -119,7 +119,7 @@ components:
           enum:
           - -1
           - 0
-          type: string
+          type: integer
         points:
           type: array
           items:
