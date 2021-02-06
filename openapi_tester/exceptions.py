@@ -1,8 +1,6 @@
 import json
 from typing import Any
 
-from openapi_tester.schema_converter import SchemaToPythonConverter
-
 
 class DocumentationError(AssertionError):
     """
@@ -17,6 +15,8 @@ class DocumentationError(AssertionError):
         hint: str = "",
         reference: str = "",
     ) -> None:
+        from openapi_tester.schema_converter import SchemaToPythonConverter
+
         converted_schema = SchemaToPythonConverter(schema or {}).result
         super().__init__(
             self.format(

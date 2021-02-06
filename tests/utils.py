@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Generator, Optional, Tuple
+from typing import Any, Generator, Optional, Tuple, Union
 
 import yaml
 from rest_framework.response import Response
@@ -19,9 +19,9 @@ def load_schema(file_name: str) -> dict:
             return yaml.load(content, Loader=yaml.FullLoader)
 
 
-def response_factory(schema: dict, url_fragment: str, method: str, status_code: int = 200) -> Response:
+def response_factory(schema: dict, url_fragment: str, method: str, status_code: Union[int, str] = 200) -> Response:
     converted_schema = SchemaToPythonConverter(schema, with_faker=True).result
-    response = Response(status=status_code, data=converted_schema)
+    response = Response(status=int(status_code), data=converted_schema)
     response.request = dict(REQUEST_METHOD=method, PATH_INFO=url_fragment)
     response.json = lambda: converted_schema  # type: ignore
     return response
