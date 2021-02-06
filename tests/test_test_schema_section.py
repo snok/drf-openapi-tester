@@ -2,6 +2,7 @@ import pytest
 
 from openapi_tester import DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import (
+    ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
@@ -53,7 +54,7 @@ def test_nullable():
     for schema in example_schema_types:
         # A null value should always raise an error
         with pytest.raises(
-            DocumentationError, match=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema["type"]])
+                DocumentationError, match=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema["type"]])
         ):
             tester.test_schema_section(schema, None)
 
@@ -83,8 +84,8 @@ def test_wrong_type():
                 continue
 
             with pytest.raises(
-                DocumentationError,
-                match=VALIDATE_TYPE_ERROR.format(expected=schema_python_type, received=response_python_type),
+                    DocumentationError,
+                    match=VALIDATE_TYPE_ERROR.format(expected=schema_python_type, received=response_python_type),
             ):
                 tester.test_schema_section(schema, response)
 
@@ -116,7 +117,7 @@ def test_datetime():
 
     # This is invalid
     with pytest.raises(
-        DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date-time", received="2040-01-01 0800")
+            DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date-time", received="2040-01-01 0800")
     ):
         tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 0800")
 
@@ -207,8 +208,44 @@ def test_response_is_missing_keys():
 def test_schema_object_is_missing_keys():
     """ Excess keys in a response should raise an error """
     with pytest.raises(
-        DocumentationError,
-        match=EXCESS_RESPONSE_KEY_ERROR.format(excess_key="value"),
+            DocumentationError,
+            match=EXCESS_RESPONSE_KEY_ERROR.format(excess_key="value"),
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
+
+
+# region: anyOf unit tests
+
+example_anyof_response = {
+    "type": "object",
+    "anyOf": [
+        {"properties": {"oneKey": {"type": "string"}}},
+        {"properties": {"anotherKey": {"type": "integer"}}},
+    ],
+}
+
+
+def test_anyof():
+    # Test first possibility
+    tester.test_schema_section(example_anyof_response, {"oneKey": "test"})
+
+    # Test second possibility
+    tester.test_schema_section(example_anyof_response, {"anotherKey": 1})
+
+    # Test a few bad responses
+    data = [
+        {"oneKey": 1},  # bad type
+        {"anotherKey": "test"},  # bad type
+        {"thirdKey": "test"},  # bad key
+        {"thirdKey": 1},  # bad key
+        [],  # bad type
+        "test",  # bad type
+        1,  # bad type
+    ]
+    for datum in data:
+        with pytest.raises(DocumentationError, match=ANY_OF_ERROR):
+            tester.test_schema_section(example_anyof_response, datum)
+
+
+# endregion
