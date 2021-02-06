@@ -1,4 +1,5 @@
 import re
+from functools import reduce
 from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
@@ -9,6 +10,7 @@ from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
+    ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
     INVALID_PATTERN_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
@@ -63,9 +65,9 @@ class SchemaTester:
             raise ImproperlyConfigured("No loader is configured.")
 
     @staticmethod
-    def handle_all_of(**kwargs: dict) -> dict:
+    def combine_sub_schemas(*args) -> Dict[str, Any]:
         properties: Dict[str, Any] = {}
-        for entry in kwargs.pop("allOf"):
+        for entry in args:
             for key, value in entry["properties"].items():
                 if key in properties and isinstance(value, dict):
                     properties[key] = {**properties[key], **value}
@@ -73,7 +75,10 @@ class SchemaTester:
                     properties[key] = [*properties[key], *value]
                 else:
                     properties[key] = value
-        return {**kwargs, "type": "object", "properties": properties}
+        return properties
+
+    def handle_all_of(self, **kwargs: dict) -> Dict[str, Any]:
+        return {**kwargs, "type": "object", "properties": self.combine_sub_schemas(kwargs.pop("allOf"))}
 
     def handle_one_of(
         self,
@@ -102,6 +107,47 @@ class SchemaTester:
                 response=data,
                 schema=schema_section,
                 reference=reference,
+            )
+
+    def handle_any_of(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ):
+        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+        combined_sub_schemas: List[Dict[str, Any]] = []
+
+        for index in range(len(any_of)):
+            # we are reducing a slice of the any_of list from current index to list end
+
+            combined_sub_schemas.append(
+                reduce(self.combine_sub_schemas, any_of[index:], {"type": "object", "required": [], "properties": {}})
+            )
+
+        valid = False
+        for schema in [*any_of, *reversed(combined_sub_schemas)]:
+            try:
+                self.test_schema_section(
+                    schema_section=schema,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+                valid = True
+                break
+            except DocumentationError:
+                continue
+        if not valid:
+            raise DocumentationError(
+                message=ANY_OF_ERROR.format(schemas=str([*any_of, *reversed(combined_sub_schemas)])),
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="",
             )
 
     @staticmethod
