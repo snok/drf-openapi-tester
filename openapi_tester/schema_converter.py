@@ -23,7 +23,7 @@ class SchemaToPythonConverter:
             if "anyOf" in schema:
                 schema = schema["anyOf"][0]
         if with_faker:
-            """ We are importing faker here to ensure this remains a dev dependency """
+            # We are importing faker here to ensure this remains a dev dependency
             from faker import Faker
 
             Faker.seed(0)
@@ -45,7 +45,7 @@ class SchemaToPythonConverter:
             self.result = self._to_mock_value(schema)  # type :ignore
 
     def _to_mock_value(self, schema_object) -> Any:
-        format = schema_object.get("format")
+        schema_format = schema_object.get("format")
         schema_type = schema_object.get("type")
         enum = schema_object.get("enum")
         if not hasattr(self, "faker"):
@@ -53,13 +53,13 @@ class SchemaToPythonConverter:
 
         if enum:
             return enum[0]
-        elif format:
+        elif schema_format:
             if schema_type == "string":
-                if format == "date":
+                if schema_format == "date":
                     return datetime.now().date().isoformat()
-                elif format == "date-time":
+                elif schema_format == "date-time":
                     return datetime.now().isoformat()
-                elif format == "byte":
+                elif schema_format == "byte":
                     return self.faker.pystr().encode("utf-8")
         if "maximum" in schema_object or "minimum" in schema_object:
             limits = {}
@@ -84,7 +84,8 @@ class SchemaToPythonConverter:
         }
         return faker_handlers[schema_type]()
 
-    def _handle_any_of(self, any_of_list: t.List[dict]) -> dict:
+    @staticmethod
+    def _handle_any_of(any_of_list: t.List[dict]) -> dict:
         """ generate any of mock data """
         schema = {}
         selected_items = random.sample(any_of_list, random.randint(1, len(any_of_list)))

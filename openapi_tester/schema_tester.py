@@ -32,6 +32,8 @@ from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoad
 
 
 class SchemaTester:
+    """ Schema Tester: this is the base class of the library. """
+
     loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
 
     def __init__(
@@ -109,10 +111,10 @@ class SchemaTester:
         """
         try:
             return schema[key]
-        except KeyError:
+        except KeyError as e:
             raise UndocumentedSchemaSectionError(
                 UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=key, error_addon=error_addon)
-            )
+            ) from e
 
     @staticmethod
     def _get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
@@ -202,12 +204,9 @@ class SchemaTester:
     @staticmethod
     def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
         enum = schema_section.get("enum")
-
-        if not enum:
-            return None
-
-        if data not in enum:
+        if enum and data not in enum:
             return VALIDATE_ENUM_ERROR.format(enum=schema_section["enum"], received=str(data))
+        return None
 
     @staticmethod
     def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
@@ -237,7 +236,8 @@ class SchemaTester:
                 valid = False
         return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
-    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
+    @staticmethod
+    def _validate_openapi_type(schema_section: dict, data: Any) -> Optional[str]:
         valid = True
         schema_type: Optional[str] = schema_section.get("type")
         if not schema_type and "properties" in schema_section:

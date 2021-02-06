@@ -10,7 +10,11 @@ import yaml
 from django.core.exceptions import ImproperlyConfigured
 from django.urls import Resolver404, resolve
 from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
+
+# noinspection PyProtectedMember
 from prance.util.resolver import RefResolver
+
+# noinspection PyProtectedMember
 from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
@@ -23,6 +27,7 @@ def handle_recursion_limit(schema: dict) -> Callable:
     We are using a currying pattern to pass schema into the scope of the handler.
     """
 
+    # noinspection PyUnusedLocal
     def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
         try:
             fragment = parse_result.fragment
@@ -160,16 +165,14 @@ class BaseSchemaLoader:
                 var_index = endpoint_path.rfind(str(value))
                 endpoint_path = endpoint_path[:var_index] + f"{{{key}}}" + endpoint_path[var_index + len(str(value)) :]
             return endpoint_path, resolved_route
-        except Resolver404:
+        except Resolver404 as e:
             paths = self.get_endpoint_paths()
             closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, paths))
             if closest_matches:
                 raise ValueError(
-                    f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}\n\n"
-                    f"If your path contains path parameters (e.g., `/api/<version>/...`), make sure to pass a "
-                    f"value, and not the parameter pattern."
-                )
-            raise ValueError(f"Could not resolve path `{endpoint_path}`")
+                    f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}"
+                ) from e
+            raise ValueError(f"Could not resolve path `{endpoint_path}`") from e
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
@@ -262,6 +265,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
         """
         if not self.path:
             raise ImproperlyConfigured("Unable to read the schema file. Please make sure the path setting is correct.")
-        with open(self.path) as f:
-            content = f.read()
+        with open(self.path) as file:
+            content = file.read()
             return json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)

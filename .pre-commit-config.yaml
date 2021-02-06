@@ -35,3 +35,11 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [django, djangorestframework, inflection, openapi-spec-validator, prance, pyYAML, django-stubs, djangorestframework-stubs, drf_yasg, drf-spectacular]
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [ python ]
+        exclude: tests|test_project|manage.py

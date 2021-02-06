@@ -10,22 +10,22 @@ def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str]
 
     def tester(key: str) -> None:
         stripped = key.strip()
-        if len(stripped) and not handler(stripped) == stripped:
+        if stripped and not handler(stripped) == stripped:
             raise CaseError(key=key, case=casing, expected=handler(key))
 
     return tester
 
 
-def _camelize(s: str) -> str:
-    return camelize(underscore(s), False)
+def _camelize(string: str) -> str:
+    return camelize(underscore(string), False)
 
 
-def _pascalize(s: str) -> str:
-    return camelize(underscore(s))
+def _pascalize(string: str) -> str:
+    return camelize(underscore(string))
 
 
-def _kebabize(s: str) -> str:
-    return dasherize(underscore(s))
+def _kebabize(string: str) -> str:
+    return dasherize(underscore(string))
 
 
 is_camel_case = _create_tester("camelCased", _camelize)
