@@ -112,8 +112,6 @@ class SchemaToPythonConverter:
             schema_object = schema_object["oneOf"][0]
         if "properties" in schema_object:
             properties = schema_object["properties"]
-        elif "additionalProperties" in schema_object:
-            properties = {"": schema_object["additionalProperties"]}
         else:
             properties = {}
 

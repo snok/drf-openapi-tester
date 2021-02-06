@@ -11,7 +11,6 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     EXCESS_RESPONSE_KEY_ERROR,
     INVALID_PATTERN_ERROR,
-    MISSING_PROPERTY_KEY_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
     ONE_OF_ERROR,
@@ -33,6 +32,8 @@ from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoad
 
 
 class SchemaTester:
+    loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
+
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
@@ -50,7 +51,6 @@ class SchemaTester:
         self.case_tester = case_tester
         self.ignore_case = ignore_case or []
 
-        self.loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
         if schema_file_path is not None:
             self.loader = StaticSchemaLoader(schema_file_path)
         elif "drf_spectacular" in settings.INSTALLED_APPS:
@@ -96,7 +96,7 @@ class SchemaTester:
                 continue
         if matches != 1:
             raise DocumentationError(
-                message=ONE_OF_ERROR.format(matches),
+                message=ONE_OF_ERROR.format(matches=matches),
                 response=data,
                 schema=schema_section,
                 reference=reference,
@@ -105,23 +105,27 @@ class SchemaTester:
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
         """
-        Indexes schema by string variable.
+        Returns the value of a given key
         """
         try:
             return schema[key]
         except KeyError:
-            raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key, error_addon))
+            raise UndocumentedSchemaSectionError(
+                UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=key, error_addon=error_addon)
+            )
 
     @staticmethod
-    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon="") -> dict:
+    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
         """
-        Indexes schema by string variable.
+        Returns the status code section of a schema, handles both str and int status codes
         """
         if str(status_code) in schema:
             return schema[str(status_code)]
         elif int(status_code) in schema:
             return schema[int(status_code)]
-        raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(status_code, error_addon))
+        raise UndocumentedSchemaSectionError(
+            UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
+        )
 
     @staticmethod
     def _route_error_text_addon(paths: KeysView) -> str:
@@ -142,10 +146,8 @@ class SchemaTester:
 
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
-        Indexes schema by url, HTTP method, and status code to get the schema section related to a specific response.
-
         :param response: DRF Response Instance
-        :return Response schema
+        :return dict
         """
         schema = self.loader.get_schema()
         parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
@@ -216,41 +218,33 @@ class SchemaTester:
             compiled_pattern = re.compile(pattern)
         except re.error as e:
             raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern=pattern)) from e
-        if not compiled_pattern.match(data):
-            return VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
+        return None if compiled_pattern.match(data) else VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
 
     @staticmethod
     def _validate_format(schema_section: dict, data: Any) -> Optional[str]:
-        format = schema_section.get("format")
-        if not format:
-            return None
-
         valid = True
-        if format in ["double", "float"]:
+        schema_format = schema_section.get("format")
+        if schema_format in ["double", "float"]:
             valid = isinstance(data, float)
-        elif format == "byte":
+        elif schema_format == "byte":
             valid = isinstance(data, bytes)
-        elif format == "date":
+        elif schema_format in ["date", "date-time"]:
+            parser = parse_date if schema_format == "date" else parse_datetime
             try:
-                result = parse_date(data)
+                result = parser(data)
                 valid = result is not None
             except ValueError:
                 valid = False
-        elif format == "date-time":
-            try:
-                result = parse_datetime(data)
-                valid = result is not None
-            except ValueError:
-                valid = False
-        if not valid:
-            return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
+        return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
     def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
-        schema_type = schema_section.get("type")
+        schema_type: Optional[str] = schema_section.get("type")
+        if not schema_type and "properties" in schema_section:
+            schema_type = "object"
         if not schema_type:
             return None
-        if schema_type in ["string", "file"]:
+        if schema_type in ["file", "string"]:
             valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
             valid = isinstance(data, int)
@@ -260,52 +254,44 @@ class SchemaTester:
             valid = isinstance(data, dict)
         elif schema_type == "array":
             valid = isinstance(data, list)
-        if data is None:
-            valid = self.is_nullable(schema_section)
-        if not valid:
-            return VALIDATE_TYPE_ERROR.format(
-                expected=OPENAPI_PYTHON_MAPPING[schema_type], received=type(data).__name__
-            )
+        return (
+            None
+            if valid
+            else VALIDATE_TYPE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_type], received=type(data).__name__)
+        )
 
     @staticmethod
     def _validate_multiple_of(schema_section: dict, data: Any) -> Optional[str]:
         multiple = schema_section.get("multipleOf")
-        if multiple is None:
-            return None
-        if data % multiple != 0:
+        if multiple and data % multiple != 0:
             return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
+        return None
 
     @staticmethod
     def _validate_min_and_max(schema_section: dict, data: Any) -> Optional[str]:
         minimum = schema_section.get("minimum")
-        if minimum is not None:
-            exclusive_minimum = schema_section.get("exclusiveMinimum")
-            if not exclusive_minimum:
-                if data < minimum:
-                    return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum)
-            else:
-                if data <= minimum:
-                    return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum + 1)
-
         maximum = schema_section.get("maximum")
-        if maximum is not None:
-            exclusive_maximum = schema_section.get("exclusiveMaximum")
-            if not exclusive_maximum:
-                if data > maximum:
-                    return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum)
-            else:
-                if data >= maximum:
-                    return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum - 1)
+        exclusive_minimum = schema_section.get("exclusiveMinimum")
+        exclusive_maximum = schema_section.get("exclusiveMaximum")
+        if minimum and exclusive_minimum and data <= minimum:
+            return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum + 1)
+        if minimum and not exclusive_minimum and data < minimum:
+            return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum)
+        if maximum and exclusive_maximum and data >= maximum:
+            return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum - 1)
+        if maximum and not exclusive_maximum and data > maximum:
+            return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum)
+        return None
 
     @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
-        min_length = schema_section.get("minLength")
-        if min_length is not None and len(data) < min_length:
+        min_length: Optional[int] = schema_section.get("minLength")
+        max_length: Optional[int] = schema_section.get("maxLength")
+        if min_length and len(data) < min_length:
             return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
-
-        max_length = schema_section.get("maxLength")
-        if max_length is not None and len(data) > max_length:
+        if max_length and len(data) > max_length:
             return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
+        return None
 
     def test_schema_section(
         self,
@@ -348,18 +334,17 @@ class SchemaTester:
                 schema_section = merged_schema
 
             validators = [
+                self._validate_enum,
                 self._validate_openapi_type,
                 self._validate_format,
                 self._validate_pattern,
-                self._validate_enum,
                 self._validate_multiple_of,
                 self._validate_min_and_max,
                 self._validate_length,
             ]
-
             for validator in validators:
                 error = validator(schema_section, data)
-                if isinstance(error, str):
+                if error:
                     raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
 
             if schema_section_type == "object":
@@ -387,67 +372,46 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
+        """
+        Checks and assumptions made below:
+        1. Validate that casing is correct for both response and schema
+        2. Check if any required key is missing from the response
+        3. Check if any response key is not in the schema
+        4. Validate sub-schema/nested data
+
+        """
 
         properties = schema_section.get("properties", {})
         required_keys = schema_section.get("required", [])
-        response_keys = list(data.keys())
-
-        # Checks and assumptions made below:
-
-        # 1. In the definitions above, we assume the `properties` section of the schema describes all keys,
-        # meaning we should never find response keys missing from this set.
-        # 2. Similarly, required keys must be a subset of properties; we should never find required keys that
-        # are not described in the properties.
-        # 3. Lastly, the response should contain *at minimum* all required keys, and keys outside of this
-        # section should exist in the properties
-        # 4. As a bonus check, we check the case of all keys
-
-        message, hint = "", ""
-        for required_key in required_keys:
-
-            if required_key not in response_keys:
-                hint = "Remove the key from your OpenAPI docs, or include it in your API response."
-                message = MISSING_RESPONSE_KEY_ERROR.format(missing_key=required_key)
-            else:
-                # Pop keys here, so we can iterate through remaining keys afterwards; this lets us
-                # efficiently verify that no excess keys exist the the properties definition
-                response_keys.remove(required_key)
-
-            if required_key not in properties:
-                hint = "Document the property in your OpenAPI docs, or remove it from required."
-                message = MISSING_PROPERTY_KEY_ERROR.format(missing_key=required_key)
-
-        for remaining_response_key in response_keys:
-            if remaining_response_key not in properties:
-                hint = "Remove the key from your API response, or include it in your OpenAPI docs."
-                message = EXCESS_RESPONSE_KEY_ERROR.format(excess_key=remaining_response_key)
-
-        if message:
-            raise DocumentationError(
-                message=message,
-                response=data,
-                schema=schema_section,
-                reference=reference,
-                hint=hint,
-            )
-
-        # Now that we know all response keys and required keys match the property keys
-        # both in value and formatting, we can check the case for all properties in one go
-        for key in properties:
+        response_keys = data.keys()
+        for key in properties.keys():
             self._validate_key_casing(key, case_tester, ignore_case)
-
-            # And if it's contained in the response, we further validate
-            # the responses values against the schema definitions
-            if key in data:
-                schema_value = properties[key]
-                response_value = data[key]
-                self.test_schema_section(
-                    schema_section=schema_value,
-                    data=response_value,
-                    reference=f"{reference}.dict:key:{key}",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
+            if key in required_keys and key not in response_keys:
+                raise DocumentationError(
+                    message=MISSING_RESPONSE_KEY_ERROR.format(missing_key=key),
+                    hint="Remove the key from your OpenAPI docs, or include it in your API response.",
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
                 )
+        for key in response_keys:
+            self._validate_key_casing(key, case_tester, ignore_case)
+            if key not in properties:
+                raise DocumentationError(
+                    message=EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
+                    hint="Remove the key from your API response, or include it in your OpenAPI docs.",
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                )
+        for key, value in data.items():
+            self.test_schema_section(
+                schema_section=properties[key],
+                data=value,
+                reference=f"{reference}.dict:key:{key}",
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
 
     def _test_openapi_type_array(
         self,
