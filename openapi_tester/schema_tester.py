@@ -65,9 +65,11 @@ class SchemaTester:
             raise ImproperlyConfigured("No loader is configured.")
 
     @staticmethod
-    def combine_sub_schemas(*args) -> Dict[str, Any]:
+    def combine_sub_schemas(schemas: List[dict]) -> Dict[str, Any]:
         properties: Dict[str, Any] = {}
-        for entry in args:
+        required = []
+        for entry in schemas:
+            required.extend(entry.get("required", []))
             for key, value in entry["properties"].items():
                 if key in properties and isinstance(value, dict):
                     properties[key] = {**properties[key], **value}
@@ -75,10 +77,11 @@ class SchemaTester:
                     properties[key] = [*properties[key], *value]
                 else:
                     properties[key] = value
-        return properties
+        return {"type": "object", "required": required, "properties": properties}
 
-    def handle_all_of(self, **kwargs: dict) -> Dict[str, Any]:
-        return {**kwargs, "type": "object", "properties": self.combine_sub_schemas(kwargs.pop("allOf"))}
+    def handle_all_of(self, **kwargs: Any) -> Dict[str, Any]:
+        all_of: List[dict] = kwargs.pop("allOf", [])
+        return {**kwargs, **self.combine_sub_schemas(all_of)}
 
     def handle_one_of(
         self,
@@ -123,9 +126,7 @@ class SchemaTester:
         for index in range(len(any_of)):
             # we are reducing a slice of the any_of list from current index to list end
 
-            combined_sub_schemas.append(
-                reduce(self.combine_sub_schemas, any_of[index:], {"type": "object", "required": [], "properties": {}})
-            )
+            combined_sub_schemas.append(reduce(lambda x, y: self.combine_sub_schemas([x, y]), any_of[index:]))
 
         valid = False
         for schema in [*any_of, *reversed(combined_sub_schemas)]:
@@ -368,6 +369,14 @@ class SchemaTester:
 
         if "oneOf" in schema_section:
             self.handle_one_of(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+        elif "anyOf" in schema_section:
+            self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,

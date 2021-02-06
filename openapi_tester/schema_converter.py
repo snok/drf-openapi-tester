@@ -16,7 +16,7 @@ class SchemaToPythonConverter:
             if "allOf" in schema:
                 from openapi_tester.schema_tester import SchemaTester
 
-                merged_schema = SchemaTester.handle_all_of(**schema)
+                merged_schema = SchemaTester.combine_sub_schemas(schema["allOf"])
                 schema = merged_schema
             if "oneOf" in schema:
                 schema = schema["oneOf"][0]
@@ -28,15 +28,7 @@ class SchemaToPythonConverter:
 
             Faker.seed(0)
             self.faker = Faker()
-        schema_type = schema.get("type")
-        if not schema_type:
-            if "properties" in schema:
-                schema_type = "object"
-            else:
-                raise ValueError(
-                    f"Schema type is not specified and cannot be inferred, "
-                    f"please make sure to defined the type key for schema: {schema}"
-                )
+        schema_type = schema.get("type", "object")
         if schema_type == "array":
             self.result = self._iterate_schema_list(schema)  # type :ignore
         elif schema_type == "object":
@@ -106,7 +98,7 @@ class SchemaToPythonConverter:
         if "allOf" in schema_object:
             from openapi_tester.schema_tester import SchemaTester
 
-            schema_object = SchemaTester.handle_all_of(**schema_object)
+            schema_object = SchemaTester.combine_sub_schemas(schema_object["allOf"])
         if "anyOf" in schema_object:
             schema_object = self._handle_any_of(schema_object["anyOf"])
         if "oneOf" in schema_object:
@@ -142,7 +134,7 @@ class SchemaToPythonConverter:
         if "allOf" in raw_items.keys():
             from openapi_tester.schema_tester import SchemaTester
 
-            raw_items = SchemaTester.handle_all_of(**raw_items)
+            raw_items = SchemaTester.combine_sub_schemas(raw_items["allOf"])
         items_type = raw_items.get("type")
         if not items_type:
             if "properties" in raw_items:
