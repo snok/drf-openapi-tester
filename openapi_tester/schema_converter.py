@@ -1,7 +1,7 @@
 """ Schema to Python converter """
 import random
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 from openapi_tester.utils import combine_sub_schemas
@@ -42,10 +42,10 @@ class SchemaToPythonConverter:
         """ generate any of mock data """
         return combine_sub_schemas(random.sample(any_of_list, random.randint(1, len(any_of_list))))
 
-    def schema_type_to_mock_value(self, schema_object) -> Any:
-        schema_format = schema_object.get("format")
-        schema_type = schema_object.get("type")
-        enum = schema_object.get("enum")
+    def schema_type_to_mock_value(self, schema_object: Dict[str, Any]) -> Any:
+        schema_format: str = schema_object.get("format", "")
+        schema_type: str = schema_object.get("type", "")
+        enum: Optional[list] = schema_object.get("enum")
         if not hasattr(self, "faker"):
             return OPENAPI_PYTHON_MAPPING[schema_type]
         if enum:
@@ -68,10 +68,6 @@ class SchemaToPythonConverter:
             if schema_type == "integer":
                 return self.faker.pyint(**limits)
             return self.faker.pyfloat(**limits)
-        if "maxItems" in schema_object:
-            return self.faker.list(nb_elements=schema_object["maxItems"] - 1)
-        if "minItems" in schema_object:
-            return self.faker.list(nb_elements=schema_object["minItems"] + 1)
         faker_handlers = {
             "boolean": self.faker.pybool,
             "string": self.faker.pystr,
@@ -128,10 +124,11 @@ class SchemaToPythonConverter:
                 items_type = "object"
             else:
                 return []
-        if items_type == "object":
-            parsed_items.append(self.convert_schema_object_to_dict(raw_items))
-        elif items_type == "array":
-            parsed_items.append(self.convert_schema_array_to_list(raw_items))
-        else:
-            parsed_items.append(self.schema_type_to_mock_value(raw_items))
+        for _ in range(raw_items.get("minItems", 0), raw_items.get("maxItems", 1)):
+            if items_type == "object":
+                parsed_items.append(self.convert_schema_object_to_dict(raw_items))
+            elif items_type == "array":
+                parsed_items.append(self.convert_schema_array_to_list(raw_items))
+            else:
+                parsed_items.append(self.schema_type_to_mock_value(raw_items))
         return parsed_items

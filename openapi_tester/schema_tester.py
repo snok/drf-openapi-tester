@@ -330,12 +330,12 @@ class SchemaTester:
         return None
 
     @staticmethod
-    def _validate_unique_items(schema_section: dict, data: Any) -> Optional[str]:
+    def _validate_unique_items(schema_section: dict, data: List[Any]) -> Optional[str]:
         unique_items = schema_section.get("uniqueItems")
-        if not unique_items:
-            return None
-        if len(set(data)) != len(data):
+        if unique_items and len(set(data)) != len(data):
             return VALIDATE_UNIQUE_ITEMS_ERROR
+        # TODO: handle deep dictionary comparison - for lists of dicts
+        return None
 
     @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
