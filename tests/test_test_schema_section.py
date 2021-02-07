@@ -2,6 +2,7 @@ import pytest
 
 from openapi_tester import DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import (
+    ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
@@ -212,3 +213,73 @@ def test_schema_object_is_missing_keys():
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
+
+
+# region: anyOf unit tests
+
+example_anyof_response = {
+    "type": "object",
+    "anyOf": [
+        {"properties": {"oneKey": {"type": "string"}}},
+        {"properties": {"anotherKey": {"type": "integer"}}},
+    ],
+}
+
+
+def test_anyof():
+    # Test first possibility
+    tester.test_schema_section(example_anyof_response, {"oneKey": "test"})
+
+    # Test second possibility
+    tester.test_schema_section(example_anyof_response, {"anotherKey": 1})
+
+    # Test a few bad responses
+    data = [
+        {"oneKey": 1},  # bad type
+        {"anotherKey": "test"},  # bad type
+        {"thirdKey": "test"},  # bad key
+        {"thirdKey": 1},  # bad key
+        [],  # bad type
+        "test",  # bad type
+        1,  # bad type
+    ]
+    for datum in data:
+        with pytest.raises(DocumentationError, match=ANY_OF_ERROR[:20]):
+            tester.test_schema_section(example_anyof_response, datum)
+
+
+docs_anyof_example = {
+    "type": "object",
+    "anyOf": [
+        {
+            "required": ["age"],
+            "properties": {
+                "age": {"type": "integer"},
+                "nickname": {"type": "string"},
+            },
+        },
+        {
+            "required": ["pet_type"],
+            "properties": {
+                "pet_type": {"type": "string", "enum": ["Cat", "Dog"]},
+                "hunts": {"type": "boolean"},
+            },
+        },
+    ],
+}
+
+
+def test_anyof_official_documentation_example():
+    """
+    This test makes sure our anyOf implementation works as described in the official example docs:
+    https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/#anyof
+    """
+    tester.test_schema_section(docs_anyof_example, {"age": 50})
+    tester.test_schema_section(docs_anyof_example, {"pet_type": "Cat", "hunts": True})
+    tester.test_schema_section(docs_anyof_example, {"nickname": "Fido", "pet_type": "Dog", "age": 44})
+
+    with pytest.raises(DocumentationError):
+        tester.test_schema_section(docs_anyof_example, {"nickname": "Mr. Paws", "hunts": False})
+
+
+# endregion
