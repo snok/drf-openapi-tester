@@ -15,7 +15,7 @@ jobs:
           path: |
             ~/.cache/pip
             ~/.cache/pre-commit
-          key: ${{ runner.os }}-pip
+          key: ${{ runner.os }}-pip-2
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
