@@ -1,7 +1,7 @@
 """ Schema Tester """
 import re
 from functools import reduce
-from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -175,45 +175,37 @@ class SchemaTester:
             UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
         )
 
-    @staticmethod
-    def _route_error_text_addon(paths: KeysView) -> str:
-        route_error_text = ""
-        pretty_routes = "\n\t• ".join(paths)
-        route_error_text += f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}"
-        return route_error_text
-
-    @staticmethod
-    def _method_error_text_addon(methods: KeysView) -> str:
-        str_methods = ", ".join(method.upper() for method in methods if method.upper() != "PARAMETERS")
-        return f"\n\nAvailable methods include: {str_methods}."
-
-    @staticmethod
-    def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        keys = ", ".join(str(key) for key in response_status_codes)
-        return f"\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {keys}. "
-
     def get_response_schema_section(self, response: td.Response) -> dict:
         """
+        Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
+
         :param response: DRF Response Instance
         :return dict
         """
         schema = self.loader.get_schema()
         parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
         paths_object = self._get_key_value(schema, "paths")
+
+        pretty_routes = "\n\t• ".join(paths_object.keys())
         route_object = self._get_key_value(
             paths_object,
             parameterized_path,
-            self._route_error_text_addon(paths_object.keys()),
+            f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}",
         )
+
+        str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
         method_object = self._get_key_value(
-            route_object, response.request["REQUEST_METHOD"].lower(), self._method_error_text_addon(route_object.keys())
+            route_object, response.request["REQUEST_METHOD"].lower(), f"\n\nAvailable methods include: {str_methods}."
         )
+
         responses_object = self._get_key_value(method_object, "responses")
+        keys = ", ".join(str(key) for key in responses_object.keys())
         status_code_object = self._get_status_code(
             responses_object,
             response.status_code,
-            self._responses_error_text_addon(response.status_code, responses_object.keys()),
+            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented responses include: {keys}. ",
         )
+
         if "openapi" not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self._get_key_value(status_code_object, "schema")
