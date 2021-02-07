@@ -124,7 +124,9 @@ class SchemaToPythonConverter:
                 items_type = "object"
             else:
                 return []
-        for _ in range(raw_items.get("minItems", 0), raw_items.get("maxItems", 1)):
+        min_items = schema_array.get("minItems", 1)
+        max_items = schema_array.get("maxItems", 1)
+        while len(parsed_items) < min_items or len(parsed_items) < max_items:
             if items_type == "object":
                 parsed_items.append(self.convert_schema_object_to_dict(raw_items))
             elif items_type == "array":
