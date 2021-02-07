@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "drf-openapi-tester"
-version = "0.1.0"
+version = "1.0.0"
 description = "Django test utility for validating OpenAPI response documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 maintainers = ["Jonas Krüger Svensson <jonas-ks@hotmail.com>"]
@@ -11,7 +11,7 @@ repository = "https://github.com/snok/drf-openapi-tester"
 documentation = "https://github.com/snok/drf-openapi-tester"
 keywords = ["openapi", "swagger", "api", "testing", "docs", "documentation", "django"]
 classifiers = [
-    "Development Status :: 4 - Beta",  # TODO: Update when pushing v1
+    "Development Status :: 4 - Beta",  # TODO: Update when stable
     "Environment :: Web Environment",
     "Framework :: Pytest",
     "Framework :: Django",
