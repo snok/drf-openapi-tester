@@ -1,7 +1,7 @@
 """ Schema Tester """
-import itertools
 import re
-from typing import Any, Callable, Generator, KeysView, List, Optional, Union, cast
+from functools import reduce
+from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -112,12 +112,6 @@ class SchemaTester:
                 reference=f"{reference}.oneOf",
             )
 
-    @staticmethod
-    def _get_all_schema_combinations(items: list) -> Generator:
-        for length, _ in enumerate(items):
-            for comb in itertools.combinations(items, length + 1):
-                yield combine_sub_schemas(comb)
-
     def handle_any_of(
         self,
         schema_section: dict,
@@ -126,10 +120,15 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ):
-        for schema_combination in self._get_all_schema_combinations(schema_section["anyOf"]):
+        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+        combined_sub_schemas = map(
+            lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]), range(len(any_of))
+        )
+
+        for schema in [*any_of, *combined_sub_schemas]:
             try:
                 self.test_schema_section(
-                    schema_section=schema_combination,
+                    schema_section=schema,
                     data=data,
                     reference=f"{reference}.anyOf",
                     case_tester=case_tester,
@@ -492,7 +491,7 @@ class SchemaTester:
                 reference=f"{reference}.array",
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-        if data and not items.keys():
+        if data and not items:
             raise DocumentationError(
                 message="Mismatched content. Response list contains data when the schema is empty.",
                 response=data,
