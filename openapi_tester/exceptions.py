@@ -1,3 +1,4 @@
+""" Exceptions Module """
 import json
 from typing import Any
 
@@ -32,7 +33,7 @@ class DocumentationError(AssertionError):
     def _sort_data(data_object: Any) -> Any:
         if isinstance(data_object, dict):
             return dict(sorted(data_object.items()))
-        elif isinstance(data_object, list):
+        if isinstance(data_object, list):
             try:
                 return sorted(data_object)
             except TypeError:

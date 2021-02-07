@@ -65,221 +65,221 @@ paths:
         Search data into the catalog.
       operationId: findDocument
       tags:
-      - public
+        - public
       parameters:
-      - name: bbox
-        in: query
-        description: |
-          Query by extent specified as two pairs of coordinates (west-south and east-north).
-          Comma-delimited string of integers between -180,180 and -90, 90.
-        example: -179,-5,120,17
-        schema:
-          type: array
-          items:
-            type: integer
-          minItems: 4
-          maxItems: 4
-        explode: false
-        x-style: simple
-      - name: spatialRel
-        in: query
-        description: |
-          Query by spatial relationship. Used in conjunction with bbox parameter.
-          example: esriSpatialRelWithin
-        schema:
-          type: string
-          default: esriSpatialRelWithin
-          x-extensible-enum:
-          - esriSpatialRelWithin
-          - esriSpatialRelOverlaps
-      - name: searchText
-        in: query
-        description: |
-          Query by keyword. String value representing a keyword.
-          Note, as of version 1.1.1, you can use searchText=sys.schema.key to query
-          for documents that correspond to a specific metadata schema.
-
-          Eg:
-          ```
-          curl https://geodati.gov.it/RNDT/rest/find/document?searchText=INSPIRETheme:Idrografia&start=1&max=5&f=pjson
-          ```
-
-          For an exact match use double quotes. For example, see the syntax for two terms, `carta` and `geologica`:
-
-          - Exact: `searchText=title:"carta geologica"`
-          - Any: `searchText=title:carta geologica`
-          - All: `searchText=title:carta AND geologica`
-
-          example: `searchText=INSPIRETheme:Idrografia`
-        schema:
-          type: string
-
-      - name: contains
-        in: query
-        deprecated: true
-        description: |
-          Keyword concatenation options. This parameter is obsolete with the Lucene syntax (see Using Lucene Search Text Queries).
-        example: "Hawaii quads"
-        schema:
-          type: string
-      - name: contentType
-        in: query
-        description: |
-          Query by content type.  String value representing an Esri content type. See Javadoc for complete list.
-          example: TODO
-        schema:
-          type: string
-      - name: dataCategory
-        in: query
-        description: |
-          Query by data category (ISO 19115 themes).
-          Comma-delimited list of strings. Keywords identified by the ISO 19115 specification. See JavaDoc for complete list.
-        schema:
-          type: array
-          items:
+        - name: bbox
+          in: query
+          description: |
+            Query by extent specified as two pairs of coordinates (west-south and east-north).
+            Comma-delimited string of integers between -180,180 and -90, 90.
+          example: -179,-5,120,17
+          schema:
+            type: array
+            items:
+              type: integer
+            minItems: 4
+            maxItems: 4
+          explode: false
+          x-style: simple
+        - name: spatialRel
+          in: query
+          description: |
+            Query by spatial relationship. Used in conjunction with bbox parameter.
+            example: esriSpatialRelWithin
+          schema:
             type: string
-        explode: false
-        x-style: simple
-      - name: after
-        in: query
-        description: |
-          Query by date.
-          example: "2014-12-30"
-        schema:
-          type: string
-          format: date
-      - name: before
-        in: query
-        description: |
-          Query by date.
-          example: "2014-12-30"
-        example: TODO
-        schema:
-          type: string
-          format: date
-      - name: orderBy
-        in: query
-        description: |
-          Result sort options.
-        example: dateDescending
-        schema:
-          type: string
-          default: dateDescending
-          x-extensible-enum:
-          - dateDescending
-          - areaAscending
-          - areaDescending
-          - dateAscending
-          - format
-          - relevance
-          - title
-      - name: start
-        in: query
-        description: |
-          Specify which item to start the response with out of the entire resultset.
-          When used with the max parameter, this provides for pagination of the search results.
-        example: 12
-        schema:
-          type: integer
-      - name: max
-        in: query
-        required: true
-        description: |
-          Specify max number of records to retrieve.
-          There is a limit of max=100 on unqualified queries.
-          An 'unqualified query' is when there are no search parameters set.
-          The limit on qualified queries is max=5000. Default: 10.
-           When used with the start parameter, this provides for pagination of the search results.
-        example: 50
-        schema:
-          type: integer
-          default: 10
-      - name: geometryType
-        in: query
-        description: |
-          Defines how spatial data will be represented.
-        example: esriGeometryPolygon
-        schema:
-          type: string
-          default: esriGeometryPolygon
-          x-extensible-enum:
-          - esriGeometryPolygon
-          - esriGeometryPoint
-          - esriGeometryBox
+            default: esriSpatialRelWithin
+            x-extensible-enum:
+              - esriSpatialRelWithin
+              - esriSpatialRelOverlaps
+        - name: searchText
+          in: query
+          description: |
+            Query by keyword. String value representing a keyword.
+            Note, as of version 1.1.1, you can use searchText=sys.schema.key to query
+            for documents that correspond to a specific metadata schema.
 
-      - name: f
-        in: query
-        description: |
-          the response format.
-        example: json
-        schema:
-          type: string
-          default: georss
-          x-extensible-enum:
-          - georss
-          - atom
-          - json
-          - pjson
-          - xjson
-          - dcat (1.2.4)
-          - kml
-          - html
-          - htmlfragment
-          - searchpage (as of 1.1.1)
-          - CSV (as of 1.2)
-          - xjson
+            Eg:
+            ```
+            curl https://geodati.gov.it/RNDT/rest/find/document?searchText=INSPIRETheme:Idrografia&start=1&max=5&f=pjson
+            ```
 
-      - name: style
-        in: query
-        description: |
-          CSS stylesheet for HTML results.
-          String value representing a URL to a stylesheet.
-        example: "https://geodati.gov.it/geoportale/templates/rndt/css/template.css"
-        schema:
-          type: string
-          format: url
-      - name: target
-        in: query
-        description: |
-          Behavior of links (open in same or new window).
-        schema:
-          type: string
-          x-extensible-enum:
-            - blank
-            - parent
-            - self
-            - top
+            For an exact match use double quotes. For example, see the syntax for two terms, `carta` and `geologica`:
 
-      - name: rid
-        in: query
-        description: |
-          Id associated with the repository. Multiple rid parameters
-          are allowed for comparing results between different repositories.
-        schema:
-          type: string
+            - Exact: `searchText=title:"carta geologica"`
+            - Any: `searchText=title:carta geologica`
+            - All: `searchText=title:carta AND geologica`
 
-      - name: rids
-        in: query
-        description: |
-          Comma Delimited rid. Can be used instead of the multiple rid parameters.
-        schema:
-          type: string
+            example: `searchText=INSPIRETheme:Idrografia`
+          schema:
+            type: string
 
-      - name: maxSearchTimeMilliSec
-        in: query
-        description: |
-          Maximum amount of time allowed to retrieve results.
-        example: 5000
-        schema:
-          type: integer
-          default: 5000
+        - name: contains
+          in: query
+          deprecated: true
+          description: |
+            Keyword concatenation options. This parameter is obsolete with the Lucene syntax (see Using Lucene Search Text Queries).
+          example: "Hawaii quads"
+          schema:
+            type: string
+        - name: contentType
+          in: query
+          description: |
+            Query by content type.  String value representing an Esri content type. See Javadoc for complete list.
+            example: TODO
+          schema:
+            type: string
+        - name: dataCategory
+          in: query
+          description: |
+            Query by data category (ISO 19115 themes).
+            Comma-delimited list of strings. Keywords identified by the ISO 19115 specification. See JavaDoc for complete list.
+          schema:
+            type: array
+            items:
+              type: string
+          explode: false
+          x-style: simple
+        - name: after
+          in: query
+          description: |
+            Query by date.
+            example: "2014-12-30"
+          schema:
+            type: string
+            format: date
+        - name: before
+          in: query
+          description: |
+            Query by date.
+            example: "2014-12-30"
+          example: TODO
+          schema:
+            type: string
+            format: date
+        - name: orderBy
+          in: query
+          description: |
+            Result sort options.
+          example: dateDescending
+          schema:
+            type: string
+            default: dateDescending
+            x-extensible-enum:
+              - dateDescending
+              - areaAscending
+              - areaDescending
+              - dateAscending
+              - format
+              - relevance
+              - title
+        - name: start
+          in: query
+          description: |
+            Specify which item to start the response with out of the entire resultset.
+            When used with the max parameter, this provides for pagination of the search results.
+          example: 12
+          schema:
+            type: integer
+        - name: max
+          in: query
+          required: true
+          description: |
+            Specify max number of records to retrieve.
+            There is a limit of max=100 on unqualified queries.
+            An 'unqualified query' is when there are no search parameters set.
+            The limit on qualified queries is max=5000. Default: 10.
+             When used with the start parameter, this provides for pagination of the search results.
+          example: 50
+          schema:
+            type: integer
+            default: 10
+        - name: geometryType
+          in: query
+          description: |
+            Defines how spatial data will be represented.
+          example: esriGeometryPolygon
+          schema:
+            type: string
+            default: esriGeometryPolygon
+            x-extensible-enum:
+              - esriGeometryPolygon
+              - esriGeometryPoint
+              - esriGeometryBox
 
-      - name: filter
-        in: query
-        description: |
-          Can apply a persistent filter to the search interface. See URL Filter Customization
-        schema:
-          type: string
+        - name: f
+          in: query
+          description: |
+            the response format.
+          example: json
+          schema:
+            type: string
+            default: georss
+            x-extensible-enum:
+              - georss
+              - atom
+              - json
+              - pjson
+              - xjson
+              - dcat (1.2.4)
+              - kml
+              - html
+              - htmlfragment
+              - searchpage (as of 1.1.1)
+              - CSV (as of 1.2)
+              - xjson
+
+        - name: style
+          in: query
+          description: |
+            CSS stylesheet for HTML results.
+            String value representing a URL to a stylesheet.
+          example: "https://geodati.gov.it/geoportale/templates/rndt/css/template.css"
+          schema:
+            type: string
+            format: url
+        - name: target
+          in: query
+          description: |
+            Behavior of links (open in same or new window).
+          schema:
+            type: string
+            x-extensible-enum:
+              - blank
+              - parent
+              - self
+              - top
+
+        - name: rid
+          in: query
+          description: |
+            Id associated with the repository. Multiple rid parameters
+            are allowed for comparing results between different repositories.
+          schema:
+            type: string
+
+        - name: rids
+          in: query
+          description: |
+            Comma Delimited rid. Can be used instead of the multiple rid parameters.
+          schema:
+            type: string
+
+        - name: maxSearchTimeMilliSec
+          in: query
+          description: |
+            Maximum amount of time allowed to retrieve results.
+          example: 5000
+          schema:
+            type: integer
+            default: 5000
+
+        - name: filter
+          in: query
+          description: |
+            Can apply a persistent filter to the search interface. See URL Filter Customization
+          schema:
+            type: string
 
       responses:
         '200':
@@ -295,7 +295,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref:  '#/components/schemas/Response'
+                $ref: '#/components/schemas/Response'
         '400':
           $ref: '#/components/responses/400BadRequest'
         '404':
@@ -368,14 +368,14 @@ components:
       properties:
         coordinates:
           type: array
-          items: {}
+          items:
+            type: number
           example:
-          - |-
-            - [12.7200248, 41.3830331]
-            - [12.7200248, 41.5616704]
-            - [13.0246195, 41.5616704]
-            - [13.0246195, 41.3830331]
-            - [12.7200248, 41.3830331]
+            - [ 12.7200248, 41.3830331 ]
+            - [ 12.7200248, 41.5616704 ]
+            - [ 13.0246195, 41.5616704 ]
+            - [ 13.0246195, 41.3830331 ]
+            - [ 12.7200248, 41.3830331 ]
         type:
           type: string
           example: Polygon
@@ -398,7 +398,7 @@ components:
       title: Root Type for PointOfContactOfData
       description: The root of the PointOfContactOfData type's schema.
       required:
-      - name
+        - name
       type: object
       properties:
         name:
@@ -413,9 +413,9 @@ components:
       title: Root Type for Record
       description: The root of the Record type's schema.
       required:
-      - geometry
-      - bbox
-      - pointOfContactOfData
+        - geometry
+        - bbox
+        - pointOfContactOfData
       type: object
       properties:
         title:
@@ -448,10 +448,10 @@ components:
             format: double
             type: number
           example:
-          - 12.7200248
-          - 41.3830331
-          - 13.0246195
-          - 41.5616704
+            - 12.7200248
+            - 41.3830331
+            - 13.0246195
+            - 41.5616704
         geometry:
           $ref: '#/components/schemas/Geometry'
         links:

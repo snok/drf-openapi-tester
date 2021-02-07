@@ -1,3 +1,4 @@
+""" Loaders Module """
 import difflib
 import json
 import pathlib
@@ -28,7 +29,7 @@ def handle_recursion_limit(schema: dict) -> Callable:
     """
 
     # noinspection PyUnusedLocal
-    def handler(iteration: int, parse_result: ParseResult, recursions: tuple):
+    def handler(iteration: int, parse_result: ParseResult, recursions: tuple):  # pylint: disable=unused-argument
         try:
             fragment = parse_result.fragment
             keys = [key for key in fragment.split("/") if key]
@@ -205,8 +206,8 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
 
         return self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
 
-    def resolve_path(self, route: str) -> tuple:
-        de_parameterized_path, resolved_path = super().resolve_path(route)
+    def resolve_path(self, endpoint_path: str) -> tuple:
+        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == "/":
             path_prefix = ""
@@ -239,8 +240,8 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         return spectacular_settings.SCHEMA_PATH_PREFIX
 
-    def resolve_path(self, route: str) -> tuple:
-        de_parameterized_path, resolved_path = super().resolve_path(route)
+    def resolve_path(self, endpoint_path: str) -> tuple:
+        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
         path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
         if path_prefix == "/":
             path_prefix = ""

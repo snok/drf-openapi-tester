@@ -1,4 +1,6 @@
+""" Schema Tester """
 import re
+from functools import reduce
 from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
@@ -9,6 +11,7 @@ from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
+    ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
     INVALID_PATTERN_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
@@ -18,9 +21,11 @@ from openapi_tester.constants import (
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ENUM_ERROR,
     VALIDATE_FORMAT_ERROR,
+    VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
     VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR,
+    VALIDATE_MIN_ARRAY_LENGTH_ERROR,
     VALIDATE_MIN_LENGTH_ERROR,
     VALIDATE_MINIMUM_ERROR,
     VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
@@ -32,6 +37,7 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
+from openapi_tester.utils import combine_sub_schemas
 
 
 class SchemaTester:
@@ -66,17 +72,9 @@ class SchemaTester:
             raise ImproperlyConfigured("No loader is configured.")
 
     @staticmethod
-    def handle_all_of(**kwargs: dict) -> dict:
-        properties: Dict[str, Any] = {}
-        for entry in kwargs.pop("allOf"):
-            for key, value in entry["properties"].items():
-                if key in properties and isinstance(value, dict):
-                    properties[key] = {**properties[key], **value}
-                elif key in properties and isinstance(value, list):
-                    properties[key] = [*properties[key], *value]
-                else:
-                    properties[key] = value
-        return {**kwargs, "type": "object", "properties": properties}
+    def handle_all_of(**kwargs: Any) -> Dict[str, Any]:
+        all_of: List[dict] = kwargs.pop("allOf", [])
+        return {**kwargs, **combine_sub_schemas(all_of)}
 
     def handle_one_of(
         self,
@@ -107,6 +105,45 @@ class SchemaTester:
                 reference=reference,
             )
 
+    def handle_any_of(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ):
+        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+        combined_sub_schemas: List[Dict[str, Any]] = []
+
+        for index in range(len(any_of)):
+            # we are reducing a slice of the any_of list from current index to list end
+
+            combined_sub_schemas.append(reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]))
+
+        valid = False
+        for schema in [*any_of, *reversed(combined_sub_schemas)]:
+            try:
+                self.test_schema_section(
+                    schema_section=schema,
+                    data=data,
+                    reference=reference,
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+                valid = True
+                break
+            except DocumentationError:
+                continue
+        if not valid:
+            raise DocumentationError(
+                message=ANY_OF_ERROR,
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="",
+            )
+
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
         """
@@ -126,7 +163,7 @@ class SchemaTester:
         """
         if str(status_code) in schema:
             return schema[str(status_code)]
-        elif int(status_code) in schema:
+        if int(status_code) in schema:
             return schema[int(status_code)]
         raise UndocumentedSchemaSectionError(
             UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
@@ -146,7 +183,7 @@ class SchemaTester:
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        keys = ", ".join([str(key) for key in response_status_codes])
+        keys = ", ".join(str(key) for key in response_status_codes)
         return f"\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {keys}. "
 
     def get_response_schema_section(self, response: td.Response) -> dict:
@@ -309,9 +346,9 @@ class SchemaTester:
         min_length: Optional[int] = schema_section.get("minItems")
         max_length: Optional[int] = schema_section.get("maxItems")
         if min_length and len(data) < min_length:
-            return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
+            return VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=data, min_length=min_length)
         if max_length and len(data) > max_length:
-            return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
+            return VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(data=data, max_length=max_length)
         return None
 
     @staticmethod
@@ -335,22 +372,20 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-        schema_section_type = schema_section.get("type")
-        if not schema_section_type and "properties" in schema_section:
-            schema_section_type = "object"
-        if schema_section_type is None or (data is None and self.is_nullable(schema_section)):
-            # If there`s no type, any response is permitted so we return early
-            # If data is None and nullable, we also return early
-            return
         if data is None:
+            if self.is_nullable(schema_section):
+                # If data is None and nullable, we return early
+                return
             raise DocumentationError(
-                message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section_type]),
+                message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section.get("type", "")]),
                 response=data,
                 schema=schema_section,
                 reference=reference,
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-
+        if "allOf" in schema_section:
+            all_of: List[Dict[str, Any]] = schema_section.pop("allOf")
+            schema_section = {**schema_section, **combine_sub_schemas(all_of)}
         if "oneOf" in schema_section:
             self.handle_one_of(
                 schema_section=schema_section,
@@ -359,46 +394,60 @@ class SchemaTester:
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-        else:
-            if "allOf" in schema_section:
-                merged_schema = self.handle_all_of(**schema_section)
-                schema_section = merged_schema
+            return
+        if "anyOf" in schema_section:
+            self.handle_any_of(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+            return
+        schema_section_type = schema_section.get("type")
+        if not schema_section_type:
+            if "properties" in schema_section:
+                schema_section_type = "object"
+            elif "items" in schema_section:
+                schema_section_type = "array"
+            else:
+                return
 
-            validators = [
-                self._validate_enum,
-                self._validate_openapi_type,
-                self._validate_format,
-                self._validate_pattern,
-                self._validate_multiple_of,
-                self._validate_min_and_max,
-                self._validate_length,
-                self._validate_unique_items,
-                self._validate_array_length,
-                self._validate_number_of_properties,
-            ]
-            for validator in validators:
-                error = validator(schema_section, data)
-                if error:
-                    raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
+        validators = [
+            self._validate_enum,
+            self._validate_openapi_type,
+            self._validate_format,
+            self._validate_pattern,
+            self._validate_multiple_of,
+            self._validate_min_and_max,
+            self._validate_length,
+            self._validate_unique_items,
+            self._validate_array_length,
+            self._validate_number_of_properties,
+        ]
+        for validator in validators:
+            error = validator(schema_section, data)
+            if error:
+                raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
 
-            if schema_section_type == "object":
-                self._test_openapi_type_object(
-                    schema_section=schema_section,
-                    data=data,
-                    reference=reference,
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
-            elif schema_section_type == "array":
-                self._test_openapi_type_array(
-                    schema_section=schema_section,
-                    data=data,
-                    reference=reference,
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+        if schema_section_type == "object":
+            self.test_openapi_object(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+        elif schema_section_type == "array":
+            self.test_openapi_array(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
 
-    def _test_openapi_type_object(
+    def test_openapi_object(
         self,
         schema_section: dict,
         data: dict,
@@ -407,12 +456,10 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         """
-        Checks and assumptions made below:
         1. Validate that casing is correct for both response and schema
         2. Check if any required key is missing from the response
         3. Check if any response key is not in the schema
         4. Validate sub-schema/nested data
-
         """
 
         properties = schema_section.get("properties", {})
@@ -447,7 +494,7 @@ class SchemaTester:
                 ignore_case=ignore_case,
             )
 
-    def _test_openapi_type_array(
+    def test_openapi_array(
         self,
         schema_section: dict,
         data: dict,
@@ -455,19 +502,20 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        items = schema_section["items"]
-
-        error = ""
-        if items is None and data is not None:
-            error = "Mismatched content. Response list contains data when the schema is empty."
-        elif data is None and not self.is_nullable(schema_section):
-            error = NONE_ERROR.format(expected="list")
-        elif data is None:
-            return
-
-        if error:
+        items = schema_section["items"]  # the items keyword is required in arrays
+        if data is None:
+            if self.is_nullable(schema_section):
+                return
             raise DocumentationError(
-                message=error,
+                message=NONE_ERROR.format(expected="list"),
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="Document the contents of the empty dictionary to match the response object.",
+            )
+        if data and not items.keys():
+            raise DocumentationError(
+                message="Mismatched content. Response list contains data when the schema is empty.",
                 response=data,
                 schema=schema_section,
                 reference=reference,
