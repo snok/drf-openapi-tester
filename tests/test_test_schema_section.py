@@ -244,7 +244,7 @@ def test_anyof():
         1,  # bad type
     ]
     for datum in data:
-        with pytest.raises(DocumentationError, match=ANY_OF_ERROR[:20]):
+        with pytest.raises(DocumentationError, match=ANY_OF_ERROR):
             tester.test_schema_section(example_anyof_response, datum)
 
 
