@@ -1,3 +1,4 @@
+""" Schema Tester """
 import re
 from functools import reduce
 from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
@@ -31,6 +32,7 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
+from openapi_tester.utils import combine_sub_schemas
 
 
 class SchemaTester:
@@ -65,27 +67,9 @@ class SchemaTester:
             raise ImproperlyConfigured("No loader is configured.")
 
     @staticmethod
-    def combine_sub_schemas(schemas: List[dict]) -> Dict[str, Any]:
-        array_schemas = [schema for schema in schemas if schema.get("type") == "array"]
-        if array_schemas:
-            items_lists = [schema.get("items", []) for schema in array_schemas]
-            return {"type": "array", "items": [item for item_list in items_lists for item in item_list]}
-        properties: Dict[str, Any] = {}
-        required = []
-        for entry in schemas:
-            required.extend(entry.get("required", []))
-            for key, value in entry.get("properties", {}).items():
-                if key in properties and isinstance(value, dict):
-                    properties[key] = {**properties[key], **value}
-                elif key in properties and isinstance(value, list):
-                    properties[key] = [*properties[key], *value]
-                else:
-                    properties[key] = value
-        return {"type": "object", "required": required, "properties": properties}
-
-    def handle_all_of(self, **kwargs: Any) -> Dict[str, Any]:
+    def handle_all_of(**kwargs: Any) -> Dict[str, Any]:
         all_of: List[dict] = kwargs.pop("allOf", [])
-        return {**kwargs, **self.combine_sub_schemas(all_of)}
+        return {**kwargs, **combine_sub_schemas(all_of)}
 
     def handle_one_of(
         self,
@@ -130,7 +114,7 @@ class SchemaTester:
         for index in range(len(any_of)):
             # we are reducing a slice of the any_of list from current index to list end
 
-            combined_sub_schemas.append(reduce(lambda x, y: self.combine_sub_schemas([x, y]), any_of[index:]))
+            combined_sub_schemas.append(reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]))
 
         valid = False
         for schema in [*any_of, *reversed(combined_sub_schemas)]:
@@ -174,7 +158,7 @@ class SchemaTester:
         """
         if str(status_code) in schema:
             return schema[str(status_code)]
-        elif int(status_code) in schema:
+        if int(status_code) in schema:
             return schema[int(status_code)]
         raise UndocumentedSchemaSectionError(
             UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)

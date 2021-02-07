@@ -1,3 +1,4 @@
+""" Case testers - this module includes helper functions to test key casing """
 from typing import Any, Callable
 
 from inflection import camelize, dasherize, underscore

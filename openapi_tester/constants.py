@@ -1,3 +1,4 @@
+""" Constants module """
 import re
 
 OPENAPI_PYTHON_MAPPING = {
