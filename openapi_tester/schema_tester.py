@@ -114,8 +114,8 @@ class SchemaTester:
 
     @staticmethod
     def _get_all_schema_combinations(items: list) -> Generator:
-        for n, item in enumerate(items):
-            for comb in itertools.combinations(items, n + 1):
+        for length, _ in enumerate(items):
+            for comb in itertools.combinations(items, length + 1):
                 yield combine_sub_schemas(comb)
 
     def handle_any_of(
@@ -359,29 +359,32 @@ class SchemaTester:
             )
 
         if "oneOf" in schema_section:
-            return self.handle_one_of(
+            self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
         if "allOf" in schema_section:
-            return self.handle_all_of(
+            self.handle_all_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
         if "anyOf" in schema_section:
-            return self.handle_any_of(
+            self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
 
         schema_section_type = schema_section.get("type")
         if not schema_section_type:
