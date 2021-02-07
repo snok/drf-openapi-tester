@@ -81,31 +81,15 @@ max-line-length = 120
 
 [tool.pylint.MESSAGE_CONTROL]
 disable = """
-    abstract-method,
-    arguments-differ,
-    bad-continuation,
-    cyclic-import
-    duplicate-code,
-    fixme,
-    import-error,
-    import-outside-toplevel,
-    line-too-long,
-    logging-fstring-interpolation,
-    missing-function-docstring,
-    missing-module-docstring,
-    no-else-return,
-    no-member,
-    no-self-use,
-    too-few-public-methods,
-    too-many-ancestors,
-    too-many-instance-attributes,
-    unnecessary-pass,
     unsubscriptable-object,
-    unused-argument,
+    unnecessary-pass,
+    missing-function-docstring,
+    import-outside-toplevel,
+    fixme,
 """
 
 [tool.pylint.BASIC]
 max-args = 6
-max-returns = 16
-max-branches = 15
+max-returns = 21
+max-branches = 20
 good-names = "_,e"

@@ -33,7 +33,6 @@ def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Res
             if method.lower() != "parameters":
                 for status_code, responses_object in method_object["responses"].items():
                     if status_code == "default":
-                        # TODO: Handle this
                         continue
                     schema_section = None
                     response = None

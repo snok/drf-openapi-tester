@@ -1,3 +1,4 @@
+""" Constants module """
 import re
 
 OPENAPI_PYTHON_MAPPING = {
@@ -24,6 +25,7 @@ VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed le
 VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"
 
 VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
+
 NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
 MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
 MISSING_PROPERTY_KEY_ERROR = (
@@ -34,3 +36,4 @@ EXCESS_RESPONSE_KEY_ERROR = (
 )
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
 ONE_OF_ERROR = "Expected data to match one and only one of oneOf schema types; found {matches} matches."
+ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."

@@ -1,4 +1,5 @@
-# pylint: disable=unused-import, invalid-name
+""" Type declarations Module - this file is used for type checking and type casting """
+# pylint: disable=unused-import, invalid-name, unused-argument, no-self-use, missing-function-docstring
 
 import sys
 from typing import TYPE_CHECKING, Callable, List, Optional
