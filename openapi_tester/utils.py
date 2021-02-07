@@ -17,11 +17,12 @@ def combine_object_schemas(schemas: List[dict]) -> Dict[str, Any]:
     return {"type": "object", "required": required, "properties": properties}
 
 
-def combine_sub_schemas(schemas: List[dict]) -> Dict[str, Any]:
-    array_schemas = [schema for schema in schemas if schema.get("type") == "array"]
+def combine_sub_schemas(schemas: List[Dict[str, Any]]) -> Dict[str, Any]:
+    normalized_schemas = [combine_sub_schemas(schema["allOf"]) if "allOf" in schema else schema for schema in schemas]
+    array_schemas = [schema for schema in normalized_schemas if schema.get("type") == "array"]
     if array_schemas:
         return {
             "type": "array",
             "items": combine_object_schemas([schema.get("items", {}) for schema in array_schemas]),
         }
-    return combine_object_schemas([schema for schema in schemas if schema.get("type") != "array"])
+    return combine_object_schemas([schema for schema in normalized_schemas if schema.get("type") != "array"])

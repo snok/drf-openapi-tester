@@ -132,7 +132,7 @@ class SchemaTester:
                 continue
         if not valid:
             raise DocumentationError(
-                message=ANY_OF_ERROR.format(schemas=str([*any_of, *reversed(combined_sub_schemas)])),
+                message=ANY_OF_ERROR.format(schemas=str(any_of)),
                 response=data,
                 schema=schema_section,
                 reference=reference,

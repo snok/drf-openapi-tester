@@ -40,7 +40,6 @@ class SchemaToPythonConverter:
     @staticmethod
     def _handle_any_of(any_of_list: List[dict]) -> Dict[str, Any]:
         """ generate any of mock data """
-
         return combine_sub_schemas(random.sample(any_of_list, random.randint(1, len(any_of_list))))
 
     def schema_type_to_mock_value(self, schema_object) -> Any:

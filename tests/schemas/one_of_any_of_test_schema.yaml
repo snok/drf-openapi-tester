@@ -74,6 +74,10 @@ components:
           type: string
         tag:
           type: string
+        food:
+          type: string
+        sound:
+          type: string
 
     Flower:
       type: object
