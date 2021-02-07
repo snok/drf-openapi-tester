@@ -13,6 +13,7 @@ from openapi_tester.constants import (
     VALIDATE_MINIMUM_ERROR,
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_TYPE_ERROR,
+    VALIDATE_UNIQUE_ITEMS_ERROR,
 )
 
 example_schema_array = {"type": "array", "items": {"type": "string"}}
@@ -212,3 +213,9 @@ def test_schema_object_is_missing_keys():
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
+
+
+def test_unique_items_validator():
+    with pytest.raises(DocumentationError, match=VALIDATE_UNIQUE_ITEMS_ERROR):
+        schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
+        tester.test_schema_section(schema, ["identical value", "identical value", "non-identical value"])

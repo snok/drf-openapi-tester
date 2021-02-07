@@ -22,6 +22,7 @@ VALIDATE_MINIMUM_ERROR = "The response value {data} exceeds the minimum allowed 
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
 VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed length of {min_length}"
 VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"
+VALIDATE_UNIQUE_ITEMS_ERROR = "The schema specifies that the array must have unique items, but items are not unique."
 
 VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
 NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"

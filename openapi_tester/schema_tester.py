@@ -26,6 +26,7 @@ from openapi_tester.constants import (
     VALIDATE_PATTERN_ERROR,
     VALIDATE_RESPONSE_TYPE_ERROR,
     VALIDATE_TYPE_ERROR,
+    VALIDATE_UNIQUE_ITEMS_ERROR,
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
@@ -284,6 +285,14 @@ class SchemaTester:
         return None
 
     @staticmethod
+    def _validate_unique_items(schema_section: dict, data: Any) -> Optional[str]:
+        unique_items = schema_section.get("uniqueItems")
+        if not unique_items:
+            return None
+        if len(set(data)) != len(data):
+            return VALIDATE_UNIQUE_ITEMS_ERROR
+
+    @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
         min_length: Optional[int] = schema_section.get("minLength")
         max_length: Optional[int] = schema_section.get("maxLength")
@@ -341,6 +350,7 @@ class SchemaTester:
                 self._validate_multiple_of,
                 self._validate_min_and_max,
                 self._validate_length,
+                self._validate_unique_items,
             ]
             for validator in validators:
                 error = validator(schema_section, data)
