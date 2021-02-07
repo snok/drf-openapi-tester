@@ -355,22 +355,19 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
-        schema_section_type = schema_section.get("type")
-        if not schema_section_type and "properties" in schema_section:
-            schema_section_type = "object"
-        if schema_section_type is None or (data is None and self.is_nullable(schema_section)):
-            # If there`s no type, any response is permitted so we return early
-            # If data is None and nullable, we also return early
-            return
         if data is None:
+            if self.is_nullable(schema_section):
+                # If data is None and nullable, we return early
+                return
             raise DocumentationError(
-                message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section_type]),
+                message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section.get("type", "")]),
                 response=data,
                 schema=schema_section,
                 reference=reference,
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-
+        if "allOf" in schema_section:
+            schema_section = self.handle_all_of(**schema_section)
         if "oneOf" in schema_section:
             self.handle_one_of(
                 schema_section=schema_section,
@@ -379,7 +376,8 @@ class SchemaTester:
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-        elif "anyOf" in schema_section:
+            return
+        if "anyOf" in schema_section:
             self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
@@ -387,41 +385,46 @@ class SchemaTester:
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-        else:
-            if "allOf" in schema_section:
-                merged_schema = self.handle_all_of(**schema_section)
-                schema_section = merged_schema
+            return
+        schema_section_type = schema_section.get("type")
+        if not schema_section_type:
+            if "properties" in schema_section:
+                schema_section_type = "object"
+            elif "items" in schema_section:
+                schema_section_type = "array"
+            else:
+                return
 
-            validators = [
-                self._validate_enum,
-                self._validate_openapi_type,
-                self._validate_format,
-                self._validate_pattern,
-                self._validate_multiple_of,
-                self._validate_min_and_max,
-                self._validate_length,
-            ]
-            for validator in validators:
-                error = validator(schema_section, data)
-                if error:
-                    raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
+        validators = [
+            self._validate_enum,
+            self._validate_openapi_type,
+            self._validate_format,
+            self._validate_pattern,
+            self._validate_multiple_of,
+            self._validate_min_and_max,
+            self._validate_length,
+        ]
+        for validator in validators:
+            error = validator(schema_section, data)
+            if error:
+                raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
 
-            if schema_section_type == "object":
-                self._test_openapi_type_object(
-                    schema_section=schema_section,
-                    data=data,
-                    reference=reference,
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
-            elif schema_section_type == "array":
-                self._test_openapi_type_array(
-                    schema_section=schema_section,
-                    data=data,
-                    reference=reference,
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+        if schema_section_type == "object":
+            self._test_openapi_type_object(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
+        elif schema_section_type == "array":
+            self._test_openapi_type_array(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
 
     def _test_openapi_type_object(
         self,
