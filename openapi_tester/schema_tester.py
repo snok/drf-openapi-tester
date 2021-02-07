@@ -21,14 +21,19 @@ from openapi_tester.constants import (
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ENUM_ERROR,
     VALIDATE_FORMAT_ERROR,
+    VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
+    VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR,
+    VALIDATE_MIN_ARRAY_LENGTH_ERROR,
     VALIDATE_MIN_LENGTH_ERROR,
     VALIDATE_MINIMUM_ERROR,
+    VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_PATTERN_ERROR,
     VALIDATE_RESPONSE_TYPE_ERROR,
     VALIDATE_TYPE_ERROR,
+    VALIDATE_UNIQUE_ITEMS_ERROR,
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
@@ -325,6 +330,14 @@ class SchemaTester:
         return None
 
     @staticmethod
+    def _validate_unique_items(schema_section: dict, data: List[Any]) -> Optional[str]:
+        unique_items = schema_section.get("uniqueItems")
+        if unique_items and len(set(data)) != len(data):
+            return VALIDATE_UNIQUE_ITEMS_ERROR
+        # TODO: handle deep dictionary comparison - for lists of dicts
+        return None
+
+    @staticmethod
     def _validate_length(schema_section: dict, data: str) -> Optional[str]:
         min_length: Optional[int] = schema_section.get("minLength")
         max_length: Optional[int] = schema_section.get("maxLength")
@@ -332,6 +345,26 @@ class SchemaTester:
             return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
         if max_length and len(data) > max_length:
             return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
+        return None
+
+    @staticmethod
+    def _validate_array_length(schema_section: dict, data: str) -> Optional[str]:
+        min_length: Optional[int] = schema_section.get("minItems")
+        max_length: Optional[int] = schema_section.get("maxItems")
+        if min_length and len(data) < min_length:
+            return VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=data, min_length=min_length)
+        if max_length and len(data) > max_length:
+            return VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(data=data, max_length=max_length)
+        return None
+
+    @staticmethod
+    def _validate_number_of_properties(schema_section: dict, data: str) -> Optional[str]:
+        min_properties: Optional[int] = schema_section.get("minProperties")
+        max_properties: Optional[int] = schema_section.get("maxProperties")
+        if min_properties and len(data) < min_properties:
+            return VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, min_length=min_properties)
+        if max_properties and len(data) > max_properties:
+            return VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, max_length=max_properties)
         return None
 
     def test_schema_section(
@@ -402,6 +435,9 @@ class SchemaTester:
             self._validate_multiple_of,
             self._validate_min_and_max,
             self._validate_length,
+            self._validate_unique_items,
+            self._validate_array_length,
+            self._validate_number_of_properties,
         ]
         for validator in validators:
             error = validator(schema_section, data)

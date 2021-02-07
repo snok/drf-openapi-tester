@@ -23,6 +23,15 @@ VALIDATE_MINIMUM_ERROR = "The response value {data} exceeds the minimum allowed 
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
 VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed length of {min_length}"
 VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"
+VALIDATE_MIN_ARRAY_LENGTH_ERROR = "The length of the array {data} is below the minimum required length of {min_length}"
+VALIDATE_MAX_ARRAY_LENGTH_ERROR = "The length of the array {data} exceeds the maximum allowed length of {max_length}"
+VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR = (
+    "The number of properties in {data} is below the minimum number required, {min_length}"
+)
+VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
+    "The number of properties in {data} exceeds the maximum number allowed, {max_length}"
+)
+VALIDATE_UNIQUE_ITEMS_ERROR = "The schema specifies that the array must have unique items, but items are not unique."
 
 VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
 

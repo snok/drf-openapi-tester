@@ -18,7 +18,7 @@ class DocumentationError(AssertionError):
     ) -> None:
         from openapi_tester.schema_converter import SchemaToPythonConverter
 
-        converted_schema = SchemaToPythonConverter(schema or {}).result
+        converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
         super().__init__(
             self.format(
                 response=self._sort_data(response),

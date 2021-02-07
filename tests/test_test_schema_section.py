@@ -8,12 +8,17 @@ from openapi_tester.constants import (
     NONE_ERROR,
     OPENAPI_PYTHON_MAPPING,
     VALIDATE_FORMAT_ERROR,
+    VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
+    VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR,
+    VALIDATE_MIN_ARRAY_LENGTH_ERROR,
     VALIDATE_MIN_LENGTH_ERROR,
     VALIDATE_MINIMUM_ERROR,
+    VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_TYPE_ERROR,
+    VALIDATE_UNIQUE_ITEMS_ERROR,
 )
 
 example_schema_array = {"type": "array", "items": {"type": "string"}}
@@ -100,6 +105,45 @@ def test_max_length_violated():
     """ Not adhering to maxlength limitations should raise an error """
     with pytest.raises(DocumentationError, match=VALIDATE_MAX_LENGTH_ERROR.format(data="a" * 6, max_length=5)):
         tester.test_schema_section(example_schema_string, "a" * 6)
+
+
+def test_min_array_length_violated():
+    """ Not adhering to minlength limitations should raise an error """
+    with pytest.raises(
+        DocumentationError, match=VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=r"\['string'\]", min_length=2)
+    ):
+        schema = {"type": "array", "items": {"type": "string"}, "minItems": 2}
+        tester.test_schema_section(schema, ["string"])
+
+
+def test_max_array_length_violated():
+    """ Not adhering to maxlength limitations should raise an error """
+    with pytest.raises(
+        DocumentationError,
+        match=VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(
+            data=r"\['string', 'string', 'string', 'string', 'string', 'string'\]", max_length=5
+        ),
+    ):
+        schema = {"type": "array", "items": {"type": "string"}, "maxItems": 5}
+        tester.test_schema_section(schema, ["string"] * 6)
+
+
+def test_min_number_of_properties_violated():
+    """ Not adhering to minlength limitations should raise an error """
+    with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
+        schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}, "minProperties": 2}
+        tester.test_schema_section(schema, {"oneKey": "test"})
+
+
+def test_max_number_of_properties_violated():
+    """ Not adhering to minlength limitations should raise an error """
+    with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
+        schema = {
+            "type": "object",
+            "properties": {"oneKey": {"type": "string"}, "twoKey": {"type": "string"}},
+            "maxProperties": 1,
+        }
+        tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test"})
 
 
 def test_date_format():
@@ -283,3 +327,9 @@ def test_anyof_official_documentation_example():
 
 
 # endregion
+
+
+def test_unique_items_validator():
+    with pytest.raises(DocumentationError, match=VALIDATE_UNIQUE_ITEMS_ERROR):
+        schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
+        tester.test_schema_section(schema, ["identical value", "identical value", "non-identical value"])
