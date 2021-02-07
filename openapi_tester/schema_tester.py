@@ -1,5 +1,7 @@
+import itertools
+import logging
 import re
-from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
+from typing import Any, Callable, Generator, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -30,6 +32,8 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
+
+logger = logging.getLogger(__name__)
 
 
 class SchemaTester:
@@ -63,6 +67,26 @@ class SchemaTester:
         else:
             raise ImproperlyConfigured("No loader is configured.")
 
+    def _merge_dict(self, combined: dict, x: Any) -> dict:
+        for key, value in x.items():
+            if key in combined and isinstance(value, dict):
+                combined[key] = {**combined[key], **value}
+            elif key in combined and isinstance(value, list):
+                combined[key] = [*combined[key], *value]
+            else:
+                combined[key] = value
+        return combined
+
+    def _combine_schemas(self, schema_sections):
+        combined_schemas = {}
+        for entry in schema_sections:
+            if "not" in entry:
+                # We already implicitly handle excess keys and bad types
+                # But if we don't skip not-entries the logic below will fail
+                continue
+            combined_schemas = self._merge_dict(combined_schemas, entry)
+        return combined_schemas
+
     def handle_all_of(
         self,
         schema_section: dict,
@@ -71,19 +95,8 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ) -> None:
-        properties: Dict[str, Any] = {}
-        for entry in schema_section.pop("allOf"):
-            if "not" in entry:
-                # We already implicitly handle excess keys and bad types
-                # But if we don't skip not-entries the logic below will fail
-                continue
-            for key, value in entry["properties"].items():
-                if key in properties and isinstance(value, dict):
-                    properties[key] = {**properties[key], **value}
-                elif key in properties and isinstance(value, list):
-                    properties[key] = [*properties[key], *value]
-                else:
-                    properties[key] = value
+        logger.debug("handling allOf: %s", schema_section)
+        properties = self._combine_schemas(schema_section["allOf"])
         self.test_schema_section(
             schema_section={**schema_section, "type": "object", "properties": properties},
             data=data,
@@ -100,6 +113,7 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ):
+        logger.debug("handling oneOf: %s", schema_section)
         matches = 0
         for index, option in enumerate(schema_section["oneOf"]):
             try:
@@ -121,6 +135,11 @@ class SchemaTester:
                 reference=reference,
             )
 
+    def get_all_combinations(self, items: list) -> Generator:
+        for n, item in enumerate(items):
+            for comb in itertools.combinations(items, n + 1):
+                yield self._combine_schemas(comb)
+
     def handle_any_of(
         self,
         schema_section: dict,
@@ -129,17 +148,21 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ):
-        for index, option in enumerate(schema_section["anyOf"]):
+        logger.debug("handling anyOf: %s", schema_section)
+        for index, combination in enumerate(self.get_all_combinations(schema_section["anyOf"])):
             try:
+                logger.debug("testing anyOf combination: %s", combination)
                 self.test_schema_section(
-                    schema_section=option,
+                    schema_section=combination,
                     data=data,
                     reference=f"{reference}.anyOf:index:{index}",
                     case_tester=case_tester,
                     ignore_case=ignore_case,
                 )
-                break
-            except DocumentationError:
+                logger.info("The anyOf combination matched response %s", data)
+                return
+            except DocumentationError as e:
+                logger.debug("The anyOf combination raised an error: %s", e)
                 continue
         else:
             raise DocumentationError(
@@ -349,14 +372,18 @@ class SchemaTester:
         """
         This method orchestrates the testing of a schema section
         """
+        logger.debug("testing schema section: %s", schema_section)
         schema_section_type = schema_section.get("type")
         if not schema_section_type and "properties" in schema_section:
+            logger.debug("Inferring object type")
             schema_section_type = "object"
         if schema_section_type is None or (data is None and self.is_nullable(schema_section)):
+            logger.debug("Data is null: %s and nullable: %s, returning early", data, schema_section)
             # If there`s no type, any response is permitted so we return early
             # If data is None and nullable, we also return early
             return
         if data is None:
+            logger.debug("Data is null and not nullable")
             raise DocumentationError(
                 message=NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section_type]),
                 response=data,
@@ -365,29 +392,32 @@ class SchemaTester:
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
         if "anyOf" in schema_section:
-            return self.handle_any_of(
+            self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
         elif "oneOf" in schema_section:
-            return self.handle_one_of(
+            self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
         elif "allOf" in schema_section:
-            return self.handle_all_of(
+            self.handle_all_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
+            return
 
         validators = [
             self._validate_enum,
@@ -398,6 +428,8 @@ class SchemaTester:
             self._validate_min_and_max,
             self._validate_length,
         ]
+
+        logger.debug("Running validators")
         for validator in validators:
             error = validator(schema_section, data)
             if error:
