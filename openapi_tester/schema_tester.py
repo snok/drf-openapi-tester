@@ -20,8 +20,10 @@ from openapi_tester.constants import (
     VALIDATE_FORMAT_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
+    VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MIN_LENGTH_ERROR,
     VALIDATE_MINIMUM_ERROR,
+    VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_PATTERN_ERROR,
     VALIDATE_RESPONSE_TYPE_ERROR,
@@ -312,6 +314,16 @@ class SchemaTester:
             return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
         return None
 
+    @staticmethod
+    def _validate_number_of_properties(schema_section: dict, data: str) -> Optional[str]:
+        min_properties: Optional[int] = schema_section.get("minProperties")
+        max_properties: Optional[int] = schema_section.get("maxProperties")
+        if min_properties and len(data) < min_properties:
+            return VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, min_length=min_properties)
+        if max_properties and len(data) > max_properties:
+            return VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, max_length=max_properties)
+        return None
+
     def test_schema_section(
         self,
         schema_section: dict,
@@ -362,6 +374,7 @@ class SchemaTester:
                 self._validate_length,
                 self._validate_unique_items,
                 self._validate_array_length,
+                self._validate_number_of_properties,
             ]
             for validator in validators:
                 error = validator(schema_section, data)
