@@ -477,7 +477,7 @@ class SchemaTester:
                 reference=reference,
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-        if data and not items:
+        if data and not items.keys():
             raise DocumentationError(
                 message="Mismatched content. Response list contains data when the schema is empty.",
                 response=data,
