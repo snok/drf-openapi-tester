@@ -178,7 +178,7 @@ class SchemaTester:
 
     @staticmethod
     def _responses_error_text_addon(status_code: Union[int, str], response_status_codes: KeysView) -> str:
-        keys = ", ".join([str(key) for key in response_status_codes])
+        keys = ", ".join(str(key) for key in response_status_codes)
         return f"\n\nUndocumented status code: {status_code}.\n\nDocumented responses include: {keys}. "
 
     def get_response_schema_section(self, response: td.Response) -> dict:
@@ -466,7 +466,7 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        items = schema_section.get("items", {})
+        items = schema_section["items"]  # the items keyword is required in arrays
         if data is None:
             if self.is_nullable(schema_section):
                 return
