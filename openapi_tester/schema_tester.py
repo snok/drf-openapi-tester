@@ -1,7 +1,7 @@
 """ Schema Tester """
+import itertools
 import re
-from functools import reduce
-from typing import Any, Callable, Dict, KeysView, List, Optional, Union, cast
+from typing import Any, Callable, Generator, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -66,10 +66,22 @@ class SchemaTester:
         else:
             raise ImproperlyConfigured("No loader is configured.")
 
-    @staticmethod
-    def handle_all_of(**kwargs: Any) -> Dict[str, Any]:
-        all_of: List[dict] = kwargs.pop("allOf", [])
-        return {**kwargs, **combine_sub_schemas(all_of)}
+    def handle_all_of(
+        self,
+        schema_section: dict,
+        data: Any,
+        reference: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
+    ) -> None:
+        all_of = schema_section.pop("allOf")
+        self.test_schema_section(
+            schema_section={**schema_section, **combine_sub_schemas(all_of)},
+            data=data,
+            reference=f"{reference}.allOf",
+            case_tester=case_tester,
+            ignore_case=ignore_case,
+        )
 
     def handle_one_of(
         self,
@@ -85,7 +97,7 @@ class SchemaTester:
                 self.test_schema_section(
                     schema_section=option,
                     data=data,
-                    reference=reference,
+                    reference=f"{reference}.oneOf",
                     case_tester=case_tester,
                     ignore_case=ignore_case,
                 )
@@ -97,8 +109,14 @@ class SchemaTester:
                 message=ONE_OF_ERROR.format(matches=matches),
                 response=data,
                 schema=schema_section,
-                reference=reference,
+                reference=f"{reference}.oneOf",
             )
+
+    @staticmethod
+    def _get_all_schema_combinations(items: list) -> Generator:
+        for n, item in enumerate(items):
+            for comb in itertools.combinations(items, n + 1):
+                yield combine_sub_schemas(comb)
 
     def handle_any_of(
         self,
@@ -108,36 +126,25 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ):
-        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
-        combined_sub_schemas: List[Dict[str, Any]] = []
-
-        for index in range(len(any_of)):
-            # we are reducing a slice of the any_of list from current index to list end
-
-            combined_sub_schemas.append(reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]))
-
-        valid = False
-        for schema in [*any_of, *reversed(combined_sub_schemas)]:
+        for schema_combination in self._get_all_schema_combinations(schema_section["anyOf"]):
             try:
                 self.test_schema_section(
-                    schema_section=schema,
+                    schema_section=schema_combination,
                     data=data,
-                    reference=reference,
+                    reference=f"{reference}.anyOf",
                     case_tester=case_tester,
                     ignore_case=ignore_case,
                 )
-                valid = True
-                break
+                return
             except DocumentationError:
                 continue
-        if not valid:
-            raise DocumentationError(
-                message=ANY_OF_ERROR,
-                response=data,
-                schema=schema_section,
-                reference=reference,
-                hint="",
-            )
+        raise DocumentationError(
+            message=ANY_OF_ERROR,
+            response=data,
+            schema=schema_section,
+            reference=f"{reference}.anyOf",
+            hint="",
+        )
 
     @staticmethod
     def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
@@ -350,27 +357,32 @@ class SchemaTester:
                 reference=reference,
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-        if "allOf" in schema_section:
-            all_of: List[Dict[str, Any]] = schema_section.pop("allOf")
-            schema_section = {**schema_section, **combine_sub_schemas(all_of)}
+
         if "oneOf" in schema_section:
-            self.handle_one_of(
+            return self.handle_one_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-            return
+        if "allOf" in schema_section:
+            return self.handle_all_of(
+                schema_section=schema_section,
+                data=data,
+                reference=reference,
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+            )
         if "anyOf" in schema_section:
-            self.handle_any_of(
+            return self.handle_any_of(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
-            return
+
         schema_section_type = schema_section.get("type")
         if not schema_section_type:
             if "properties" in schema_section:
@@ -437,7 +449,7 @@ class SchemaTester:
                     hint="Remove the key from your OpenAPI docs, or include it in your API response.",
                     response=data,
                     schema=schema_section,
-                    reference=reference,
+                    reference=f"{reference}.object:key:{key}",
                 )
         for key in response_keys:
             self._validate_key_casing(key, case_tester, ignore_case)
@@ -447,13 +459,13 @@ class SchemaTester:
                     hint="Remove the key from your API response, or include it in your OpenAPI docs.",
                     response=data,
                     schema=schema_section,
-                    reference=reference,
+                    reference=f"{reference}.object:key:{key}",
                 )
         for key, value in data.items():
             self.test_schema_section(
                 schema_section=properties[key],
                 data=value,
-                reference=f"{reference}.dict:key:{key}",
+                reference=f"{reference}.object:key:{key}",
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
@@ -474,7 +486,7 @@ class SchemaTester:
                 message=NONE_ERROR.format(expected="list"),
                 response=data,
                 schema=schema_section,
-                reference=reference,
+                reference=f"{reference}.array",
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
         if data and not items.keys():
@@ -482,7 +494,7 @@ class SchemaTester:
                 message="Mismatched content. Response list contains data when the schema is empty.",
                 response=data,
                 schema=schema_section,
-                reference=reference,
+                reference=f"{reference}.array",
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
 
@@ -490,7 +502,7 @@ class SchemaTester:
             self.test_schema_section(
                 schema_section=items,
                 data=datum,
-                reference=f"{reference}.list",
+                reference=f"{reference}.array.item",
                 case_tester=case_tester,
                 ignore_case=ignore_case,
             )
