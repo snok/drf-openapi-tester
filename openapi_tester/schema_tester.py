@@ -471,6 +471,9 @@ class SchemaTester:
         properties = schema_section.get("properties", {})
         required_keys = schema_section.get("required", [])
         response_keys = data.keys()
+        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
+        if not properties and isinstance(additional_properties, dict):
+            properties = additional_properties
         for key in properties.keys():
             self._validate_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
@@ -483,7 +486,9 @@ class SchemaTester:
                 )
         for key in response_keys:
             self._validate_key_casing(key, case_tester, ignore_case)
-            if key not in properties:
+            key_in_additional_properties = isinstance(additional_properties, dict) and key in additional_properties
+            additional_properties_allowed = additional_properties is True
+            if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
                 raise DocumentationError(
                     message=EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
                     hint="Remove the key from your API response, or include it in your OpenAPI docs.",
