@@ -84,7 +84,7 @@ disable = """
     abstract-method,
     arguments-differ,
     bad-continuation,
-    cyclic-import
+    cyclic-import,
     duplicate-code,
     fixme,
     import-error,

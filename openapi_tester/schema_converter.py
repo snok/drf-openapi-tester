@@ -1,7 +1,6 @@
 import random
-import typing as t
 from datetime import datetime
-from typing import Any
+from typing import Any, Dict, List
 
 from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 
@@ -19,9 +18,9 @@ class SchemaToPythonConverter:
                 merged_schema = SchemaTester.combine_sub_schemas(schema["allOf"])
                 schema = merged_schema
             if "oneOf" in schema:
-                schema = schema["oneOf"][0]
+                schema = random.sample(schema["oneOf"], 1)[0]
             if "anyOf" in schema:
-                schema = schema["anyOf"][0]
+                schema = self._handle_any_of(schema["anyOf"])
         if with_faker:
             # We are importing faker here to ensure this remains a dev dependency
             from faker import Faker
@@ -76,22 +75,11 @@ class SchemaToPythonConverter:
         }
         return faker_handlers[schema_type]()
 
-    @staticmethod
-    def _handle_any_of(any_of_list: t.List[dict]) -> dict:
+    def _handle_any_of(self, any_of_list: List[dict]) -> Dict[str, Any]:
         """ generate any of mock data """
-        schema = {}
-        selected_items = random.sample(any_of_list, random.randint(1, len(any_of_list)))
-        for item in selected_items:
-            for key, value in item.items():
-                if key not in schema:
-                    schema[key] = value
-                elif isinstance(value, dict):
-                    schema[key] = {**schema[key], **value}
-                elif isinstance(value, list):
-                    schema[key] = [*schema[key], *value]
-                else:
-                    continue
-        return schema
+        from openapi_tester.schema_tester import SchemaTester
+
+        return SchemaTester.combine_sub_schemas(random.sample(any_of_list, random.randint(1, len(any_of_list))))
 
     def _iterate_schema_dict(self, schema_object: dict) -> Any:
         parsed_schema = {}
@@ -102,7 +90,7 @@ class SchemaToPythonConverter:
         if "anyOf" in schema_object:
             schema_object = self._handle_any_of(schema_object["anyOf"])
         if "oneOf" in schema_object:
-            schema_object = schema_object["oneOf"][0]
+            schema_object = random.sample(schema_object["oneOf"], 1)[0]
         if "properties" in schema_object:
             properties = schema_object["properties"]
         else:
@@ -112,9 +100,9 @@ class SchemaToPythonConverter:
             if "example" in value:
                 parsed_schema[key] = value["example"]
             elif "anyOf" in value:
-                value = self._handle_any_of(value["anyOf"])
+                value = self._iterate_schema_dict(self._handle_any_of(value["anyOf"]))
             elif "oneOf" in value:
-                value = value["oneOf"][0]
+                value = random.sample(value["oneOf"], 1)[0]
             value_type = value.get("type")
             if not value_type and "properties" in value:
                 value_type = "object"
@@ -128,8 +116,8 @@ class SchemaToPythonConverter:
                 parsed_schema[key] = self._to_mock_value(value)
         return parsed_schema
 
-    def _iterate_schema_list(self, schema_array: Any) -> Any:
-        parsed_items = []
+    def _iterate_schema_list(self, schema_array: Any) -> List[Any]:
+        parsed_items: List[Any] = []
         raw_items = schema_array.get("items", {})
         if "allOf" in raw_items.keys():
             from openapi_tester.schema_tester import SchemaTester
@@ -142,9 +130,9 @@ class SchemaToPythonConverter:
             else:
                 return []
         if items_type == "object":
-            parsed_items.append(self._iterate_schema_dict(raw_items))  # type :ignore
+            parsed_items.append(self._iterate_schema_dict(raw_items))
         elif items_type == "array":
-            parsed_items.append(self._iterate_schema_list(raw_items))  # type :ignore
+            parsed_items.append(self._iterate_schema_list(raw_items))
         else:
-            parsed_items.append(self._to_mock_value(raw_items))  # type :ignore
+            parsed_items.append(self._to_mock_value(raw_items))
         return parsed_items

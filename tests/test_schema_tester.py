@@ -209,6 +209,18 @@ def test_reference_schema():
                     assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
 
 
+def test_one_of_any_of_schemas():
+    tester = SchemaTester(schema_file_path=str(CURRENT_PATH) + "/schemas/one_of_any_of_test_schema.yaml")
+    schema = tester.loader.load_schema()
+    de_referenced_schema = tester.loader.de_reference_schema(schema)
+    tester.loader.schema = de_referenced_schema
+    for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
+        if schema_section and response:
+            with patch.object(StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)):
+                tester.validate_response(response)
+                assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
+
+
 def test_sample_schemas():
     for filename in glob.iglob(str(CURRENT_PATH) + "/schemas/sample-schemas/**/**", recursive=True):
         if os.path.isfile(filename) and "metadata" not in filename:
@@ -223,15 +235,3 @@ def test_sample_schemas():
                     ):
                         tester.validate_response(response)
                         assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
-
-
-def test_one_of_any_of_schemas():
-    tester = SchemaTester(schema_file_path=str(CURRENT_PATH) + "/schemas/one_of_any_of_test_schema.yaml")
-    schema = tester.loader.load_schema()
-    de_referenced_schema = tester.loader.de_reference_schema(schema)
-    tester.loader.schema = de_referenced_schema
-    for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
-        if schema_section and response:
-            with patch.object(StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)):
-                tester.validate_response(response)
-                assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)

@@ -66,11 +66,15 @@ class SchemaTester:
 
     @staticmethod
     def combine_sub_schemas(schemas: List[dict]) -> Dict[str, Any]:
+        array_schemas = [schema for schema in schemas if schema.get("type") == "array"]
+        if array_schemas:
+            items_lists = [schema.get("items", []) for schema in array_schemas]
+            return {"type": "array", "items": [item for item_list in items_lists for item in item_list]}
         properties: Dict[str, Any] = {}
         required = []
         for entry in schemas:
             required.extend(entry.get("required", []))
-            for key, value in entry["properties"].items():
+            for key, value in entry.get("properties", {}).items():
                 if key in properties and isinstance(value, dict):
                     properties[key] = {**properties[key], **value}
                 elif key in properties and isinstance(value, list):
@@ -428,12 +432,10 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         """
-        Checks and assumptions made below:
         1. Validate that casing is correct for both response and schema
         2. Check if any required key is missing from the response
         3. Check if any response key is not in the schema
         4. Validate sub-schema/nested data
-
         """
 
         properties = schema_section.get("properties", {})

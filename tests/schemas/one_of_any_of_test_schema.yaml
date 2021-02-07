@@ -16,10 +16,10 @@ servers:
 paths:
   /one-of-aliens:
     get:
-      operationId: findAlients
+      operationId: findAliens
       responses:
         '200':
-          description: alient response
+          description: alien response
           content:
             application/json:
               schema:
@@ -35,10 +35,10 @@ paths:
                 $ref: '#/components/schemas/Error'
   /any-of-aliens:
     get:
-      operationId: findAlients
+      operationId: findAliens
       responses:
         '200':
-          description: alient response
+          description: alien response
           content:
             application/json:
               schema:
@@ -82,7 +82,7 @@ components:
       properties:
         name:
           type: string
-        type:
+        brand:
           type: string
         leaves:
           type: integer
@@ -109,7 +109,7 @@ components:
         pets:
           type: "array"
           items:
-            oneOf:
+            anyOf:
               - $ref: '#/components/schemas/Pet'
               - $ref: '#/components/schemas/Alien'
               - $ref: '#/components/schemas/Pet'
