@@ -153,63 +153,20 @@ def test_response_documentation(client):
     )
 ```
 
-## Performing response validation in a DRF APIView
+## OpenAPITestCase
 
-In addition to using the `validate_response` method directly, we provide
-an APIView  with the possibility of validating your response by calling `self.assertResponse`.
+The library also offers an abstraction on top of validate_response that is meant to be used with the Django test framework.
 
-Simply define your view class like this:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
 from openapi_tester.case_testers import is_camel_case
 
+# create a bound OpenAPITestCase class by instantiating the SchemaTester and calling the test_case method:
 OpenAPITestCase = SchemaTester(case_tester=is_camel_case).test_case()
 
-
-class TestApi(OpenAPITestCase):
-
-    def validate_response_schema(self):
-        response = self.client.get(...)
-        self.assertResponse(response)
-```
-
-The `assertResponse` method takes the same arguments as `validate_response`.
-
-## Examples
-
-### Testing with Pytest
-
-```python
-from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.case_testers import is_camel_case
-
-tester = SchemaTester(case_tester=is_camel_case)
-
-def test_200_response_documentation(client):
-    response = client.get('api/v1/test/1')
-
-    assert response.status_code == 200
-    assert response.json() == expected_response
-
-    tester.validate_response(response=response)
-```
-
-### Testing with Django Test
-
-```python
-from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.case_testers import is_camel_case
-
-tester = SchemaTester(case_tester=is_camel_case)
-
-
-class MyApiTest(APITestCase):
-
-    def setUp(self) -> None:
-        user, _ = User.objects.update_or_create(username='test_user')
-        self.client.force_authenticate(user=user)
-
+# use the OpenAPITestCase as part of the TestCase inheritance
+class ExtendedAPITestCase(OpenAPITestCase):
     def test_get_200(self) -> None:
         """
         Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
@@ -220,36 +177,11 @@ class MyApiTest(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), expected_response)
 
-        tester.validate_response(response=response)
-```
-
-or
-
-```python
-from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.case_testers import is_camel_case
-
-OpenAPITestCase = SchemaTester(case_tester=is_camel_case).test_case()
-
-
-class TestApi(OpenAPITestCase):
-
-    def setUp(self) -> None:
-        user, _ = User.objects.update_or_create(username='test_user')
-        self.client.force_authenticate(user=user)
-
-    def test_get_200(self) -> None:
-        """
-        Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
-        """
-        response = self.client.get('/api/v1/test/', headers={'Content-Type': 'application/json'})
-        expected_response = [...]
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), expected_response)
-
+        # use the self.assertResponse method as you would use validate_response
         self.assertResponse(response=response)
 ```
+
+The bound `self.assertResponse` method takes the same kwargs as validate_response.
 
 ## Error messages
 
