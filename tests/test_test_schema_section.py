@@ -102,6 +102,25 @@ def test_max_length_violated():
         tester.test_schema_section(example_schema_string, "a" * 6)
 
 
+def test_min_array_length_violated():
+    """ Not adhering to minlength limitations should raise an error """
+    with pytest.raises(DocumentationError, match=VALIDATE_MIN_LENGTH_ERROR.format(data=r"\['string'\]", min_length=2)):
+        schema = {"type": "array", "items": {"type": "string"}, "minItems": 2}
+        tester.test_schema_section(schema, ["string"])
+
+
+def test_max_array_length_violated():
+    """ Not adhering to maxlength limitations should raise an error """
+    with pytest.raises(
+        DocumentationError,
+        match=VALIDATE_MAX_LENGTH_ERROR.format(
+            data=r"\['string', 'string', 'string', 'string', 'string', 'string'\]", max_length=5
+        ),
+    ):
+        schema = {"type": "array", "items": {"type": "string"}, "maxItems": 5}
+        tester.test_schema_section(schema, ["string"] * 6)
+
+
 def test_date_format():
     # ISO8601 is valid
     tester.test_schema_section({"type": "string", "format": "date"}, "2040-01-01")

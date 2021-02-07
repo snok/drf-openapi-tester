@@ -302,6 +302,16 @@ class SchemaTester:
             return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
         return None
 
+    @staticmethod
+    def _validate_array_length(schema_section: dict, data: str) -> Optional[str]:
+        min_length: Optional[int] = schema_section.get("minItems")
+        max_length: Optional[int] = schema_section.get("maxItems")
+        if min_length and len(data) < min_length:
+            return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
+        if max_length and len(data) > max_length:
+            return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
+        return None
+
     def test_schema_section(
         self,
         schema_section: dict,
@@ -351,6 +361,7 @@ class SchemaTester:
                 self._validate_min_and_max,
                 self._validate_length,
                 self._validate_unique_items,
+                self._validate_array_length,
             ]
             for validator in validators:
                 error = validator(schema_section, data)
