@@ -19,10 +19,10 @@ class SchemaToPythonConverter:
             if "allOf" in schema:
                 merged_schema = combine_sub_schemas(schema["allOf"])
                 schema = merged_schema
-            if "oneOf" in schema:
-                schema = random.sample(schema["oneOf"], 1)[0]
             if "anyOf" in schema:
                 schema = self._handle_any_of(schema["anyOf"])
+            if "oneOf" in schema:
+                schema = random.sample(schema["oneOf"], 1)[0]
         if with_faker:
             # We are importing faker here to ensure this remains a dev dependency
             from faker import Faker
@@ -82,23 +82,23 @@ class SchemaToPythonConverter:
         return faker_handlers[schema_type]()
 
     def convert_schema_object_to_dict(self, schema_object: dict) -> Dict[str, Any]:
-        parsed_schema = {}
         if "allOf" in schema_object:
             schema_object = combine_sub_schemas(schema_object["allOf"])
-        if "anyOf" in schema_object:
-            schema_object = self._handle_any_of(schema_object["anyOf"])
         if "oneOf" in schema_object:
             schema_object = random.sample(schema_object["oneOf"], 1)[0]
+        if "anyOf" in schema_object:
+            schema_object = self._handle_any_of(schema_object["anyOf"])
         if "properties" in schema_object:
             properties = schema_object["properties"]
         else:
             properties = {}
 
+        parsed_schema: Dict[str, Any] = {}
         for key, value in properties.items():
-            if "anyOf" in value:
-                value = self._handle_any_of(value["anyOf"])
             if "oneOf" in value:
                 value = random.sample(value["oneOf"], 1)[0]
+            elif "anyOf" in value:
+                value = self._handle_any_of(value["anyOf"])
             value_type = value.get("type")
             if not value_type:
                 if "properties" in value:
@@ -107,9 +107,7 @@ class SchemaToPythonConverter:
                     value_type = "array"
                 else:
                     continue
-            if "example" in value:
-                parsed_schema[key] = value["example"]
-            elif value_type == "object":
+            if value_type == "object":
                 parsed_schema[key] = self.convert_schema_object_to_dict(value)
             elif value_type == "array":
                 parsed_schema[key] = self.convert_schema_array_to_list(value)

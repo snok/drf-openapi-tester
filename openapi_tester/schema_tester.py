@@ -465,19 +465,20 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]],
         ignore_case: Optional[List[str]],
     ) -> None:
-        items = schema_section["items"]
-
-        error = ""
-        if items is None and data is not None:
-            error = "Mismatched content. Response list contains data when the schema is empty."
-        elif data is None and not self.is_nullable(schema_section):
-            error = NONE_ERROR.format(expected="list")
-        elif data is None:
-            return
-
-        if error:
+        items = schema_section.get("items", {})
+        if data is None:
+            if self.is_nullable(schema_section):
+                return
             raise DocumentationError(
-                message=error,
+                message=NONE_ERROR.format(expected="list"),
+                response=data,
+                schema=schema_section,
+                reference=reference,
+                hint="Document the contents of the empty dictionary to match the response object.",
+            )
+        if data and not items.keys():
+            raise DocumentationError(
+                message="Mismatched content. Response list contains data when the schema is empty.",
                 response=data,
                 schema=schema_section,
                 reference=reference,
