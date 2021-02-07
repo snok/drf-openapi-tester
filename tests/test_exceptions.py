@@ -45,3 +45,12 @@ Sequence: test:reference
 def test_case_error_message():
     error = CaseError(key="test-key", case="camelCase", expected="testKey")
     assert error.args[0].strip() == "The response key `test-key` is not properly camelCase. Expected value: testKey"
+
+
+def test_documentation_error_sort_data_type():
+    assert DocumentationError._sort_data([1, 3, 2]) == [1, 2, 3]  # list
+    assert DocumentationError._sort_data({"1", "3", "2"}) == {"1", "2", "3"}  # set
+    assert DocumentationError._sort_data({"1": "a", "3": "a", "2": "a"}) == {"1": "a", "2": "a", "3": "a"}  # dict
+
+    # Test sort failure scenario - expect the method to succeed and default to no reordering
+    assert DocumentationError._sort_data(["1", {}, []]) == ["1", {}, []]

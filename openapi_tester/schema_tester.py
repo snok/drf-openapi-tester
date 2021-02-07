@@ -69,7 +69,7 @@ class SchemaTester:
         elif "drf_yasg" in settings.INSTALLED_APPS:
             self.loader = DrfYasgSchemaLoader()
         else:
-            raise ImproperlyConfigured("No loader is configured.")
+            raise ImproperlyConfigured("Unable to infer which loader to use.")
 
     def handle_all_of(
         self,
@@ -115,6 +115,7 @@ class SchemaTester:
                 response=data,
                 schema=schema_section,
                 reference=f"{reference}.oneOf",
+                show_expected=False,
             )
 
     def handle_any_of(
@@ -148,6 +149,7 @@ class SchemaTester:
             schema=schema_section,
             reference=f"{reference}.anyOf",
             hint="",
+            show_expected=False,
         )
 
     @staticmethod
@@ -267,31 +269,33 @@ class SchemaTester:
             valid = isinstance(data, bytes)
         elif schema_format in ["date", "date-time"]:
             parser = parse_date if schema_format == "date" else parse_datetime
-            try:
-                result = parser(data)
-                valid = result is not None
-            except ValueError:
-                valid = False
+            result = parser(data)
+            valid = result is not None
         return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
     @staticmethod
     def _validate_openapi_type(schema_section: dict, data: Any) -> Optional[str]:
         valid = True
         schema_type: Optional[str] = schema_section.get("type")
-        if not schema_type and "properties" in schema_section:
-            schema_type = "object"
         if not schema_type:
-            return None
+            if "properties" in schema_section:
+                schema_type = "object"
+            elif "items" in schema_section:
+                schema_type = "array"
+            else:
+                return None
         if schema_type in ["file", "string"]:
             valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
-            valid = isinstance(data, int)
+            valid = isinstance(data, int) and not isinstance(data, bool)
         elif schema_type == "number":
-            valid = isinstance(data, (int, float))
+            valid = isinstance(data, (int, float)) and not isinstance(data, bool)
         elif schema_type == "object":
             valid = isinstance(data, dict)
         elif schema_type == "array":
             valid = isinstance(data, list)
+        elif schema_type == "boolean":
+            valid = isinstance(data, bool)
         return (
             None
             if valid
@@ -434,7 +438,9 @@ class SchemaTester:
         for validator in validators:
             error = validator(schema_section, data)
             if error:
-                raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
+                raise DocumentationError(
+                    message=error, response=data, schema=schema_section, reference=reference, show_expected=False
+                )
 
         if schema_section_type == "object":
             self.test_openapi_object(

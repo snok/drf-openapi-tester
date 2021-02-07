@@ -8,26 +8,30 @@ class DocumentationError(AssertionError):
     Custom exception raised when package tests fail.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=too-many-arguments
         self,
         message: str,
         response: Any,
         schema: dict,
         hint: str = "",
         reference: str = "",
+        show_expected=True,
     ) -> None:
         from openapi_tester.schema_converter import SchemaToPythonConverter
 
-        converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
-        super().__init__(
-            self.format(
-                response=self._sort_data(response),
-                example_item=self._sort_data(converted_schema),
-                hint=hint,
-                message=message,
-                reference=reference,
+        if show_expected:
+            converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
+            super().__init__(
+                self.format(
+                    response=self._sort_data(response),
+                    example_item=self._sort_data(converted_schema),
+                    hint=hint,
+                    message=message,
+                    reference=reference,
+                )
             )
-        )
+        else:
+            super().__init__(message)
 
     @staticmethod
     def _sort_data(data_object: Any) -> Any:
