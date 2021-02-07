@@ -1,7 +1,7 @@
 import itertools
 import logging
 import re
-from typing import Any, Callable, Generator, KeysView, List, Optional, Union, cast
+from typing import Any, Callable, Dict, Generator, Iterator, KeysView, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -78,13 +78,9 @@ class SchemaTester:
                 combined[key] = value
         return combined
 
-    def _combine_schemas(self, schema_sections):
-        combined_schemas = {}
+    def _combine_schemas(self, schema_sections: Union[list, tuple]) -> dict:
+        combined_schemas: Dict[str, Union[dict, list]] = {}
         for entry in schema_sections:
-            if "not" in entry:
-                # We already implicitly handle excess keys and bad types
-                # But if we don't skip not-entries the logic below will fail
-                continue
             combined_schemas = self._merge_dict(combined_schemas, entry)
         return combined_schemas
 

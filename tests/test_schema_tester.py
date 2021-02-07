@@ -245,18 +245,3 @@ def test_merge_dict():
     ]
     for d in test_data:
         assert tester._merge_dict(d["a"], d["b"]) == d["expected"]
-
-
-def test_not_handled_by_combine_schemas():
-    """
-    Makes sure we're able to pass allOf schemas containing the `not` keyword to the _combine_schemas method.
-    """
-    obj = {
-        "type": "object",
-        "allOf": [
-            {"properties": {"articleBody": {"type": "string"}}},
-            {"not": {"properties": {"articleBody": {"type": "integer"}}}},
-        ],
-    }
-    tester = SchemaTester()
-    tester.test_schema_section(obj, {"articleBody": "test"})
