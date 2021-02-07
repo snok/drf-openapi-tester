@@ -394,7 +394,7 @@ class SchemaTester:
                 raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
 
         if schema_section_type == "object":
-            self._test_openapi_type_object(
+            self.test_openapi_object(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
@@ -402,7 +402,7 @@ class SchemaTester:
                 ignore_case=ignore_case,
             )
         elif schema_section_type == "array":
-            self._test_openapi_type_array(
+            self.test_openapi_array(
                 schema_section=schema_section,
                 data=data,
                 reference=reference,
@@ -410,7 +410,7 @@ class SchemaTester:
                 ignore_case=ignore_case,
             )
 
-    def _test_openapi_type_object(
+    def test_openapi_object(
         self,
         schema_section: dict,
         data: dict,
@@ -457,7 +457,7 @@ class SchemaTester:
                 ignore_case=ignore_case,
             )
 
-    def _test_openapi_type_array(
+    def test_openapi_array(
         self,
         schema_section: dict,
         data: dict,
