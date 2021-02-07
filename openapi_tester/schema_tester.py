@@ -67,12 +67,13 @@ class SchemaTester:
         else:
             raise ImproperlyConfigured("No loader is configured.")
 
-    def _merge_dict(self, combined: dict, x: Any) -> dict:
+    @staticmethod
+    def _merge_dict(combined: dict, x: Any) -> dict:
         for key, value in x.items():
             if key in combined and isinstance(value, dict):
                 combined[key] = {**combined[key], **value}
             elif key in combined and isinstance(value, list):
-                combined[key] = [*combined[key], *value]
+                combined[key] = list({*combined[key], *value})
             else:
                 combined[key] = value
         return combined
@@ -95,10 +96,10 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
     ) -> None:
-        logger.debug("handling allOf: %s", schema_section)
-        properties = self._combine_schemas(schema_section["allOf"])
+        combined_schemas = self._combine_schemas(schema_section["allOf"])
+        logger.debug("handling allOf: %s", combined_schemas)
         self.test_schema_section(
-            schema_section={**schema_section, "type": "object", "properties": properties},
+            schema_section=combined_schemas,
             data=data,
             reference=f"{reference}.allOf",
             case_tester=case_tester,

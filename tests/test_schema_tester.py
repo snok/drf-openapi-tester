@@ -235,3 +235,28 @@ def test_one_of_any_of_schemas():
             with patch.object(StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)):
                 tester.validate_response(response)
                 assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
+
+
+def test_merge_dict():
+    tester = SchemaTester()
+    test_data = [
+        {"a": {"test": 1}, "b": {"test2": 2}, "expected": {"test": 1, "test2": 2}},  # simple dict
+        {"a": {"test": [1, 2]}, "b": {"test": [2, 3]}, "expected": {"test": [1, 2, 3]}},  # dict with list and overlap
+    ]
+    for d in test_data:
+        assert tester._merge_dict(d["a"], d["b"]) == d["expected"]
+
+
+def test_not_handled_by_combine_schemas():
+    """
+    Makes sure we're able to pass allOf schemas containing the `not` keyword to the _combine_schemas method.
+    """
+    obj = {
+        "type": "object",
+        "allOf": [
+            {"properties": {"articleBody": {"type": "string"}}},
+            {"not": {"properties": {"articleBody": {"type": "integer"}}}},
+        ],
+    }
+    tester = SchemaTester()
+    tester.test_schema_section(obj, {"articleBody": "test"})
