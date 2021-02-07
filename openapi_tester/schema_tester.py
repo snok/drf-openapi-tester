@@ -351,7 +351,8 @@ class SchemaTester:
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
         if "allOf" in schema_section:
-            schema_section = self.handle_all_of(**schema_section)
+            all_of: List[Dict[str, Any]] = schema_section.pop("allOf")
+            schema_section = {**schema_section, **combine_sub_schemas(all_of)}
         if "oneOf" in schema_section:
             self.handle_one_of(
                 schema_section=schema_section,
