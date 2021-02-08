@@ -513,16 +513,6 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         items = schema_section["items"]  # the items keyword is required in arrays
-        if data is None:
-            if self.is_nullable(schema_section):
-                return
-            raise DocumentationError(
-                message=NONE_ERROR.format(expected="list"),
-                response=data,
-                schema=schema_section,
-                reference=f"{reference}.array",
-                hint="Document the contents of the empty dictionary to match the response object.",
-            )
         if data and not items:
             raise DocumentationError(
                 message="Mismatched content. Response list contains data when the schema is empty.",

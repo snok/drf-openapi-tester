@@ -5,10 +5,9 @@ import pathlib
 import re
 from json import dumps, loads
 from typing import Callable, Dict, List, Optional
-from urllib.parse import ParseResult
+from urllib.parse import ParseResult, urlparse
 
 import yaml
-from django.core.exceptions import ImproperlyConfigured
 from django.urls import Resolver404, resolve
 from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 
@@ -30,15 +29,12 @@ def handle_recursion_limit(schema: dict) -> Callable:
 
     # noinspection PyUnusedLocal
     def handler(iteration: int, parse_result: ParseResult, recursions: tuple):  # pylint: disable=unused-argument
-        try:
-            fragment = parse_result.fragment
-            keys = [key for key in fragment.split("/") if key]
-            definition = schema
-            for key in keys:
-                definition = definition[key]
-            return remove_recursive_ref(definition, fragment)
-        except KeyError:
-            return {}
+        fragment = parse_result.fragment
+        keys = [key for key in fragment.split("/") if key]
+        definition = schema
+        for key in keys:
+            definition = definition[key]
+        return remove_recursive_ref(definition, fragment)
 
     return handler
 
@@ -146,34 +142,30 @@ class BaseSchemaLoader:
         """
         Resolves a Django path.
         """
-        try:
-            if "?" in endpoint_path:
-                endpoint_path = endpoint_path.split("?")[0]
-            if endpoint_path == "" or endpoint_path[0] != "/":
-                endpoint_path = "/" + endpoint_path
-            if len(endpoint_path) > 2 and endpoint_path[-1] == "/":
-                endpoint_path = endpoint_path[:-1]
+
+        url_object = urlparse(endpoint_path)
+        parsed_path = url_object.path if url_object.path.endswith("/") else url_object.path + "/"
+        if not parsed_path.startswith("/"):
+            parsed_path = "/" + parsed_path
+        for path in [parsed_path, parsed_path[:-1]]:
             try:
-                resolved_route = resolve(endpoint_path)
+                resolved_route = resolve(path)
+                for key, value in resolved_route.kwargs.items():
+                    # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex
+                    # regex handling. However, its important not to freely use the .replace() function, as a
+                    # {value} of `1` would also cause the `1` in api/v1/ to be replaced
+                    var_index = path.rfind(str(value))
+                    path = path[:var_index] + f"{{{key}}}" + path[var_index + len(str(value)) :]
+                return path, resolved_route
             except Resolver404:
-                resolved_route = resolve(endpoint_path + "/")
-                endpoint_path += "/"
-            kwarg = resolved_route.kwargs
-            for key, value in kwarg.items():
-                # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex regex
-                # handling. However, its important not to freely use the .replace() function, as a {value} of `1` would
-                # also cause the `1` in api/v1/ to be replaced
-                var_index = endpoint_path.rfind(str(value))
-                endpoint_path = endpoint_path[:var_index] + f"{{{key}}}" + endpoint_path[var_index + len(str(value)) :]
-            return endpoint_path, resolved_route
-        except Resolver404 as e:
-            paths = self.get_endpoint_paths()
-            closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, paths))
-            if closest_matches:
-                raise ValueError(
-                    f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}"
-                ) from e
-            raise ValueError(f"Could not resolve path `{endpoint_path}`") from e
+                continue
+        paths = self.get_endpoint_paths()
+        closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, paths))
+        if closest_matches:
+            raise ValueError(
+                f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}"
+            )
+        raise ValueError(f"Could not resolve path `{endpoint_path}`")
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
@@ -264,8 +256,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
         :return: Schema contents as a dict
         :raises: ImproperlyConfigured
         """
-        if not self.path:
-            raise ImproperlyConfigured("Unable to read the schema file. Please make sure the path setting is correct.")
         with open(self.path) as file:
             content = file.read()
             return json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
