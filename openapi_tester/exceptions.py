@@ -8,40 +8,31 @@ class DocumentationError(AssertionError):
     Custom exception raised when package tests fail.
     """
 
-    def __init__(  # pylint: disable=too-many-arguments
-        self,
-        message: str,
-        response: Any,
-        schema: dict,
-        hint: str = "",
-        reference: str = "",
-        show_expected=True,
+    def __init__(
+        self, message: str, response: Any, schema: dict, hint: str = "", reference: str = "", **kwargs
     ) -> None:
         from openapi_tester.schema_converter import SchemaToPythonConverter
 
-        if show_expected:
-            converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
-            super().__init__(
-                self.format(
-                    response=self._sort_data(response),
-                    example_item=self._sort_data(converted_schema),
-                    hint=hint,
-                    message=message,
-                    reference=reference,
-                )
+        converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
+        super().__init__(
+            self.format(
+                response=self._sort_data(response),
+                example_item=self._sort_data(converted_schema),
+                hint=hint,
+                message=message,
+                reference=reference,
             )
-        else:
-            super().__init__(message)
+        )
 
     @staticmethod
     def _sort_data(data_object: Any) -> Any:
+        """
+        Sorts data so that expected and received objects align.
+        """
         if isinstance(data_object, dict):
             return dict(sorted(data_object.items()))
         if isinstance(data_object, list):
-            try:
-                return sorted(data_object)
-            except TypeError:
-                return data_object
+            return sorted(data_object)
         return data_object
 
     @staticmethod
@@ -49,18 +40,15 @@ class DocumentationError(AssertionError):
         """
         Formats and returns a standardized error message for easy debugging.
         """
-        msg = [
-            f"Error: {message}\n\n",
-            f"Expected: {json.dumps(example_item)}\n\n",
-            f"Received: {json.dumps(response)}\n\n",
-        ]
-        if hint:
-            msg += [f"Hint: {hint}\n\n"]
-        if reference:
-            msg += [
-                f"Sequence: {reference}\n",
-            ]
-        return "".join(msg)
+        return (
+            f"{message}\n\n"
+            f"Expected: {json.dumps(example_item)}\n\n"
+            f"Received: {json.dumps(response)}\n\n" + f"Hint: {hint}\n\n"
+            if hint
+            else "" + f"Sequence: {reference}\n"
+            if reference
+            else ""
+        )
 
 
 class CaseError(AssertionError):
