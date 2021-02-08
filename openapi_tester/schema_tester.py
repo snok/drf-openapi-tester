@@ -269,8 +269,7 @@ class SchemaTester:
             valid = isinstance(data, bytes)
         elif schema_format in ["date", "date-time"]:
             parser = parse_date if schema_format == "date" else parse_datetime
-            result = parser(data)
-            valid = result is not None
+            valid = parser(data) is not None
         return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
     @staticmethod
