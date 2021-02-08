@@ -15,7 +15,7 @@ class DocumentationError(AssertionError):
         schema: dict,
         hint: str = "",
         reference: str = "",
-        show_expected=True,
+        show_expected: bool = True,
     ) -> None:
         from openapi_tester.schema_converter import SchemaToPythonConverter
 
