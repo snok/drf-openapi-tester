@@ -46,3 +46,4 @@ EXCESS_RESPONSE_KEY_ERROR = (
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
 ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches."
 ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
+INIT_ERROR = "Unable to configure loader."

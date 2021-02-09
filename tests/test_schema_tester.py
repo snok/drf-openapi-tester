@@ -21,6 +21,7 @@ from openapi_tester import (
 from openapi_tester.constants import (
     ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
+    INIT_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
     ONE_OF_ERROR,
@@ -586,7 +587,7 @@ def test_loader_inference(settings):
 
     # Test no loader
     settings.INSTALLED_APPS = []
-    with pytest.raises(ImproperlyConfigured, match="Unable to configure loader"):
+    with pytest.raises(ImproperlyConfigured, match=INIT_ERROR):
         SchemaTester()
 
 

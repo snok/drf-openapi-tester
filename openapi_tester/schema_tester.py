@@ -13,6 +13,7 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
+    INIT_ERROR,
     INVALID_PATTERN_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
@@ -68,7 +69,7 @@ class SchemaTester:
         elif "drf_yasg" in settings.INSTALLED_APPS:
             self.loader = DrfYasgSchemaLoader()
         else:
-            raise ImproperlyConfigured("Unable to configure loader.")
+            raise ImproperlyConfigured(INIT_ERROR)
 
     def handle_all_of(
         self,
