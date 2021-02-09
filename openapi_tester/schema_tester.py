@@ -272,17 +272,11 @@ class SchemaTester:
             valid = parser(data) is not None
         return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
-    @staticmethod
-    def _validate_openapi_type(schema_section: dict, data: Any) -> Optional[str]:
+    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
         valid = True
-        schema_type: Optional[str] = schema_section.get("type")
+        schema_type = self._get_schema_type(schema_section)
         if not schema_type:
-            if "properties" in schema_section:
-                schema_type = "object"
-            elif "items" in schema_section:
-                schema_type = "array"
-            else:
-                return None
+            return None
         if schema_type in ["file", "string"]:
             valid = isinstance(data, (str, bytes))
         elif schema_type == "integer":
@@ -362,6 +356,16 @@ class SchemaTester:
             return VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, max_length=max_properties)
         return None
 
+    @staticmethod
+    def _get_schema_type(schema: dict) -> Optional[str]:
+        if "type" in schema:
+            return schema["type"]
+        if "properties" in schema or "additionalProperties" in schema:
+            return "object"
+        if "items" in schema:
+            return "array"
+        return None
+
     def test_schema_section(
         self,
         schema_section: dict,
@@ -413,15 +417,7 @@ class SchemaTester:
             )
             return
 
-        schema_section_type = schema_section.get("type")
-        if not schema_section_type:
-            if "properties" in schema_section:
-                schema_section_type = "object"
-            elif "items" in schema_section:
-                schema_section_type = "array"
-            else:
-                return
-
+        schema_section_type = self._get_schema_type(schema_section)
         validators = [
             self._validate_enum,
             self._validate_openapi_type,
@@ -476,6 +472,9 @@ class SchemaTester:
         properties = schema_section.get("properties", {})
         required_keys = schema_section.get("required", [])
         response_keys = data.keys()
+        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
+        if not properties and isinstance(additional_properties, dict):
+            properties = additional_properties
         for key in properties.keys():
             self._validate_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
@@ -488,7 +487,9 @@ class SchemaTester:
                 )
         for key in response_keys:
             self._validate_key_casing(key, case_tester, ignore_case)
-            if key not in properties:
+            key_in_additional_properties = isinstance(additional_properties, dict) and key in additional_properties
+            additional_properties_allowed = additional_properties is True
+            if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
                 raise DocumentationError(
                     message=EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
                     hint="Remove the key from your API response, or include it in your OpenAPI docs.",
@@ -514,16 +515,6 @@ class SchemaTester:
         ignore_case: Optional[List[str]],
     ) -> None:
         items = schema_section["items"]  # the items keyword is required in arrays
-        if data is None:
-            if self.is_nullable(schema_section):
-                return
-            raise DocumentationError(
-                message=NONE_ERROR.format(expected="list"),
-                response=data,
-                schema=schema_section,
-                reference=f"{reference}.array",
-                hint="Document the contents of the empty dictionary to match the response object.",
-            )
         if data and not items:
             raise DocumentationError(
                 message="Mismatched content. Response list contains data when the schema is empty.",
