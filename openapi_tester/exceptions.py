@@ -73,9 +73,9 @@ class OpenAPISchemaError(Exception):
     pass
 
 
-class UndocumentedSchemaSectionError(AssertionError):
+class UndocumentedSchemaSectionError(OpenAPISchemaError):
     """
-    Custom exception raised when we cannot find a schema section.
+    Subset of OpenAPISchemaError, raised when we cannot find a single schema section.
     """
 
     pass

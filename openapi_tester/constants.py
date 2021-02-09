@@ -10,6 +10,23 @@ OPENAPI_PYTHON_MAPPING = {
     "integer": int.__name__,
     "number": f"{int.__name__} or {float.__name__}",
 }
+OPENAPI_TYPE_EXAMPLES = {
+    "boolean": True,
+    "string": "string",
+    "file": "image.jpeg",
+    "array": [],
+    "object": {},
+    "integer": 42,
+    "number": 4.2,
+}
+OPENAPI_FORMAT_EXAMPLES = {
+    "date": "2020-10-01",
+    "date-time": "2020-10-01 20:00:00",
+    "double": 2.2,
+    "float": 2.2,
+    "byte": b"bytestring",
+}
+
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
 
 # Validation errors
