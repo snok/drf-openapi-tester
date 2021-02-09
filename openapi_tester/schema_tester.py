@@ -68,7 +68,7 @@ class SchemaTester:
         elif "drf_yasg" in settings.INSTALLED_APPS:
             self.loader = DrfYasgSchemaLoader()
         else:
-            raise ImproperlyConfigured("Unable to infer which loader to use.")
+            raise ImproperlyConfigured("Unable to configure loader.")
 
     def handle_all_of(
         self,
