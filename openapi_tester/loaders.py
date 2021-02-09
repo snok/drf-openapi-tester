@@ -4,7 +4,7 @@ import json
 import pathlib
 import re
 from json import dumps, loads
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 from urllib.parse import ParseResult, urlparse
 
 import yaml
@@ -18,8 +18,10 @@ from prance.util.resolver import RefResolver
 from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
-from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
-from openapi_tester.exceptions import OpenAPISchemaError
+from openapi_tester.constants import PARAMETER_CAPTURE_REGEX, UNDOCUMENTED_SCHEMA_SECTION_ERROR
+from openapi_tester.exceptions import OpenAPISchemaError, UndocumentedSchemaSectionError
+
+from . import type_declarations as td
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -166,6 +168,69 @@ class BaseSchemaLoader:
                 f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}"
             )
         raise ValueError(f"Could not resolve path `{endpoint_path}`")
+
+    @staticmethod
+    def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
+        """
+        Returns the value of a given key
+        """
+        try:
+            return schema[key]
+        except KeyError as e:
+            raise UndocumentedSchemaSectionError(
+                UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=key, error_addon=error_addon)
+            ) from e
+
+    @staticmethod
+    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
+        """
+        Returns the status code section of a schema, handles both str and int status codes
+        """
+        if str(status_code) in schema:
+            return schema[str(status_code)]
+        if int(status_code) in schema:
+            return schema[int(status_code)]
+        raise UndocumentedSchemaSectionError(
+            UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
+        )
+
+    def get_response_schema_section(self, response: td.Response) -> dict:
+        """
+        Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
+
+        :param response: DRF Response Instance
+        :return dict
+        """
+        schema = self.get_schema()
+        parameterized_path = self.parameterize_path(response.request["PATH_INFO"])
+        paths_object = self._get_key_value(schema, "paths")
+
+        pretty_routes = "\n\t• ".join(paths_object.keys())
+        route_object = self._get_key_value(
+            paths_object,
+            parameterized_path,
+            f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}",
+        )
+
+        str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
+        method_object = self._get_key_value(
+            route_object, response.request["REQUEST_METHOD"].lower(), f"\n\nAvailable methods include: {str_methods}."
+        )
+
+        responses_object = self._get_key_value(method_object, "responses")
+        keys = ", ".join(str(key) for key in responses_object.keys())
+        status_code_object = self._get_status_code(
+            responses_object,
+            response.status_code,
+            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented responses include: {keys}. ",
+        )
+
+        if "openapi" not in schema:
+            # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
+            return self._get_key_value(status_code_object, "schema")
+        content_object = self._get_key_value(status_code_object, "content")
+        json_object = self._get_key_value(content_object, "application/json")
+        return self._get_key_value(json_object, "schema")
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
