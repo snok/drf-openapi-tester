@@ -586,7 +586,7 @@ def test_loader_inference(settings):
 
     # Test no loader
     settings.INSTALLED_APPS = []
-    with pytest.raises(ImproperlyConfigured, match="Unable to infer which loader to use"):
+    with pytest.raises(ImproperlyConfigured, match="Unable to configure loader"):
         SchemaTester()
 
 
