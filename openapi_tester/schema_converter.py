@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from openapi_tester.constants import OPENAPI_TYPE_EXAMPLES
+from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
 from openapi_tester.utils import combine_sub_schemas
 
 
@@ -47,7 +47,7 @@ class SchemaToPythonConverter:
         schema_type: str = schema_object.get("type", "")
         enum: Optional[list] = schema_object.get("enum")
         if not hasattr(self, "faker"):
-            return OPENAPI_TYPE_EXAMPLES[schema_type]
+            return OPENAPI_PYTHON_MAPPING[schema_type]
         if enum:
             return enum[0]
         if schema_format and schema_type == "string":

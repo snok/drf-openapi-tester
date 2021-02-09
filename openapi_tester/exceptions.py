@@ -43,8 +43,8 @@ class DocumentationError(AssertionError):
         Formats and returns a standardized error message for easy debugging.
         """
         msg = [
-            f"Error: {message}\n\n",
-            f"Expected: {json.dumps(example_item)}\n\n",
+            f"{message}\n\n",
+            f"Expected type: {json.dumps(example_item)}\n\n",
             f"Received: {json.dumps(response)}\n\n",
         ]
         if hint:
