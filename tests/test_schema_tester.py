@@ -12,7 +12,6 @@ from openapi_tester import (
     DocumentationError,
     DrfSpectacularSchemaLoader,
     DrfYasgSchemaLoader,
-    OpenAPISchemaError,
     SchemaTester,
     StaticSchemaLoader,
     UndocumentedSchemaSectionError,
@@ -415,7 +414,7 @@ class TestTypeAttributes:
 
         # And if we get compile errors, we need to handle this too
         schema = {"type": "string", "pattern": r"**"}
-        with pytest.raises(OpenAPISchemaError):
+        with pytest.raises(DocumentationError):
             tester.test_schema_section(schema, "test")
 
     def test_exclusives(self):

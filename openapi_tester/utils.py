@@ -1,5 +1,5 @@
 """ Utils Module - this file contains utility functions used in multiple places """
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 
 def combine_object_schemas(schemas: List[dict]) -> Dict[str, Any]:
@@ -26,3 +26,13 @@ def combine_sub_schemas(schemas: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
             "items": combine_object_schemas([schema.get("items", {}) for schema in array_schemas]),
         }
     return combine_object_schemas([schema for schema in normalized_schemas if schema.get("type") != "array"])
+
+
+def get_schema_type(schema: dict) -> Optional[str]:
+    if "type" in schema:
+        return schema["type"]
+    if "properties" in schema or "additionalProperties" in schema:
+        return "object"
+    if "items" in schema:
+        return "array"
+    return None

@@ -46,6 +46,9 @@ else:
     # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader  # noqa: F401
 
+    # noinspection PyUnresolvedReferences
+    from openapi_tester.schema_tester import ValidationError  # noqa: F401
+
     class OpenAPITestCase(APITestCase):
         """
         Extended DRF test case

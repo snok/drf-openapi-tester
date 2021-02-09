@@ -1,26 +1,33 @@
 """ Exceptions Module """
 import json
-from typing import Any
+from typing import Any, Union
+
+from . import type_declarations as td
 
 
 class DocumentationError(AssertionError):
     """
-    Custom exception raised when package tests fail.
+    Custom exception raised when package tests fail, with output displaying received/expected data.
     """
 
-    def __init__(
-        self, message: str, response: Any, schema: dict, hint: str = "", reference: str = "", **kwargs
-    ) -> None:
+    def __init__(self, error: Union[td.ValidationError, str]) -> None:
         from openapi_tester.schema_converter import SchemaToPythonConverter
 
-        converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
+        if isinstance(error, str):
+            super().__init__(error)
+            return  # this is redundant but helps mypy
+
+        if not error.verbose:
+            super().__init__(error.message)
+
+        example_item = error.example or SchemaToPythonConverter(error.unit.schema_section, with_faker=False).result
         super().__init__(
             self.format(
-                response=self._sort_data(response),
-                example_item=self._sort_data(converted_schema),
-                hint=hint,
-                message=message,
-                reference=reference,
+                response=self._sort_data(error.unit.data),
+                example_item=self._sort_data(example_item),
+                hint=error.hint or "",
+                message=error.message,
+                reference=error.unit.reference,
             )
         )
 
@@ -32,7 +39,10 @@ class DocumentationError(AssertionError):
         if isinstance(data_object, dict):
             return dict(sorted(data_object.items()))
         if isinstance(data_object, list):
-            return sorted(data_object)
+            try:
+                return sorted(data_object)
+            except TypeError:
+                return data_object
         return data_object
 
     @staticmethod
@@ -40,15 +50,18 @@ class DocumentationError(AssertionError):
         """
         Formats and returns a standardized error message for easy debugging.
         """
-        return (
-            f"{message}\n\n"
-            f"Expected: {json.dumps(example_item)}\n\n"
-            f"Received: {json.dumps(response)}\n\n" + f"Hint: {hint}\n\n"
-            if hint
-            else "" + f"Sequence: {reference}\n"
-            if reference
-            else ""
-        )
+        msg = [
+            f"{message}\n\n",
+            f"Expected: {json.dumps(example_item)}\n\n",
+            f"Received: {json.dumps(response)}\n\n",
+        ]
+        if hint:
+            msg += [f"Hint: {hint}\n\n"]
+        if reference:
+            msg += [
+                f"Sequence: {reference}\n",
+            ]
+        return "".join(msg)
 
 
 class CaseError(AssertionError):
@@ -60,15 +73,15 @@ class CaseError(AssertionError):
         super().__init__(f"The response key `{key}` is not properly {case}. Expected value: {expected}")
 
 
-class OpenAPISchemaError(Exception):
+class LoadingError(Exception):
     """
-    Custom exception raised for invalid schema specifications.
+    Custom exception raised when we fail to load a schema.
     """
 
     pass
 
 
-class UndocumentedSchemaSectionError(AssertionError):
+class UndocumentedSchemaSectionError(LoadingError):
     """
     Custom exception raised when we cannot find a schema section.
     """

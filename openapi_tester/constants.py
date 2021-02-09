@@ -10,16 +10,32 @@ OPENAPI_PYTHON_MAPPING = {
     "integer": int.__name__,
     "number": f"{int.__name__} or {float.__name__}",
 }
+OPENAPI_TYPE_EXAMPLES = {
+    "boolean": True,
+    "string": "string",
+    "file": "wat.gif",
+    "array": [],
+    "object": {},
+    "integer": 42,
+    "number": 4.2,
+}
+OPENAPI_FORMAT_EXAMPLES = {
+    "date": "2020-10-01",
+    "date-time": "2020-10-01 20:00:00",
+    "double": 2.2,
+    "float": 2.2,
+    "byte": b"bytestring",
+}
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
 
 # Validation errors
-VALIDATE_FORMAT_ERROR = "Mismatched values, expected a value with the format {expected} but received {received}."
+VALIDATE_FORMAT_ERROR = "Mismatched values, expected the value to be {format} format."
 VALIDATE_PATTERN_ERROR = "String '{data}' does not validate using the specified pattern: {pattern}"
 INVALID_PATTERN_ERROR = "String pattern is not valid regex: {pattern}"
 VALIDATE_ENUM_ERROR = "Mismatched values, expected a member of the enum {enum} but received {received}."
-VALIDATE_TYPE_ERROR = "Mismatched types, expected {expected} but received {received}."
+VALIDATE_TYPE_ERROR = "Mismatched types, expected a {type} type."
 VALIDATE_MULTIPLE_OF_ERROR = "The response value {data} should be a multiple of {multiple}"
-VALIDATE_MINIMUM_ERROR = "The response value {data} exceeds the minimum allowed value of {minimum}"
+VALIDATE_MINIMUM_ERROR = "The response value {data} is below the minimum required value of {minimum}"
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
 VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed length of {min_length}"
 VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"

@@ -21,7 +21,7 @@ def test_documentation_error_message():
                     "description": "This is a string type",
                     "type": "string",
                 },
-                "key4": {"type": "array", "items": {"type": "integer"}},
+                "key4": {"type": "array", "items": {"type": "object", "properties": {"key": {"type": "integer"}}}},
             },
         },
         reference="test:reference",
@@ -29,9 +29,9 @@ def test_documentation_error_message():
     )
 
     expected = """
-Error: Test error message
+Test error message
 
-Expected: {"key1": "str", "key2": "str", "key3": "str", "key4": ["int"]}
+Expected: {"key1": "string", "key2": "string", "key3": "string", "key4": [{"key": 42}]}
 
 Received: {"key1": "test", "key2": "test", "key3": "test", "key4": [1, 2, 3]}
 
@@ -50,7 +50,11 @@ def test_case_error_message():
 def test_documentation_error_sort_data_type():
     assert DocumentationError._sort_data([1, 3, 2]) == [1, 2, 3]  # list
     assert DocumentationError._sort_data({"1", "3", "2"}) == {"1", "2", "3"}  # set
-    assert DocumentationError._sort_data({"1": "a", "3": "a", "2": "a"}) == {"1": "a", "2": "a", "3": "a"}  # dict
+    assert DocumentationError._sort_data({"1": "a", "3": "a", "2": "a"}) == {
+        "1": "a",
+        "2": "a",
+        "3": "a",
+    }  # dict
 
     # Test sort failure scenario - expect the method to succeed and default to no reordering
     assert DocumentationError._sort_data(["1", {}, []]) == ["1", {}, []]
