@@ -65,7 +65,7 @@ class TestSchemaExamples:
         for schema_section, response, _ in iterate_schema(schema):
             if schema_section and response:
                 static_tester.validate_response(response)
-                assert sorted(static_tester.loader.get_response_schema_section(response)) == sorted(schema_section)
+                assert sorted(static_tester.get_response_schema_section(response)) == sorted(schema_section)
 
     def test_validate_response_success_scenario_with_predefined_data(self, client):
         tester = SchemaTester()
@@ -267,7 +267,7 @@ class TestSchemaExamples:
             if schema_section and response:
                 with patch.object(StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)):
                     tester.validate_response(response)
-                    assert sorted(tester.loader.get_response_schema_section(response)) == sorted(schema_section)
+                    assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
 
     def test_sample_schemas(self):
         for filename in glob.iglob(str(CURRENT_PATH) + "/schemas/sample-schemas/**/**", recursive=True):
@@ -282,7 +282,7 @@ class TestSchemaExamples:
                             StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)
                         ):
                             tester.validate_response(response)
-                            assert sorted(tester.loader.get_response_schema_section(response)) == sorted(schema_section)
+                            assert sorted(tester.get_response_schema_section(response)) == sorted(schema_section)
 
 
 example_schema_array = {"type": "array", "items": {"type": "string"}}
