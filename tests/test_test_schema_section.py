@@ -181,7 +181,7 @@ def test_pattern():
     tester.test_schema_section(schema, "123-45-6789")
 
     # Bad pattern should fail
-    with pytest.raises(DocumentationError, match="Error: String 'test' does not validate using the specified pattern:"):
+    with pytest.raises(DocumentationError, match="String 'test' does not validate using the specified pattern:"):
         tester.test_schema_section(schema, "test")
 
     # And if we get compile errors, we need to handle this too

@@ -109,9 +109,7 @@ def test_validate_response_failure_scenario_with_predefined_data(client):
         response = client.get(item["url"])
         assert response.status_code == 200
         assert response.json() == item["expected_response"]
-        with pytest.raises(
-            DocumentationError, match="Error: The following property is missing from the tested data: width"
-        ):
+        with pytest.raises(DocumentationError, match="The following property is missing from the tested data: width"):
             tester.validate_response(response)
 
 
@@ -126,7 +124,7 @@ def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
-        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.",
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.",
     ):
         tester.validate_response(response)
 
@@ -142,7 +140,7 @@ def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
-        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.",
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{method}`.",
     ):
         tester.validate_response(response)
 
@@ -158,7 +156,7 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
-        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.",
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{status}`.",
     ):
         tester.validate_response(response)
 
