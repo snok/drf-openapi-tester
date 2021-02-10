@@ -31,7 +31,7 @@ def test_documentation_error_message():
     expected = """
 Test error message
 
-Expected type: {"key1": "str", "key2": "str", "key3": "str", "key4": ["int"]}
+Expected: {key1: str, key2: str, key3: str, key4: [int]}
 
 Received: {"key1": "test", "key2": "test", "key3": "test", "key4": [1, 2, 3]}
 
