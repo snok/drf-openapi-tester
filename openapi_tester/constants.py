@@ -10,6 +10,7 @@ OPENAPI_PYTHON_MAPPING = {
     "integer": int.__name__,
     "number": f"{int.__name__} or {float.__name__}",
 }
+
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
 
 # Validation errors

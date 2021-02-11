@@ -45,9 +45,10 @@ class DocumentationError(AssertionError):
         """
         Formats and returns a standardized error message for easy debugging.
         """
+        example = json.dumps(example_item).replace('"', "")
         msg = [
-            f"Error: {message}\n\n",
-            f"Expected: {json.dumps(example_item)}\n\n",
+            f"{message}\n\n",
+            f"Expected: {example}\n\n",
             f"Received: {json.dumps(response)}\n\n",
         ]
         if hint:
@@ -76,9 +77,9 @@ class OpenAPISchemaError(Exception):
     pass
 
 
-class UndocumentedSchemaSectionError(AssertionError):
+class UndocumentedSchemaSectionError(OpenAPISchemaError):
     """
-    Custom exception raised when we cannot find a schema section.
+    Subset of OpenAPISchemaError, raised when we cannot find a single schema section.
     """
 
     pass

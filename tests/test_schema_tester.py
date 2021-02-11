@@ -162,7 +162,7 @@ class TestSchemaExamples:
             assert response.status_code == 200
             assert response.json() == item["expected_response"]
             with pytest.raises(
-                DocumentationError, match="Error: The following property is missing from the tested data: width"
+                DocumentationError, match="The following property is missing from the tested data: width"
             ):
                 tester.validate_response(response)
 
@@ -177,7 +177,7 @@ class TestSchemaExamples:
         response = response_factory(schema_section, de_parameterized_path, method, status)
         with pytest.raises(
             UndocumentedSchemaSectionError,
-            match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.",
+            match=f"Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.",
         ):
             tester.validate_response(response)
 
@@ -192,7 +192,7 @@ class TestSchemaExamples:
         response = response_factory(schema_section, de_parameterized_path, method, status)
         with pytest.raises(
             UndocumentedSchemaSectionError,
-            match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{method}`.",
+            match=f"Unsuccessfully tried to index the OpenAPI schema by `{method}`.",
         ):
             tester.validate_response(response)
 
@@ -207,7 +207,7 @@ class TestSchemaExamples:
         response = response_factory(schema_section, de_parameterized_path, method, status)
         with pytest.raises(
             UndocumentedSchemaSectionError,
-            match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `{status}`.",
+            match=f"Unsuccessfully tried to index the OpenAPI schema by `{status}`.",
         ):
             tester.validate_response(response)
 
