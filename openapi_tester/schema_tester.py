@@ -13,6 +13,7 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     ANY_OF_ERROR,
     EXCESS_RESPONSE_KEY_ERROR,
+    INIT_ERROR,
     INVALID_PATTERN_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
@@ -69,7 +70,70 @@ class SchemaTester:
         elif "drf_yasg" in settings.INSTALLED_APPS:
             self.loader = DrfYasgSchemaLoader()
         else:
-            raise ImproperlyConfigured("No loader is configured.")
+            raise ImproperlyConfigured(INIT_ERROR)
+
+    @staticmethod
+    def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
+        """
+        Returns the value of a given key
+        """
+        try:
+            return schema[key]
+        except KeyError as e:
+            raise UndocumentedSchemaSectionError(
+                UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=key, error_addon=error_addon)
+            ) from e
+
+    @staticmethod
+    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
+        """
+        Returns the status code section of a schema, handles both str and int status codes
+        """
+        if str(status_code) in schema:
+            return schema[str(status_code)]
+        if int(status_code) in schema:
+            return schema[int(status_code)]
+        raise UndocumentedSchemaSectionError(
+            UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
+        )
+
+    def get_response_schema_section(self, response: td.Response) -> dict:
+        """
+        Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
+
+        :param response: DRF Response Instance
+        :return dict
+        """
+        schema = self.loader.get_schema()
+        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
+        paths_object = self._get_key_value(schema, "paths")
+
+        pretty_routes = "\n\t• ".join(paths_object.keys())
+        route_object = self._get_key_value(
+            paths_object,
+            parameterized_path,
+            f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}",
+        )
+
+        str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
+        method_object = self._get_key_value(
+            route_object, response.request["REQUEST_METHOD"].lower(), f"\n\nAvailable methods include: {str_methods}."
+        )
+
+        responses_object = self._get_key_value(method_object, "responses")
+        keys = ", ".join(str(key) for key in responses_object.keys())
+        status_code_object = self._get_status_code(
+            responses_object,
+            response.status_code,
+            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented responses include: {keys}. ",
+        )
+
+        if "openapi" not in schema:
+            # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
+            return self._get_key_value(status_code_object, "schema")
+        content_object = self._get_key_value(status_code_object, "content")
+        json_object = self._get_key_value(content_object, "application/json")
+        return self._get_key_value(json_object, "schema")
 
     def handle_all_of(
         self,
@@ -151,69 +215,6 @@ class SchemaTester:
         )
 
     @staticmethod
-    def _get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
-        """
-        Returns the value of a given key
-        """
-        try:
-            return schema[key]
-        except KeyError as e:
-            raise UndocumentedSchemaSectionError(
-                UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=key, error_addon=error_addon)
-            ) from e
-
-    @staticmethod
-    def _get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
-        """
-        Returns the status code section of a schema, handles both str and int status codes
-        """
-        if str(status_code) in schema:
-            return schema[str(status_code)]
-        if int(status_code) in schema:
-            return schema[int(status_code)]
-        raise UndocumentedSchemaSectionError(
-            UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
-        )
-
-    def get_response_schema_section(self, response: td.Response) -> dict:
-        """
-        Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
-
-        :param response: DRF Response Instance
-        :return dict
-        """
-        schema = self.loader.get_schema()
-        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
-        paths_object = self._get_key_value(schema, "paths")
-
-        pretty_routes = "\n\t• ".join(paths_object.keys())
-        route_object = self._get_key_value(
-            paths_object,
-            parameterized_path,
-            f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}",
-        )
-
-        str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
-        method_object = self._get_key_value(
-            route_object, response.request["REQUEST_METHOD"].lower(), f"\n\nAvailable methods include: {str_methods}."
-        )
-
-        responses_object = self._get_key_value(method_object, "responses")
-        keys = ", ".join(str(key) for key in responses_object.keys())
-        status_code_object = self._get_status_code(
-            responses_object,
-            response.status_code,
-            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented responses include: {keys}. ",
-        )
-
-        if "openapi" not in schema:
-            # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
-            return self._get_key_value(status_code_object, "schema")
-        content_object = self._get_key_value(status_code_object, "content")
-        json_object = self._get_key_value(content_object, "application/json")
-        return self._get_key_value(json_object, "schema")
-
-    @staticmethod
     def is_nullable(schema_item: dict) -> bool:
         """
         Checks if the item is nullable.
@@ -267,11 +268,7 @@ class SchemaTester:
             valid = isinstance(data, bytes)
         elif schema_format in ["date", "date-time"]:
             parser = parse_date if schema_format == "date" else parse_datetime
-            try:
-                result = parser(data)
-                valid = result is not None
-            except ValueError:
-                valid = False
+            valid = parser(data) is not None
         return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
     def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
@@ -281,14 +278,17 @@ class SchemaTester:
             return None
         if schema_type in ["file", "string"]:
             valid = isinstance(data, (str, bytes))
+        elif schema_type == "boolean":
+            valid = isinstance(data, bool)
         elif schema_type == "integer":
-            valid = isinstance(data, int)
+            valid = isinstance(data, int) and not isinstance(data, bool)
         elif schema_type == "number":
-            valid = isinstance(data, (int, float))
+            valid = isinstance(data, (int, float)) and not isinstance(data, bool)
         elif schema_type == "object":
             valid = isinstance(data, dict)
         elif schema_type == "array":
             valid = isinstance(data, list)
+
         return (
             None
             if valid

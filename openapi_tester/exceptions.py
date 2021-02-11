@@ -34,7 +34,10 @@ class DocumentationError(AssertionError):
         if isinstance(data_object, dict):
             return dict(sorted(data_object.items()))
         if isinstance(data_object, list):
-            return sorted(data_object)
+            try:
+                return sorted(data_object)
+            except TypeError:
+                pass
         return data_object
 
     @staticmethod
