@@ -1,8 +1,9 @@
 """ Type declarations Module - this file is used for type checking and type casting """
+# flake8: noqa
 # pylint: disable=unused-import, invalid-name, unused-argument, no-self-use, missing-function-docstring
 
 import sys
-from typing import TYPE_CHECKING, Callable, List, Optional
+from typing import TYPE_CHECKING
 
 
 class Exporter:
@@ -44,18 +45,4 @@ else:
     from rest_framework.test import APITestCase
 
     # noinspection PyUnresolvedReferences
-    from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader  # noqa: F401
-
-    class OpenAPITestCase(APITestCase):
-        """
-        Extended DRF test case
-        this class is a stub that is used to cast
-        """
-
-        def assertResponse(
-            self,
-            response: Response,
-            case_tester: Optional[Callable[[str], None]] = None,
-            ignore_case: Optional[List[str]] = None,
-        ) -> None:
-            ...
+    from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader

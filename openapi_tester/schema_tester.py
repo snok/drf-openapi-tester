@@ -1,13 +1,12 @@
 """ Schema Tester """
 import re
 from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Union, cast
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.dateparse import parse_date, parse_datetime
 from rest_framework.response import Response
-from rest_framework.test import APITestCase
 
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
@@ -97,7 +96,7 @@ class SchemaTester:
             UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=status_code, error_addon=error_addon)
         )
 
-    def get_response_schema_section(self, response: td.Response) -> dict:
+    def get_response_schema_section(self, response: td.Response) -> Dict[str, Any]:
         """
         Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
 
@@ -105,6 +104,7 @@ class SchemaTester:
         :return dict
         """
         schema = self.loader.get_schema()
+        response_method = response.request["REQUEST_METHOD"].lower()
         parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
         paths_object = self._get_key_value(schema, "paths")
 
@@ -112,12 +112,14 @@ class SchemaTester:
         route_object = self._get_key_value(
             paths_object,
             parameterized_path,
-            f"\n\nFor debugging purposes, other valid routes include: \n\n\t• {pretty_routes}",
+            f"\n\nValid routes include: \n\n\t• {pretty_routes}",
         )
 
         str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
         method_object = self._get_key_value(
-            route_object, response.request["REQUEST_METHOD"].lower(), f"\n\nAvailable methods include: {str_methods}."
+            route_object,
+            response_method,
+            f"\n\nAvailable methods include: {str_methods}.",
         )
 
         responses_object = self._get_key_value(method_object, "responses")
@@ -131,8 +133,16 @@ class SchemaTester:
         if "openapi" not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self._get_key_value(status_code_object, "schema")
-        content_object = self._get_key_value(status_code_object, "content")
-        json_object = self._get_key_value(content_object, "application/json")
+        content_object = self._get_key_value(
+            status_code_object,
+            "content",
+            f"No content documented for method: {response_method}, path: {parameterized_path}",
+        )
+        json_object = self._get_key_value(
+            content_object,
+            "application/json",
+            f"no `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
+        )
         return self._get_key_value(json_object, "schema")
 
     def handle_all_of(
@@ -191,7 +201,8 @@ class SchemaTester:
     ):
         any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
         combined_sub_schemas = map(
-            lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]), range(len(any_of))
+            lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]),
+            range(len(any_of)),
         )
 
         for schema in [*any_of, *combined_sub_schemas]:
@@ -211,7 +222,6 @@ class SchemaTester:
             response=data,
             schema=schema_section,
             reference=f"{reference}.anyOf",
-            hint="",
         )
 
     @staticmethod
@@ -233,7 +243,10 @@ class SchemaTester:
         )
 
     def _validate_key_casing(
-        self, key: str, case_tester: Optional[Callable[[str], None]] = None, ignore_case: Optional[List[str]] = None
+        self,
+        key: str,
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
     ) -> None:
         tester = case_tester or getattr(self, "case_tester", None)
         ignore_case = [*self.ignore_case, *(ignore_case or [])]
@@ -263,7 +276,7 @@ class SchemaTester:
         valid = True
         schema_format = schema_section.get("format")
         if schema_format in ["double", "float"]:
-            valid = isinstance(data, float)
+            valid = isinstance(data, float) if data != 0 else isinstance(data, int)
         elif schema_format == "byte":
             valid = isinstance(data, bytes)
         elif schema_format in ["date", "date-time"]:
@@ -292,7 +305,10 @@ class SchemaTester:
         return (
             None
             if valid
-            else VALIDATE_TYPE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_type], received=type(data).__name__)
+            else VALIDATE_TYPE_ERROR.format(
+                expected=OPENAPI_PYTHON_MAPPING[schema_type],
+                received=type(data).__name__,
+            )
         )
 
     @staticmethod
@@ -433,7 +449,12 @@ class SchemaTester:
         for validator in validators:
             error = validator(schema_section, data)
             if error:
-                raise DocumentationError(message=error, response=data, schema=schema_section, reference=reference)
+                raise DocumentationError(
+                    message=error,
+                    response=data,
+                    schema=schema_section,
+                    reference=reference,
+                )
 
         if schema_section_type == "object":
             self.test_openapi_object(
@@ -468,7 +489,8 @@ class SchemaTester:
         """
 
         properties = schema_section.get("properties", {})
-        required_keys = schema_section.get("required", [])
+        write_only_properties = [key for key in properties.keys() if properties[key].get("writeOnly")]
+        required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
         response_keys = data.keys()
         additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
         if not properties and isinstance(additional_properties, dict):
@@ -558,18 +580,3 @@ class SchemaTester:
             case_tester=case_tester,
             ignore_case=ignore_case,
         )
-
-    def test_case(self) -> APITestCase:
-        validate_response = self.validate_response
-
-        def assert_response(
-            response: td.Response,
-            case_tester: Optional[Callable[[str], None]] = None,
-            ignore_case: Optional[List[str]] = None,
-        ) -> None:
-            """
-            Assert response matches the OpenAPI spec.
-            """
-            validate_response(response=response, case_tester=case_tester, ignore_case=ignore_case)
-
-        return cast(td.OpenAPITestCase, type("OpenAPITestCase", (APITestCase,), {"assertResponse": assert_response}))
