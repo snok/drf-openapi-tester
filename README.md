@@ -24,9 +24,12 @@
 DRF OpenAPI Tester is a simple test utility. Its aim is to make it easy for
 developers to catch and correct documentation errors in their OpenAPI schemas.
 
-Maintaining good documentation is difficult, and shouldn't be done manually.
-By simply testing that your API responses match your schema definitions you can
-*know* that your schema reflects reality.
+## Installation
+
+
+```shell script
+pip install drf-openapi-tester
+```
 
 ## How does it work?
 
@@ -49,8 +52,6 @@ def test_response_documentation(client):
     schema_tester.validate_response(response=response)
 ```
 
-See docs further down for more details.
-
 ## Supported OpenAPI Implementations
 
 Whether we're able to test your schema or not will depend on how it's implemented.
@@ -66,13 +67,6 @@ create a PR.
 
 Adding a new implementation is as easy as adding the
 required logic needed to load the OpenAPI schema.
-
-## Installation
-
-
-```shell script
-pip install drf-openapi-tester
-```
 
 ## Features
 
@@ -152,59 +146,6 @@ def test_response_documentation(client):
         ignore_case=['DHCP']
     )
 ```
-
-## OpenAPITestCase
-
-The library also offers an abstraction on top of validate_response that is meant to be used with the Django test framework.
-
-
-```python
-from openapi_tester.schema_tester import SchemaTester
-from openapi_tester.case_testers import is_camel_case
-
-# create a bound OpenAPITestCase class by instantiating the SchemaTester and calling the test_case method:
-OpenAPITestCase = SchemaTester(case_tester=is_camel_case).test_case()
-
-# use the OpenAPITestCase as part of the TestCase inheritance
-class ExtendedAPITestCase(OpenAPITestCase):
-    def test_get_200(self) -> None:
-        """
-        Verifies that a 200 is returned for a valid GET request to the /test/ endpoint.
-        """
-        response = self.client.get('/api/v1/test/', headers={'Content-Type': 'application/json'})
-        expected_response = [...]
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), expected_response)
-
-        # use the self.assertResponse method as you would use validate_response
-        self.assertResponse(response=response)
-```
-
-The bound `self.assertResponse` method takes the same kwargs as validate_response.
-
-## Error messages
-
-When found, errors will be raised in the following format:
-
-```shell script
-openapi_tester.exceptions.DocumentationError: Item is misspecified:
-
-Expected:   {'name': 'Saab', 'height': 'medium'}
-
-Received:   {'name': 'Saab'}
-
-Hint:       Remove the key(s) from you OpenAPI docs, or include it in your API response.
-
-Sequence:   init.list
-```
-
-- `Expected` describes the response data
-- `Received` describes the schema.
-- `Hint` will sometimes include a suggestion for what actions to take, to correct an error.
-- `Sequence` will indicate how the response tester iterated through the data structure, before finding the error.
-
-In this example, the response data is missing two attributes, ``height`` and ``width``, documented in the OpenAPI schema indicating that either the response needs to include more data, or that the OpenAPI schema should be corrected. It might be useful to highlight that we can't be sure whether the response or the schema is wrong; only that they are inconsistent.
 
 ### Supporting the project
 
