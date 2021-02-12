@@ -1,22 +1,20 @@
-# DRF OpenAPI Tester
+<a href="https://pypi.org/project/drf-openapi-tester/">
+    <img src="https://img.shields.io/pypi/v/drf-openapi-tester.svg" alt="Package version">
+</a>
+<a href="https://codecov.io/gh/snok/drf-openapi-tester">
+    <img src="https://codecov.io/gh/snok/drf-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
+</a>
+<a href="https://pypi.org/project/drf-openapi-tester/">
+    <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
+</a>
+<a href="https://pypi.python.org/pypi/drf-openapi-tester">
+    <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
+</a>
+<a href="http://mypy-lang.org/">
+    <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
+</a>
 
-<div align="center">
-    <a href="https://pypi.org/project/drf-openapi-tester/">
-        <img src="https://img.shields.io/pypi/v/drf-openapi-tester.svg" alt="Package version">
-    </a>
-    <a href="https://codecov.io/gh/snok/drf-openapi-tester">
-        <img src="https://codecov.io/gh/snok/drf-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
-    </a>
-    <a href="https://pypi.org/project/drf-openapi-tester/">
-        <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
-    </a>
-    <a href="https://pypi.python.org/pypi/drf-openapi-tester">
-        <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
-    </a>
-    <a href="http://mypy-lang.org/">
-        <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-    </a>
-</div>
+# DRF OpenAPI Tester
 
 DRF OpenAPI Tester is a test utility to validate API responses against OpenApi 2/3 schema. It has built-in support for:
 
@@ -25,10 +23,6 @@ DRF OpenAPI Tester is a test utility to validate API responses against OpenApi 2
   with [drf-spectacular](https://github.com/tfranzel/drf-spectacular)
 - Testing OpenAPI 2/3 yaml or json schema files (
   e.g. [DRF](https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas))
-
-* NOTE regarding OpenAPI 2 (swagger) schemas. We are using [prance](https://github.com/jfinkhaeuser/prance) as a schema
-  resolver, and it has some issues with the resolution of (very) complex OpenAPI 2.0 schemas. If you encounter
-  issues, [please document them here](https://github.com/snok/drf-openapi-tester/issues/205).
 
 ## Installation
 
@@ -172,8 +166,14 @@ schema_test_with_case_validation = SchemaTester(case_tester=is_camel_case, ignor
 ## Schema Validation
 
 When the SchemaTester loads a schema, it runs it through
-[OpenAPI Spec validator](https://github.com/p1c2u/openapi-spec-validator) which validates that the schema passes
-without specification compliance issues. In case of issues the validator will raise an error.
+[OpenAPI Spec validator](https://github.com/p1c2u/openapi-spec-validator) which validates that the schema passes without
+specification compliance issues. In case of issues the validator will raise an error.
+
+## Known Issues
+
+* We are using [prance](https://github.com/jfinkhaeuser/prance) as a schema resolver, and it has some issues with the
+  resolution of (very) complex OpenAPI 2.0 schemas. If you encounter
+  issues, [please document them here](https://github.com/snok/drf-openapi-tester/issues/205).
 
 ## Contributing
 
