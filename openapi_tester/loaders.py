@@ -128,7 +128,7 @@ class BaseSchemaLoader:
         path, resolved_path = self.resolve_path(de_parameterized_path)
         for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
             parameter_name = parameter.replace("{", "").replace("}", "")
-            path = path.replace(resolved_path.kwargs[parameter_name], parameter_name)
+            path = path.replace(str(resolved_path.kwargs[parameter_name]), parameter_name)
         return path
 
     @staticmethod
@@ -221,7 +221,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         """
         Loads generated schema from drf_spectacular and returns it as a dict.
         """
-        return loads(dumps(self.schema_generator.get_schema(None, True)))
+        return loads(dumps(self.schema_generator.get_schema(public=True)))
 
     @staticmethod
     def get_path_prefix() -> str:
