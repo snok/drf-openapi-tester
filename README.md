@@ -18,11 +18,9 @@
 
 DRF OpenAPI Tester is a test utility to validate API responses against OpenApi 2/3 schema. It has built-in support for:
 
-- Testing dynamically rendered OpenAPI 2 schemas created with [drf-yasg](https://github.com/axnsan12/drf-yasg)
-- Testing dynamically rendered OpenAPI 3 schemas created
-  with [drf-spectacular](https://github.com/tfranzel/drf-spectacular)
-- Testing OpenAPI 2/3 yaml or json schema files (
-  e.g. [DRF](https://www.django-rest-framework.org/topics/documenting-your-api/#generating-documentation-from-openapi-schemas))
+- OpenAPI 2/3 yaml or json schema files.
+- OpenAPI 2 schemas created with [drf-yasg](https://github.com/axnsan12/drf-yasg).
+- OpenAPI 3 schemas created with [drf-spectacular](https://github.com/tfranzel/drf-spectacular).
 
 ## Installation
 
