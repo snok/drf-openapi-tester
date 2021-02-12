@@ -3,13 +3,13 @@ name = "drf-openapi-tester"
 version = "1.0.0"
 description = "Django test utility for validating OpenAPI response documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
-maintainers = ["Jonas Krüger Svensson <jonas-ks@hotmail.com>"]
+maintainers = ["Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 license = "BSD-4-Clause"
 readme = "README.md"
 homepage = "https://github.com/snok/drf-openapi-tester"
 repository = "https://github.com/snok/drf-openapi-tester"
 documentation = "https://github.com/snok/drf-openapi-tester"
-keywords = ["openapi", "swagger", "api", "testing", "docs", "documentation", "django"]
+keywords = ["openapi", "swagger", "api", "testing", "schema", "django", "drf"]
 classifiers = [
     "Development Status :: 4 - Beta",  # TODO: Update when stable
     "Environment :: Web Environment",
@@ -35,7 +35,7 @@ classifiers = [
     "Topic :: Utilities",
     "Typing :: Typed",
 ]
-include = ["CHANGELOG.rst"]
+include = ["CHANGELOG.md"]
 packages = [
     { include = "openapi_tester" },
 ]
