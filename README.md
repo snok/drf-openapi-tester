@@ -48,7 +48,8 @@ the tester:
 ```python
 from openapi_tester import SchemaTester
 
-schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")  # should be an instance of `str
+# path should be a string
+schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 
 
 ```
@@ -65,9 +66,7 @@ schema_tester = SchemaTester()
 
 def test_response_documentation(client):
     response = client.get('api/v1/test/1')
-
     assert response.status_code == 200
-
     schema_tester.validate_response(response=response)
 ```
 
@@ -86,9 +85,7 @@ class BaseAPITestCase(APITestCase):
     """ Base test class for api views including schema validation """
 
     @staticmethod
-    def assertResponse(
-            response: Response, **kwargs
-    ) -> None:
+    def assertResponse(response: Response, **kwargs) -> None:
         """ helper to run validate_response and pass kwargs to it """
         schema_tester.validate_response(response=response, **kwargs)
 ```
@@ -138,11 +135,9 @@ from openapi_tester import SchemaTester, is_camel_case
 schema_tester = SchemaTester()
 
 
-def my_test():
+def my_test(client):
     response = client.get('api/v1/test/1')
-
     assert response.status_code == 200
-
     schema_tester.validate_response(response=response, case_tester=is_camel_case)
 ```
 
