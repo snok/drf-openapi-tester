@@ -14,6 +14,7 @@ from test_project.api.views.items import Items
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
+from test_project.api.views.viewset import NamesApi
 
 
 class IsValidVehicleType(StringConverter):
@@ -33,6 +34,7 @@ class IsValidVersion(StringConverter):
 register_converter(IsValidVehicleType, "vehicle_type")
 register_converter(IsValidVersion, "version")
 
+
 api_urlpatterns = [
     path("api/<version:version>/cars/correct", GoodCars.as_view()),
     path("api/<version:version>/cars/incorrect", BadCars.as_view()),
@@ -44,12 +46,12 @@ api_urlpatterns = [
     path("api/<version:version>/exempt-endpoint", Exempt.as_view()),
     path("api/<version:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
+    path("api/<version:version>/names/<id>", NamesApi.as_view({"get": "retrieve"})),
 ]
 
 internationalised_urlpatterns = i18n_patterns(
     path("api/<version:version>/i18n", Languages.as_view()),
 )
-
 
 swagger_info = openapi.Info(
     title="DRF_YASG test project",
