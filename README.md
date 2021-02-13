@@ -16,7 +16,8 @@
 
 # DRF OpenAPI Tester
 
-DRF OpenAPI Tester is a test utility to validate API responses against OpenApi 2/3 schema. It has built-in support for:
+DRF OpenAPI Tester is a test utility to validate API responses against OpenAPI 2 and 3 schema. It has built-in support
+for:
 
 - OpenAPI 2/3 yaml or json schema files.
 - OpenAPI 2 schemas created with [drf-yasg](https://github.com/axnsan12/drf-yasg).
@@ -54,7 +55,7 @@ schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 
 ```
 
-Once you instantiates a tester, you can use it to validate a DRF Response in a test:
+Once you instantiate a tester, you can use it to validate a DRF Response in a test:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
@@ -70,8 +71,7 @@ def test_response_documentation(client):
     schema_tester.validate_response(response=response)
 ```
 
-If you are using the Django testing framework, you can create a base APITestCase with schema validation for easy
-sharing:
+If you are using the Django testing framework, you can create a base APITestCase that incorporates schema validation:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
