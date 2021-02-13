@@ -34,6 +34,7 @@ from openapi_tester.constants import (
     VALIDATE_RESPONSE_TYPE_ERROR,
     VALIDATE_TYPE_ERROR,
     VALIDATE_UNIQUE_ITEMS_ERROR,
+    WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
@@ -513,6 +514,14 @@ class SchemaTester:
                 raise DocumentationError(
                     message=EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
                     hint="Remove the key from your API response, or include it in your OpenAPI docs.",
+                    response=data,
+                    schema=schema_section,
+                    reference=f"{reference}.object:key:{key}",
+                )
+            if key in write_only_properties:
+                raise DocumentationError(
+                    message=WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key),
+                    hint="Remove the key from your API response, or remove the `WriteOnly` restriction.",
                     response=data,
                     schema=schema_section,
                     reference=f"{reference}.object:key:{key}",
