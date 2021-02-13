@@ -15,11 +15,9 @@ from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_va
 from prance.util.resolver import RefResolver
 
 # noinspection PyProtectedMember
-from prance.util.url import ResolutionError
 from rest_framework.schemas.generators import EndpointEnumerator
 
 from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
-from openapi_tester.exceptions import OpenAPISchemaError
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -34,23 +32,9 @@ def handle_recursion_limit(schema: dict) -> Callable:
         definition = schema
         for key in keys:
             definition = definition[key]
-        return remove_recursive_ref(definition, fragment)
+        return definition
 
     return handler
-
-
-def remove_recursive_ref(schema: dict, fragment: str) -> dict:
-    """
-    Iterates over a dictionary to look for pesky recursive $refs using the fragment identifier.
-    """
-    for key, value in schema.items():
-        if isinstance(value, dict):
-            if "$ref" in value.keys() and fragment in value["$ref"]:
-                # TODO: use this value in the testing - to ignore some parts of the specs
-                schema[key] = {"x-recursive-ref-replaced": True}
-            else:
-                schema[key] = remove_recursive_ref(schema[key], fragment)
-    return schema
 
 
 class BaseSchemaLoader:
@@ -82,19 +66,16 @@ class BaseSchemaLoader:
         return self.schema  # type: ignore
 
     def de_reference_schema(self, schema: dict) -> dict:
-        try:
-            url = schema["basePath"] if "basePath" in schema else self.base_path
-            recursion_handler = handle_recursion_limit(schema)
-            resolver = RefResolver(
-                schema,
-                recursion_limit_handler=recursion_handler,
-                recursion_limit=10,
-                url=url,
-            )
-            resolver.resolve_references()
-            return resolver.specs
-        except ResolutionError as e:
-            raise OpenAPISchemaError(e.args[0]) from e
+        url = schema["basePath"] if "basePath" in schema else self.base_path
+        recursion_handler = handle_recursion_limit(schema)
+        resolver = RefResolver(
+            schema,
+            recursion_limit_handler=recursion_handler,
+            recursion_limit=10,
+            url=url,
+        )
+        resolver.resolve_references()
+        return resolver.specs
 
     def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
         normalized_paths: Dict[str, dict] = {}

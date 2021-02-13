@@ -95,7 +95,7 @@ class SchemaToPythonConverter:
         for key, value in properties.items():
             if "oneOf" in value:
                 value = random.sample(value["oneOf"], 1)[0]
-            elif "anyOf" in value:
+            if "anyOf" in value:
                 value = self._handle_any_of(value["anyOf"])
             value_type = value.get("type")
             if not value_type:
