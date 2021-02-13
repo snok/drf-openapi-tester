@@ -44,6 +44,9 @@ MISSING_PROPERTY_KEY_ERROR = (
 EXCESS_RESPONSE_KEY_ERROR = (
     "The following property was found in the response, but is missing from the schema definition: {excess_key}."
 )
+WRITE_ONLY_RESPONSE_KEY_ERROR = (
+    "The following property was found in the response, but is documented as being `WriteOnly`: {write_only_key}."
+)
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
 ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches."
 ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
