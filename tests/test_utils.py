@@ -1,4 +1,12 @@
-from openapi_tester.utils import combine_sub_schemas, sort_object
+from openapi_tester.utils import combine_sub_schemas, merge_objects, sort_object
+
+object_1 = {"type": "object", "required": ["key1"], "properties": {"key1": {"type": "string"}}}
+object_2 = {"type": "object", "required": ["key2"], "properties": {"key2": {"type": "string"}}}
+merged_object = {
+    "type": "object",
+    "required": ["key1", "key2"],
+    "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}},
+}
 
 
 def test_documentation_error_sort_data_type():
@@ -12,18 +20,24 @@ def test_documentation_error_sort_data_type():
 
 def test_combine_sub_schemas_array_list():
     test_schemas = [{"type": "array", "items": {"type": "string"}}, {"type": "array", "items": {"type": "integer"}}]
-    expected = {"type": "array", "items": {"type": "integer"}}
+    expected = {"type": "array", "items": {"type": "string"}}
     assert sort_object(combine_sub_schemas(test_schemas)) == sort_object(expected)
 
 
 def test_combine_sub_schemas_object_list():
+    test_schemas = [object_1, object_2]
+    assert sort_object(combine_sub_schemas(test_schemas)) == sort_object({**merged_object})
+
+
+def test_merge_objects():
     test_schemas = [
-        {"type": "object", "required": ["key1"], "properties": {"key1": {"type": "string"}}},
-        {"type": "object", "required": ["key2"], "properties": {"key2": {"type": "string"}}},
+        object_1,
+        object_2,
+        {"type": "object", "properties": {"key3": {"allOf": [object_1, object_2]}}},
     ]
     expected = {
         "type": "object",
         "required": ["key1", "key2"],
-        "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}},
+        "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}, "key3": merged_object},
     }
-    assert sort_object(combine_sub_schemas(test_schemas)) == sort_object(expected)
+    assert sort_object(merge_objects(test_schemas)) == sort_object(expected)
