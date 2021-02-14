@@ -1,12 +1,17 @@
 # Changelog
 
-## v1.0.0 2020-02-12
+## v1.2.0 2020-02-14
+
+* Added validation of writeOnly keys
+* Updated openAPI keyword (anyOf, oneOf, allOf) logic
+* Resolve minor issues with error formatting (unable to handle bytes)
+
+## v1.1.0 2020-02-12
 
 * Fixed allOf deep object merging
 * Fixed handling of non-string path parameters
 * Fixed error messages
 * Fixed handling of 0 as a float format value
-
 
 ## v1.0.0 2020-02-07
 
