@@ -2,6 +2,8 @@
 import json
 from typing import Any
 
+from openapi_tester.utils import sort_object
+
 
 class DocumentationError(AssertionError):
     """
@@ -21,24 +23,13 @@ class DocumentationError(AssertionError):
         converted_schema = SchemaToPythonConverter(schema, with_faker=False).result
         super().__init__(
             self.format(
-                response=self._sort_data(response),
-                example_item=self._sort_data(converted_schema),
+                response=sort_object(response),
+                example_item=sort_object(converted_schema),
                 hint=hint,
                 message=message,
                 reference=reference,
             )
         )
-
-    @staticmethod
-    def _sort_data(data_object: Any) -> Any:
-        if isinstance(data_object, dict):
-            return dict(sorted(data_object.items()))
-        if isinstance(data_object, list):
-            try:
-                return sorted(data_object)
-            except TypeError:
-                pass
-        return data_object
 
     @staticmethod
     def format(example_item: Any, response: Any, reference: str, message: str, hint: str) -> str:

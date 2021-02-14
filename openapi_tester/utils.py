@@ -35,3 +35,19 @@ def combine_sub_schemas(schemas: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
     if object_schemas:
         return combine_object_schemas(object_schemas)
     return merge_dicts([schema for schema in schemas if schema.get("type") not in ["object", "array", None]])
+
+
+def sort_object(data_object: Any) -> Any:
+    """ helper function to sort objects """
+    if isinstance(data_object, dict):
+        for key, value in data_object.items():
+            if isinstance(value, (dict, list)):
+                data_object[key] = sort_object(value)
+        return dict(sorted(data_object.items()))
+    if isinstance(data_object, list) and data_object:
+        if not all(isinstance(entry, type(data_object[0])) for entry in data_object):
+            return data_object
+        if isinstance(data_object[0], (dict, list)):
+            return [sort_object(entry) for entry in data_object]
+        return sorted(data_object)
+    return data_object

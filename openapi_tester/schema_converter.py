@@ -80,10 +80,7 @@ class SchemaToPythonConverter:
         return faker_handlers[schema_type]()
 
     def convert_schema_object_to_dict(self, schema_object: dict) -> Dict[str, Any]:
-        if "properties" in schema_object:
-            properties = schema_object["properties"]
-        else:
-            properties = {}
+        properties = schema_object.get("properties", {})
         parsed_schema: Dict[str, Any] = {}
         for key, value in properties.items():
             parsed_schema[key] = self.convert_schema(value)
