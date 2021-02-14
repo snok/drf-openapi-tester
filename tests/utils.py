@@ -7,11 +7,11 @@ from rest_framework.response import Response
 
 from openapi_tester.schema_converter import SchemaToPythonConverter
 
-CURRENT_PATH = Path(__file__).resolve(strict=True).parent
+TEST_ROOT = Path(__file__).resolve(strict=True).parent
 
 
 def load_schema(file_name: str) -> dict:
-    with open(str(CURRENT_PATH) + f"/schemas/{file_name}") as f:
+    with open(str(TEST_ROOT) + f"/schemas/{file_name}") as f:
         content = f.read()
         if "json" in file_name:
             return json.loads(content)
@@ -54,7 +54,7 @@ def pass_mock_value(return_value: Any) -> Any:
     return lambda _: return_value
 
 
-def _mock_schema(schema) -> Callable:
+def mock_schema(schema) -> Callable:
     def _mocked():
         return schema
 

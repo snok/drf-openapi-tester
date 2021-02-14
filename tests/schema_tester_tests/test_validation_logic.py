@@ -1,10 +1,11 @@
 import pytest
 
-from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError
+from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import (
     EXCESS_RESPONSE_KEY_ERROR,
     MISSING_RESPONSE_KEY_ERROR,
     NONE_ERROR,
+    ONE_OF_ERROR,
     VALIDATE_ENUM_ERROR,
     VALIDATE_FORMAT_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
@@ -19,16 +20,47 @@ from openapi_tester.constants import (
     VALIDATE_TYPE_ERROR,
     VALIDATE_UNIQUE_ITEMS_ERROR,
 )
-from tests.schema_tester_tests import (
-    example_object,
-    example_response_types,
+
+tester = SchemaTester()
+
+example_schema_array = {"type": "array", "items": {"type": "string"}}
+example_array = ["string"]
+example_schema_integer = {"type": "integer", "minimum": 3, "maximum": 5}
+example_integer = 3
+example_schema_number = {"type": "number", "minimum": 3, "maximum": 5}
+example_number = 3.2
+example_schema_object = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
+example_object = {"value": 1}
+example_schema_string = {"type": "string", "minLength": 3, "maxLength": 5}
+example_string = "str"
+example_response_types = [example_array, example_integer, example_number, example_object, example_string]
+example_schema_types = [
     example_schema_array,
     example_schema_integer,
     example_schema_number,
+    example_schema_object,
     example_schema_string,
-    example_schema_types,
-    tester,
-)
+]
+
+docs_any_of_example = {
+    "type": "object",
+    "anyOf": [
+        {
+            "required": ["age"],
+            "properties": {
+                "age": {"type": "integer"},
+                "nickname": {"type": "string"},
+            },
+        },
+        {
+            "required": ["pet_type"],
+            "properties": {
+                "pet_type": {"type": "string", "enum": ["Cat", "Dog"]},
+                "hunts": {"type": "boolean"},
+            },
+        },
+    ],
+}
 
 
 def test_successful_type_validation():
@@ -254,3 +286,108 @@ def test_schema_object_is_missing_keys():
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
+
+
+def test_any_of_handling():
+    """
+    This test makes sure our anyOf implementation works as described in the official example docs:
+    https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/#anyof
+    """
+    tester.test_schema_section(docs_any_of_example, {"age": 50})
+    tester.test_schema_section(docs_any_of_example, {"pet_type": "Cat", "hunts": True})
+    tester.test_schema_section(docs_any_of_example, {"nickname": "Fido", "pet_type": "Dog", "age": 44})
+
+    with pytest.raises(DocumentationError):
+        tester.test_schema_section(docs_any_of_example, {"nickname": "Mr. Paws", "hunts": False})
+
+
+def test_one_of():
+    all_types = [
+        {"type": "string"},
+        {"type": "number"},
+        {"type": "integer"},
+        {"type": "boolean"},
+        {"type": "array", "items": {}},
+        {"type": "object"},
+    ]
+
+    # Make sure integers are validated correctly
+    non_int_types = all_types[:1] + all_types[3:]
+    int_types = all_types[1:3]
+    int_value = 1
+    for type in non_int_types:
+        with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+            tester.test_schema_section({"oneOf": [type]}, int_value)
+    for type in int_types:
+        tester.test_schema_section({"oneOf": [type]}, int_value)
+
+    # Make sure strings are validated correctly
+    non_string_types = all_types[1:]
+    string_types = all_types[:1]
+    string_value = "test"
+    for type in non_string_types:
+        with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+            tester.test_schema_section({"oneOf": [type]}, string_value)
+    for type in string_types:
+        tester.test_schema_section({"oneOf": [type]}, string_value)
+
+    # Make sure booleans are validated correctly
+    non_boolean_types = all_types[:3] + all_types[4:]
+    boolean_types = [all_types[3]]
+    boolean_value = False
+    for type in non_boolean_types:
+        with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+            tester.test_schema_section({"oneOf": [type]}, boolean_value)
+    for type in boolean_types:
+        tester.test_schema_section({"oneOf": [type]}, boolean_value)
+
+    # Make sure arrays are validated correctly
+    non_array_types = all_types[:4] + all_types[5:]
+    array_types = [all_types[4]]
+    array_value = []
+    for type in non_array_types:
+        with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+            tester.test_schema_section({"oneOf": [type]}, array_value)
+    for type in array_types:
+        tester.test_schema_section({"oneOf": [type]}, array_value)
+
+    # Make sure arrays are validated correctly
+    non_object_types = all_types[:5]
+    object_types = [all_types[5]]
+    object_value = {}
+    for type in non_object_types:
+        with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+            tester.test_schema_section({"oneOf": [type]}, object_value)
+    for type in object_types:
+        tester.test_schema_section({"oneOf": [type]}, object_value)
+
+    # Make sure we raise the appropriate error when we find several matches
+    with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=2)):
+        tester.test_schema_section(
+            {
+                "oneOf": [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "integer"},
+                    {"type": "boolean"},
+                    {"type": "array", "items": {}},
+                    {"type": "object"},
+                ]
+            },
+            1,
+        )
+
+    # Make sure we raise the appropriate error when we find no matches
+    with pytest.raises(DocumentationError, match=ONE_OF_ERROR.format(matches=0)):
+        tester.test_schema_section(
+            {
+                "oneOf": [
+                    {"type": "number"},
+                    {"type": "integer"},
+                    {"type": "boolean"},
+                    {"type": "array", "items": {}},
+                    {"type": "object"},
+                ]
+            },
+            "test",
+        )

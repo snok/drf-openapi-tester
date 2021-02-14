@@ -13,15 +13,46 @@ from openapi_tester import (
     UndocumentedSchemaSectionError,
     is_pascal_case,
 )
-from tests.schema_tester_tests import bad_test_data, de_parameterized_path, method, parameterized_path, status, tester
-from tests.utils import CURRENT_PATH, _mock_schema, iterate_schema, pass_mock_value, response_factory
+from tests.utils import TEST_ROOT, iterate_schema, mock_schema, pass_mock_value, response_factory
+
+tester = SchemaTester()
+parameterized_path = "/api/{version}/cars/correct"
+de_parameterized_path = "/api/v1/cars/correct"
+method = "get"
+status = "200"
+bad_test_data = [
+    {
+        "url": "/api/v1/cars/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
+    {
+        "url": "/api/v1/trucks/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
+    {
+        "url": "/api/v1/trucks/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
+]
 
 
 @pytest.mark.parametrize(
     "filename",
     [
         filename
-        for filename in glob.iglob(str(CURRENT_PATH) + "/schemas/**/**", recursive=True)
+        for filename in glob.iglob(str(TEST_ROOT) + "/schemas/**/**", recursive=True)
         if os.path.isfile(filename) and "metadata" not in filename
     ],
 )
@@ -55,7 +86,7 @@ def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
         "schema"
     ]
     del schema["paths"][parameterized_path]
-    monkeypatch.setattr(tester.loader, "get_schema", _mock_schema(schema))
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
@@ -70,7 +101,7 @@ def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
         "schema"
     ]
     del schema["paths"][parameterized_path][method]
-    monkeypatch.setattr(tester.loader, "get_schema", _mock_schema(schema))
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,
@@ -85,7 +116,7 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
         "schema"
     ]
     del schema["paths"][parameterized_path][method]["responses"][status]
-    monkeypatch.setattr(tester.loader, "get_schema", _mock_schema(schema))
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
     response = response_factory(schema_section, de_parameterized_path, method, status)
     with pytest.raises(
         UndocumentedSchemaSectionError,

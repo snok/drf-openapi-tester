@@ -1,7 +1,7 @@
 import pytest
 
 from openapi_tester.loaders import BaseSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from tests.utils import CURRENT_PATH
+from tests.utils import TEST_ROOT
 
 
 def test_drf_spectacular_get_schemas():
@@ -16,10 +16,10 @@ def test_drf_yasg_get_schemas():
 
 def test_static_get_schema():
     for ext in ["yaml", "json"]:
-        loader = StaticSchemaLoader(str(CURRENT_PATH) + f"/schemas/test_project_schema.{ext}")
+        loader = StaticSchemaLoader(str(TEST_ROOT) + f"/schemas/test_project_schema.{ext}")
         loader.get_schema()  # runs internal validation
 
-    loader = StaticSchemaLoader(str(CURRENT_PATH) + "/schemas/lol.fun")
+    loader = StaticSchemaLoader(str(TEST_ROOT) + "/schemas/lol.fun")
     with pytest.raises(FileNotFoundError):
         loader.get_schema()
 
