@@ -26,14 +26,17 @@ class SchemaToPythonConverter:
 
     def convert_schema(self, schema: Dict[str, Any]) -> Any:
         schema_type = schema.get("type", "object")
+        sample: List[Dict[str, Any]] = []
         if "allOf" in schema:
             return self.convert_schema(combine_sub_schemas(schema["allOf"]))
         if "oneOf" in schema:
-            return self.convert_schema(random.sample(schema["oneOf"], 1)[0])
+            while not sample:
+                sample = random.sample(schema["oneOf"], 1)
+            return self.convert_schema(sample[0])
         if "anyOf" in schema:
-            return self.convert_schema(
-                combine_sub_schemas(random.sample(schema["anyOf"], random.randint(1, len(schema["anyOf"]))))
-            )
+            while not sample:
+                sample = random.sample(schema["anyOf"], random.randint(1, len(schema["anyOf"])))
+            return self.convert_schema(combine_sub_schemas(sample))
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
         if schema_type == "object":

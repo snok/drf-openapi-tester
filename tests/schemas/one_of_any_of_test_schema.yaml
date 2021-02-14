@@ -82,6 +82,9 @@ components:
           type: string
         sound:
           type: string
+        color:
+          type: string
+          format: byte
 
     Flower:
       type: object
@@ -97,6 +100,9 @@ components:
           type: integer
         tag:
           type: string
+        pigments:
+          type: string
+          format: byte
         price:
           minimum: 0.1
           maximum: 1.0
@@ -132,7 +138,6 @@ components:
             anyOf:
               - $ref: '#/components/schemas/Pet'
               - $ref: '#/components/schemas/Alien'
-              - $ref: '#/components/schemas/Pet'
               - $ref: '#/components/schemas/Flower'
 
     Error:
