@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Generator, Optional, Tuple, Union
+from typing import Any, Callable, Generator, Optional, Tuple, Union
 
 import yaml
 from rest_framework.response import Response
@@ -52,3 +52,10 @@ def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Res
 
 def pass_mock_value(return_value: Any) -> Any:
     return lambda _: return_value
+
+
+def _mock_schema(schema) -> Callable:
+    def _mocked():
+        return schema
+
+    return _mocked

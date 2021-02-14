@@ -379,8 +379,6 @@ class SchemaTester:
             return schema["type"]
         if "properties" in schema or "additionalProperties" in schema:
             return "object"
-        if "items" in schema:
-            return "array"
         return None
 
     def test_schema_section(
