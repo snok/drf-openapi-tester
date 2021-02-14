@@ -33,21 +33,18 @@ VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
     "The number of properties in {data} exceeds the maximum number allowed, {max_length}"
 )
 VALIDATE_UNIQUE_ITEMS_ERROR = "The schema specifies that the array must have unique items, but items are not unique."
-
-VALIDATE_RESPONSE_TYPE_ERROR = "Expected response to be an instance of DRF Response"
-
-NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
-MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
-MISSING_PROPERTY_KEY_ERROR = (
+VALIDATE_NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
+VALIDATE_MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
+VALIDATE_MISSING_PROPERTY_KEY_ERROR = (
     "The following key was found in your required properties, but is missing from properties: {missing_key}"
 )
-EXCESS_RESPONSE_KEY_ERROR = (
+VALIDATE_EXCESS_RESPONSE_KEY_ERROR = (
     "The following property was found in the response, but is missing from the schema definition: {excess_key}."
 )
-WRITE_ONLY_RESPONSE_KEY_ERROR = (
+VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR = (
     "The following property was found in the response, but is documented as being `WriteOnly`: {write_only_key}."
 )
+VALIDATE_ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches."
+VALIDATE_ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
-ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches."
-ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
 INIT_ERROR = "Unable to configure loader."
