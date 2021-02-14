@@ -45,11 +45,17 @@ class DocumentationError(AssertionError):
         """
         Formats and returns a standardized error message for easy debugging.
         """
-        example = json.dumps(example_item).replace('"', "")
+
+        expected = json.dumps(example_item).replace('"', "")
+        try:
+            received = json.dumps(response)
+        except TypeError:
+            received = str(response)
+
         msg = [
             f"{message}\n\n",
-            f"Expected: {example}\n\n",
-            f"Received: {json.dumps(response)}\n\n",
+            f"Expected: {expected}\n\n",
+            f"Received: {received}\n\n",
         ]
         if hint:
             msg += [f"Hint: {hint}\n\n"]

@@ -64,6 +64,10 @@ components:
             id:
               type: integer
               format: int64
+            price:
+              minimum: 0
+              maximum: 10
+              type: integer
 
     NewPet:
       type: object
@@ -89,9 +93,15 @@ components:
         brand:
           type: string
         leaves:
+          minimum: 1
           type: integer
         tag:
           type: string
+        price:
+          minimum: 0.1
+          maximum: 1.0
+          type: number
+          format: float
 
     Alien:
       type: object
@@ -106,6 +116,12 @@ components:
           type: string
         color:
           type: string
+        num_of_friends:
+          type: integer
+          maximum: 3
+        song:
+          type: string
+          format: byte
         weapons:
           type: array
           items:
