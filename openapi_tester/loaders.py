@@ -140,13 +140,13 @@ class BaseSchemaLoader:
                 return path, resolved_route
             except Resolver404:
                 continue
-        paths = self.get_endpoint_paths()
-        closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, paths))
+        message = f"Could not resolve path `{endpoint_path}`."
+        closest_matches = "".join(
+            f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, self.get_endpoint_paths())
+        )
         if closest_matches:
-            raise ValueError(
-                f"Could not resolve path `{endpoint_path}`.\n\nDid you mean one of these?{closest_matches}"
-            )
-        raise ValueError(f"Could not resolve path `{endpoint_path}`")
+            message += f"\n\nDid you mean one of these?{closest_matches}"
+        raise ValueError(message)
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
@@ -168,20 +168,10 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         odict_schema = self.schema_generator.get_schema(None, True)
         return loads(dumps(odict_schema.as_odict()))
 
-    def get_path_prefix(self) -> str:
-        """
-        Returns the drf_yasg specified path prefix.
-
-        Drf_yasg `cleans` schema paths by finding recurring path patterns,
-        and cutting them out of the generated openapi schema.
-        For example, `/api/v1/example` might then just become `/example`
-        """
-
-        return self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
-
     def resolve_path(self, endpoint_path: str) -> tuple:
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
-        path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
+        # typically might be 'api/' or 'api/v1/'
+        path_prefix = self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
         if path_prefix == "/":
             path_prefix = ""
         return de_parameterized_path[len(path_prefix) :], resolved_path
@@ -204,21 +194,11 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         """
         return loads(dumps(self.schema_generator.get_schema(public=True)))
 
-    @staticmethod
-    def get_path_prefix() -> str:
-        """
-        Returns the drf_spectacular specified path prefix.
-        """
+    def resolve_path(self, endpoint_path: str) -> tuple:
         from drf_spectacular.settings import spectacular_settings
 
-        return spectacular_settings.SCHEMA_PATH_PREFIX
-
-    def resolve_path(self, endpoint_path: str) -> tuple:
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
-        path_prefix = self.get_path_prefix()  # typically might be 'api/' or 'api/v1/'
-        if path_prefix == "/":
-            path_prefix = ""
-        return de_parameterized_path[len(path_prefix) :], resolved_path
+        return de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX) :], resolved_path
 
 
 class StaticSchemaLoader(BaseSchemaLoader):

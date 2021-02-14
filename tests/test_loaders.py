@@ -1,37 +1,40 @@
 import pytest
 
-from openapi_tester.loaders import BaseSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
+from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from tests.utils import TEST_ROOT
 
+yaml_schema_path = str(TEST_ROOT) + "/schemas/test_project_schema.yaml"
+json_schema_path = str(TEST_ROOT) + "/schemas/test_project_schema.json"
+loaders = [
+    StaticSchemaLoader(yaml_schema_path),
+    StaticSchemaLoader(json_schema_path),
+    DrfYasgSchemaLoader(),
+    DrfSpectacularSchemaLoader(),
+]
 
-def test_drf_spectacular_get_schemas():
-    loader = DrfSpectacularSchemaLoader()
+
+@pytest.mark.parametrize("loader", loaders)
+def test_loader_get_schema(loader):
     loader.get_schema()  # runs internal validation
 
 
-def test_drf_yasg_get_schemas():
-    loader = DrfYasgSchemaLoader()
-    loader.get_schema()  # runs internal validation
+@pytest.mark.parametrize("loader", loaders)
+def test_loader_get_route(loader):
+    assert loader.parameterize_path("/api/v1/items/") == "/api/{version}/items"
+    assert loader.parameterize_path("/api/v1/items") == "/api/{version}/items"
+    assert loader.parameterize_path("api/v1/items/") == "/api/{version}/items"
+    assert loader.parameterize_path("api/v1/items") == "/api/{version}/items"
+    assert loader.parameterize_path("/api/v1/snake-case/") == "/api/{version}/snake-case/"
+    assert loader.parameterize_path("/api/v1/snake-case") == "/api/{version}/snake-case/"
+    assert loader.parameterize_path("api/v1/snake-case/") == "/api/{version}/snake-case/"
+    assert loader.parameterize_path("api/v1/snake-case") == "/api/{version}/snake-case/"
 
 
-def test_static_get_schema():
-    for ext in ["yaml", "json"]:
-        loader = StaticSchemaLoader(str(TEST_ROOT) + f"/schemas/test_project_schema.{ext}")
-        loader.get_schema()  # runs internal validation
+@pytest.mark.parametrize("loader", loaders)
+def test_loader_resolve_path(loader):
+    assert loader.resolve_path("/api/v1/cars/correct") is not None
 
-    loader = StaticSchemaLoader(str(TEST_ROOT) + "/schemas/lol.fun")
-    with pytest.raises(FileNotFoundError):
-        loader.get_schema()
-
-
-def test_base_loader_get_route():
-    for _loader in [BaseSchemaLoader, DrfYasgSchemaLoader, DrfSpectacularSchemaLoader]:
-        loader = _loader()
-        assert loader.parameterize_path("/api/v1/items/") == "/api/{version}/items"
-        assert loader.parameterize_path("/api/v1/items") == "/api/{version}/items"
-        assert loader.parameterize_path("api/v1/items/") == "/api/{version}/items"
-        assert loader.parameterize_path("api/v1/items") == "/api/{version}/items"
-        assert loader.parameterize_path("/api/v1/snake-case/") == "/api/{version}/snake-case/"
-        assert loader.parameterize_path("/api/v1/snake-case") == "/api/{version}/snake-case/"
-        assert loader.parameterize_path("api/v1/snake-case/") == "/api/{version}/snake-case/"
-        assert loader.parameterize_path("api/v1/snake-case") == "/api/{version}/snake-case/"
+    with pytest.raises(
+        ValueError, match="Could not resolve path `/api/v1/blars/correct`.\n\nDid you mean one of these?"
+    ):
+        loader.resolve_path("/api/v1/blars/correct")
