@@ -93,3 +93,17 @@ max-args = 6
 max-returns = 21
 max-branches = 20
 good-names = "_,e"
+
+
+[tool.coverage.run]
+source = ["openapi_tester/*"]
+omit = ["openapi_tester/type_declarations.py"]
+branch = false
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = ["raise NotImplementedError"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "test_project.settings"
