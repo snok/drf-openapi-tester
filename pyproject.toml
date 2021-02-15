@@ -104,3 +104,6 @@ branch = false
 show_missing = true
 skip_covered = true
 exclude_lines = ["raise NotImplementedError"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "test_project.settings"
