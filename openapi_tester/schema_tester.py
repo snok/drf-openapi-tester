@@ -1,7 +1,8 @@
-""" Schema Tester """
+""" Schema Tester """  # pylint: disable=R0401
 import re
+from enum import Enum
 from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Union
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -12,6 +13,7 @@ from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
     INVALID_PATTERN_ERROR,
+    OPENAPI_FORMAT_EXAMPLES,
     OPENAPI_PYTHON_MAPPING,
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ANY_OF_ERROR,
@@ -35,9 +37,278 @@ from openapi_tester.constants import (
     VALIDATE_UNIQUE_ITEMS_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
-from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from openapi_tester.utils import combine_sub_schemas
+
+
+class SchemaVersions(Enum):
+    """ Contains all possible supported schema versions. """
+
+    SWAGGER2: int = 20
+    OPENAPI30: int = 30
+    OPENAPI31: int = 31
+
+
+class OpenAPIProperties:  # pylint: disable=R0904
+    """
+    Contains all OpenAPI data types, formats, and other properties.
+    """
+
+    def __init__(self, schema_section: dict, version: int):
+        self.schema_section = schema_section
+        self.version = version
+
+    @property
+    def properties(self) -> Optional[dict]:
+        return self.schema_section.get("properties")
+
+    @property
+    def write_only_properties(self) -> list:
+        if self.properties:
+            return [key for key in self.properties.keys() if self.properties[key].get("writeOnly")]
+        return []
+
+    @property
+    def required_properties(self) -> Optional[list]:
+        return [key for key in self.schema_section.get("required", []) if key not in self.write_only_properties]
+
+    @property
+    def additional_properties(self) -> Optional[Union[bool, dict]]:
+        return self.schema_section.get("additionalProperties")
+
+    @property
+    def enum(self) -> Optional[List[str]]:
+        return self.schema_section.get("enum")
+
+    @property
+    def pattern(self) -> Optional[str]:
+        return self.schema_section.get("pattern")
+
+    @property
+    def format(self) -> Optional[str]:
+        return self.schema_section.get("format")
+
+    @property
+    def schema_type(self) -> Optional[str]:
+        if "type" in self.schema_section:
+            return self.schema_section["type"]
+        if "properties" in self.schema_section or "additionalProperties" in self.schema_section:
+            return "object"
+        return None
+
+    @property
+    def multiple_of(self) -> Optional[Union[int, float]]:
+        return self.schema_section.get("multipleOf")
+
+    @property
+    def minimum(self) -> Optional[Union[int, float]]:
+        return self.schema_section.get("minimum")
+
+    @property
+    def maximum(self) -> Optional[Union[int, float]]:
+        return self.schema_section.get("maximum")
+
+    @property
+    def exclusive_minimum(self) -> Optional[Union[int, float]]:
+        return self.schema_section.get("exclusiveMinimum")
+
+    @property
+    def exclusive_maximum(self) -> Optional[Union[int, float]]:
+        return self.schema_section.get("exclusiveMaximum")
+
+    @property
+    def unique_items(self) -> Optional[bool]:
+        return self.schema_section.get("uniqueItems")
+
+    @property
+    def min_length(self) -> Optional[int]:
+        return self.schema_section.get("minLength")
+
+    @property
+    def max_length(self) -> Optional[int]:
+        return self.schema_section.get("maxLength")
+
+    @property
+    def min_items(self) -> Optional[int]:
+        return self.schema_section.get("minItems")
+
+    @property
+    def max_items(self) -> Optional[int]:
+        return self.schema_section.get("maxItems")
+
+    @property
+    def min_properties(self) -> Optional[int]:
+        return self.schema_section.get("minProperties")
+
+    @property
+    def max_properties(self) -> Optional[int]:
+        return self.schema_section.get("maxProperties")
+
+    @property
+    def nullable(self) -> bool:
+        """
+        Checks if the item is nullable.
+        OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
+        OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
+        :return: whether or not the item is allowed to be None
+        """
+        nullable_key = "x-nullable" if self.version == SchemaVersions.SWAGGER2 else "nullable"
+        return nullable_key in self.schema_section and self.schema_section[nullable_key]
+
+
+class Validator(OpenAPIProperties):
+    """
+    Contains all the data we need to validate an individual section of an OpenAPI schema.
+    """
+
+    def __init__(  # pylint: disable=R0913
+        self,
+        data: Any,
+        reference: str,
+        schema_section: dict,
+        version: int,
+        custom_validators: List[Callable],
+        ignore_case: Optional[List[str]],
+        case_tester: Optional[Callable[[str], None]],
+    ):
+        super().__init__(schema_section, version)
+        self.data = data
+        self.reference = reference
+        self.custom_validators = custom_validators
+        self.ignore_case = ignore_case
+        self.case_tester = case_tester
+
+    def __dict__(self):
+        return {
+            "data": self.data,
+            "reference": self.reference,
+            "custom_validators": self.custom_validators,
+            "ignore_case": self.ignore_case,
+            "case_tester": self.case_tester,
+            "schema_section": self.schema_section,
+        }
+
+    @property
+    def validators(self) -> Generator:
+        yield from [
+            self.validate_enum,
+            self.validate_openapi_type,
+            self.validate_format,
+            self.validate_pattern,
+            self.validate_multiple_of,
+            self.validate_min_and_max,
+            self.validate_length,
+            self.validate_unique_items,
+            self.validate_array_length,
+            self.validate_number_of_properties,
+        ] + self.custom_validators
+
+    def validate_enum(self) -> None:
+        if self.enum and self.data not in self.enum:
+            raise DocumentationError(
+                message=VALIDATE_ENUM_ERROR.format(enum=self.schema_section["enum"]), example=self.enum, unit=self
+            )
+
+    def validate_pattern(self) -> None:
+        if self.pattern:
+            try:
+                compiled_pattern = re.compile(self.pattern)
+            except re.error as e:
+                raise DocumentationError(INVALID_PATTERN_ERROR.format(pattern=self.pattern)) from e
+            if not compiled_pattern.match(self.data):
+                raise DocumentationError(
+                    message=VALIDATE_PATTERN_ERROR.format(data=self.data, pattern=self.pattern),
+                    example=self.pattern,
+                    unit=self,
+                )
+
+    def validate_format(self) -> None:
+        if self.format:
+            valid = True
+            if self.format in ["double", "float"]:
+                valid = isinstance(self.data, float)
+            elif self.format == "byte":
+                valid = isinstance(self.data, bytes)
+            elif self.format in ["date", "date-time"]:
+                parser = parse_date if self.format == "date" else parse_datetime
+                valid = parser(self.data) is not None
+            if not valid:
+                raise DocumentationError(
+                    message=VALIDATE_FORMAT_ERROR.format(format=self.format),
+                    example=OPENAPI_FORMAT_EXAMPLES[self.format],
+                    unit=self,
+                )
+
+    def validate_openapi_type(self) -> None:
+        if self.schema_type:
+            valid = True
+            if self.schema_type in ["file", "string"]:
+                valid = isinstance(self.data, (str, bytes))
+            elif self.schema_type == "boolean":
+                valid = isinstance(self.data, bool)
+            elif self.schema_type == "integer":
+                valid = isinstance(self.data, int) and not isinstance(self.data, bool)
+            elif self.schema_type == "number":
+                valid = isinstance(self.data, (int, float)) and not isinstance(self.data, bool)
+            elif self.schema_type == "object":
+                valid = isinstance(self.data, dict)
+            elif self.schema_type == "array":
+                valid = isinstance(self.data, list)
+            if not valid:
+                raise DocumentationError(message=VALIDATE_TYPE_ERROR.format(type=self.schema_type), unit=self)
+
+    def validate_multiple_of(self) -> None:
+        if self.multiple_of and self.data % self.multiple_of != 0:
+            error = VALIDATE_MULTIPLE_OF_ERROR.format(data=self.data, multiple=self.multiple_of)
+            raise DocumentationError(message=error)
+
+    def validate_min_and_max(self) -> None:
+        error = ""
+        if self.minimum and self.exclusive_minimum and self.data <= self.minimum:
+            error = VALIDATE_MINIMUM_ERROR.format(data=self.data, minimum=self.minimum + 1)
+        if self.minimum and not self.exclusive_minimum and self.data < self.minimum:
+            error = VALIDATE_MINIMUM_ERROR.format(data=self.data, minimum=self.minimum)
+        if self.maximum and self.exclusive_maximum and self.data >= self.maximum:
+            error = VALIDATE_MAXIMUM_ERROR.format(data=self.data, maximum=self.maximum - 1)
+        if self.maximum and not self.exclusive_maximum and self.data > self.maximum:
+            error = VALIDATE_MAXIMUM_ERROR.format(data=self.data, maximum=self.maximum)
+        if error:
+            raise DocumentationError(message=error)
+
+    def validate_unique_items(self) -> None:
+        if self.unique_items and len(set(self.data)) != len(self.data):
+            raise DocumentationError(
+                message=VALIDATE_UNIQUE_ITEMS_ERROR,
+            )
+        # TODO: handle deep dictionary comparison - for lists of dicts
+
+    def validate_length(self) -> None:
+        error = ""
+        if self.min_length and len(self.data) < self.min_length:
+            error = VALIDATE_MIN_LENGTH_ERROR.format(data=self.data, min_length=self.min_length)
+        if self.max_length and len(self.data) > self.max_length:
+            error = VALIDATE_MAX_LENGTH_ERROR.format(data=self.data, max_length=self.max_length)
+        if error:
+            raise DocumentationError(message=error)
+
+    def validate_array_length(self) -> None:
+        error = ""
+        if self.min_length and len(self.data) < self.min_length:
+            error = VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=self.data, min_length=self.min_length)
+        if self.max_length and len(self.data) > self.max_length:
+            error = VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(data=self.data, max_length=self.max_length)
+        if error:
+            raise DocumentationError(message=error)
+
+    def validate_number_of_properties(self) -> None:
+        error = ""
+        if self.min_properties and len(self.data) < self.min_properties:
+            error = VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=self.data, min_length=self.min_properties)
+        if self.max_properties and len(self.data) > self.max_properties:
+            error = VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=self.data, max_length=self.max_properties)
+        if error:
+            raise DocumentationError(message=error)
 
 
 class SchemaTester:
@@ -50,6 +321,7 @@ class SchemaTester:
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
         schema_file_path: Optional[str] = None,
+        custom_validators: Optional[List[Callable]] = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema object and API response to check that they match at every level.
@@ -61,6 +333,7 @@ class SchemaTester:
         """
         self.case_tester = case_tester
         self.ignore_case = ignore_case or []
+        self.custom_validators: List[Callable] = custom_validators or []
 
         if schema_file_path is not None:
             self.loader = StaticSchemaLoader(schema_file_path)
@@ -145,102 +418,39 @@ class SchemaTester:
         )
         return self._get_key_value(json_object, "schema")
 
-    def handle_all_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ) -> None:
-        all_of = schema_section.pop("allOf")
-        self.test_schema_section(
-            schema_section={**schema_section, **combine_sub_schemas(all_of)},
-            data=data,
-            reference=f"{reference}.allOf",
-            case_tester=case_tester,
-            ignore_case=ignore_case,
-        )
+    def handle_all_of(self, unit: Validator) -> None:
+        unit.reference += ".allOf"
+        unit.schema_section = {**unit.schema_section, **combine_sub_schemas(unit.schema_section.pop("allOf"))}
+        self.test_schema_section(unit)
 
-    def handle_one_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ):
+    def handle_one_of(self, unit: Validator):
+        unit.reference += ".oneOf"
         matches = 0
-        for option in schema_section["oneOf"]:
+        for option in unit.schema_section["oneOf"]:
             try:
-                self.test_schema_section(
-                    schema_section=option,
-                    data=data,
-                    reference=f"{reference}.oneOf",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+                unit.schema_section = option
+                self.test_schema_section(unit)
                 matches += 1
             except DocumentationError:
                 continue
         if matches != 1:
-            raise DocumentationError(
-                message=VALIDATE_ONE_OF_ERROR.format(matches=matches),
-                response=data,
-                schema=schema_section,
-                reference=f"{reference}.oneOf",
-            )
+            raise DocumentationError(VALIDATE_ONE_OF_ERROR.format(matches=matches))
 
-    def handle_any_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ):
-        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+    def handle_any_of(self, unit: Validator):
+        unit.reference += ".anyOf"
+        any_of: List[dict] = unit.schema_section.get("anyOf", [])
         combined_sub_schemas = map(
             lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]),
             range(len(any_of)),
         )
-
         for schema in [*any_of, *combined_sub_schemas]:
             try:
-                self.test_schema_section(
-                    schema_section=schema,
-                    data=data,
-                    reference=f"{reference}.anyOf",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+                unit.schema_section = schema
+                self.test_schema_section(unit)
                 return
             except DocumentationError:
                 continue
-        raise DocumentationError(
-            message=VALIDATE_ANY_OF_ERROR,
-            response=data,
-            schema=schema_section,
-            reference=f"{reference}.anyOf",
-        )
-
-    @staticmethod
-    def is_nullable(schema_item: dict) -> bool:
-        """
-        Checks if the item is nullable.
-
-        OpenAPI 3 ref: https://swagger.io/docs/specification/data-models/data-types/#null
-        OpenApi 2 ref: https://help.apiary.io/api_101/swagger-extensions/
-
-        :param schema_item: schema item
-        :return: whether or not the item can be None
-        """
-        openapi_schema_3_nullable = "nullable"
-        swagger_2_nullable = "x-nullable"
-        return any(
-            nullable_key in schema_item and schema_item[nullable_key]
-            for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
-        )
+        raise DocumentationError(VALIDATE_ANY_OF_ERROR)
 
     def _validate_key_casing(
         self,
@@ -253,308 +463,96 @@ class SchemaTester:
         if tester and key not in ignore_case:
             tester(key)
 
-    @staticmethod
-    def _validate_enum(schema_section: dict, data: Any) -> Optional[str]:
-        enum = schema_section.get("enum")
-        if enum and data not in enum:
-            return VALIDATE_ENUM_ERROR.format(enum=schema_section["enum"], received=str(data))
-        return None
-
-    @staticmethod
-    def _validate_pattern(schema_section: dict, data: Any) -> Optional[str]:
-        pattern = schema_section.get("pattern")
-        if not pattern:
-            return None
-        try:
-            compiled_pattern = re.compile(pattern)
-        except re.error as e:
-            raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern=pattern)) from e
-        return None if compiled_pattern.match(data) else VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
-
-    @staticmethod
-    def _validate_format(schema_section: dict, data: Any) -> Optional[str]:
-        valid = True
-        schema_format = schema_section.get("format")
-        if schema_format in ["double", "float"]:
-            valid = isinstance(data, float) if data != 0 else isinstance(data, int)
-        elif schema_format == "byte":
-            valid = isinstance(data, bytes)
-        elif schema_format in ["date", "date-time"]:
-            parser = parse_date if schema_format == "date" else parse_datetime
-            valid = parser(data) is not None
-        return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
-
-    def _validate_openapi_type(self, schema_section: dict, data: Any) -> Optional[str]:
-        valid = True
-        schema_type = self._get_schema_type(schema_section)
-        if not schema_type:
-            return None
-        if schema_type in ["file", "string"]:
-            valid = isinstance(data, (str, bytes))
-        elif schema_type == "boolean":
-            valid = isinstance(data, bool)
-        elif schema_type == "integer":
-            valid = isinstance(data, int) and not isinstance(data, bool)
-        elif schema_type == "number":
-            valid = isinstance(data, (int, float)) and not isinstance(data, bool)
-        elif schema_type == "object":
-            valid = isinstance(data, dict)
-        elif schema_type == "array":
-            valid = isinstance(data, list)
-
-        return (
-            None
-            if valid
-            else VALIDATE_TYPE_ERROR.format(
-                expected=OPENAPI_PYTHON_MAPPING[schema_type],
-                received=type(data).__name__,
-            )
-        )
-
-    @staticmethod
-    def _validate_multiple_of(schema_section: dict, data: Any) -> Optional[str]:
-        multiple = schema_section.get("multipleOf")
-        if multiple and data % multiple != 0:
-            return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
-        return None
-
-    @staticmethod
-    def _validate_min_and_max(schema_section: dict, data: Any) -> Optional[str]:
-        minimum = schema_section.get("minimum")
-        maximum = schema_section.get("maximum")
-        exclusive_minimum = schema_section.get("exclusiveMinimum")
-        exclusive_maximum = schema_section.get("exclusiveMaximum")
-        if minimum and exclusive_minimum and data <= minimum:
-            return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum + 1)
-        if minimum and not exclusive_minimum and data < minimum:
-            return VALIDATE_MINIMUM_ERROR.format(data=data, minimum=minimum)
-        if maximum and exclusive_maximum and data >= maximum:
-            return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum - 1)
-        if maximum and not exclusive_maximum and data > maximum:
-            return VALIDATE_MAXIMUM_ERROR.format(data=data, maximum=maximum)
-        return None
-
-    @staticmethod
-    def _validate_unique_items(schema_section: dict, data: List[Any]) -> Optional[str]:
-        unique_items = schema_section.get("uniqueItems")
-        if unique_items and len(set(data)) != len(data):
-            return VALIDATE_UNIQUE_ITEMS_ERROR
-        # TODO: handle deep dictionary comparison - for lists of dicts
-        return None
-
-    @staticmethod
-    def _validate_length(schema_section: dict, data: str) -> Optional[str]:
-        min_length: Optional[int] = schema_section.get("minLength")
-        max_length: Optional[int] = schema_section.get("maxLength")
-        if min_length and len(data) < min_length:
-            return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
-        if max_length and len(data) > max_length:
-            return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
-        return None
-
-    @staticmethod
-    def _validate_array_length(schema_section: dict, data: str) -> Optional[str]:
-        min_length: Optional[int] = schema_section.get("minItems")
-        max_length: Optional[int] = schema_section.get("maxItems")
-        if min_length and len(data) < min_length:
-            return VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=data, min_length=min_length)
-        if max_length and len(data) > max_length:
-            return VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(data=data, max_length=max_length)
-        return None
-
-    @staticmethod
-    def _validate_number_of_properties(schema_section: dict, data: str) -> Optional[str]:
-        min_properties: Optional[int] = schema_section.get("minProperties")
-        max_properties: Optional[int] = schema_section.get("maxProperties")
-        if min_properties and len(data) < min_properties:
-            return VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, min_length=min_properties)
-        if max_properties and len(data) > max_properties:
-            return VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, max_length=max_properties)
-        return None
-
-    @staticmethod
-    def _get_schema_type(schema: dict) -> Optional[str]:
-        if "type" in schema:
-            return schema["type"]
-        if "properties" in schema or "additionalProperties" in schema:
-            return "object"
-        return None
-
-    def test_schema_section(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str = "",
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ) -> None:
+    def test_schema_section(self, unit: Validator) -> None:
         """
         This method orchestrates the testing of a schema section
         """
-        if data is None:
-            if self.is_nullable(schema_section):
+        if unit.data is None:
+            if unit.nullable:
                 # If data is None and nullable, we return early
                 return
             raise DocumentationError(
-                message=VALIDATE_NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section.get("type", "")]),
-                response=data,
-                schema=schema_section,
-                reference=reference,
+                message=VALIDATE_NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[unit.schema_type]),  # type: ignore
+                unit=unit,
                 hint="Document the contents of the empty dictionary to match the response object.",
             )
-
-        if "oneOf" in schema_section:
-            self.handle_one_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        if "oneOf" in unit.schema_section:
+            self.handle_one_of(unit)
             return
-        if "allOf" in schema_section:
-            self.handle_all_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        if "allOf" in unit.schema_section:
+            self.handle_all_of(unit)
             return
-        if "anyOf" in schema_section:
-            self.handle_any_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        if "anyOf" in unit.schema_section:
+            self.handle_any_of(unit)
             return
 
-        schema_section_type = self._get_schema_type(schema_section)
-        validators = [
-            self._validate_enum,
-            self._validate_openapi_type,
-            self._validate_format,
-            self._validate_pattern,
-            self._validate_multiple_of,
-            self._validate_min_and_max,
-            self._validate_length,
-            self._validate_unique_items,
-            self._validate_array_length,
-            self._validate_number_of_properties,
-        ]
-        for validator in validators:
-            error = validator(schema_section, data)
-            if error:
-                raise DocumentationError(
-                    message=error,
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                )
+        for validator in unit.validators:
+            validator()
 
-        if schema_section_type == "object":
-            self.test_openapi_object(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
-        elif schema_section_type == "array":
-            self.test_openapi_array(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        if unit.schema_type == "object":
+            self.test_openapi_object(unit)
+        elif unit.schema_type == "array":
+            self.test_openapi_array(unit)
 
-    def test_openapi_object(
-        self,
-        schema_section: dict,
-        data: dict,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]],
-        ignore_case: Optional[List[str]],
-    ) -> None:
+    def test_openapi_object(self, unit) -> None:
         """
         1. Validate that casing is correct for both response and schema
         2. Check if any required key is missing from the response
         3. Check if any response key is not in the schema
         4. Validate sub-schema/nested data
         """
-
-        properties = schema_section.get("properties", {})
-        write_only_properties = [key for key in properties.keys() if properties[key].get("writeOnly")]
-        required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
-        response_keys = data.keys()
-        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
-        if not properties and isinstance(additional_properties, dict):
-            properties = additional_properties
-        for key in properties.keys():
-            self._validate_key_casing(key, case_tester, ignore_case)
-            if key in required_keys and key not in response_keys:
+        response_keys = unit.data.keys()
+        property_keys = unit.properties.keys() if unit.properties else []
+        if not unit.properties and isinstance(unit.additional_properties, dict):
+            property_keys = unit.additional_properties.keys()
+        for key in property_keys:
+            self._validate_key_casing(key, unit.case_tester, unit.ignore_case)
+            if key in unit.required_keys and key not in response_keys:
+                unit.reference += f".object:key:{key}"
                 raise DocumentationError(
                     message=VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key),
                     hint="Remove the key from your OpenAPI docs, or include it in your API response.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    unit=unit,
                 )
         for key in response_keys:
-            self._validate_key_casing(key, case_tester, ignore_case)
-            key_in_additional_properties = isinstance(additional_properties, dict) and key in additional_properties
-            additional_properties_allowed = additional_properties is True
-            if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
+            self._validate_key_casing(key, unit.case_tester, unit.ignore_case)
+            key_in_additional_properties = (
+                isinstance(unit.additional_properties, dict) and key in unit.additional_properties
+            )
+            additional_properties_allowed = unit.additional_properties is True
+            if key not in unit.properties and not key_in_additional_properties and not additional_properties_allowed:
+                unit.reference += f".object:key:{key}"
                 raise DocumentationError(
                     message=VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
                     hint="Remove the key from your API response, or include it in your OpenAPI docs.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    unit=unit,
                 )
-            if key in write_only_properties:
+            if key in unit.write_only_properties:
+                unit.reference += f".object:key:{key}"
                 raise DocumentationError(
                     message=VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key),
                     hint="Remove the key from your API response, or remove the `WriteOnly` restriction.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    unit=unit,
                 )
-        for key, value in data.items():
-            self.test_schema_section(
-                schema_section=properties[key],
-                data=value,
-                reference=f"{reference}.object:key:{key}",
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+        for key, value in unit.data.items():
+            unit.data = value
+            unit.schema_section = unit.properties[key]
+            unit.reference += (f".object:key:{key}",)
+            self.test_schema_section(unit)
 
-    def test_openapi_array(
-        self,
-        schema_section: dict,
-        data: dict,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]],
-        ignore_case: Optional[List[str]],
-    ) -> None:
-        for datum in data:
-            self.test_schema_section(
-                # the items keyword is required in arrays
-                schema_section=schema_section["items"],
-                data=datum,
-                reference=f"{reference}.array.item",
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+    def test_openapi_array(self, unit) -> None:
+        for datum in unit.data:
+            unit.data = datum
+            unit.schema_section = unit.schema_section["items"]
+            unit.reference += ".array.item"
+            self.test_schema_section(unit)
 
     def validate_response(
         self,
         response: Response,
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
+        custom_validators: Optional[List[Callable]] = None,
     ):
         """
         Verifies that an OpenAPI schema definition matches an API response.
@@ -562,14 +560,28 @@ class SchemaTester:
         :param response: The HTTP response
         :param case_tester: Optional Callable that checks a string's casing
         :param ignore_case: List of strings to ignore when testing the case of response keys
+        :param custom_validators: Optional list of extra validators to run on schema elements.
         :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
                  ``openapi_tester.exceptions.CaseError`` for case errors.
         """
         response_schema = self.get_response_schema_section(response)
-        self.test_schema_section(
+
+        if isinstance(self.loader.schema, dict) and "swagger" in self.loader.schema:
+            version = SchemaVersions.SWAGGER2
+        else:
+            version = SchemaVersions.OPENAPI30
+
+        validators = self.custom_validators
+        if isinstance(custom_validators, list):
+            validators += custom_validators
+
+        unit = Validator(
             schema_section=response_schema,
             data=response.json(),
             reference="init",
+            version=version,  # type: ignore
             case_tester=case_tester,
             ignore_case=ignore_case,
+            custom_validators=validators,
         )
+        self.test_schema_section(unit)

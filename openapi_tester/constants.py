@@ -48,3 +48,11 @@ VALIDATE_ONE_OF_ERROR = "Expected data to match one and only one of the oneOf sc
 VALIDATE_ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
 INIT_ERROR = "Unable to configure loader."
+
+OPENAPI_FORMAT_EXAMPLES = {
+    "date": "2020-10-01",
+    "date-time": "2020-10-01 20:00:00",
+    "double": 2.2,
+    "float": 2.2,
+    "byte": b"bytestring",
+}
