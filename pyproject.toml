@@ -98,6 +98,7 @@ good-names = "_,e"
 [tool.coverage.run]
 source = ["openapi_tester/*"]
 omit = ["openapi_tester/type_declarations.py"]
+branch = false
 
 [tool.coverage.report]
 show_missing = true
