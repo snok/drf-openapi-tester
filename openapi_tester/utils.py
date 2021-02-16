@@ -1,5 +1,5 @@
 """ Utils Module - this file contains utility functions used in multiple places """
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Optional
 
 
 def merge_objects(dictionaries: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -55,3 +55,11 @@ def sort_object(data_object: Any) -> Any:
             return [sort_object(entry) for entry in data_object]
         return sorted(data_object)
     return data_object
+
+
+def get_schema_type(schema_section: dict) -> Optional[str]:
+    if "type" in schema_section:
+        return schema_section["type"]
+    if "properties" in schema_section or "additionalProperties" in schema_section:
+        return "object"
+    return None

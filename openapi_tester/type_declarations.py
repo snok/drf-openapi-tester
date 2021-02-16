@@ -3,7 +3,7 @@
 # pylint: disable=unused-import, invalid-name, unused-argument, no-self-use, missing-function-docstring
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 
 class Exporter:
@@ -46,3 +46,5 @@ else:
 
     # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
+
+    schema_versions = Literal[20, 30]

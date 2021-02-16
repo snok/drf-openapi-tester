@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from openapi_tester.utils import sort_object
 
 if TYPE_CHECKING:
-    from openapi_tester.schema_tester import Validator
+    from openapi_tester.schema_tester import Instance
 
 
 class DocumentationError(AssertionError):
@@ -13,18 +13,20 @@ class DocumentationError(AssertionError):
     Custom exception raised when package tests fail.
     """
 
-    def __init__(self, message: str, unit: "Validator" = None, example: Any = None, hint: Optional[str] = None) -> None:
+    def __init__(
+        self, message: str, instance: "Instance" = None, example: Any = None, hint: Optional[str] = None
+    ) -> None:
         """
         :param message: The error message
         :param message: An optional Validator instance containing all required data to format an exception.
         :param example: Optional example override. Lets us provide custom examples for some custom exceptions.
         """
         from openapi_tester.schema_converter import SchemaToPythonConverter
-        from openapi_tester.schema_tester import Validator
+        from openapi_tester.schema_tester import Instance
 
-        if isinstance(unit, Validator):
-            example = example or sort_object(SchemaToPythonConverter(unit.schema_section, with_faker=False).result)
-            super().__init__(self.format_message(message, example, unit.data, unit.reference, hint))
+        if isinstance(instance, Instance):
+            example = example or sort_object(SchemaToPythonConverter(instance.schema_section, with_faker=False).result)
+            super().__init__(self.format_message(message, example, instance.data, instance.reference, hint))
         else:
             super().__init__(message)
 
