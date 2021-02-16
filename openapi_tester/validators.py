@@ -1,6 +1,6 @@
 """ Schema Validators """
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from django.utils.dateparse import parse_date, parse_datetime
 
@@ -32,7 +32,7 @@ def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     return None
 
 
-def validate_pattern(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]:
     pattern = schema_section.get("pattern")
     if not pattern:
         return None
@@ -43,16 +43,16 @@ def validate_pattern(schema_section: Dict[str, Any], data: Any) -> Optional[str]
     return None if compiled_pattern.match(data) else VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
 
 
-def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_format(schema_section: Dict[str, Any], data: Union[str, bytes, int, float]) -> Optional[str]:
     valid = True
     schema_format = schema_section.get("format")
     if schema_format in ["double", "float"]:
-        valid = isinstance(data, float) if data != 0 else isinstance(data, int)
+        valid = isinstance(data, float) if data != 0 else isinstance(data, (int, float))
     elif schema_format == "byte":
         valid = isinstance(data, bytes)
     elif schema_format in ["date", "date-time"]:
         parser = parse_date if schema_format == "date" else parse_datetime
-        valid = parser(data) is not None
+        valid = isinstance(data, str) and parser(data) is not None
     return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
 
@@ -86,14 +86,14 @@ def validate_openapi_type(schema_section: Dict[str, Any], data: Any) -> Optional
     )
 
 
-def validate_multiple_of(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_multiple_of(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
     multiple = schema_section.get("multipleOf")
     if multiple and data % multiple != 0:
         return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
     return None
 
 
-def validate_min_and_max(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_min_and_max(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
     minimum = schema_section.get("minimum")
     maximum = schema_section.get("maximum")
     exclusive_minimum = schema_section.get("exclusiveMinimum")
@@ -127,7 +127,7 @@ def validate_length(schema_section: Dict[str, Any], data: str) -> Optional[str]:
     return None
 
 
-def validate_array_length(schema_section: Dict[str, Any], data: str) -> Optional[str]:
+def validate_array_length(schema_section: Dict[str, Any], data: list) -> Optional[str]:
     min_length: Optional[int] = schema_section.get("minItems")
     max_length: Optional[int] = schema_section.get("maxItems")
     if min_length and len(data) < min_length:
@@ -137,7 +137,7 @@ def validate_array_length(schema_section: Dict[str, Any], data: str) -> Optional
     return None
 
 
-def validate_number_of_properties(schema_section: Dict[str, Any], data: str) -> Optional[str]:
+def validate_number_of_properties(schema_section: Dict[str, Any], data: dict) -> Optional[str]:
     min_properties: Optional[int] = schema_section.get("minProperties")
     max_properties: Optional[int] = schema_section.get("maxProperties")
     if min_properties and len(data) < min_properties:
