@@ -35,10 +35,14 @@ class Instance:
         reference: str,
         schema_section: dict,
         version: td.schema_versions,
-        custom_validators: List[Callable],
-        ignore_case: Optional[List[str]],
-        case_tester: Optional[Callable[[str], None]],
+        custom_validators: List[Callable] = None,
+        ignore_case: Optional[List[str]] = None,
+        case_tester: Optional[Callable[[str], None]] = None,
     ):
+        if custom_validators is None:
+            custom_validators = []
+        if ignore_case is None:
+            ignore_case = []
         self.data = data
         self.version = version
         self.reference = reference
@@ -152,7 +156,6 @@ class SchemaTester:
                     f"Documented responses include: {keys}. ",
                 )
             )
-
         if version == 20:
             # Swagger 2.0 has a different structure than OpenAPI 3.0
             return self._get_key_value(status_code_object, "schema")
@@ -175,9 +178,11 @@ class SchemaTester:
         See https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/#allof
         """
         instance.reference += ".allOf"
+        schema_section = instance.schema_section
+        all_of = schema_section.pop("allOf")
         instance.schema_section = {
             **instance.schema_section,
-            **combine_sub_schemas(instance.schema_section.pop("allOf")),
+            **combine_sub_schemas(all_of),
         }
         self.test_schema_section(instance)
 
@@ -206,7 +211,7 @@ class SchemaTester:
         See https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/#anyof
         """
         instance.reference += ".anyOf"
-        any_of: List[dict] = instance.schema_section.get("anyOf", [])
+        any_of: List[Dict[str, Any]] = instance.schema_section.get("anyOf", [])
         combined_sub_schemas = map(
             lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]),
             range(len(any_of)),
@@ -319,10 +324,10 @@ class SchemaTester:
             self.test_schema_section(instance)
 
     def test_openapi_array(self, instance) -> None:
+        instance.reference += ".array.item"
+        instance.schema_section = instance.schema_section["items"]
         for datum in instance.data:
             instance.data = datum
-            instance.schema_section = instance.schema_section["items"]
-            instance.reference += ".array.item"
             self.test_schema_section(instance)
 
     def validate_response(
@@ -353,13 +358,14 @@ class SchemaTester:
         if isinstance(custom_validators, list):
             validators += custom_validators
 
-        instance = Instance(
-            schema_section=response_schema,
-            data=response.json(),
-            reference="init",
-            version=version,  # type: ignore
-            case_tester=case_tester,
-            ignore_case=ignore_case,
-            custom_validators=validators,
+        self.test_schema_section(
+            Instance(
+                schema_section=response_schema,
+                data=response.json(),
+                reference="init",
+                version=version,  # type: ignore
+                case_tester=case_tester,
+                ignore_case=ignore_case,
+                custom_validators=validators,
+            )
         )
-        self.test_schema_section(instance)

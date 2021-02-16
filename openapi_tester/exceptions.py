@@ -26,7 +26,9 @@ class DocumentationError(AssertionError):
 
         if isinstance(instance, Instance):
             example = example or sort_object(SchemaToPythonConverter(instance.schema_section, with_faker=False).result)
-            super().__init__(self.format_message(message, example, instance.data, instance.reference, hint))
+            super().__init__(
+                self.format_message(message, example, sort_object(instance.data), instance.reference, hint)
+            )
         else:
             super().__init__(message)
 
@@ -35,7 +37,10 @@ class DocumentationError(AssertionError):
         """
         Formats and returns a standardized error message for easy debugging.
         """
-        expected = json.dumps(example).replace('"', "")
+        try:
+            expected = json.dumps(example).replace('"', "")
+        except TypeError:
+            expected = str(example)
         try:
             received = json.dumps(data)
         except TypeError:

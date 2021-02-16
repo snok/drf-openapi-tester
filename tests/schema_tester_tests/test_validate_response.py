@@ -68,7 +68,11 @@ def test_example_schemas(filename):
         if schema_section and response:
             with patch.object(StaticSchemaLoader, "parameterize_path", side_effect=pass_mock_value(url_fragment)):
                 schema_tester.validate_response(response)
-                assert sorted(schema_tester.get_response_schema_section(response)) == sorted(schema_section)
+                if isinstance(schema_tester.loader.schema, dict) and "swagger" in schema_tester.loader.schema:
+                    version = 20
+                else:
+                    version = 30
+                assert sorted(schema_tester.get_response_schema_section(response, version)) == sorted(schema_section)
 
 
 def test_validate_response_failure_scenario_with_predefined_data(client):

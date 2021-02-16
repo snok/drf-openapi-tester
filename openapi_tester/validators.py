@@ -8,6 +8,7 @@ from openapi_tester import DocumentationError
 from openapi_tester.constants import (
     INVALID_PATTERN_ERROR,
     OPENAPI_FORMAT_EXAMPLES,
+    OPENAPI_PYTHON_MAPPING,
     VALIDATE_ENUM_ERROR,
     VALIDATE_FORMAT_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
@@ -32,7 +33,7 @@ if TYPE_CHECKING:
 def validate_enum(instance: "Instance") -> None:
     enum = instance.schema_section.get("enum")
     if enum and instance.data not in enum:
-        raise DocumentationError(message=VALIDATE_ENUM_ERROR.format(enum=enum), example=enum, instance=instance)
+        raise DocumentationError(message=VALIDATE_ENUM_ERROR, example=enum, instance=instance)
 
 
 def validate_pattern(instance: "Instance") -> None:
@@ -51,7 +52,7 @@ def validate_pattern(instance: "Instance") -> None:
 
 
 def validate_format(instance: "Instance") -> None:
-    schema_format = instance.schema_section.get("schema_format")
+    schema_format = instance.schema_section.get("format")
     if schema_format:
         valid = True
         if schema_format in ["double", "float"]:
@@ -63,7 +64,7 @@ def validate_format(instance: "Instance") -> None:
             valid = parser(instance.data) is not None
         if not valid:
             raise DocumentationError(
-                message=VALIDATE_FORMAT_ERROR.format(schema_format=schema_format),
+                message=VALIDATE_FORMAT_ERROR.format(format=schema_format),
                 example=OPENAPI_FORMAT_EXAMPLES[schema_format],
                 instance=instance,
             )
@@ -86,7 +87,9 @@ def validate_openapi_type(instance: "Instance") -> None:
         elif schema_type == "array":
             valid = isinstance(instance.data, list)
         if not valid:
-            raise DocumentationError(message=VALIDATE_TYPE_ERROR.format(type=schema_type), instance=instance)
+            raise DocumentationError(
+                message=VALIDATE_TYPE_ERROR.format(type=OPENAPI_PYTHON_MAPPING[instance.schema_type]), instance=instance
+            )
 
 
 def validate_multiple_of(instance: "Instance") -> None:

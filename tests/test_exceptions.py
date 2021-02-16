@@ -1,11 +1,10 @@
 from openapi_tester.exceptions import CaseError, DocumentationError
+from openapi_tester.schema_tester import Instance
 
 
 def test_documentation_error_message():
-    error = DocumentationError(
-        message="Test error message",
-        response={"key3": "test", "key2": "test", "key1": "test", "key4": [1, 2, 3]},
-        schema={
+    instance = Instance(
+        schema_section={
             "title": "object_type_title",
             "type": "object",
             "properties": {
@@ -24,7 +23,13 @@ def test_documentation_error_message():
                 "key4": {"type": "array", "items": {"type": "integer"}},
             },
         },
+        data={"key3": "test", "key2": "test", "key1": "test", "key4": [1, 2, 3]},
         reference="test:reference",
+        version=30,
+    )
+    error = DocumentationError(
+        message="Test error message",
+        instance=instance,
         hint="test:hint",
     )
 
