@@ -24,12 +24,13 @@ from openapi_tester.utils import combine_sub_schemas
 from openapi_tester.validators import (
     validate_array_length,
     validate_enum,
+    validate_format,
     validate_length,
     validate_min_and_max,
     validate_multiple_of,
     validate_number_of_properties,
     validate_pattern,
-    validate_type_and_format,
+    validate_type,
     validate_unique_items,
 )
 
@@ -310,7 +311,8 @@ class SchemaTester:
         if not schema_section_type:
             return
         validators: List[Callable] = [
-            validate_type_and_format,
+            validate_type,
+            validate_format,
             validate_pattern,
             validate_multiple_of,
             validate_min_and_max,

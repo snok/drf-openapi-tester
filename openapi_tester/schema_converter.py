@@ -1,4 +1,5 @@
 """ Schema to Python converter """
+import base64
 import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -56,7 +57,7 @@ class SchemaToPythonConverter:
             "object": self.faker.pydict,
             "string": self.faker.pystr,
             # by format
-            "byte": lambda: self.faker.pystr().encode("utf-8"),
+            "byte": lambda: base64.b64encode(self.faker.pystr().encode("utf-8")).decode("utf-8"),
             "date": lambda: datetime.now().date().isoformat(),
             "date-time": lambda: datetime.now().isoformat(),
             "double": self.faker.pyfloat,

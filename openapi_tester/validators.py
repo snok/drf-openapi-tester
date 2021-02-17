@@ -1,5 +1,7 @@
 """ Schema Validators """
+import base64
 import re
+from binascii import Error as ASCIIError
 from typing import Any, Callable, Dict, List, Optional, Union
 from uuid import UUID
 
@@ -32,7 +34,7 @@ def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -
     def wrapped(value: Any):
         try:
             return validation_fn(value) or not wrap_as_validator
-        except (ValueError, ValidationError):
+        except (ValueError, ValidationError, ASCIIError):
             return False
 
     return wrapped
@@ -45,14 +47,15 @@ number_format_validator = create_validator(
 DJANGO_VALIDATOR_MAP: Dict[str, Callable] = {
     # by type
     "string": create_validator(lambda x: isinstance(x, str), True),
-    "file": create_validator(lambda x: isinstance(x, (str, bytes)), True),
+    "file": create_validator(lambda x: isinstance(x, str), True),
     "boolean": create_validator(lambda x: isinstance(x, bool), True),
     "integer": create_validator(lambda x: isinstance(x, int) and not isinstance(x, bool), True),
     "number": create_validator(lambda x: isinstance(x, (float, int)) and not isinstance(x, bool), True),
     "object": create_validator(lambda x: isinstance(x, dict), True),
     "array": create_validator(lambda x: isinstance(x, list), True),
     # by format
-    "byte": create_validator(lambda x: isinstance(x, bytes), True),
+    "byte": create_validator(lambda x: base64.b64decode(x, validate=True)),
+    "base64": create_validator(lambda x: base64.b64decode(x, validate=True)),
     "date": create_validator(parse_date, True),
     "date-time": create_validator(parse_datetime, True),
     "double": number_format_validator,
@@ -67,16 +70,20 @@ DJANGO_VALIDATOR_MAP: Dict[str, Callable] = {
 }
 
 
-def validate_type_and_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     schema_type: str = schema_section.get("type", "object")
-    schema_format: str = schema_section.get("format", "")
-    if schema_format in DJANGO_VALIDATOR_MAP and not DJANGO_VALIDATOR_MAP[schema_format](data):
-        return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
     if not DJANGO_VALIDATOR_MAP[schema_type](data):
         return VALIDATE_TYPE_ERROR.format(
             expected=OPENAPI_PYTHON_MAPPING[schema_type],
             received=type(data).__name__,
         )
+    return None
+
+
+def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+    schema_format: str = schema_section.get("format", "")
+    if schema_format in DJANGO_VALIDATOR_MAP and not DJANGO_VALIDATOR_MAP[schema_format](data):
+        return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
     return None
 
 
