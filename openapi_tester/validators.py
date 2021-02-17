@@ -28,35 +28,56 @@ from openapi_tester.constants import (
 )
 
 
-def _create_format_validator(validator: Callable, wrap_as_validator: bool = False) -> Callable:
+def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable:
     def wrapped(value: Any):
         try:
-            result = validator(value)
-            return not wrap_as_validator or (wrap_as_validator and result)
+            return validation_fn(value) or not wrap_as_validator
         except (ValueError, ValidationError):
             return False
 
     return wrapped
 
 
-_number_format_validator = _create_format_validator(
+number_format_validator = create_validator(
     lambda x: isinstance(x, float) if x != 0 else isinstance(x, (int, float)), True
 )
 
-DJANGO_VALIDATOR_MAP = {
-    "byte": _create_format_validator(lambda x: isinstance(x, bytes), True),
-    "date": _create_format_validator(parse_date, True),
-    "date-time": _create_format_validator(parse_datetime, True),
-    "double": _number_format_validator,
-    "email": _create_format_validator(EmailValidator()),
-    "float": _number_format_validator,
-    "ipv4": _create_format_validator(validate_ipv4_address),
-    "ipv6": _create_format_validator(validate_ipv6_address),
-    "time": _create_format_validator(parse_time, True),
-    "uri": _create_format_validator(URLValidator()),
-    "url": _create_format_validator(URLValidator()),
-    "uuid": _create_format_validator(UUID),
+DJANGO_VALIDATOR_MAP: Dict[str, Callable] = {
+    # by type
+    "string": create_validator(lambda x: isinstance(x, str), True),
+    "file": create_validator(lambda x: isinstance(x, (str, bytes)), True),
+    "boolean": create_validator(lambda x: isinstance(x, bool), True),
+    "integer": create_validator(lambda x: isinstance(x, int) and not isinstance(x, bool), True),
+    "number": create_validator(lambda x: isinstance(x, (float, int)) and not isinstance(x, bool), True),
+    "object": create_validator(lambda x: isinstance(x, dict), True),
+    "array": create_validator(lambda x: isinstance(x, list), True),
+    # by format
+    "byte": create_validator(lambda x: isinstance(x, bytes), True),
+    "date": create_validator(parse_date, True),
+    "date-time": create_validator(parse_datetime, True),
+    "double": number_format_validator,
+    "email": create_validator(EmailValidator()),
+    "float": number_format_validator,
+    "ipv4": create_validator(validate_ipv4_address),
+    "ipv6": create_validator(validate_ipv6_address),
+    "time": create_validator(parse_time, True),
+    "uri": create_validator(URLValidator()),
+    "url": create_validator(URLValidator()),
+    "uuid": create_validator(UUID),
 }
+
+
+def validate_type_and_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+    schema_type: str = schema_section.get("type", "object")
+    schema_format: str = schema_section.get("format", "")
+    if schema_format in DJANGO_VALIDATOR_MAP and not DJANGO_VALIDATOR_MAP[schema_format](data):
+        return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
+    if not DJANGO_VALIDATOR_MAP[schema_type](data):
+        return VALIDATE_TYPE_ERROR.format(
+            expected=OPENAPI_PYTHON_MAPPING[schema_type],
+            received=type(data).__name__,
+        )
+    return None
 
 
 def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
@@ -75,45 +96,6 @@ def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]
     except re.error as e:
         raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern=pattern)) from e
     return None if compiled_pattern.match(data) else VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
-
-
-def validate_format(schema_section: Dict[str, Any], data: Union[str, bytes, int, float]) -> Optional[str]:
-    valid = True
-    schema_format: Optional[str] = schema_section.get("format")
-    if schema_format and schema_format in DJANGO_VALIDATOR_MAP:
-        validator: Callable = DJANGO_VALIDATOR_MAP[schema_format]
-        valid = validator(data)
-    return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
-
-
-def validate_openapi_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
-    valid = True
-    schema_type = schema_section.get("type")
-    if not schema_type and ("properties" in schema_section or "additionalProperties" in schema_section):
-        schema_type = "object"
-    if not schema_type:
-        return None
-    if schema_type in ["file", "string"]:
-        valid = isinstance(data, (str, bytes))
-    elif schema_type == "boolean":
-        valid = isinstance(data, bool)
-    elif schema_type == "integer":
-        valid = isinstance(data, int) and not isinstance(data, bool)
-    elif schema_type == "number":
-        valid = isinstance(data, (int, float)) and not isinstance(data, bool)
-    elif schema_type == "object":
-        valid = isinstance(data, dict)
-    elif schema_type == "array":
-        valid = isinstance(data, list)
-
-    return (
-        None
-        if valid
-        else VALIDATE_TYPE_ERROR.format(
-            expected=OPENAPI_PYTHON_MAPPING[schema_type],
-            received=type(data).__name__,
-        )
-    )
 
 
 def validate_multiple_of(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
