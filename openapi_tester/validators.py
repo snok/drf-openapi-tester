@@ -1,8 +1,11 @@
 """ Schema Validators """
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
+from uuid import UUID
 
-from django.utils.dateparse import parse_date, parse_datetime
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator, URLValidator, validate_ipv4_address, validate_ipv6_address
+from django.utils.dateparse import parse_date, parse_datetime, parse_time
 
 from openapi_tester import OpenAPISchemaError
 from openapi_tester.constants import (
@@ -25,6 +28,37 @@ from openapi_tester.constants import (
 )
 
 
+def _create_format_validator(validator: Callable, wrap_as_validator: bool = False) -> Callable:
+    def wrapped(value: Any):
+        try:
+            result = validator(value)
+            return not wrap_as_validator or (wrap_as_validator and result)
+        except (ValueError, ValidationError):
+            return False
+
+    return wrapped
+
+
+_number_format_validator = _create_format_validator(
+    lambda x: isinstance(x, float) if x != 0 else isinstance(x, (int, float)), True
+)
+
+DJANGO_VALIDATOR_MAP = {
+    "byte": _create_format_validator(lambda x: isinstance(x, bytes), True),
+    "date": _create_format_validator(parse_date, True),
+    "date-time": _create_format_validator(parse_datetime, True),
+    "double": _number_format_validator,
+    "email": _create_format_validator(EmailValidator()),
+    "float": _number_format_validator,
+    "ipv4": _create_format_validator(validate_ipv4_address),
+    "ipv6": _create_format_validator(validate_ipv6_address),
+    "time": _create_format_validator(parse_time, True),
+    "uri": _create_format_validator(URLValidator()),
+    "url": _create_format_validator(URLValidator()),
+    "uuid": _create_format_validator(UUID),
+}
+
+
 def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     enum = schema_section.get("enum")
     if enum and data not in enum:
@@ -45,14 +79,10 @@ def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]
 
 def validate_format(schema_section: Dict[str, Any], data: Union[str, bytes, int, float]) -> Optional[str]:
     valid = True
-    schema_format = schema_section.get("format")
-    if schema_format in ["double", "float"]:
-        valid = isinstance(data, float) if data != 0 else isinstance(data, (int, float))
-    elif schema_format == "byte":
-        valid = isinstance(data, bytes)
-    elif schema_format in ["date", "date-time"]:
-        parser = parse_date if schema_format == "date" else parse_datetime
-        valid = isinstance(data, str) and parser(data) is not None
+    schema_format: Optional[str] = schema_section.get("format")
+    if schema_format and schema_format in DJANGO_VALIDATOR_MAP:
+        validator: Callable = DJANGO_VALIDATOR_MAP[schema_format]
+        valid = validator(data)
     return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
 
 
