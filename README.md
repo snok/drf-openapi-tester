@@ -48,7 +48,7 @@ the tester:
 ```python
 from openapi_tester import SchemaTester
 
-# path should be a string and both YAML/YML and JSON files are supported
+# path should be a string
 schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 
 
@@ -108,8 +108,14 @@ invoking `validate_response`:
 
 ```python
 from openapi_tester import SchemaTester, is_camel_case
+from tests.utils import my_uuid_4_validator
 
-schema_test_with_case_validation = SchemaTester(case_tester=is_camel_case, ignore_case=["IP"])
+schema_test_with_case_validation = SchemaTester(
+  case_tester=is_camel_case,
+  ignore_case=["IP"],
+  validators=[my_uuid_4_validator]
+
+)
 
 ```
 
@@ -138,7 +144,7 @@ def my_test(client):
 The case tester argument takes a callable that is used to validate the key casings of both schemas and responses. If
 nothing is passed, case validation is skipped.
 
-The library currently has 4 build-in case testers:
+The library currently has 4 built-in case testers:
 
 - `is_pascal_case`
 - `is_snake_case`
@@ -149,12 +155,12 @@ You can of course pass your own custom case tester.
 
 ### Ignore case
 
-List of keys to when testing casing. This setting only has an effect when case_tester is not `None`.
+List of keys to ignore when testing key casing. This setting only applies when case_tester is not `None`.
 
 ### Validators
 
 List of custom validators. A validator is a function that receives two parameters: schema_section and data, and returns
-either an error message or None, e.g.:
+either an error message or `None`, e.g.:
 
 ```python
 from typing import Any, Optional
@@ -165,14 +171,13 @@ def my_uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
     schema_format = schema_section.get("format")
     if schema_format == "uuid4":
         try:
-            UUID(data, version=4)
+            result = UUID(data, version=4)
+            if not str(result) == str(data):
+              return f"Expected uuid4, but received {data}"
         except ValueError:
             return f"Expected uuid4, but received {data}"
     return None
 ```
-
-Custom validators allows you to use both custom schema attributes (e.g. "x-my-attribute") and different values
-for the `format` keyword, which OpenAPI defines as extensible.
 
 ## Schema Validation
 
