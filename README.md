@@ -16,8 +16,7 @@
 
 # DRF OpenAPI Tester
 
-DRF OpenAPI Tester is a test utility to validate API responses against OpenAPI 2 and 3 schema. It has built-in support
-for:
+This is a test utility to validate DRF Test Responses against OpenAPI 2 and 3 schema. It has built-in support for:
 
 - OpenAPI 2/3 yaml or json schema files.
 - OpenAPI 2 schemas created with [drf-yasg](https://github.com/axnsan12/drf-yasg).
@@ -49,13 +48,13 @@ the tester:
 ```python
 from openapi_tester import SchemaTester
 
-# path should be a string
+# path should be a string and both YAML/YML and JSON files are supported
 schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 
 
 ```
 
-Once you instantiate a tester, you can use it to validate a DRF Response in a test:
+Once you instantiate a tester, you can use it to validate test Response:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
@@ -104,50 +103,8 @@ class MyAPITests(BaseAPITestCase):
 
 ## Options
 
-We currently support the following optional kwargs:
-
-### Case tester
-
-The case tester argument takes a callable to validate the case of both your response schemas and responses. If nothing
-is passed, case validation is skipped.
-
-The library currently has 4 build-in functions that can be used:
-
-- `is_pascal_case`
-- `is_snake_case`
-- `is_camel_case`
-- `is_kebab-case`
-
-for example:
-
-```python
-from openapi_tester import SchemaTester, is_camel_case
-
-schema_test_with_case_validation = SchemaTester(case_tester=is_camel_case)
-
-```
-
-or
-
-```python
-from openapi_tester import SchemaTester, is_camel_case
-
-schema_tester = SchemaTester()
-
-
-def my_test(client):
-    response = client.get('api/v1/test/1')
-    assert response.status_code == 200
-    schema_tester.validate_response(response=response, case_tester=is_camel_case)
-```
-
-You of course pass your own custom validator function.
-
-### Ignore case
-
-List of keys to ignore. In some cases you might want to declare a global list of keys exempt from case testing.
-
-for example:
+You can pass options either globally, when instantiating a `SchemaTester`, or locally, when
+invoking `validate_response`:
 
 ```python
 from openapi_tester import SchemaTester, is_camel_case
@@ -156,11 +113,73 @@ schema_test_with_case_validation = SchemaTester(case_tester=is_camel_case, ignor
 
 ```
 
+Or
+
+```python
+from openapi_tester import SchemaTester, is_camel_case
+from tests.utils import my_uuid_4_validator
+
+schema_tester = SchemaTester()
+
+
+def my_test(client):
+    response = client.get('api/v1/test/1')
+    assert response.status_code == 200
+    schema_tester.validate_response(
+        response=response,
+        case_tester=is_camel_case,
+        ignore_case=["IP"],
+        validators=[my_uuid_4_validator]
+    )
+```
+
+### Case tester
+
+The case tester argument takes a callable that is used to validate the key casings of both schemas and responses. If
+nothing is passed, case validation is skipped.
+
+The library currently has 4 build-in case testers:
+
+- `is_pascal_case`
+- `is_snake_case`
+- `is_camel_case`
+- `is_kebab-case`
+
+You can of course pass your own custom case tester.
+
+### Ignore case
+
+List of keys to when testing casing. This setting only has an effect when case_tester is not `None`.
+
+### Validators
+
+List of custom validators. A validator is a function that receives two parameters: schema_section and data, and returns
+either an error message or None, e.g.:
+
+```python
+from typing import Any, Optional
+from uuid import UUID
+
+
+def my_uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
+    schema_format = schema_section.get("format")
+    if schema_format == "uuid4":
+        try:
+            UUID(data, version=4)
+        except ValueError:
+            return f"Expected uuid4, but received {data}"
+    return None
+```
+
+Custom validators allows you to use both custom schema attributes (e.g. "x-my-attribute") and different values
+for the `format` keyword, which OpenAPI defines as extensible.
+
 ## Schema Validation
 
 When the SchemaTester loads a schema, it runs it through
 [OpenAPI Spec validator](https://github.com/p1c2u/openapi-spec-validator) which validates that the schema passes without
-specification compliance issues. In case of issues the validator will raise an error.
+specification compliance issues. In case of issues with the schema itself, the validator will raise the appropriate
+error.
 
 ## Known Issues
 

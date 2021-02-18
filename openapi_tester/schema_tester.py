@@ -1,6 +1,6 @@
 """ Schema Tester """
 from functools import reduce
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -39,12 +39,14 @@ class SchemaTester:
     """ Schema Tester: this is the base class of the library. """
 
     loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
+    validators: List[Callable[[dict, Any], Optional[str]]]
 
     def __init__(
         self,
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
         schema_file_path: Optional[str] = None,
+        validators: Optional[List[Callable[[dict, Any], Optional[str]]]] = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema object and API response to check that they match at every level.
@@ -56,6 +58,7 @@ class SchemaTester:
         """
         self.case_tester = case_tester
         self.ignore_case = ignore_case or []
+        self.validators = validators or []
 
         if schema_file_path is not None:
             self.loader = StaticSchemaLoader(schema_file_path)
@@ -148,41 +151,20 @@ class SchemaTester:
         )
         return self.get_key_value(json_object, "schema")
 
-    def handle_all_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ) -> None:
+    def handle_all_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any) -> None:
         all_of = schema_section.pop("allOf")
         self.test_schema_section(
             schema_section={**schema_section, **combine_sub_schemas(all_of)},
             data=data,
             reference=f"{reference}.allOf",
-            case_tester=case_tester,
-            ignore_case=ignore_case,
+            **kwargs,
         )
 
-    def handle_one_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ):
+    def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         matches = 0
         for option in schema_section["oneOf"]:
             try:
-                self.test_schema_section(
-                    schema_section=option,
-                    data=data,
-                    reference=f"{reference}.oneOf",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+                self.test_schema_section(schema_section=option, data=data, reference=f"{reference}.oneOf", **kwargs)
                 matches += 1
             except DocumentationError:
                 continue
@@ -194,14 +176,7 @@ class SchemaTester:
                 reference=f"{reference}.oneOf",
             )
 
-    def handle_any_of(
-        self,
-        schema_section: dict,
-        data: Any,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-    ):
+    def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
         combined_sub_schemas = map(
             lambda index: reduce(lambda x, y: combine_sub_schemas([x, y]), any_of[index:]),
@@ -210,13 +185,7 @@ class SchemaTester:
 
         for schema in [*any_of, *combined_sub_schemas]:
             try:
-                self.test_schema_section(
-                    schema_section=schema,
-                    data=data,
-                    reference=f"{reference}.anyOf",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
-                )
+                self.test_schema_section(schema_section=schema, data=data, reference=f"{reference}.anyOf", **kwargs)
                 return
             except DocumentationError:
                 continue
@@ -260,9 +229,9 @@ class SchemaTester:
         self,
         schema_section: dict,
         data: Any,
-        reference: str = "",
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        reference: str = "init",
+        validators: Optional[List[Callable[[dict, dict], Optional[str]]]] = None,
+        **kwargs: Any,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
@@ -280,49 +249,36 @@ class SchemaTester:
             )
 
         if "oneOf" in schema_section:
-            self.handle_one_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            self.handle_one_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
             return
         if "allOf" in schema_section:
-            self.handle_all_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            self.handle_all_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
             return
         if "anyOf" in schema_section:
-            self.handle_any_of(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            self.handle_any_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
             return
 
         schema_section_type = self.get_schema_type(schema_section)
         if not schema_section_type:
             return
-        validators: List[Callable] = [
-            validate_type,
-            validate_format,
-            validate_pattern,
-            validate_multiple_of,
-            validate_min_and_max,
-            validate_length,
-            validate_unique_items,
-            validate_array_length,
-            validate_number_of_properties,
-            validate_enum,
-        ]
-        for validator in validators:
+        combined_validators = cast(
+            List[Callable],
+            [
+                validate_type,
+                validate_format,
+                validate_pattern,
+                validate_multiple_of,
+                validate_min_and_max,
+                validate_length,
+                validate_unique_items,
+                validate_array_length,
+                validate_number_of_properties,
+                validate_enum,
+                *self.validators,
+                *(validators or []),
+            ],
+        )
+        for validator in combined_validators:
             error = validator(schema_section, data)
             if error:
                 raise DocumentationError(
@@ -333,29 +289,17 @@ class SchemaTester:
                 )
 
         if schema_section_type == "object":
-            self.test_openapi_object(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            self.test_openapi_object(schema_section=schema_section, data=data, reference=reference, **kwargs)
         elif schema_section_type == "array":
-            self.test_openapi_array(
-                schema_section=schema_section,
-                data=data,
-                reference=reference,
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            self.test_openapi_array(schema_section=schema_section, data=data, reference=reference, **kwargs)
 
     def test_openapi_object(
         self,
         schema_section: dict,
         data: dict,
         reference: str,
-        case_tester: Optional[Callable[[str], None]],
-        ignore_case: Optional[List[str]],
+        case_tester: Optional[Callable[[str], None]] = None,
+        ignore_case: Optional[List[str]] = None,
     ) -> None:
         """
         1. Validate that casing is correct for both response and schema
@@ -410,22 +354,14 @@ class SchemaTester:
                 ignore_case=ignore_case,
             )
 
-    def test_openapi_array(
-        self,
-        schema_section: dict,
-        data: dict,
-        reference: str,
-        case_tester: Optional[Callable[[str], None]],
-        ignore_case: Optional[List[str]],
-    ) -> None:
+    def test_openapi_array(self, schema_section: dict, data: dict, reference: str, **kwargs: Any) -> None:
         for datum in data:
             self.test_schema_section(
                 # the items keyword is required in arrays
                 schema_section=schema_section["items"],
                 data=datum,
                 reference=f"{reference}.array.item",
-                case_tester=case_tester,
-                ignore_case=ignore_case,
+                **kwargs,
             )
 
     def validate_response(
@@ -433,13 +369,15 @@ class SchemaTester:
         response: Response,
         case_tester: Optional[Callable[[str], None]] = None,
         ignore_case: Optional[List[str]] = None,
+        validators: Optional[List[Callable[[dict, Any], Optional[str]]]] = None,
     ):
         """
         Verifies that an OpenAPI schema definition matches an API response.
 
         :param response: The HTTP response
         :param case_tester: Optional Callable that checks a string's casing
-        :param ignore_case: List of strings to ignore when testing the case of response keys
+        :param ignore_case: Optional list of keys to ignore in case testing
+        :param validators: Optional list of validator functions
         :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
                  ``openapi_tester.exceptions.CaseError`` for case errors.
         """
@@ -447,7 +385,7 @@ class SchemaTester:
         self.test_schema_section(
             schema_section=response_schema,
             data=response.json(),
-            reference="init",
-            case_tester=case_tester,
+            case_tester=case_tester or self.case_tester,
             ignore_case=ignore_case,
+            validators=validators,
         )
