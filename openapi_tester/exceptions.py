@@ -38,10 +38,7 @@ class DocumentationError(AssertionError):
         """
 
         expected = json.dumps(example_item).replace('"', "")
-        try:
-            received = json.dumps(response)
-        except TypeError:
-            received = str(response)
+        received = json.dumps(response)
 
         msg = [
             f"{message}\n\n",

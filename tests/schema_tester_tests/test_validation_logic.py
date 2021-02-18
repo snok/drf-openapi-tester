@@ -1,3 +1,4 @@
+import base64
 from typing import Any, Dict
 
 import pytest
@@ -261,10 +262,10 @@ def test_datetime_validation():
 
 
 def test_byte_validation():
-    tester.test_schema_section({"type": "string", "format": "byte"}, b"test")
+    tester.test_schema_section({"type": "string", "format": "byte"}, base64.b64encode(b"test123").decode("utf-8"))
 
     with pytest.raises(DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="byte", received="test")):
-        tester.test_schema_section({"type": "string", "format": "byte"}, "test")
+        tester.test_schema_section({"type": "string", "format": "byte"}, "test123")
 
 
 def test_write_only_validation():

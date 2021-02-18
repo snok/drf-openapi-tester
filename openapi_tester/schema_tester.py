@@ -29,8 +29,8 @@ from openapi_tester.validators import (
     validate_min_and_max,
     validate_multiple_of,
     validate_number_of_properties,
-    validate_openapi_type,
     validate_pattern,
+    validate_type,
     validate_unique_items,
 )
 
@@ -308,9 +308,10 @@ class SchemaTester:
             return
 
         schema_section_type = self.get_schema_type(schema_section)
+        if not schema_section_type:
+            return
         validators: List[Callable] = [
-            validate_enum,
-            validate_openapi_type,
+            validate_type,
             validate_format,
             validate_pattern,
             validate_multiple_of,
@@ -319,6 +320,7 @@ class SchemaTester:
             validate_unique_items,
             validate_array_length,
             validate_number_of_properties,
+            validate_enum,
         ]
         for validator in validators:
             error = validator(schema_section, data)

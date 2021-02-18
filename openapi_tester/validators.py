@@ -1,8 +1,12 @@
 """ Schema Validators """
+import base64
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
+from uuid import UUID
 
-from django.utils.dateparse import parse_date, parse_datetime
+from django.core.exceptions import ValidationError
+from django.core.validators import EmailValidator, URLValidator, validate_ipv4_address, validate_ipv6_address
+from django.utils.dateparse import parse_date, parse_datetime, parse_time
 
 from openapi_tester import OpenAPISchemaError
 from openapi_tester.constants import (
@@ -25,6 +29,65 @@ from openapi_tester.constants import (
 )
 
 
+def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable:
+    def wrapped(value: Any):
+        try:
+            return bool(validation_fn(value)) or not wrap_as_validator
+        except (ValueError, ValidationError):
+            return False
+
+    return wrapped
+
+
+number_format_validator = create_validator(
+    lambda x: isinstance(x, float) if x != 0 else isinstance(x, (int, float)), True
+)
+
+base64_format_validator = create_validator(lambda x: base64.b64encode(base64.b64decode(x, validate=True)) == x)
+
+VALIDATOR_MAP: Dict[str, Callable] = {
+    # by type
+    "string": create_validator(lambda x: isinstance(x, str), True),
+    "file": create_validator(lambda x: isinstance(x, str), True),
+    "boolean": create_validator(lambda x: isinstance(x, bool), True),
+    "integer": create_validator(lambda x: isinstance(x, int) and not isinstance(x, bool), True),
+    "number": create_validator(lambda x: isinstance(x, (float, int)) and not isinstance(x, bool), True),
+    "object": create_validator(lambda x: isinstance(x, dict), True),
+    "array": create_validator(lambda x: isinstance(x, list), True),
+    # by format
+    "byte": base64_format_validator,
+    "base64": base64_format_validator,
+    "date": create_validator(parse_date, True),
+    "date-time": create_validator(parse_datetime, True),
+    "double": number_format_validator,
+    "email": create_validator(EmailValidator()),
+    "float": number_format_validator,
+    "ipv4": create_validator(validate_ipv4_address),
+    "ipv6": create_validator(validate_ipv6_address),
+    "time": create_validator(parse_time, True),
+    "uri": create_validator(URLValidator()),
+    "url": create_validator(URLValidator()),
+    "uuid": create_validator(UUID),
+}
+
+
+def validate_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+    schema_type: str = schema_section.get("type", "object")
+    if not VALIDATOR_MAP[schema_type](data):
+        return VALIDATE_TYPE_ERROR.format(
+            expected=OPENAPI_PYTHON_MAPPING[schema_type],
+            received=type(data).__name__,
+        )
+    return None
+
+
+def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+    schema_format: str = schema_section.get("format", "")
+    if schema_format in VALIDATOR_MAP and not VALIDATOR_MAP[schema_format](data):
+        return VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
+    return None
+
+
 def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     enum = schema_section.get("enum")
     if enum and data not in enum:
@@ -41,49 +104,6 @@ def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]
     except re.error as e:
         raise OpenAPISchemaError(INVALID_PATTERN_ERROR.format(pattern=pattern)) from e
     return None if compiled_pattern.match(data) else VALIDATE_PATTERN_ERROR.format(data=data, pattern=pattern)
-
-
-def validate_format(schema_section: Dict[str, Any], data: Union[str, bytes, int, float]) -> Optional[str]:
-    valid = True
-    schema_format = schema_section.get("format")
-    if schema_format in ["double", "float"]:
-        valid = isinstance(data, float) if data != 0 else isinstance(data, (int, float))
-    elif schema_format == "byte":
-        valid = isinstance(data, bytes)
-    elif schema_format in ["date", "date-time"]:
-        parser = parse_date if schema_format == "date" else parse_datetime
-        valid = isinstance(data, str) and parser(data) is not None
-    return None if valid else VALIDATE_FORMAT_ERROR.format(expected=schema_section["format"], received=str(data))
-
-
-def validate_openapi_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
-    valid = True
-    schema_type = schema_section.get("type")
-    if not schema_type and ("properties" in schema_section or "additionalProperties" in schema_section):
-        schema_type = "object"
-    if not schema_type:
-        return None
-    if schema_type in ["file", "string"]:
-        valid = isinstance(data, (str, bytes))
-    elif schema_type == "boolean":
-        valid = isinstance(data, bool)
-    elif schema_type == "integer":
-        valid = isinstance(data, int) and not isinstance(data, bool)
-    elif schema_type == "number":
-        valid = isinstance(data, (int, float)) and not isinstance(data, bool)
-    elif schema_type == "object":
-        valid = isinstance(data, dict)
-    elif schema_type == "array":
-        valid = isinstance(data, list)
-
-    return (
-        None
-        if valid
-        else VALIDATE_TYPE_ERROR.format(
-            expected=OPENAPI_PYTHON_MAPPING[schema_type],
-            received=type(data).__name__,
-        )
-    )
 
 
 def validate_multiple_of(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:

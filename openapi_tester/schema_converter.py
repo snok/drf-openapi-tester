@@ -1,4 +1,5 @@
 """ Schema to Python converter """
+import base64
 import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
@@ -46,7 +47,8 @@ class SchemaToPythonConverter:
         return self.schema_type_to_mock_value(schema)
 
     def schema_type_to_mock_value(self, schema_object: Dict[str, Any]) -> Any:
-        faker_handlers = {
+        faker_handler_map = {
+            # by type
             "array": self.faker.pylist,
             "boolean": self.faker.pybool,
             "file": self.faker.pystr,
@@ -54,6 +56,19 @@ class SchemaToPythonConverter:
             "number": self.faker.pyfloat,
             "object": self.faker.pydict,
             "string": self.faker.pystr,
+            # by format
+            "byte": lambda: base64.b64encode(self.faker.pystr().encode("utf-8")).decode("utf-8"),
+            "date": lambda: datetime.now().date().isoformat(),
+            "date-time": lambda: datetime.now().isoformat(),
+            "double": self.faker.pyfloat,
+            "email": self.faker.email,
+            "float": self.faker.pyfloat,
+            "ipv4": self.faker.ipv4,
+            "ipv6": self.faker.ipv6,
+            "time": self.faker.time,
+            "uri": self.faker.uri,
+            "url": self.faker.url,
+            "uuid": self.faker.uuid4,
         }
         schema_format: str = schema_object.get("format", "")
         schema_type: str = schema_object.get("type", "")
@@ -62,13 +77,6 @@ class SchemaToPythonConverter:
         enum: Optional[list] = schema_object.get("enum")
         if enum:
             return enum[0]
-        if schema_format and schema_type == "string":
-            if schema_format == "date":
-                return datetime.now().date().isoformat()
-            if schema_format == "date-time":
-                return datetime.now().isoformat()
-            if schema_format == "byte":
-                return self.faker.pystr().encode("utf-8")
         if schema_type in ["integer", "number"] and (minimum is not None or maximum is not None):
             if minimum is not None:
                 minimum += 1 if schema_object.get("excludeMinimum") else 0
@@ -80,7 +88,11 @@ class SchemaToPythonConverter:
                 if schema_type == "integer":
                     return self.faker.pyint(minimum, maximum)
                 return random.uniform(minimum, maximum)
-        return faker_handlers[schema_type]()
+        return (
+            faker_handler_map[schema_format]()
+            if schema_format in faker_handler_map
+            else faker_handler_map[schema_type]()
+        )
 
     def convert_schema_object_to_dict(self, schema_object: dict) -> Dict[str, Any]:
         properties = schema_object.get("properties", {})
