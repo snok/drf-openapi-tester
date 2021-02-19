@@ -33,7 +33,7 @@ VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
     "The number of properties in {data} exceeds {max_length} which is the maximum number of properties allowed"
 )
 VALIDATE_UNIQUE_ITEMS_ERROR = "The array {data} must only contain unique items"
-VALIDATE_NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
+VALIDATE_NONE_ERROR = "Received null value for a non-nullable schema object"
 VALIDATE_MISSING_RESPONSE_KEY_ERROR = 'The following property is missing from your response: "{missing_key}"'
 VALIDATE_MISSING_PROPERTY_KEY_ERROR = (
     "The following key was found in your required properties, but is missing from properties: {missing_key}"
@@ -44,7 +44,7 @@ VALIDATE_EXCESS_RESPONSE_KEY_ERROR = (
 VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR = (
     'The following property was found in the response, but is documented as being "writeOnly": "{write_only_key}"'
 )
-VALIDATE_ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches."
-VALIDATE_ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches."
+VALIDATE_ONE_OF_ERROR = "Expected data to match one and only one of the oneOf schema types; found {matches} matches"
+VALIDATE_ANY_OF_ERROR = "Expected data to match one or more of the documented anyOf schema types, but found no matches"
 UNDOCUMENTED_SCHEMA_SECTION_ERROR = "Error: Unsuccessfully tried to index the OpenAPI schema by `{key}`. {error_addon}"
-INIT_ERROR = "Unable to configure loader."
+INIT_ERROR = "Unable to configure loader"

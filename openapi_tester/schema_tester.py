@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
-    OPENAPI_PYTHON_MAPPING,
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ANY_OF_ERROR,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
@@ -174,10 +173,7 @@ class SchemaTester:
                 continue
         if matches != 1:
             raise DocumentationError(
-                message=VALIDATE_ONE_OF_ERROR.format(matches=matches),
-                response=data,
-                schema=schema_section,
-                reference=f"{reference}.oneOf",
+                f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\n" f"Reference: {reference}.oneOf"
             )
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
@@ -193,12 +189,7 @@ class SchemaTester:
                 return
             except DocumentationError:
                 continue
-        raise DocumentationError(
-            message=VALIDATE_ANY_OF_ERROR,
-            response=data,
-            schema=schema_section,
-            reference=f"{reference}.anyOf",
-        )
+        raise DocumentationError(f"{VALIDATE_ANY_OF_ERROR}\n\n" f"Reference: {reference}.anyOf")
 
     @staticmethod
     def test_is_nullable(schema_item: dict) -> bool:
@@ -245,11 +236,9 @@ class SchemaTester:
                 # If data is None and nullable, we return early
                 return
             raise DocumentationError(
-                message=VALIDATE_NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section.get("type", "")]),
-                response=data,
-                schema=schema_section,
-                reference=reference,
-                hint="Document the contents of the empty dictionary to match the response object.",
+                f"{VALIDATE_NONE_ERROR}\n\n"
+                f"Reference: {reference}\n\n"
+                f"Hint: Return a valid type, or document the value as nullable"
             )
 
         if "oneOf" in schema_section:
@@ -322,7 +311,8 @@ class SchemaTester:
             self.test_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
                 raise DocumentationError(
-                    f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}.object:key:{key}\n\nHint: Remove the key from your"
+                    f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}."
+                    f"object:key:{key}\n\nHint: Remove the key from your"
                     f" OpenAPI docs, or include it in your API response"
                 )
         for key in response_keys:
@@ -336,8 +326,9 @@ class SchemaTester:
                 )
             if key in write_only_properties:
                 raise DocumentationError(
-                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}.ob"
-                    f'ject:key:{key}\n\nHint: Remove the key from your API response, or remove the "WriteOnly" restriction'
+                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}"
+                    f".object:key:{key}\n\nHint: Remove the key from your API response, or remove the "
+                    f'"WriteOnly" restriction'
                 )
         for key, value in data.items():
             self.test_schema_section(

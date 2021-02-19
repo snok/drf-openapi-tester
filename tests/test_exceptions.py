@@ -234,3 +234,33 @@ class TestTestOpenAPIObjectErrors:
                 {"one": 1},
                 reference="init",
             )
+
+
+def test_null_error():
+    expected_error_message = (
+        "Received null value for a non-nullable schema object\n\n"
+        "Reference: init\n\n"
+        "Hint: Return a valid type, or document the value as nullable"
+    )
+    tester = SchemaTester()
+    with pytest.raises(DocumentationError, match=expected_error_message):
+        tester.test_schema_section({"type": "object"}, None, reference="init")
+
+
+def test_any_of_error():
+    expected_error_message = (
+        "Expected data to match one or more of the documented anyOf schema types, but found no matches\n\n"
+        "Reference: init.anyOf"
+    )
+    tester = SchemaTester()
+    with pytest.raises(DocumentationError, match=expected_error_message):
+        tester.test_schema_section({"anyOf": []}, {}, reference="init")
+
+
+def test_one_of_error():
+    expected_error_message = (
+        "Expected data to match one and only one of the oneOf schema types; found 0 matches\n\n" "Reference: init.oneOf"
+    )
+    tester = SchemaTester()
+    with pytest.raises(DocumentationError, match=expected_error_message):
+        tester.test_schema_section({"oneOf": []}, {}, reference="init")
