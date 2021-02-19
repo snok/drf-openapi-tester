@@ -54,7 +54,7 @@ schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 
 ```
 
-Once you instantiate a tester, you can use it to validate test Response:
+Once you instantiate a tester, you can use it to test responses:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
