@@ -1,4 +1,7 @@
-from openapi_tester.exceptions import CaseError
+import pytest
+
+from openapi_tester import SchemaTester
+from openapi_tester.exceptions import CaseError, DocumentationError
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -51,7 +54,7 @@ class TestValidatorErrors:
 
     def test_validate_min_length_error(self):
         message = validate_min_length({"minLength": 5}, "test")
-        assert message == 'The length of "test" exceeds the minimum allowed length of 5'
+        assert message == 'The length of "test" is below the minimum required length of 5'
 
     def test_validate_unique_items_error(self):
         message = validate_unique_items({"uniqueItems": True}, [1, 2, 1])
@@ -59,7 +62,7 @@ class TestValidatorErrors:
 
     def test_validate_minimum_error(self):
         message = validate_minimum({"minimum": 2}, 0)
-        assert message == "The response value 0 exceeds the minimum allowed value of 2"
+        assert message == "The response value 0 is below the minimum required value of 2"
 
     def test_validate_exclusive_minimum_error(self):
         message = validate_minimum({"minimum": 2, "exclusiveMinimum": True}, 2)
@@ -84,20 +87,22 @@ class TestValidatorErrors:
         assert message == "The response value 3 should be a multiple of 2"
 
     def test_validate_pattern_error(self):
-        message = validate_pattern({"pattern": "^[a-z]$"}, 3)
+        message = validate_pattern({"pattern": "^[a-z]$"}, "3")
         assert message == 'The string "3" does not validate using the specified pattern: ^[a-z]$'
 
     # Formatted errors
 
     def test_validate_enum_error(self):
         message = validate_enum({"enum": ["Cat"]}, "Turtle")
-        assert message == 'Expected: "Cat"\n\nReceived: "Turtle"'
+        assert message == 'Expected: a valid enum member, like "Cat"\n\nReceived: "Turtle"'
 
         message = validate_enum({"enum": ["Cat", "Dog"]}, "Turtle")
-        assert message == 'Expected: "Cat" or "Dog"\n\nReceived: "Turtle"'
+        assert message == 'Expected: a valid enum member, like "Cat" or "Dog"\n\nReceived: "Turtle"'
 
         message = validate_enum({"enum": ["Cat", "Dog", "Hamster", "Parrot"]}, "Turtle")
-        assert message == 'Expected: "Cat", "Dog", "Hamster", or "Parrot"\n\nReceived: "Turtle"'
+        assert (
+            message == 'Expected: a valid enum member, like "Cat", "Dog", "Hamster", or "Parrot"\n\nReceived: "Turtle"'
+        )
 
     def test_validate_format_error(self):
         # byte
@@ -189,3 +194,43 @@ class TestValidatorErrors:
         # array
         message = validate_type({"type": "array"}, "string")
         assert message == 'Expected: an "array" type value\n\nReceived: "string"'
+
+
+class TestTestOpenAPIObjectErrors:
+    def test_missing_response_key_error(self):
+        expected_error_message = (
+            'The following property is missing from your response: "one"\n\n'
+            "Reference: init.object:key:one\n\n"
+            "Hint: Remove the key from your OpenAPI docs, or include it in your API response"
+        )
+        tester = SchemaTester()
+        with pytest.raises(DocumentationError, match=expected_error_message):
+            tester.test_openapi_object(
+                {"required": ["one"], "properties": {"one": {"type": "int"}}}, {"two": 2}, reference="init"
+            )
+
+    def test_missing_schema_key_error(self):
+        expected_error_message = (
+            'The following property was found in the response, but is missing from the schema definition: "two"\n\n'
+            "Reference: init.object:key:two\n\n"
+            "Hint: Remove the key from your API response, or include it in your OpenAPI docs"
+        )
+        tester = SchemaTester()
+        with pytest.raises(DocumentationError, match=expected_error_message):
+            tester.test_openapi_object(
+                {"required": ["one"], "properties": {"one": {"type": "int"}}}, {"one": 1, "two": 2}, reference="init"
+            )
+
+    def test_key_in_write_only_properties_error(self):
+        expected_error_message = (
+            'The following property was found in the response, but is documented as being "writeOnly": "one"\n\n'
+            "Reference: init.object:key:one\n\n"
+            'Hint: Remove the key from your API response, or remove the "WriteOnly" restriction'
+        )
+        tester = SchemaTester()
+        with pytest.raises(DocumentationError, match=expected_error_message):
+            tester.test_openapi_object(
+                {"properties": {"one": {"type": "int", "writeOnly": True}}},
+                {"one": 1},
+                reference="init",
+            )

@@ -289,12 +289,7 @@ class SchemaTester:
         for validator in combined_validators:
             error = validator(schema_section, data)
             if error:
-                raise DocumentationError(
-                    message=error,
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                )
+                raise DocumentationError(f"\n\n{error}\n\nReference: {reference}")
 
         if schema_section_type == "object":
             self.test_openapi_object(schema_section=schema_section, data=data, reference=reference, **kwargs)
@@ -327,11 +322,8 @@ class SchemaTester:
             self.test_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
                 raise DocumentationError(
-                    message=VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key),
-                    hint="Remove the key from your OpenAPI docs, or include it in your API response.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}.object:key:{key}\n\nHint: Remove the key from your"
+                    f" OpenAPI docs, or include it in your API response"
                 )
         for key in response_keys:
             self.test_key_casing(key, case_tester, ignore_case)
@@ -339,19 +331,13 @@ class SchemaTester:
             additional_properties_allowed = additional_properties is True
             if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
                 raise DocumentationError(
-                    message=VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
-                    hint="Remove the key from your API response, or include it in your OpenAPI docs.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key)}\n\nReference: {reference}.object:key:"
+                    f"{key}\n\nHint: Remove the key from your API response, or include it in your OpenAPI docs"
                 )
             if key in write_only_properties:
                 raise DocumentationError(
-                    message=VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key),
-                    hint="Remove the key from your API response, or remove the `WriteOnly` restriction.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}.ob"
+                    f'ject:key:{key}\n\nHint: Remove the key from your API response, or remove the "WriteOnly" restriction'
                 )
         for key, value in data.items():
             self.test_schema_section(
