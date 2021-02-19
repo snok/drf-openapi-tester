@@ -108,7 +108,13 @@ def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     return None
 
 
-def pretty_print_list(_list: list) -> str:  # noqa
+def pretty_print_list(_list: list) -> str:
+    """
+    Prints a list as one of the following:
+        [1] -> 1
+        [1, 2] -> 1 or 2
+        [1, 2, 3] -> 1, 2, or 3
+    """
     if len(_list) == 1:
         return f'"{_list[0]}"'
     if len(_list) == 2:

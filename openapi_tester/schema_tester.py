@@ -172,9 +172,7 @@ class SchemaTester:
             except DocumentationError:
                 continue
         if matches != 1:
-            raise DocumentationError(
-                f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\n" f"Reference: {reference}.oneOf"
-            )
+            raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
@@ -189,7 +187,7 @@ class SchemaTester:
                 return
             except DocumentationError:
                 continue
-        raise DocumentationError(f"{VALIDATE_ANY_OF_ERROR}\n\n" f"Reference: {reference}.anyOf")
+        raise DocumentationError(f"{VALIDATE_ANY_OF_ERROR}\n\nReference: {reference}.anyOf")
 
     @staticmethod
     def test_is_nullable(schema_item: dict) -> bool:

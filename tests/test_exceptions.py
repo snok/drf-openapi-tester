@@ -113,10 +113,6 @@ class TestValidatorErrors:
         message = validate_format({"format": "base64"}, "not byte")
         assert message == 'Expected: a "base64" formatted value, like b\'ZXhhbXBsZQ==\'\n\nReceived: "not byte"'
 
-        # base64
-        message = validate_format({"format": "base64"}, "not base64")
-        assert message == 'Expected: a "base64" formatted value, like b\'ZXhhbXBsZQ==\'\n\nReceived: "not base64"'
-
         # date
         message = validate_format({"format": "date"}, "not date")
         assert message == 'Expected: a "date" formatted value, like "2020-01-22"\n\nReceived: "not date"'
