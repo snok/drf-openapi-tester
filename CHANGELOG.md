@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.3.0 WIP
+
+* Updated handling of byte format to test for base64 string
+* Added format validators to handle the following keywords: "uuid", "base64", "email", "uri", "url", "ipv4", "ipv6" and "time"
+  validator
+
 ## v1.2.0 2020-02-14
 
 * Added validation of writeOnly keys

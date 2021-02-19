@@ -1,5 +1,6 @@
 import base64
-from typing import Any, Dict
+from typing import Any, Dict, Optional
+from uuid import UUID, uuid1, uuid4
 
 import pytest
 
@@ -408,3 +409,50 @@ def test_excess_keys_validation():
     ):
         schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
+
+
+def test_custom_validators():
+    def uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
+        schema_format = schema_section.get("format")
+        if schema_format == "uuid4":
+            try:
+                result = UUID(data, version=4)
+                if not str(result) == str(data):
+                    return f"Expected uuid4, but received {data}"
+            except ValueError:
+                return f"Expected uuid4, but received {data}"
+        return None
+
+    def uuid_1_validator(schema_section: dict, data: Any) -> Optional[str]:
+        schema_format = schema_section.get("format")
+        if schema_format == "uuid1":
+            try:
+                result = UUID(data, version=1)
+                if not str(result) == str(data):
+                    return f"Expected uuid1, but received {data}"
+            except ValueError:
+                return f"Expected uuid1, but received {data}"
+        return None
+
+    tester_with_custom_validator = SchemaTester(validators=[uuid_4_validator])
+
+    uid1_schema = {"type": "string", "format": "uuid1"}
+    uid4_schema = {"type": "string", "format": "uuid4"}
+    uid1 = str(uuid1())
+    uid4 = str(uuid4())
+
+    assert tester_with_custom_validator.test_schema_section(uid4_schema, uid4) is None
+
+    with pytest.raises(
+        DocumentationError,
+        match=f"Expected uuid4, but received {uid1}",
+    ):
+        tester_with_custom_validator.test_schema_section(uid4_schema, uid1)
+
+    assert tester_with_custom_validator.test_schema_section(uid1_schema, uid1, validators=[uuid_1_validator]) is None
+
+    with pytest.raises(
+        DocumentationError,
+        match=f"Expected uuid1, but received {uid4}",
+    ):
+        tester_with_custom_validator.test_schema_section(uid1_schema, uid4, validators=[uuid_1_validator])
