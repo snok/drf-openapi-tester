@@ -14,25 +14,25 @@ OPENAPI_PYTHON_MAPPING = {
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
 
 # Validation errors
-VALIDATE_FORMAT_ERROR = "Mismatched values, expected a value with the format {expected} but received {received}."
-VALIDATE_PATTERN_ERROR = "String '{data}' does not validate using the specified pattern: {pattern}"
+VALIDATE_FORMAT_ERROR = 'Expected: {article} "{format}" formatted value, like {example}\n\nReceived: {received}'
+VALIDATE_PATTERN_ERROR = 'The string "{data}" does not validate using the specified pattern: {pattern}'
 INVALID_PATTERN_ERROR = "String pattern is not valid regex: {pattern}"
-VALIDATE_ENUM_ERROR = "Mismatched values, expected a member of the enum {enum} but received {received}."
-VALIDATE_TYPE_ERROR = "Mismatched types, expected {expected} but received {received}."
+VALIDATE_ENUM_ERROR = "Expected: {expected}\n\nReceived: {received}"
+VALIDATE_TYPE_ERROR = 'Expected: {article} "{type}" type value\n\nReceived: {received}'
 VALIDATE_MULTIPLE_OF_ERROR = "The response value {data} should be a multiple of {multiple}"
-VALIDATE_MINIMUM_ERROR = "The response value {data} exceeds the minimum allowed value of {minimum}"
+VALIDATE_MINIMUM_ERROR = "The response value {data} is below the minimum required value of {minimum}"
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
-VALIDATE_MIN_LENGTH_ERROR = "The length of {data} exceeds the minimum allowed length of {min_length}"
-VALIDATE_MAX_LENGTH_ERROR = "The length of {data} exceeds the maximum allowed length of {max_length}"
+VALIDATE_MIN_LENGTH_ERROR = 'The length of "{data}" is below the minimum required length of {min_length}'
+VALIDATE_MAX_LENGTH_ERROR = 'The length of "{data}" exceeds the maximum allowed length of {max_length}'
 VALIDATE_MIN_ARRAY_LENGTH_ERROR = "The length of the array {data} is below the minimum required length of {min_length}"
 VALIDATE_MAX_ARRAY_LENGTH_ERROR = "The length of the array {data} exceeds the maximum allowed length of {max_length}"
 VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR = (
-    "The number of properties in {data} is below the minimum number required, {min_length}"
+    "The number of properties in {data} is below {min_length} which is the minimum number of properties required"
 )
 VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
-    "The number of properties in {data} exceeds the maximum number allowed, {max_length}"
+    "The number of properties in {data} exceeds {max_length} which is the maximum number of properties allowed"
 )
-VALIDATE_UNIQUE_ITEMS_ERROR = "The schema specifies that the array must have unique items, but items are not unique."
+VALIDATE_UNIQUE_ITEMS_ERROR = "The array {data} must only contain unique items"
 VALIDATE_NONE_ERROR = "Mismatched content. Expected {expected} but received NoneType"
 VALIDATE_MISSING_RESPONSE_KEY_ERROR = "The following property is missing from the tested data: {missing_key}."
 VALIDATE_MISSING_PROPERTY_KEY_ERROR = (
