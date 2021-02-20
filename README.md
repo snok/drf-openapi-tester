@@ -111,9 +111,9 @@ from openapi_tester import SchemaTester, is_camel_case
 from tests.utils import my_uuid_4_validator
 
 schema_test_with_case_validation = SchemaTester(
-  case_tester=is_camel_case,
-  ignore_case=["IP"],
-  validators=[my_uuid_4_validator]
+    case_tester=is_camel_case,
+    ignore_case=["IP"],
+    validators=[my_uuid_4_validator]
 
 )
 
@@ -139,7 +139,7 @@ def my_test(client):
     )
 ```
 
-### Case tester
+### case_tester
 
 The case tester argument takes a callable that is used to validate the key casings of both schemas and responses. If
 nothing is passed, case validation is skipped.
@@ -153,11 +153,11 @@ The library currently has 4 built-in case testers:
 
 You can of course pass your own custom case tester.
 
-### Ignore case
+### ignore_case
 
 List of keys to ignore when testing key casing. This setting only applies when case_tester is not `None`.
 
-### Validators
+### validators
 
 List of custom validators. A validator is a function that receives two parameters: schema_section and data, and returns
 either an error message or `None`, e.g.:
@@ -173,10 +173,24 @@ def my_uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
         try:
             result = UUID(data, version=4)
             if not str(result) == str(data):
-              return f"Expected uuid4, but received {data}"
+                return f"Expected uuid4, but received {data}"
         except ValueError:
             return f"Expected uuid4, but received {data}"
     return None
+```
+
+### field_key_map
+
+You can pass an optional dictionary that maps custom url parameter names into values, for cases where this cannot be
+inferred by the DRF `EndpointEnumerator`. A concrete use case for this option is when
+the [django i18n locale prefixes](https://docs.djangoproject.com/en/3.1/topics/i18n/translation/#language-prefix-in-url-patterns).
+
+```python
+from openapi_tester import SchemaTester
+
+schema_tester = SchemaTester(field_key_map={
+  "language": "en",
+})
 ```
 
 ## Schema Validation
