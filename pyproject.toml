@@ -11,7 +11,7 @@ repository = "https://github.com/snok/drf-openapi-tester"
 documentation = "https://github.com/snok/drf-openapi-tester"
 keywords = ["openapi", "swagger", "api", "testing", "schema", "django", "drf"]
 classifiers = [
-    "Development Status :: 4 - Beta",  # TODO: Update when stable
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
     "Framework :: Pytest",
     "Framework :: Django",
