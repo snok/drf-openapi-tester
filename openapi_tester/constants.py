@@ -14,15 +14,15 @@ OPENAPI_PYTHON_MAPPING = {
 PARAMETER_CAPTURE_REGEX = re.compile(r"({[\w]+})")
 
 # Validation errors
-VALIDATE_FORMAT_ERROR = 'Expected: {article} "{format}" formatted value, like {example}\n\nReceived: {received}'
-VALIDATE_PATTERN_ERROR = 'The string "{data}" does not validate using the specified pattern: {pattern}'
+VALIDATE_FORMAT_ERROR = 'Expected: {article} "{format}" formatted value\n\nReceived: {received}'
+VALIDATE_PATTERN_ERROR = 'The string "{data}" does not match the specified pattern: {pattern}'
 INVALID_PATTERN_ERROR = "String pattern is not valid regex: {pattern}"
-VALIDATE_ENUM_ERROR = "Expected: a valid enum member, like {expected}\n\nReceived: {received}"
+VALIDATE_ENUM_ERROR = "Expected: a member of the enum {enum}\n\nReceived: {received}"
 VALIDATE_TYPE_ERROR = 'Expected: {article} "{type}" type value\n\nReceived: {received}'
 VALIDATE_MULTIPLE_OF_ERROR = "The response value {data} should be a multiple of {multiple}"
-VALIDATE_MINIMUM_ERROR = "The response value {data} is below the minimum required value of {minimum}"
+VALIDATE_MINIMUM_ERROR = "The response value {data} is lower than the specified minimum of {minimum}"
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
-VALIDATE_MIN_LENGTH_ERROR = 'The length of "{data}" is below the minimum required length of {min_length}'
+VALIDATE_MIN_LENGTH_ERROR = 'The length of "{data}" is shorter than the specified minimum length of {min_length}'
 VALIDATE_MAX_LENGTH_ERROR = 'The length of "{data}" exceeds the maximum allowed length of {max_length}'
 VALIDATE_MIN_ARRAY_LENGTH_ERROR = "The length of the array {data} is below the minimum required length of {min_length}"
 VALIDATE_MAX_ARRAY_LENGTH_ERROR = "The length of the array {data} exceeds the maximum allowed length of {max_length}"
@@ -33,8 +33,8 @@ VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
     "The number of properties in {data} exceeds {max_length} which is the maximum number of properties allowed"
 )
 VALIDATE_UNIQUE_ITEMS_ERROR = "The array {data} must only contain unique items"
-VALIDATE_NONE_ERROR = "Received null value for a non-nullable schema object"
-VALIDATE_MISSING_RESPONSE_KEY_ERROR = 'The following property is missing from your response: "{missing_key}"'
+VALIDATE_NONE_ERROR = "Received a null value for a non-nullable schema object"
+VALIDATE_MISSING_RESPONSE_KEY_ERROR = 'The following property is missing in the response data: "{missing_key}"'
 VALIDATE_MISSING_PROPERTY_KEY_ERROR = (
     "The following key was found in your required properties, but is missing from properties: {missing_key}"
 )
