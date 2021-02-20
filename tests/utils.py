@@ -5,7 +5,7 @@ from typing import Any, Callable, Generator, Optional, Tuple, Union
 import yaml
 from rest_framework.response import Response
 
-from openapi_tester.schema_converter import SchemaToPythonConverter
+from tests.schema_converter import SchemaToPythonConverter
 
 TEST_ROOT = Path(__file__).resolve(strict=True).parent
 
