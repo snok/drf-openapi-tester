@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
-    OPENAPI_PYTHON_MAPPING,
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ANY_OF_ERROR,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
@@ -22,13 +21,17 @@ from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSect
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from openapi_tester.utils import combine_sub_schemas
 from openapi_tester.validators import (
-    validate_array_length,
     validate_enum,
     validate_format,
-    validate_length,
-    validate_min_and_max,
+    validate_max_items,
+    validate_max_length,
+    validate_max_properties,
+    validate_maximum,
+    validate_min_items,
+    validate_min_length,
+    validate_min_properties,
+    validate_minimum,
     validate_multiple_of,
-    validate_number_of_properties,
     validate_pattern,
     validate_type,
     validate_unique_items,
@@ -169,12 +172,7 @@ class SchemaTester:
             except DocumentationError:
                 continue
         if matches != 1:
-            raise DocumentationError(
-                message=VALIDATE_ONE_OF_ERROR.format(matches=matches),
-                response=data,
-                schema=schema_section,
-                reference=f"{reference}.oneOf",
-            )
+            raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
@@ -189,12 +187,7 @@ class SchemaTester:
                 return
             except DocumentationError:
                 continue
-        raise DocumentationError(
-            message=VALIDATE_ANY_OF_ERROR,
-            response=data,
-            schema=schema_section,
-            reference=f"{reference}.anyOf",
-        )
+        raise DocumentationError(f"{VALIDATE_ANY_OF_ERROR}\n\nReference: {reference}.anyOf")
 
     @staticmethod
     def test_is_nullable(schema_item: dict) -> bool:
@@ -241,11 +234,9 @@ class SchemaTester:
                 # If data is None and nullable, we return early
                 return
             raise DocumentationError(
-                message=VALIDATE_NONE_ERROR.format(expected=OPENAPI_PYTHON_MAPPING[schema_section.get("type", "")]),
-                response=data,
-                schema=schema_section,
-                reference=reference,
-                hint="Document the contents of the empty dictionary to match the response object.",
+                f"{VALIDATE_NONE_ERROR}\n\n"
+                f"Reference: {reference}\n\n"
+                f"Hint: Return a valid type, or document the value as nullable"
             )
 
         if "oneOf" in schema_section:
@@ -268,11 +259,15 @@ class SchemaTester:
                 validate_format,
                 validate_pattern,
                 validate_multiple_of,
-                validate_min_and_max,
-                validate_length,
+                validate_minimum,
+                validate_maximum,
                 validate_unique_items,
-                validate_array_length,
-                validate_number_of_properties,
+                validate_min_length,
+                validate_max_length,
+                validate_min_items,
+                validate_max_items,
+                validate_max_properties,
+                validate_min_properties,
                 validate_enum,
                 *self.validators,
                 *(validators or []),
@@ -281,12 +276,7 @@ class SchemaTester:
         for validator in combined_validators:
             error = validator(schema_section, data)
             if error:
-                raise DocumentationError(
-                    message=error,
-                    response=data,
-                    schema=schema_section,
-                    reference=reference,
-                )
+                raise DocumentationError(f"\n\n{error}\n\nReference: {reference}")
 
         if schema_section_type == "object":
             self.test_openapi_object(schema_section=schema_section, data=data, reference=reference, **kwargs)
@@ -319,11 +309,9 @@ class SchemaTester:
             self.test_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
                 raise DocumentationError(
-                    message=VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key),
-                    hint="Remove the key from your OpenAPI docs, or include it in your API response.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}."
+                    f"object:key:{key}\n\nHint: Remove the key from your"
+                    f" OpenAPI docs, or include it in your API response"
                 )
         for key in response_keys:
             self.test_key_casing(key, case_tester, ignore_case)
@@ -331,19 +319,14 @@ class SchemaTester:
             additional_properties_allowed = additional_properties is True
             if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
                 raise DocumentationError(
-                    message=VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key),
-                    hint="Remove the key from your API response, or include it in your OpenAPI docs.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key)}\n\nReference: {reference}.object:key:"
+                    f"{key}\n\nHint: Remove the key from your API response, or include it in your OpenAPI docs"
                 )
             if key in write_only_properties:
                 raise DocumentationError(
-                    message=VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key),
-                    hint="Remove the key from your API response, or remove the `WriteOnly` restriction.",
-                    response=data,
-                    schema=schema_section,
-                    reference=f"{reference}.object:key:{key}",
+                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}"
+                    f".object:key:{key}\n\nHint: Remove the key from your API response, or remove the "
+                    f'"WriteOnly" restriction'
                 )
         for key, value in data.items():
             self.test_schema_section(

@@ -6,9 +6,7 @@ import pytest
 
 from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import (
-    VALIDATE_ENUM_ERROR,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
-    VALIDATE_FORMAT_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
@@ -21,8 +19,6 @@ from openapi_tester.constants import (
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_NONE_ERROR,
     VALIDATE_ONE_OF_ERROR,
-    VALIDATE_TYPE_ERROR,
-    VALIDATE_UNIQUE_ITEMS_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
 
@@ -91,10 +87,7 @@ def test_type_validation():
                 # Use `in` because the number type is 'int or float', not just float
                 continue
 
-            with pytest.raises(
-                DocumentationError,
-                match=VALIDATE_TYPE_ERROR.format(expected=schema_python_type, received=response_python_type),
-            ):
+            with pytest.raises(DocumentationError):
                 tester.test_schema_section(schema, response)
 
 
@@ -171,7 +164,7 @@ def test_pattern_validation():
     tester.test_schema_section(schema, "123-45-6789")
 
     # Bad pattern should fail
-    with pytest.raises(DocumentationError, match="String 'test' does not validate using the specified pattern"):
+    with pytest.raises(DocumentationError):
         tester.test_schema_section(schema, "test")
 
     # And if we get compile errors, we need to handle this too
@@ -218,9 +211,7 @@ def test_enum_validation():
     tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Cat")
     tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Dog")
 
-    with pytest.raises(
-        DocumentationError, match=VALIDATE_ENUM_ERROR.format(enum=r"\['Cat', 'Dog'\]", received="Turtle")
-    ):
+    with pytest.raises(DocumentationError):
         tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Turtle")
 
 
@@ -237,7 +228,7 @@ def test_multiple_of_validation():
 
 
 def test_unique_items_validation():
-    with pytest.raises(DocumentationError, match=VALIDATE_UNIQUE_ITEMS_ERROR):
+    with pytest.raises(DocumentationError):
         schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
         tester.test_schema_section(schema, ["identical value", "identical value", "non-identical value"])
 
@@ -247,7 +238,7 @@ def test_date_validation():
     tester.test_schema_section({"type": "string", "format": "date"}, "2040-01-01")
 
     # This is invalid
-    with pytest.raises(DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date", received="01-31-2019")):
+    with pytest.raises(DocumentationError):
         tester.test_schema_section({"type": "string", "format": "date"}, "01-31-2019")
 
 
@@ -256,16 +247,14 @@ def test_datetime_validation():
     tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 08:00")
 
     # This is invalid
-    with pytest.raises(
-        DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="date-time", received="2040-01-01 0800")
-    ):
+    with pytest.raises(DocumentationError):
         tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 0800")
 
 
 def test_byte_validation():
     tester.test_schema_section({"type": "string", "format": "byte"}, base64.b64encode(b"test123").decode("utf-8"))
 
-    with pytest.raises(DocumentationError, match=VALIDATE_FORMAT_ERROR.format(expected="byte", received="test")):
+    with pytest.raises(DocumentationError):
         tester.test_schema_section({"type": "string", "format": "byte"}, "test123")
 
 
