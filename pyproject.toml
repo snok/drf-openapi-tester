@@ -11,7 +11,7 @@ repository = "https://github.com/snok/drf-openapi-tester"
 documentation = "https://github.com/snok/drf-openapi-tester"
 keywords = ["openapi", "swagger", "api", "testing", "schema", "django", "drf"]
 classifiers = [
-    "Development Status :: 4 - Beta",  # TODO: Update when stable
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",
     "Framework :: Pytest",
     "Framework :: Django",
@@ -95,11 +95,10 @@ max-returns = 21
 max-branches = 20
 good-names = "_,e"
 
-
 [tool.coverage.run]
 source = ["openapi_tester/*"]
 omit = ["openapi_tester/type_declarations.py"]
-branch = false
+branch = true
 
 [tool.coverage.report]
 show_missing = true

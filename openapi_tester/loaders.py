@@ -110,10 +110,7 @@ class BaseSchemaLoader:
         return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
     def resolve_path(self, endpoint_path: str, method: str) -> Tuple[str, ResolverMatch]:
-        """
-        Resolves a Django path.
-        """
-
+        """ Resolves a Django path. """
         url_object = urlparse(endpoint_path)
         parsed_path = url_object.path if url_object.path.endswith("/") else url_object.path + "/"
         if not parsed_path.startswith("/"):
@@ -152,7 +149,7 @@ class BaseSchemaLoader:
         view = getattr(imported_module, view_name)
         coerced_path = BaseSchemaGenerator().coerce_path(path=path, method=method, view=view)
         pk_field_name = "".join(
-            list([entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry])
+            entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry
         )
         resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
         del resolved_route.kwargs["pk"]

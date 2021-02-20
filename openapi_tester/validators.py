@@ -8,7 +8,6 @@ from django.core.exceptions import ValidationError
 from django.core.validators import EmailValidator, URLValidator, validate_ipv4_address, validate_ipv6_address
 from django.utils.dateparse import parse_date, parse_datetime, parse_time
 
-from openapi_tester import OpenAPISchemaError
 from openapi_tester.constants import (
     INVALID_PATTERN_ERROR,
     VALIDATE_ENUM_ERROR,
@@ -26,6 +25,7 @@ from openapi_tester.constants import (
     VALIDATE_TYPE_ERROR,
     VALIDATE_UNIQUE_ITEMS_ERROR,
 )
+from openapi_tester.exceptions import OpenAPISchemaError
 
 
 def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable:

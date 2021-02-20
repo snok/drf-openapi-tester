@@ -11,7 +11,7 @@ from openapi_tester.utils import combine_sub_schemas
 
 class SchemaToPythonConverter:
     """
-    This class is used both by the DocumentationError format method and the various test suites.
+    This class is used by various test suites.
     """
 
     result: Any
