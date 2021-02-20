@@ -95,11 +95,10 @@ max-returns = 21
 max-branches = 20
 good-names = "_,e"
 
-
 [tool.coverage.run]
 source = ["openapi_tester/*"]
 omit = ["openapi_tester/type_declarations.py"]
-branch = false
+branch = true
 
 [tool.coverage.report]
 show_missing = true
