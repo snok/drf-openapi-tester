@@ -1,6 +1,5 @@
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import path, register_converter
-from django.urls.converters import StringConverter
+from django.urls import path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -11,46 +10,27 @@ from test_project.api.views.cars import BadCars, GoodCars
 from test_project.api.views.exempt_endpoint import Exempt
 from test_project.api.views.i18n import Languages
 from test_project.api.views.items import Items
+from test_project.api.views.names import NamesRetrieveView
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
-from test_project.api.views.viewset import NamesApi
-
-
-class IsValidVehicleType(StringConverter):
-    def to_python(self, value: str) -> str:
-        if value in ["cars", "2", 2]:
-            return value
-        raise ValueError
-
-
-class IsValidVersion(StringConverter):
-    def to_python(self, value: str) -> str:
-        if value in ["v1"]:
-            return value
-        raise ValueError
-
-
-register_converter(IsValidVehicleType, "vehicle_type")
-register_converter(IsValidVersion, "version")
-
 
 api_urlpatterns = [
-    path("api/<version:version>/cars/correct", GoodCars.as_view()),
-    path("api/<version:version>/cars/incorrect", BadCars.as_view()),
-    path("api/<version:version>/trucks/correct", GoodTrucks.as_view()),
-    path("api/<version:version>/trucks/incorrect", BadTrucks.as_view()),
-    path("api/<version:version>/vehicles", Vehicles.as_view()),
-    path("api/<version:version>/animals", Animals.as_view()),
-    path("api/<version:version>/items", Items.as_view()),
-    path("api/<version:version>/exempt-endpoint", Exempt.as_view()),
-    path("api/<version:version>/snake-case/", SnakeCasedResponse.as_view()),
+    path("api/<str:version>/cars/correct", GoodCars.as_view()),
+    path("api/<str:version>/cars/incorrect", BadCars.as_view()),
+    path("api/<str:version>/trucks/correct", GoodTrucks.as_view()),
+    path("api/<str:version>/trucks/incorrect", BadTrucks.as_view()),
+    path("api/<str:version>/vehicles", Vehicles.as_view()),
+    path("api/<str:version>/animals", Animals.as_view()),
+    path("api/<str:version>/items", Items.as_view()),
+    path("api/<str:version>/exempt-endpoint", Exempt.as_view()),
+    path("api/<str:version>/<pk>/names", NamesRetrieveView.as_view()),
     # ^trailing slash is here on purpose
-    path("api/<version:version>/names/<id>", NamesApi.as_view({"get": "retrieve"})),
+    path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
 ]
 
 internationalised_urlpatterns = i18n_patterns(
-    path("api/<version:version>/i18n", Languages.as_view()),
+    path("api/<str:version>/i18n", Languages.as_view()),
 )
 
 swagger_info = openapi.Info(

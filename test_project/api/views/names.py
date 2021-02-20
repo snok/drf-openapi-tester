@@ -1,6 +1,5 @@
-from rest_framework.response import Response
+from rest_framework.generics import RetrieveAPIView
 from rest_framework.serializers import ModelSerializer
-from rest_framework.viewsets import GenericViewSet
 
 from test_project.models import Names
 
@@ -11,10 +10,10 @@ class NamesSerializer(ModelSerializer):
         fields = "__all__"
 
 
-class NamesApi(GenericViewSet):
+class NamesRetrieveView(RetrieveAPIView):
     model = Names
     serializer_class = NamesSerializer
-    queryset = Names.objects.all()
+    queryset = Names.objects
 
-    def retrieve(self, request, version, id):
-        return Response(status=204)
+    def get_object(self):
+        return Names.objects.get(custom_id_field=int(self.kwargs["pk"]))

@@ -51,7 +51,10 @@ def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Res
 
 
 def pass_mock_value(return_value: Any) -> Any:
-    return lambda _: return_value
+    def side_effect(de_parameterized_path: str, method: str):
+        return return_value
+
+    return side_effect
 
 
 def mock_schema(schema) -> Callable:

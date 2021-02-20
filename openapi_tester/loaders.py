@@ -3,19 +3,22 @@ import difflib
 import json
 import pathlib
 import re
+from functools import cached_property
+from importlib import import_module
 from json import dumps, loads
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Tuple
 from urllib.parse import ParseResult, urlparse
 
 import yaml
-from django.urls import Resolver404, resolve
+from django.urls import Resolver404, ResolverMatch, resolve
 from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 
 # noinspection PyProtectedMember
 from prance.util.resolver import RefResolver
 
 # noinspection PyProtectedMember
-from rest_framework.schemas.generators import EndpointEnumerator
+from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
+from rest_framework.settings import api_settings
 
 from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
 
@@ -46,10 +49,12 @@ class BaseSchemaLoader:
     """
 
     base_path = "/"
+    field_key_map: Dict[str, str]
 
-    def __init__(self):
+    def __init__(self, field_key_map: Optional[Dict[str, str]] = None):
         super().__init__()
         self.schema: Optional[dict] = None
+        self.field_key_map = field_key_map or {}
 
     def load_schema(self) -> dict:
         """
@@ -80,10 +85,8 @@ class BaseSchemaLoader:
     def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
         normalized_paths: Dict[str, dict] = {}
         for key, value in schema["paths"].items():
-            if "{" in key:
-                normalized_paths[key] = value
-            else:
-                normalized_paths[self.parameterize_path(key)] = value
+            parameterized_path = self.parameterize_path(de_parameterized_path=key, method=list(value.keys())[0])
+            normalized_paths[parameterized_path] = value
         return {**schema, "paths": normalized_paths}
 
     @staticmethod
@@ -102,24 +105,24 @@ class BaseSchemaLoader:
         self.validate_schema(de_referenced_schema)
         self.schema = self.normalize_schema_paths(de_referenced_schema)
 
-    def parameterize_path(self, de_parameterized_path: str) -> str:
+    def parameterize_path(self, de_parameterized_path: str, method: str) -> str:
         """
         Returns the appropriate endpoint route.
         """
-        path, resolved_path = self.resolve_path(de_parameterized_path)
+        path, resolved_path = self.resolve_path(endpoint_path=de_parameterized_path, method=method)
         for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
             parameter_name = parameter.replace("{", "").replace("}", "")
             path = path.replace(str(resolved_path.kwargs[parameter_name]), parameter_name)
         return path
 
-    @staticmethod
-    def get_endpoint_paths() -> List[str]:
+    @cached_property
+    def endpoints(self) -> List[str]:
         """
         Returns a list of endpoint paths.
         """
         return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
-    def resolve_path(self, endpoint_path: str) -> tuple:
+    def resolve_path(self, endpoint_path: str, method: str) -> Tuple[str, ResolverMatch]:
         """
         Resolves a Django path.
         """
@@ -128,9 +131,35 @@ class BaseSchemaLoader:
         parsed_path = url_object.path if url_object.path.endswith("/") else url_object.path + "/"
         if not parsed_path.startswith("/"):
             parsed_path = "/" + parsed_path
+        for key, value in self.field_key_map.items():
+            if value != "pk" and key in parsed_path:
+                parsed_path = parsed_path.replace(f"{{{key}}}", value)
         for path in [parsed_path, parsed_path[:-1]]:
             try:
                 resolved_route = resolve(path)
+            except Resolver404:
+                continue
+            else:
+                if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
+                    schema_generator = BaseSchemaGenerator()
+                    split_view_path = resolved_route.view_name.split(".")
+                    component_name = split_view_path.pop()
+                    imported_module = import_module(".".join(split_view_path))
+                    view = getattr(imported_module, component_name)
+                    coerced_path = schema_generator.coerce_path(path=path, method=method, view=view)
+                    pk_field_name = "".join(
+                        list(
+                            [
+                                entry.replace("+ ", "")
+                                for entry in difflib.Differ().compare(path, coerced_path)
+                                if "+ " in entry
+                            ]
+                        )
+                    )
+                    resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
+                    del resolved_route.kwargs["pk"]
+                    path = coerced_path
+                    self.field_key_map[pk_field_name] = "pk"
                 for key, value in resolved_route.kwargs.items():
                     # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex
                     # regex handling. However, its important not to freely use the .replace() function, as a
@@ -138,12 +167,8 @@ class BaseSchemaLoader:
                     var_index = path.rfind(str(value))
                     path = path[:var_index] + f"{{{key}}}" + path[var_index + len(str(value)) :]
                 return path, resolved_route
-            except Resolver404:
-                continue
         message = f"Could not resolve path `{endpoint_path}`."
-        closest_matches = "".join(
-            f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, self.get_endpoint_paths())
-        )
+        closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, self.endpoints))
         if closest_matches:
             message += f"\n\nDid you mean one of these?{closest_matches}"
         raise ValueError(message)
@@ -154,8 +179,8 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
     Loads OpenAPI schema generated by drf_yasg.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, field_key_map: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(field_key_map=field_key_map)
         from drf_yasg.generators import OpenAPISchemaGenerator
         from drf_yasg.openapi import Info
 
@@ -168,13 +193,11 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         odict_schema = self.schema_generator.get_schema(None, True)
         return loads(dumps(odict_schema.as_odict()))
 
-    def resolve_path(self, endpoint_path: str) -> tuple:
-        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
-        # typically might be 'api/' or 'api/v1/'
-        path_prefix = self.schema_generator.determine_path_prefix(self.get_endpoint_paths())
-        if path_prefix == "/":
-            path_prefix = ""
-        return de_parameterized_path[len(path_prefix) :], resolved_path
+    def resolve_path(self, endpoint_path: str, method: str) -> Tuple[str, ResolverMatch]:
+        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
+        path_prefix = self.schema_generator.determine_path_prefix(self.endpoints)
+        trim_length = len(path_prefix) if path_prefix != "/" else 0
+        return de_parameterized_path[trim_length:], resolved_path
 
 
 class DrfSpectacularSchemaLoader(BaseSchemaLoader):
@@ -182,8 +205,8 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
     Loads OpenAPI schema generated by drf_spectacular.
     """
 
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, field_key_map: Optional[Dict[str, str]] = None) -> None:
+        super().__init__(field_key_map=field_key_map)
         from drf_spectacular.generators import SchemaGenerator
 
         self.schema_generator = SchemaGenerator()
@@ -194,10 +217,10 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         """
         return loads(dumps(self.schema_generator.get_schema(public=True)))
 
-    def resolve_path(self, endpoint_path: str) -> tuple:
+    def resolve_path(self, endpoint_path: str, method: str) -> Tuple[str, ResolverMatch]:
         from drf_spectacular.settings import spectacular_settings
 
-        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path)
+        de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
         return de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX) :], resolved_path
 
 
@@ -206,8 +229,8 @@ class StaticSchemaLoader(BaseSchemaLoader):
     Loads OpenAPI schema from a static file.
     """
 
-    def __init__(self, path: str):
-        super().__init__()
+    def __init__(self, path: str, field_key_map: Optional[Dict[str, str]] = None):
+        super().__init__(field_key_map=field_key_map)
         self.path = path if not isinstance(path, pathlib.PosixPath) else str(path)
 
     def load_schema(self) -> dict:

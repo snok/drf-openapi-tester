@@ -50,6 +50,7 @@ class SchemaTester:
         ignore_case: Optional[List[str]] = None,
         schema_file_path: Optional[str] = None,
         validators: Optional[List[Callable[[dict, Any], Optional[str]]]] = None,
+        field_key_map: Optional[Dict[str, str]] = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema object and API response to check that they match at every level.
@@ -64,11 +65,11 @@ class SchemaTester:
         self.validators = validators or []
 
         if schema_file_path is not None:
-            self.loader = StaticSchemaLoader(schema_file_path)
+            self.loader = StaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
         elif "drf_spectacular" in settings.INSTALLED_APPS:
-            self.loader = DrfSpectacularSchemaLoader()
+            self.loader = DrfSpectacularSchemaLoader(field_key_map=field_key_map)
         elif "drf_yasg" in settings.INSTALLED_APPS:
-            self.loader = DrfYasgSchemaLoader()
+            self.loader = DrfYasgSchemaLoader(field_key_map=field_key_map)
         else:
             raise ImproperlyConfigured(INIT_ERROR)
 
@@ -114,7 +115,7 @@ class SchemaTester:
         """
         schema = self.loader.get_schema()
         response_method = response.request["REQUEST_METHOD"].lower()
-        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"])
+        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"], method=response_method)
         paths_object = self.get_key_value(schema, "paths")
 
         pretty_routes = "\n\t• ".join(paths_object.keys())
