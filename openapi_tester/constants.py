@@ -23,21 +23,20 @@ VALIDATE_MULTIPLE_OF_ERROR = "The response value {data} should be a multiple of 
 VALIDATE_MINIMUM_ERROR = "The response value {data} is lower than the specified minimum of {minimum}"
 VALIDATE_MAXIMUM_ERROR = "The response value {data} exceeds the maximum allowed value of {maximum}"
 VALIDATE_MIN_LENGTH_ERROR = 'The length of "{data}" is shorter than the specified minimum length of {min_length}'
-VALIDATE_MAX_LENGTH_ERROR = 'The length of "{data}" exceeds the maximum allowed length of {max_length}'
-VALIDATE_MIN_ARRAY_LENGTH_ERROR = "The length of the array {data} is below the minimum required length of {min_length}"
-VALIDATE_MAX_ARRAY_LENGTH_ERROR = "The length of the array {data} exceeds the maximum allowed length of {max_length}"
+VALIDATE_MAX_LENGTH_ERROR = 'The length of "{data}" exceeds the specified maximum length of {max_length}'
+VALIDATE_MIN_ARRAY_LENGTH_ERROR = (
+    "The length of the array {data} is shorter than the specified minimum length of {min_length}"
+)
+VALIDATE_MAX_ARRAY_LENGTH_ERROR = "The length of the array {data} exceeds the specified maximum length of {max_length}"
 VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR = (
-    "The number of properties in {data} is below {min_length} which is the minimum number of properties required"
+    "The number of properties in {data} is fewer than the specified minimum number of properties of {min_length}"
 )
 VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR = (
-    "The number of properties in {data} exceeds {max_length} which is the maximum number of properties allowed"
+    "The number of properties in {data} exceeds the specified maximum number of properties of {max_length}"
 )
-VALIDATE_UNIQUE_ITEMS_ERROR = "The array {data} must only contain unique items"
+VALIDATE_UNIQUE_ITEMS_ERROR = "The array {data} must contain unique items only"
 VALIDATE_NONE_ERROR = "Received a null value for a non-nullable schema object"
 VALIDATE_MISSING_RESPONSE_KEY_ERROR = 'The following property is missing in the response data: "{missing_key}"'
-VALIDATE_MISSING_PROPERTY_KEY_ERROR = (
-    "The following key was found in your required properties, but is missing from properties: {missing_key}"
-)
 VALIDATE_EXCESS_RESPONSE_KEY_ERROR = (
     'The following property was found in the response, but is missing from the schema definition: "{excess_key}"'
 )

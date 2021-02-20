@@ -85,52 +85,18 @@ def validate_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
 def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     schema_format: str = schema_section.get("format", "")
     if schema_format in VALIDATOR_MAP and not VALIDATOR_MAP[schema_format](data):
-        example_values = {
-            "byte": {"value": b"example", "article": "a"},
-            "base64": {"value": b"ZXhhbXBsZQ==", "article": "a"},
-            "date": {"value": '"2020-01-22"', "article": "a"},
-            "date-time": {"value": '"2020-01-22 08:00"', "article": "a"},
-            "double": {"value": "2.22", "article": "a"},
-            "email": {"value": '"example@gmail.com"', "article": "an"},
-            "float": {"value": "2.2", "article": "a"},
-            "ipv4": {"value": '"192.0.2.235"', "article": "an"},
-            "ipv6": {"value": '"2001:0db8:85a3:0000:0000:8a2e:0370:7334"', "article": "an"},
-            "time": {"value": '"20:00:00"', "article": "a"},
-            "uri": {"value": '"https://example.com/"', "article": "a"},
-            "url": {"value": '"https://example.com/"', "article": "a"},
-        }
         return VALIDATE_FORMAT_ERROR.format(
+            article="an" if format in ["ipv4", "ipv6", "email"] else "a",
             format=schema_format,
-            article=example_values[schema_format]["article"],  # type: ignore
-            example=example_values[schema_format]["value"],  # type: ignore
             received=f'"{data}"',
         )
     return None
 
 
-def pretty_print_list(_list: list) -> str:
-    """
-    Prints a list as one of the following:
-        [1] -> 1
-        [1, 2] -> 1 or 2
-        [1, 2, 3] -> 1, 2, or 3
-    """
-    if len(_list) == 1:
-        return f'"{_list[0]}"'
-    if len(_list) == 2:
-        # No oxford comma
-        return f'"{_list[0]}" or "{_list[1]}"'
-    message = f'"{_list[0]}"'
-    for index in range(1, len(_list) - 1):
-        message += f', "{_list[index]}"'
-    message += f', or "{_list[-1]}"'
-    return message
-
-
 def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     enum = schema_section.get("enum")
     if enum and data not in enum:
-        return VALIDATE_ENUM_ERROR.format(expected=pretty_print_list(schema_section["enum"]), received=f'"{data}"')
+        return VALIDATE_ENUM_ERROR.format(enum=schema_section["enum"], received=f'"{data}"')
     return None
 
 

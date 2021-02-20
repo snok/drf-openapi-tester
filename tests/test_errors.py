@@ -31,42 +31,42 @@ class TestValidatorErrors:
 
     def test_validate_min_properties_error(self):
         message = validate_min_properties({"minProperties": 2}, {})
-        assert message == "The number of properties in {} is below 2 which is the minimum number of properties required"
+        assert message == "The number of properties in {} is fewer than the specified minimum number of properties of 2"
 
     def test_validate_max_properties_error(self):
         message = validate_max_properties({"maxProperties": 1}, {"one": 1, "two": 2})
         assert (
-            message == "The number of properties in {'one': 1, 'two': 2} exceeds 1 "
-            "which is the maximum number of properties allowed"
+            message == "The number of properties in {'one': 1, 'two': 2} exceeds the"
+            " specified maximum number of properties of 1"
         )
 
     def test_validate_max_items_error(self):
         message = validate_max_items({"maxItems": 1}, [1, 2])
-        assert message == "The length of the array [1, 2] exceeds the maximum allowed length of 1"
+        assert message == "The length of the array [1, 2] exceeds the specified maximum length of 1"
 
     def test_validate_min_items_error(self):
         message = validate_min_items({"minItems": 1}, [])
-        assert message == "The length of the array [] is below the minimum required length of 1"
+        assert message == "The length of the array [] is shorter than the specified minimum length of 1"
 
     def test_validate_max_length_error(self):
         message = validate_max_length({"maxLength": 1}, "test")
-        assert message == 'The length of "test" exceeds the maximum allowed length of 1'
+        assert message == 'The length of "test" exceeds the specified maximum length of 1'
 
     def test_validate_min_length_error(self):
         message = validate_min_length({"minLength": 5}, "test")
-        assert message == 'The length of "test" is below the minimum required length of 5'
+        assert message == 'The length of "test" is shorter than the specified minimum length of 5'
 
     def test_validate_unique_items_error(self):
         message = validate_unique_items({"uniqueItems": True}, [1, 2, 1])
-        assert message == "The array [1, 2, 1] must only contain unique items"
+        assert message == "The array [1, 2, 1] must contain unique items only"
 
     def test_validate_minimum_error(self):
         message = validate_minimum({"minimum": 2}, 0)
-        assert message == "The response value 0 is below the minimum required value of 2"
+        assert message == "The response value 0 is lower than the specified minimum of 2"
 
     def test_validate_exclusive_minimum_error(self):
         message = validate_minimum({"minimum": 2, "exclusiveMinimum": True}, 2)
-        assert message == "The response value 2 is below the minimum required value of 3"
+        assert message == "The response value 2 is lower than the specified minimum of 3"
 
         message = validate_minimum({"minimum": 2, "exclusiveMinimum": False}, 2)
         assert message is None
@@ -88,75 +88,32 @@ class TestValidatorErrors:
 
     def test_validate_pattern_error(self):
         message = validate_pattern({"pattern": "^[a-z]$"}, "3")
-        assert message == 'The string "3" does not validate using the specified pattern: ^[a-z]$'
+        assert message == 'The string "3" does not match the specified pattern: ^[a-z]$'
 
     # Formatted errors
 
     def test_validate_enum_error(self):
         message = validate_enum({"enum": ["Cat"]}, "Turtle")
-        assert message == 'Expected: a valid enum member, like "Cat"\n\nReceived: "Turtle"'
-
-        message = validate_enum({"enum": ["Cat", "Dog"]}, "Turtle")
-        assert message == 'Expected: a valid enum member, like "Cat" or "Dog"\n\nReceived: "Turtle"'
-
-        message = validate_enum({"enum": ["Cat", "Dog", "Hamster", "Parrot"]}, "Turtle")
-        assert (
-            message == 'Expected: a valid enum member, like "Cat", "Dog", "Hamster", or "Parrot"\n\nReceived: "Turtle"'
-        )
+        assert message == "Expected: a member of the enum ['Cat']\n\nReceived: \"Turtle\""
 
     def test_validate_format_error(self):
-        # byte
-        message = validate_format({"format": "byte"}, "not byte")
-        assert message == 'Expected: a "byte" formatted value, like b\'example\'\n\nReceived: "not byte"'
-
-        # base64
-        message = validate_format({"format": "base64"}, "not byte")
-        assert message == 'Expected: a "base64" formatted value, like b\'ZXhhbXBsZQ==\'\n\nReceived: "not byte"'
-
-        # date
-        message = validate_format({"format": "date"}, "not date")
-        assert message == 'Expected: a "date" formatted value, like "2020-01-22"\n\nReceived: "not date"'
-
-        # date-time
-        message = validate_format({"format": "date-time"}, "not date-time")
-        assert (
-            message == 'Expected: a "date-time" formatted value, like "2020-01-22 08:00"\n\nReceived: "not date-time"'
-        )
-
-        # double
-        message = validate_format({"format": "double"}, "not double")
-        assert message == 'Expected: a "double" formatted value, like 2.22\n\nReceived: "not double"'
-
-        # email
-        message = validate_format({"format": "email"}, "not email")
-        assert message == 'Expected: an "email" formatted value, like "example@gmail.com"\n\nReceived: "not email"'
-
-        # float
-        message = validate_format({"format": "float"}, "not float")
-        assert message == 'Expected: a "float" formatted value, like 2.2\n\nReceived: "not float"'
-
-        # ipv4
-        message = validate_format({"format": "ipv4"}, "not ipv4")
-        assert message == 'Expected: an "ipv4" formatted value, like "192.0.2.235"\n\nReceived: "not ipv4"'
-
-        # ipv6
-        message = validate_format({"format": "ipv6"}, "not ipv6")
-        assert (
-            message
-            == 'Expected: an "ipv6" formatted value, like "2001:0db8:85a3:0000:0000:8a2e:0370:7334"\n\nReceived: "not ipv6"'
-        )
-
-        # time
-        message = validate_format({"format": "time"}, "not time")
-        assert message == 'Expected: a "time" formatted value, like "20:00:00"\n\nReceived: "not time"'
-
-        # uri
-        message = validate_format({"format": "uri"}, "not uri")
-        assert message == 'Expected: a "uri" formatted value, like "https://example.com/"\n\nReceived: "not uri"'
-
-        # url
-        message = validate_format({"format": "url"}, "not url")
-        assert message == 'Expected: a "url" formatted value, like "https://example.com/"\n\nReceived: "not url"'
+        d = [
+            ({"format": "byte"}, "not byte"),
+            ({"format": "base64"}, "not byte"),
+            ({"format": "date"}, "not date"),
+            ({"format": "date-time"}, "not date-time"),
+            ({"format": "double"}, "not double"),
+            ({"format": "email"}, "not email"),
+            ({"format": "float"}, "not float"),
+            ({"format": "ipv4"}, "not ipv4"),
+            ({"format": "ipv6"}, "not ipv6"),
+            ({"format": "time"}, "not time"),
+            ({"format": "uri"}, "not uri"),
+            ({"format": "url"}, "not url"),
+        ]
+        for (schema, data) in d:
+            message = validate_format(schema, data)
+            assert message == f'''Expected: a "{schema['format']}" formatted value\n\nReceived: "{data}"'''
 
     def test_validate_type_error(self):
         # string
@@ -195,7 +152,7 @@ class TestValidatorErrors:
 class TestTestOpenAPIObjectErrors:
     def test_missing_response_key_error(self):
         expected_error_message = (
-            'The following property is missing from your response: "one"\n\n'
+            'The following property is missing in the response data: "one"\n\n'
             "Reference: init.object:key:one\n\n"
             "Hint: Remove the key from your OpenAPI docs, or include it in your API response"
         )
@@ -234,7 +191,7 @@ class TestTestOpenAPIObjectErrors:
 
 def test_null_error():
     expected_error_message = (
-        "Received null value for a non-nullable schema object\n\n"
+        "Received a null value for a non-nullable schema object\n\n"
         "Reference: init\n\n"
         "Hint: Return a valid type, or document the value as nullable"
     )
