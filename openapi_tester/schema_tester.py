@@ -115,7 +115,7 @@ class SchemaTester:
         """
         schema = self.loader.get_schema()
         response_method = response.request["REQUEST_METHOD"].lower()
-        parameterized_path = self.loader.parameterize_path(response.request["PATH_INFO"], method=response_method)
+        parameterized_path, _ = self.loader.resolve_path(response.request["PATH_INFO"], method=response_method)
         paths_object = self.get_key_value(schema, "paths")
 
         pretty_routes = "\n\t• ".join(paths_object.keys())

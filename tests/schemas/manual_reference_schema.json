@@ -5,6 +5,52 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/{pk}/names": {
+      "get": {
+        "operationId": "api_v1_names_retrieve",
+        "description": "",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "pk",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "A unique value identifying this names.",
+            "required": true
+          }
+        ],
+        "tags": [
+          "api"
+        ],
+        "security": [
+          {
+            "cookieAuth": []
+          },
+          {}
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "pk": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "pk"
+                  ]
+                }
+              }
+            },
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/v1/cars/correct": {
       "get": {
         "operationId": "listGoodCars",

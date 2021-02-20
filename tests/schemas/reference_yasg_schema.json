@@ -1,0 +1,953 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "DRF_YASG test project",
+    "description": "drf_yasg implementation for OpenAPI spec generation.",
+    "contact": {
+      "email": ""
+    },
+    "version": "v1"
+  },
+  "basePath": "/",
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "securityDefinitions": {
+    "Basic": {
+      "type": "basic"
+    }
+  },
+  "security": [
+    {
+      "Basic": []
+    }
+  ],
+  "paths": {
+    "/api/{version}/animals": {
+      "get": {
+        "operationId": "get_animals",
+        "summary": "List animals",
+        "description": "Lists all animals",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "array",
+              "items": {
+                "title": "Success",
+                "type": "object",
+                "properties": {
+                  "test": {
+                    "description": "test",
+                    "type": "string",
+                    "example": "test"
+                  },
+                  "test2": {
+                    "description": "test2",
+                    "type": "string",
+                    "example": "test2"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad input. Error: {e}."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad credentials. Error: {e}."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Unexpected error raised when ..."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "delete": {
+        "operationId": "api_animals_delete",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/cars/correct": {
+      "get": {
+        "operationId": "get_cars",
+        "summary": "Lists cars",
+        "description": "Lists all cars available in this test-project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "array",
+              "items": {
+                "title": "Success",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "A swedish car?",
+                    "type": "string",
+                    "example": "Saab"
+                  },
+                  "color": {
+                    "description": "The color of the car.",
+                    "type": "string",
+                    "example": "Yellow"
+                  },
+                  "height": {
+                    "description": "How tall the car is.",
+                    "type": "string",
+                    "example": "Medium height"
+                  },
+                  "width": {
+                    "description": "How wide the car is.",
+                    "type": "string",
+                    "example": "Very wide"
+                  },
+                  "length": {
+                    "description": "How long the car is.",
+                    "type": "string",
+                    "example": "2 meters"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad input. Error: {e}."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad credentials. Error: {e}."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Unexpected error raised when ..."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "post": {
+        "operationId": "api_cars_correct_create",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "put": {
+        "operationId": "api_cars_correct_update",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "delete": {
+        "operationId": "api_cars_correct_delete",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/cars/incorrect": {
+      "get": {
+        "operationId": "get_other_cars",
+        "summary": "Lists other cars",
+        "description": "Lists all other cars available in this test-project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "array",
+              "items": {
+                "title": "Success",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "A swedish car?",
+                    "type": "string",
+                    "example": "Saab"
+                  },
+                  "color": {
+                    "description": "The color of the car.",
+                    "type": "string",
+                    "example": "Yellow"
+                  },
+                  "height": {
+                    "description": "How tall the car is.",
+                    "type": "string",
+                    "example": "Medium height"
+                  },
+                  "width": {
+                    "description": "How wide the car is.",
+                    "type": "string",
+                    "example": "Very wide"
+                  },
+                  "length": {
+                    "description": "How long the car is.",
+                    "type": "string",
+                    "example": "2 meters"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad input. Error: {e}."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad credentials. Error: {e}."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Unexpected error raised when ..."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "post": {
+        "operationId": "api_cars_incorrect_create",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "put": {
+        "operationId": "api_cars_incorrect_update",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "delete": {
+        "operationId": "api_cars_incorrect_delete",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/exempt-endpoint": {
+      "get": {
+        "operationId": "api_exempt-endpoint_list",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/items": {
+      "post": {
+        "operationId": "create_item",
+        "summary": "Creates a new item type",
+        "description": "Creates a new item type in the database",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "itemType": {
+                  "description": "type of item",
+                  "type": "string",
+                  "example": "truck"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "description": "unique id",
+                      "type": "string",
+                      "example": "14082c78-7a4d-451e-b41f-3ff8ab176939"
+                    },
+                    "itemType": {
+                      "description": "description",
+                      "type": "string",
+                      "example": "truck"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/snake-case/": {
+      "get": {
+        "operationId": "get_snake_cased_response",
+        "summary": "Returns a snake-cased response",
+        "description": "..",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "object",
+              "properties": {
+                "this_is_snake_case": {
+                  "description": "test",
+                  "type": "string",
+                  "example": "test"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/trucks/correct": {
+      "get": {
+        "operationId": "get_trucks",
+        "summary": "Lists trucks",
+        "description": "Lists all trucks available in this test-project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "array",
+              "items": {
+                "title": "Success",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "A swedish truck?",
+                    "type": "string",
+                    "example": "Saab"
+                  },
+                  "color": {
+                    "description": "The color of the truck.",
+                    "type": "string",
+                    "example": "Yellow"
+                  },
+                  "height": {
+                    "description": "How tall the truck is.",
+                    "type": "string",
+                    "example": "Medium height"
+                  },
+                  "width": {
+                    "description": "How wide the truck is.",
+                    "type": "string",
+                    "example": "Very wide"
+                  },
+                  "length": {
+                    "description": "How long the truck is.",
+                    "type": "string",
+                    "example": "2 meters"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad input. Error: {e}."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad credentials. Error: {e}."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Unexpected error raised when ..."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "post": {
+        "operationId": "api_trucks_correct_create",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "put": {
+        "operationId": "api_trucks_correct_update",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "delete": {
+        "operationId": "api_trucks_correct_delete",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/trucks/incorrect": {
+      "get": {
+        "operationId": "get_other_trucks",
+        "summary": "Lists other trucks",
+        "description": "Lists all other trucks available in this test-project",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "array",
+              "items": {
+                "title": "Success",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "description": "A swedish truck?",
+                    "type": "string",
+                    "example": "Saab"
+                  },
+                  "color": {
+                    "description": "The color of the truck.",
+                    "type": "string",
+                    "example": "Yellow"
+                  },
+                  "height": {
+                    "description": "How tall the truck is.",
+                    "type": "string",
+                    "example": "Medium height"
+                  },
+                  "width": {
+                    "description": "How wide the truck is.",
+                    "type": "string",
+                    "example": "Very wide"
+                  },
+                  "length": {
+                    "description": "How long the truck is.",
+                    "type": "string",
+                    "example": "2 meters"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad input. Error: {e}."
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Bad credentials. Error: {e}."
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "",
+            "schema": {
+              "title": "Error",
+              "type": "object",
+              "properties": {
+                "error": {
+                  "description": "Generic Error response for all API endpoints",
+                  "type": "string",
+                  "example": "Unexpected error raised when ..."
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "post": {
+        "operationId": "api_trucks_incorrect_create",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "put": {
+        "operationId": "api_trucks_incorrect_update",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "delete": {
+        "operationId": "api_trucks_incorrect_delete",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/vehicles": {
+      "post": {
+        "operationId": "create_vehicle",
+        "summary": "Creates a new vehicle type",
+        "description": "Creates a new vehicle type in the database",
+        "parameters": [
+          {
+            "name": "data",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Vehicle"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "description": "description",
+                  "type": "string",
+                  "example": "this is a response"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/api/{version}/{custom_id_field}/names": {
+      "get": {
+        "operationId": "api_names_read",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/Names"
+            }
+          }
+        },
+        "tags": [
+          "api"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "custom_id_field",
+          "in": "path",
+          "description": "A unique value identifying this names.",
+          "required": true,
+          "type": "integer"
+        },
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    },
+    "/en/api/{version}/i18n": {
+      "get": {
+        "operationId": "list_languages",
+        "summary": "List languages",
+        "description": "Lists all supported languages",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "title": "Success",
+              "type": "object",
+              "properties": {
+                "languages": {
+                  "title": "Success",
+                  "type": "array",
+                  "items": {
+                    "description": "French language",
+                    "type": "string",
+                    "example": "French"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "en"
+        ]
+      },
+      "parameters": [
+        {
+          "name": "version",
+          "in": "path",
+          "required": true,
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "Vehicle": {
+      "required": [
+        "vehicle_type"
+      ],
+      "type": "object",
+      "properties": {
+        "vehicle_type": {
+          "title": "Vehicle type",
+          "type": "string",
+          "maxLength": 10,
+          "minLength": 1
+        }
+      },
+      "example": {
+        "vehicleType": "truck"
+      }
+    },
+    "Names": {
+      "required": [
+        "custom_id_field"
+      ],
+      "type": "object",
+      "properties": {
+        "custom_id_field": {
+          "title": "Custom id field",
+          "type": "integer"
+        }
+      }
+    }
+  }
+}

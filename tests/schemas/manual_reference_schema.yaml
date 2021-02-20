@@ -3,11 +3,39 @@ info:
   title: 'api-specs'
   version: '1.0.0'
 paths:
+  /api/v1/{pk}/names:
+    get:
+      operationId: api_v1_names_retrieve
+      description: ''
+      parameters:
+        - in: path
+          name: pk
+          schema:
+            type: integer
+          description: A unique value identifying this names.
+          required: true
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pk:
+                    type: integer
+                required:
+                  - pk
+          description: ''
   /api/v1/cars/correct:
     get:
       operationId: listGoodCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
@@ -24,22 +52,22 @@ paths:
                       type: 'string',
                       example: 'Saab',
                     },
-                    color:{
+                    color: {
                       description: 'The color of the car.',
                       type: 'string',
                       example: 'Yellow',
                     },
-                    height:{
+                    height: {
                       description: 'How tall the car is.',
                       type: 'string',
                       example: 'Medium height',
                     },
-                    width:{
+                    width: {
                       description: 'How wide the car is.',
                       type: 'string',
                       example: 'Very wide',
                     },
-                    length:{
+                    length: {
                       description: 'How long the car is.',
                       type: 'string',
                       example: '2 meters',
@@ -50,27 +78,27 @@ paths:
     post:
       operationId: CreateGoodCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     put:
       operationId: UpdateGoodCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     delete:
       operationId: DestroyGoodCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '204':
           description: ''
@@ -78,34 +106,34 @@ paths:
     get:
       operationId: listBadCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           description: ''
     post:
       operationId: CreateBadCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     put:
       operationId: UpdateBadCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     delete:
       operationId: DestroyBadCars
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '204':
           description: ''
@@ -113,7 +141,7 @@ paths:
     get:
       operationId: listGoodTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
@@ -130,22 +158,22 @@ paths:
                       type: 'string',
                       example: 'Saab',
                     },
-                    color:{
+                    color: {
                       description: 'The color of the truck.',
                       type: 'string',
                       example: 'Yellow',
                     },
-                    height:{
+                    height: {
                       description: 'How tall the truck is.',
                       type: 'string',
                       example: 'Medium height',
                     },
-                    width:{
+                    width: {
                       description: 'How wide the truck is.',
                       type: 'string',
                       example: 'Very wide',
                     },
-                    length:{
+                    length: {
                       description: 'How long the truck is.',
                       type: 'string',
                       example: '2 meters',
@@ -156,27 +184,27 @@ paths:
     post:
       operationId: CreateGoodTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     put:
       operationId: UpdateGoodTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     delete:
       operationId: DestroyGoodTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '204':
           description: ''
@@ -184,34 +212,34 @@ paths:
     get:
       operationId: listBadTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           description: ''
     post:
       operationId: CreateBadTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     put:
       operationId: UpdateBadTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '200':
           content:
             application/json:
-              schema: {}
+              schema: { }
           description: ''
     delete:
       operationId: DestroyBadTrucks
       description: ''
-      parameters: []
+      parameters: [ ]
       responses:
         '204':
           description: ''

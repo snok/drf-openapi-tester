@@ -4,7 +4,8 @@ import random
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
-from openapi_tester.constants import OPENAPI_PYTHON_MAPPING
+from faker import Faker
+
 from openapi_tester.utils import combine_sub_schemas
 
 
@@ -14,15 +15,11 @@ class SchemaToPythonConverter:
     """
 
     result: Any
-    faker: Any = None
+    faker: Faker = Faker()
 
-    def __init__(self, schema: dict, with_faker: bool = False):
-        if with_faker:
-            # We are importing faker here to ensure this remains a dev dependency
-            from faker import Faker
-
-            Faker.seed(0)
-            self.faker = Faker()
+    def __init__(self, schema: dict):
+        Faker.seed(0)
+        self.faker = Faker()
         self.result = self.convert_schema(schema)
 
     def convert_schema(self, schema: Dict[str, Any]) -> Any:
@@ -42,8 +39,6 @@ class SchemaToPythonConverter:
             return self.convert_schema_array_to_list(schema)
         if schema_type == "object":
             return self.convert_schema_object_to_dict(schema)
-        if self.faker is None:
-            return OPENAPI_PYTHON_MAPPING[schema_type]
         return self.schema_type_to_mock_value(schema)
 
     def schema_type_to_mock_value(self, schema_object: Dict[str, Any]) -> Any:

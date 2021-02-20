@@ -1,46 +1,66 @@
-import base64
+import glob
+import os
+from copy import deepcopy
 from typing import Any, Dict, Optional
+from unittest.mock import patch
 from uuid import UUID, uuid1, uuid4
 
 import pytest
+from django.core.exceptions import ImproperlyConfigured
 
-from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError, SchemaTester
+from openapi_tester import (
+    OPENAPI_PYTHON_MAPPING,
+    CaseError,
+    DocumentationError,
+    DrfSpectacularSchemaLoader,
+    DrfYasgSchemaLoader,
+    SchemaTester,
+    StaticSchemaLoader,
+    UndocumentedSchemaSectionError,
+    is_pascal_case,
+)
 from openapi_tester.constants import (
+    INIT_ERROR,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
-    VALIDATE_MAX_ARRAY_LENGTH_ERROR,
-    VALIDATE_MAX_LENGTH_ERROR,
-    VALIDATE_MAXIMUM_ERROR,
-    VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR,
-    VALIDATE_MIN_ARRAY_LENGTH_ERROR,
-    VALIDATE_MIN_LENGTH_ERROR,
-    VALIDATE_MINIMUM_ERROR,
-    VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MISSING_RESPONSE_KEY_ERROR,
-    VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_NONE_ERROR,
     VALIDATE_ONE_OF_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
+from test_project.models import Names
+from tests import example_object, example_schema_types
+from tests.utils import TEST_ROOT, iterate_schema, mock_schema, response_factory
 
 tester = SchemaTester()
-
-example_schema_array = {"type": "array", "items": {"type": "string"}}
-example_array = ["string"]
-example_schema_integer = {"type": "integer", "minimum": 3, "maximum": 5}
-example_integer = 3
-example_schema_number = {"type": "number", "minimum": 3, "maximum": 5}
-example_number = 3.2
-example_schema_object = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
-example_object = {"value": 1}
-example_schema_string = {"type": "string", "minLength": 3, "maxLength": 5}
-example_string = "str"
-example_response_types = [example_array, example_integer, example_number, example_object, example_string]
-example_schema_types = [
-    example_schema_array,
-    example_schema_integer,
-    example_schema_number,
-    example_schema_object,
-    example_schema_string,
+parameterized_path = "/api/{version}/cars/correct"
+de_parameterized_path = "/api/v1/cars/correct"
+method = "get"
+status = "200"
+bad_test_data = [
+    {
+        "url": "/api/v1/cars/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
+    {
+        "url": "/api/v1/trucks/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
+    {
+        "url": "/api/v1/trucks/incorrect",
+        "expected_response": [
+            {"name": "Saab", "color": "Yellow", "height": "Medium height"},
+            {"name": "Volvo", "color": "Red", "width": "Not very wide", "length": "2 meters"},
+            {"name": "Tesla", "height": "Medium height", "width": "Medium width", "length": "2 meters"},
+        ],
+    },
 ]
 
 docs_any_of_example = {
@@ -64,31 +84,136 @@ docs_any_of_example = {
 }
 
 
-def test_type_validation():
-    # The examples we've set up should always pass
-    for schema, response in zip(example_schema_types, example_response_types):
-        tester.test_schema_section(schema, response)
+def test_loader_inference(settings):
+    # Test drf-spectacular
+    assert isinstance(SchemaTester().loader, DrfSpectacularSchemaLoader)
 
-    # An empty array should always pass
-    tester.test_schema_section(example_schema_array, [])
+    # Test drf-yasg
+    settings.INSTALLED_APPS.pop(settings.INSTALLED_APPS.index("drf_spectacular"))
+    settings.INSTALLED_APPS.append("drf_yasg")
+    assert isinstance(SchemaTester().loader, DrfYasgSchemaLoader)
 
-    # Schemas with no 'type' property should always pass
-    for response in example_response_types:
-        tester.test_schema_section({}, response)
+    # Test static loader
+    assert isinstance(SchemaTester(schema_file_path="test").loader, StaticSchemaLoader)
 
-    for schema in example_schema_types:
-        for response in example_response_types:
+    # Test no loader
+    settings.INSTALLED_APPS = []
+    with pytest.raises(ImproperlyConfigured, match=INIT_ERROR):
+        SchemaTester()
 
-            response_python_type = type(response).__name__
-            schema_python_type = OPENAPI_PYTHON_MAPPING[schema["type"]]
 
-            if response_python_type in schema_python_type:
-                # Skip testing if the types are the same
-                # Use `in` because the number type is 'int or float', not just float
-                continue
+def test_drf_coerced_model_primary_key(db, client):
+    name = Names.objects.create(custom_id_field=1234567890)
+    response = client.get(f"/api/v1/{name.custom_id_field}/names")
+    schema_tester = SchemaTester()
+    schema_tester.validate_response(response)
 
-            with pytest.raises(DocumentationError):
-                tester.test_schema_section(schema, response)
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        filename
+        for filename in glob.iglob(str(TEST_ROOT) + "/schemas/**/**", recursive=True)
+        if os.path.isfile(filename) and "metadata" not in filename
+    ],
+)
+def test_example_schemas(filename):
+    """
+    This is an automated integration test template, for each schema in the "../schemas" folder a test is generated
+    """
+    schema_tester = SchemaTester(schema_file_path=filename)
+    schema = schema_tester.loader.load_schema()
+    de_referenced_schema = schema_tester.loader.de_reference_schema(schema)
+    schema_tester.loader.schema = de_referenced_schema
+    for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
+        if schema_section and response:
+            with patch.object(
+                StaticSchemaLoader, "resolve_path", side_effect=lambda *args, **kwargs: (url_fragment, None)
+            ):
+                schema_tester.validate_response(response)
+                assert sorted(schema_tester.get_response_schema_section(response)) == sorted(schema_section)
+
+
+def test_validate_response_failure_scenario_with_predefined_data(client):
+    for item in bad_test_data:
+        response = client.get(item["url"])
+        assert response.status_code == 200
+        assert response.json() == item["expected_response"]
+        with pytest.raises(DocumentationError, match='The following property is missing in the response data: "width"'):
+            tester.validate_response(response)
+
+
+def test_validate_response_failure_scenario_undocumented_path(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    schema_section = schema["paths"][parameterized_path][method]["responses"][status]["content"]["application/json"][
+        "schema"
+    ]
+    del schema["paths"][parameterized_path]
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
+    response = response_factory(schema_section, de_parameterized_path, method, status)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{parameterized_path}`.",
+    ):
+        tester.validate_response(response)
+
+
+def test_validate_response_failure_scenario_undocumented_method(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    schema_section = schema["paths"][parameterized_path][method]["responses"][status]["content"]["application/json"][
+        "schema"
+    ]
+    del schema["paths"][parameterized_path][method]
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
+    response = response_factory(schema_section, de_parameterized_path, method, status)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{method}`.",
+    ):
+        tester.validate_response(response)
+
+
+def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    schema_section = schema["paths"][parameterized_path][method]["responses"][status]["content"]["application/json"][
+        "schema"
+    ]
+    del schema["paths"][parameterized_path][method]["responses"][status]
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
+    response = response_factory(schema_section, de_parameterized_path, method, status)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f"Unsuccessfully tried to index the OpenAPI schema by `{status}`.",
+    ):
+        tester.validate_response(response)
+
+
+def test_validate_response_global_case_tester(client):
+    tester_with_case_tester = SchemaTester(case_tester=is_pascal_case)
+    response = client.get(de_parameterized_path)
+    with pytest.raises(CaseError, match="The response key `name` is not properly PascalCased. Expected value: Name"):
+        tester_with_case_tester.validate_response(response=response)
+
+
+def test_validate_response_global_ignored_case(client):
+    tester_with_case_tester = SchemaTester(
+        case_tester=is_pascal_case, ignore_case=["name", "color", "height", "width", "length"]
+    )
+    response = client.get(de_parameterized_path)
+    tester_with_case_tester.validate_response(response=response)
+
+
+def test_validate_response_passed_in_case_tester(client):
+    response = client.get(de_parameterized_path)
+    with pytest.raises(CaseError, match="The response key `name` is not properly PascalCased. Expected value: Name"):
+        tester.validate_response(response=response, case_tester=is_pascal_case)
+
+
+def test_validate_response_passed_in_ignored_case(client):
+    response = client.get(de_parameterized_path)
+    tester.validate_response(
+        response=response, case_tester=is_pascal_case, ignore_case=["name", "color", "height", "width", "length"]
+    )
 
 
 def test_nullable_validation():
@@ -109,153 +234,6 @@ def test_nullable_validation():
         del schema["nullable"]
         schema["x-nullable"] = True
         tester.test_schema_section(schema, None)
-
-
-def test_min_and_max_length_validation():
-    # Not adhering to minlength limitations should raise an error
-    with pytest.raises(DocumentationError, match=VALIDATE_MIN_LENGTH_ERROR.format(data="a" * 2, min_length=3)):
-        tester.test_schema_section(example_schema_string, "a" * 2)
-
-    # Not adhering to maxlength limitations should raise an error
-    with pytest.raises(DocumentationError, match=VALIDATE_MAX_LENGTH_ERROR.format(data="a" * 6, max_length=5)):
-        tester.test_schema_section(example_schema_string, "a" * 6)
-
-
-def test_min_and_max_items_validation():
-    # Not adhering to minlength limitations should raise an error
-    with pytest.raises(
-        DocumentationError, match=VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=r"\['string'\]", min_length=2)
-    ):
-        schema = {"type": "array", "items": {"type": "string"}, "minItems": 2}
-        tester.test_schema_section(schema, ["string"])
-
-    # Not adhering to maxlength limitations should raise an error
-    with pytest.raises(
-        DocumentationError,
-        match=VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(
-            data=r"\['string', 'string', 'string', 'string', 'string', 'string'\]", max_length=5
-        ),
-    ):
-        schema = {"type": "array", "items": {"type": "string"}, "maxItems": 5}
-        tester.test_schema_section(schema, ["string"] * 6)
-
-
-def test_min_and_max_number_of_properties_validation():
-    # Not adhering to minlength limitations should raise an error
-    with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
-        schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}, "minProperties": 2}
-        tester.test_schema_section(schema, {"oneKey": "test"})
-
-    # Not adhering to minlength limitations should raise an error
-    with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
-        schema = {
-            "type": "object",
-            "properties": {"oneKey": {"type": "string"}, "twoKey": {"type": "string"}},
-            "maxProperties": 1,
-        }
-        tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test"})
-
-
-def test_pattern_validation():
-    """ The a regex pattern can be passed to describe how a string should look """
-    schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
-
-    # Should pass
-    tester.test_schema_section(schema, "123-45-6789")
-
-    # Bad pattern should fail
-    with pytest.raises(DocumentationError):
-        tester.test_schema_section(schema, "test")
-
-    # And if we get compile errors, we need to handle this too
-    schema = {"type": "string", "pattern": r"**"}
-    with pytest.raises(OpenAPISchemaError):
-        tester.test_schema_section(schema, "test")
-
-
-def test_exclusives_validation():
-    """ The minimum is included, unless specified """
-
-    # Pass when set to minimum
-    schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False, "maximum": 5}
-    tester.test_schema_section(schema, 3)
-
-    # Fail when we exclude the minimum
-    schema["exclusiveMinimum"] = True
-    with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_ERROR.format(data=3, minimum=4)):
-        tester.test_schema_section(schema, 3)
-
-    # Fail when we exclude the maximum
-    schema["exclusiveMaximum"] = True
-    with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_ERROR.format(data=5, maximum=4)):
-        tester.test_schema_section(schema, 5)
-
-    # Pass when we include the maximum
-    schema["exclusiveMaximum"] = False
-    tester.test_schema_section(schema, 5)
-
-
-def test_maximum_and_minimum_validation():
-    # Not adhering to maximum limitations should raise an error
-    for num, schema in [(6, example_schema_integer), (6.12, example_schema_number)]:
-        with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_ERROR.format(data=num, maximum=5)):
-            tester.test_schema_section(schema, num)
-
-    # Not adhering to minimum limitations should raise an error
-    for num, schema in [(2, example_schema_integer), (2.22, example_schema_number)]:
-        with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_ERROR.format(data=num, minimum=3)):
-            tester.test_schema_section(schema, num)
-
-
-def test_enum_validation():
-    tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Cat")
-    tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Dog")
-
-    with pytest.raises(DocumentationError):
-        tester.test_schema_section({"type": "string", "enum": ["Cat", "Dog"]}, "Turtle")
-
-
-def test_multiple_of_validation():
-    for num, _type in [(5, "integer"), (5, "number")]:
-        # Pass
-        schema = {"multipleOf": num, "type": _type}
-        for integer in [5, 10, 15, 20, 25]:
-            tester.test_schema_section(schema, integer)
-
-        # Fail
-        with pytest.raises(DocumentationError, match=VALIDATE_MULTIPLE_OF_ERROR.format(data=num + 2, multiple=num)):
-            tester.test_schema_section(schema, num + 2)
-
-
-def test_unique_items_validation():
-    with pytest.raises(DocumentationError):
-        schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
-        tester.test_schema_section(schema, ["identical value", "identical value", "non-identical value"])
-
-
-def test_date_validation():
-    # ISO8601 is valid
-    tester.test_schema_section({"type": "string", "format": "date"}, "2040-01-01")
-
-    # This is invalid
-    with pytest.raises(DocumentationError):
-        tester.test_schema_section({"type": "string", "format": "date"}, "01-31-2019")
-
-
-def test_datetime_validation():
-    # ISO8601 is valid
-    tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 08:00")
-
-    # This is invalid
-    with pytest.raises(DocumentationError):
-        tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 0800")
-
-
-def test_byte_validation():
-    tester.test_schema_section({"type": "string", "format": "byte"}, base64.b64encode(b"test123").decode("utf-8"))
-
-    with pytest.raises(DocumentationError):
-        tester.test_schema_section({"type": "string", "format": "byte"}, "test123")
 
 
 def test_write_only_validation():

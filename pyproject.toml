@@ -86,6 +86,7 @@ disable = """
     missing-function-docstring,
     import-outside-toplevel,
     fixme,
+    too-many-locals
 """
 
 [tool.pylint.BASIC]

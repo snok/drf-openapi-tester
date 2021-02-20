@@ -1,6 +1,4 @@
 """ Constants module """
-import re
-
 OPENAPI_PYTHON_MAPPING = {
     "boolean": bool.__name__,
     "string": str.__name__,
@@ -11,7 +9,6 @@ OPENAPI_PYTHON_MAPPING = {
     "number": f"{int.__name__} or {float.__name__}",
 }
 
-PARAMETER_CAPTURE_REGEX = re.compile(r"\d+\.[^{]*{\s+([^}]+)\s+}")
 # Validation errors
 VALIDATE_FORMAT_ERROR = 'Expected: {article} "{format}" formatted value\n\nReceived: {received}'
 VALIDATE_PATTERN_ERROR = 'The string "{data}" does not match the specified pattern: {pattern}'

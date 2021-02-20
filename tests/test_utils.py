@@ -1,4 +1,5 @@
-from openapi_tester.utils import combine_sub_schemas, merge_objects, sort_object
+from openapi_tester.utils import combine_sub_schemas, merge_objects
+from tests.utils import sort_object
 
 object_1 = {"type": "object", "required": ["key1"], "properties": {"key1": {"type": "string"}}}
 object_2 = {"type": "object", "required": ["key2"], "properties": {"key2": {"type": "string"}}}

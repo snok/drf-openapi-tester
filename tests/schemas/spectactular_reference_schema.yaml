@@ -1,0 +1,366 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/v1/{custom_id_field}/names:
+    get:
+      operationId: api_v1_names_retrieve
+      description: ''
+      parameters:
+        - in: path
+          name: custom_id_field
+          schema:
+            type: integer
+          description: A unique value identifying this names.
+          required: true
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Names'
+          description: ''
+  /api/v1/animals:
+    get:
+      operationId: api_v1_animals_retrieve
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_animals_destroy
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cars/correct:
+    get:
+      operationId: api_v1_cars_correct_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+          description: ''
+    post:
+      operationId: api_v1_cars_correct_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_cars_correct_update
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_cars_correct_destroy
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '204':
+          description: No response body
+  /api/v1/cars/incorrect:
+    get:
+      operationId: api_v1_cars_incorrect_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+          description: ''
+    post:
+      operationId: api_v1_cars_incorrect_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_cars_incorrect_update
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_cars_incorrect_destroy
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '204':
+          description: No response body
+  /api/v1/exempt-endpoint:
+    get:
+      operationId: api_v1_exempt_endpoint_retrieve
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+  /api/v1/items:
+    post:
+      operationId: api_v1_items_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+  /api/v1/snake-case/:
+    get:
+      operationId: api_v1_snake_case_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SnakeCase'
+          description: ''
+  /api/v1/trucks/correct:
+    get:
+      operationId: api_v1_trucks_correct_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+          description: ''
+    post:
+      operationId: api_v1_trucks_correct_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_trucks_correct_update
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_trucks_correct_destroy
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '204':
+          description: No response body
+  /api/v1/trucks/incorrect:
+    get:
+      operationId: api_v1_trucks_incorrect_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Car'
+          description: ''
+    post:
+      operationId: api_v1_trucks_incorrect_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    put:
+      operationId: api_v1_trucks_incorrect_update
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+    delete:
+      operationId: api_v1_trucks_incorrect_destroy
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '204':
+          description: No response body
+  /api/v1/vehicles:
+    post:
+      operationId: api_v1_vehicles_create
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+  /en/api/v1/i18n:
+    get:
+      operationId: en_api_v1_i18n_retrieve
+      description: ''
+      tags:
+        - en
+      security:
+        - cookieAuth: [ ]
+        - { }
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    Car:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 254
+        color:
+          type: string
+          maxLength: 254
+        height:
+          type: string
+          maxLength: 254
+        width:
+          type: string
+          maxLength: 254
+        length:
+          type: string
+          maxLength: 254
+      required:
+        - color
+        - height
+        - length
+        - name
+        - width
+    Names:
+      type: object
+      properties:
+        custom_id_field:
+          type: integer
+      required:
+        - custom_id_field
+    SnakeCase:
+      type: object
+      properties:
+        this_is_snake_case:
+          type: string
+      required:
+        - this_is_snake_case
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: Session

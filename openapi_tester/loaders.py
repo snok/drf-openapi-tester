@@ -2,7 +2,6 @@
 import difflib
 import json
 import pathlib
-import re
 from functools import cached_property
 from importlib import import_module
 from json import dumps, loads
@@ -19,8 +18,6 @@ from prance.util.resolver import RefResolver
 # noinspection PyProtectedMember
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
-
-from openapi_tester.constants import PARAMETER_CAPTURE_REGEX
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -85,7 +82,7 @@ class BaseSchemaLoader:
     def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
         normalized_paths: Dict[str, dict] = {}
         for key, value in schema["paths"].items():
-            parameterized_path = self.parameterize_path(de_parameterized_path=key, method=list(value.keys())[0])
+            parameterized_path, _ = self.resolve_path(endpoint_path=key, method=list(value.keys())[0])
             normalized_paths[parameterized_path] = value
         return {**schema, "paths": normalized_paths}
 
@@ -104,15 +101,6 @@ class BaseSchemaLoader:
         de_referenced_schema = self.de_reference_schema(schema)
         self.validate_schema(de_referenced_schema)
         self.schema = self.normalize_schema_paths(de_referenced_schema)
-
-    def parameterize_path(self, de_parameterized_path: str, method: str) -> str:
-        """
-        Returns the appropriate endpoint route.
-        """
-        path, resolved_path = self.resolve_path(endpoint_path=de_parameterized_path, method=method)
-        for parameter_name in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
-            path = path.replace(str(resolved_path.kwargs[parameter_name]), parameter_name)
-        return path
 
     @cached_property
     def endpoints(self) -> List[str]:  # pylint: disable=no-self-use

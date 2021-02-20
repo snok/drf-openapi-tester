@@ -3,8 +3,8 @@ import pytest
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from tests.utils import TEST_ROOT
 
-yaml_schema_path = str(TEST_ROOT) + "/schemas/test_project_schema.yaml"
-json_schema_path = str(TEST_ROOT) + "/schemas/test_project_schema.json"
+yaml_schema_path = str(TEST_ROOT) + "/schemas/manual_reference_schema.yaml"
+json_schema_path = str(TEST_ROOT) + "/schemas/manual_reference_schema.json"
 loaders = [
     StaticSchemaLoader(yaml_schema_path, field_key_map={"language": "en"}),
     StaticSchemaLoader(json_schema_path, field_key_map={"language": "en"}),
@@ -20,14 +20,14 @@ def test_loader_get_schema(loader):
 
 @pytest.mark.parametrize("loader", loaders)
 def test_loader_get_route(loader):
-    assert loader.parameterize_path("/api/v1/items/", "get") == "/api/{version}/items"
-    assert loader.parameterize_path("/api/v1/items", "get") == "/api/{version}/items"
-    assert loader.parameterize_path("api/v1/items/", "get") == "/api/{version}/items"
-    assert loader.parameterize_path("api/v1/items", "get") == "/api/{version}/items"
-    assert loader.parameterize_path("/api/v1/snake-case/", "get") == "/api/{version}/snake-case/"
-    assert loader.parameterize_path("/api/v1/snake-case", "get") == "/api/{version}/snake-case/"
-    assert loader.parameterize_path("api/v1/snake-case/", "get") == "/api/{version}/snake-case/"
-    assert loader.parameterize_path("api/v1/snake-case", "get") == "/api/{version}/snake-case/"
+    assert loader.resolve_path("/api/v1/items/", "get")[0] == "/api/{version}/items"
+    assert loader.resolve_path("/api/v1/items", "get")[0] == "/api/{version}/items"
+    assert loader.resolve_path("api/v1/items/", "get")[0] == "/api/{version}/items"
+    assert loader.resolve_path("api/v1/items", "get")[0] == "/api/{version}/items"
+    assert loader.resolve_path("/api/v1/snake-case/", "get")[0] == "/api/{version}/snake-case/"
+    assert loader.resolve_path("/api/v1/snake-case", "get")[0] == "/api/{version}/snake-case/"
+    assert loader.resolve_path("api/v1/snake-case/", "get")[0] == "/api/{version}/snake-case/"
+    assert loader.resolve_path("api/v1/snake-case", "get")[0] == "/api/{version}/snake-case/"
 
 
 @pytest.mark.parametrize("loader", loaders)

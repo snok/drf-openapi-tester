@@ -6,6 +6,8 @@ class DocumentationError(AssertionError):
     Custom exception raised when package tests fail.
     """
 
+    pass
+
 
 class CaseError(DocumentationError):
     """

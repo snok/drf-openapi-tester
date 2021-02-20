@@ -24,7 +24,7 @@ api_urlpatterns = [
     path("api/<str:version>/animals", Animals.as_view()),
     path("api/<str:version>/items", Items.as_view()),
     path("api/<str:version>/exempt-endpoint", Exempt.as_view()),
-    path("api/<str:version>/<pk>/names", NamesRetrieveView.as_view()),
+    path("api/<str:version>/<str:pk>/names", NamesRetrieveView.as_view()),
     # ^trailing slash is here on purpose
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
 ]

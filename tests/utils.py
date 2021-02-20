@@ -20,7 +20,7 @@ def load_schema(file_name: str) -> dict:
 
 
 def response_factory(schema: dict, url_fragment: str, method: str, status_code: Union[int, str] = 200) -> Response:
-    converted_schema = SchemaToPythonConverter(schema, with_faker=True).result
+    converted_schema = SchemaToPythonConverter(schema).result
     response = Response(status=int(status_code), data=converted_schema)
     response.request = dict(REQUEST_METHOD=method, PATH_INFO=url_fragment)
     response.json = lambda: converted_schema  # type: ignore
@@ -50,15 +50,24 @@ def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Res
                     yield schema_section, response, url_fragment
 
 
-def pass_mock_value(return_value: Any) -> Any:
-    def side_effect(de_parameterized_path: str, method: str):
-        return return_value
-
-    return side_effect
-
-
 def mock_schema(schema) -> Callable:
     def _mocked():
         return schema
 
     return _mocked
+
+
+def sort_object(data_object: Any) -> Any:
+    """ helper function to sort objects """
+    if isinstance(data_object, dict):
+        for key, value in data_object.items():
+            if isinstance(value, (dict, list)):
+                data_object[key] = sort_object(value)
+        return dict(sorted(data_object.items()))
+    if isinstance(data_object, list) and data_object:
+        if not all(isinstance(entry, type(data_object[0])) for entry in data_object):
+            return data_object
+        if isinstance(data_object[0], (dict, list)):
+            return [sort_object(entry) for entry in data_object]
+        return sorted(data_object)
+    return data_object
