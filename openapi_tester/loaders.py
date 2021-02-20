@@ -110,13 +110,12 @@ class BaseSchemaLoader:
         Returns the appropriate endpoint route.
         """
         path, resolved_path = self.resolve_path(endpoint_path=de_parameterized_path, method=method)
-        for parameter in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
-            parameter_name = parameter.replace("{", "").replace("}", "")
+        for parameter_name in list(re.findall(PARAMETER_CAPTURE_REGEX, path)):
             path = path.replace(str(resolved_path.kwargs[parameter_name]), parameter_name)
         return path
 
     @cached_property
-    def endpoints(self) -> List[str]:
+    def endpoints(self) -> List[str]:  # pylint: disable=no-self-use
         """
         Returns a list of endpoint paths.
         """
@@ -141,25 +140,9 @@ class BaseSchemaLoader:
                 continue
             else:
                 if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
-                    schema_generator = BaseSchemaGenerator()
-                    split_view_path = resolved_route.view_name.split(".")
-                    component_name = split_view_path.pop()
-                    imported_module = import_module(".".join(split_view_path))
-                    view = getattr(imported_module, component_name)
-                    coerced_path = schema_generator.coerce_path(path=path, method=method, view=view)
-                    pk_field_name = "".join(
-                        list(
-                            [
-                                entry.replace("+ ", "")
-                                for entry in difflib.Differ().compare(path, coerced_path)
-                                if "+ " in entry
-                            ]
-                        )
+                    path, resolved_route = self.handle_pk_parameter(
+                        resolved_route=resolved_route, path=path, method=method
                     )
-                    resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
-                    del resolved_route.kwargs["pk"]
-                    path = coerced_path
-                    self.field_key_map[pk_field_name] = "pk"
                 for key, value in resolved_route.kwargs.items():
                     # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex
                     # regex handling. However, its important not to freely use the .replace() function, as a
@@ -172,6 +155,20 @@ class BaseSchemaLoader:
         if closest_matches:
             message += f"\n\nDid you mean one of these?{closest_matches}"
         raise ValueError(message)
+
+    @staticmethod
+    def handle_pk_parameter(resolved_route: ResolverMatch, path: str, method: str) -> Tuple[str, ResolverMatch]:
+        split_view_path = resolved_route.view_name.split(".")
+        view_name = split_view_path.pop()
+        imported_module = import_module(".".join(split_view_path))
+        view = getattr(imported_module, view_name)
+        coerced_path = BaseSchemaGenerator().coerce_path(path=path, method=method, view=view)
+        pk_field_name = "".join(
+            list([entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry])
+        )
+        resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
+        del resolved_route.kwargs["pk"]
+        return coerced_path, resolved_route
 
 
 class DrfYasgSchemaLoader(BaseSchemaLoader):
