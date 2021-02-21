@@ -1,6 +1,6 @@
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.serializers import ModelSerializer
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from test_project.models import Names
 

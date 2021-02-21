@@ -30,7 +30,7 @@ api_urlpatterns = [
     path("api/<str:version>/<str:pk>/names", NamesRetrieveView.as_view()),
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
-    path("api/<str:version>/router_generated/", include(router.urls))
+    path("api/<str:version>/router_generated/", include(router.urls)),
 ]
 
 internationalised_urlpatterns = i18n_patterns(
