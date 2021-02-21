@@ -1,8 +1,8 @@
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import path
+from django.urls import include, path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
-from rest_framework import permissions
+from rest_framework import permissions, routers
 
 from test_project import views
 from test_project.api.views.animals import Animals
@@ -10,10 +10,13 @@ from test_project.api.views.cars import BadCars, GoodCars
 from test_project.api.views.exempt_endpoint import Exempt
 from test_project.api.views.i18n import Languages
 from test_project.api.views.items import Items
-from test_project.api.views.names import NamesRetrieveView
+from test_project.api.views.names import NamesRetrieveView, NameViewSet
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
+
+router = routers.SimpleRouter()
+router.register(r"names", NameViewSet)
 
 api_urlpatterns = [
     path("api/<str:version>/cars/correct", GoodCars.as_view()),
@@ -25,8 +28,9 @@ api_urlpatterns = [
     path("api/<str:version>/items", Items.as_view()),
     path("api/<str:version>/exempt-endpoint", Exempt.as_view()),
     path("api/<str:version>/<str:pk>/names", NamesRetrieveView.as_view()),
-    # ^trailing slash is here on purpose
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
+    # ^trailing slash is here on purpose
+    path("api/<str:version>/router_generated/", include(router.urls))
 ]
 
 internationalised_urlpatterns = i18n_patterns(

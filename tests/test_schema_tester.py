@@ -108,6 +108,13 @@ def test_drf_coerced_model_primary_key(db, client):
     schema_tester = SchemaTester()
     schema_tester.validate_response(response)
 
+    response = client.get("/api/v1/router_generated/names/")
+    schema_tester = SchemaTester()
+    schema_tester.validate_response(response)
+    response = client.get(f"/api/v1/router_generated/names/{name.custom_id_field}/")
+    schema_tester = SchemaTester()
+    schema_tester.validate_response(response)
+
 
 @pytest.mark.parametrize(
     "filename",
