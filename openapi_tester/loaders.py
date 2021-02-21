@@ -82,8 +82,11 @@ class BaseSchemaLoader:
     def normalize_schema_paths(self, schema: dict) -> Dict[str, dict]:
         normalized_paths: Dict[str, dict] = {}
         for key, value in schema["paths"].items():
-            parameterized_path, _ = self.resolve_path(endpoint_path=key, method=list(value.keys())[0])
-            normalized_paths[parameterized_path] = value
+            try:
+                parameterized_path, _ = self.resolve_path(endpoint_path=key, method=list(value.keys())[0])
+                normalized_paths[parameterized_path] = value
+            except ValueError:
+                normalized_paths[key] = value
         return {**schema, "paths": normalized_paths}
 
     @staticmethod
@@ -110,7 +113,9 @@ class BaseSchemaLoader:
         return list({endpoint[0] for endpoint in EndpointEnumerator().get_api_endpoints()})
 
     def resolve_path(self, endpoint_path: str, method: str) -> Tuple[str, ResolverMatch]:
-        """ Resolves a Django path. """
+        """
+        Resolves a Django path.
+        """
         url_object = urlparse(endpoint_path)
         parsed_path = url_object.path if url_object.path.endswith("/") else url_object.path + "/"
         if not parsed_path.startswith("/"):
@@ -124,32 +129,30 @@ class BaseSchemaLoader:
             except Resolver404:
                 continue
             else:
+                for key, value in resolved_route.kwargs.items():
+                    index = path.rfind(str(value))
+                    path = f"{path[:index]}{{{key}}}{path[index + len(str(value)) :]}"
                 if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
                     path, resolved_route = self.handle_pk_parameter(
                         resolved_route=resolved_route, path=path, method=method
                     )
-                for key, value in resolved_route.kwargs.items():
-                    # Replacing kwarg values back into the string seems to be the simplest way of bypassing complex
-                    # regex handling. However, its important not to freely use the .replace() function, as a
-                    # {value} of `1` would also cause the `1` in api/v1/ to be replaced
-                    var_index = path.rfind(str(value))
-                    path = path[:var_index] + f"{{{key}}}" + path[var_index + len(str(value)) :]
                 return path, resolved_route
         message = f"Could not resolve path `{endpoint_path}`."
-        closest_matches = "".join(f"\n- {i}" for i in difflib.get_close_matches(endpoint_path, self.endpoints))
-        if closest_matches:
-            message += f"\n\nDid you mean one of these?{closest_matches}"
+        close_matches = difflib.get_close_matches(endpoint_path, self.endpoints)
+        if close_matches:
+            message += "\n\nDid you mean one of these?" + "\n- ".join(close_matches)
         raise ValueError(message)
 
-    @staticmethod
-    def handle_pk_parameter(resolved_route: ResolverMatch, path: str, method: str) -> Tuple[str, ResolverMatch]:
+    def handle_pk_parameter(  # pylint: disable=no-self-use
+        self, resolved_route: ResolverMatch, path: str, method: str
+    ) -> Tuple[str, ResolverMatch]:
         split_view_path = resolved_route.view_name.split(".")
         view_name = split_view_path.pop()
         imported_module = import_module(".".join(split_view_path))
         view = getattr(imported_module, view_name)
         coerced_path = BaseSchemaGenerator().coerce_path(path=path, method=method, view=view)
         pk_field_name = "".join(
-            entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry
+            list([entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry])
         )
         resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
         del resolved_route.kwargs["pk"]
@@ -203,7 +206,10 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         from drf_spectacular.settings import spectacular_settings
 
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
-        return de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX) :], resolved_path
+        return (
+            de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX) :],
+            resolved_path,
+        )
 
 
 class StaticSchemaLoader(BaseSchemaLoader):
