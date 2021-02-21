@@ -1,5 +1,8 @@
 # Changelog
 
+## v1.3.2 2020-02-20
+
+* Hotfix regression due to pk resolution logic
 
 ## v1.3.1 2020-02-20
 
