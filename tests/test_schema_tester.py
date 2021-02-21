@@ -32,6 +32,7 @@ from tests import example_object, example_schema_types
 from tests.utils import TEST_ROOT, iterate_schema, mock_schema, response_factory
 
 tester = SchemaTester()
+name_id = 1234567890
 parameterized_path = "/api/{version}/cars/correct"
 de_parameterized_path = "/api/v1/cars/correct"
 method = "get"
@@ -102,17 +103,13 @@ def test_loader_inference(settings):
         SchemaTester()
 
 
-def test_drf_coerced_model_primary_key(db, client):
-    name = Names.objects.create(custom_id_field=1234567890)
-    response = client.get(f"/api/v1/{name.custom_id_field}/names")
+@pytest.mark.parametrize(
+    "url", [f"/api/v1/{name_id}/names", "/api/v1/router_generated/names/", f"/api/v1/router_generated/names/{name_id}/"]
+)
+def test_drf_coerced_model_primary_key(db, client, url):
+    Names.objects.create(custom_id_field=name_id)
     schema_tester = SchemaTester()
-    schema_tester.validate_response(response)
-
-    response = client.get("/api/v1/router_generated/names/")
-    schema_tester = SchemaTester()
-    schema_tester.validate_response(response)
-    response = client.get(f"/api/v1/router_generated/names/{name.custom_id_field}/")
-    schema_tester = SchemaTester()
+    response = client.get(url)
     schema_tester.validate_response(response)
 
 
