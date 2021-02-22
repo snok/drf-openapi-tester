@@ -118,26 +118,23 @@ class SchemaTester:
         parameterized_path, _ = self.loader.resolve_path(response.request["PATH_INFO"], method=response_method)
         paths_object = self.get_key_value(schema, "paths")
 
-        pretty_routes = "\n\t• ".join(paths_object.keys())
         route_object = self.get_key_value(
             paths_object,
             parameterized_path,
-            f"\n\nValid routes include: \n\n\t• {pretty_routes}",
+            f"\n\nUndocumented route {parameterized_path}.\n\nDocumented routes: " + "\n\t• ".join(paths_object.keys()),
         )
 
-        str_methods = ", ".join(method.upper() for method in route_object.keys() if method.upper() != "PARAMETERS")
         method_object = self.get_key_value(
             route_object,
             response_method,
-            f"\n\nAvailable methods include: {str_methods}.",
+            f"\n\nUndocumented method: {response_method}.\n\nDocumented methods: {[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}.",
         )
 
         responses_object = self.get_key_value(method_object, "responses")
-        keys = ", ".join(str(key) for key in responses_object.keys())
         status_code_object = self.get_status_code(
             responses_object,
             response.status_code,
-            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented responses include: {keys}. ",
+            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented status codes: {list(responses_object.keys())}. ",
         )
 
         if "openapi" not in schema:
@@ -146,12 +143,12 @@ class SchemaTester:
         content_object = self.get_key_value(
             status_code_object,
             "content",
-            f"No content documented for method: {response_method}, path: {parameterized_path}",
+            f"\n\nNo content documented for method: {response_method}, path: {parameterized_path}",
         )
         json_object = self.get_key_value(
             content_object,
             "application/json",
-            f"no `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
+            f"\n\nNo `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
         )
         return self.get_key_value(json_object, "schema")
 
