@@ -2,13 +2,13 @@
 import difflib
 import json
 import pathlib
-from functools import cached_property
 from json import dumps, loads
 from typing import Callable, Dict, List, Optional, Tuple
 from urllib.parse import ParseResult, urlparse
 
 import yaml
 from django.urls import Resolver404, ResolverMatch, resolve
+from django.utils.functional import cached_property
 from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
 
 # noinspection PyProtectedMember
@@ -147,7 +147,7 @@ class BaseSchemaLoader:
     ) -> Tuple[str, ResolverMatch]:
         coerced_path = BaseSchemaGenerator().coerce_path(path=path, method=method, view=resolved_route.func)  # type: ignore
         pk_field_name = "".join(
-            list([entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry])
+            entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry
         )
         resolved_route.kwargs[pk_field_name] = resolved_route.kwargs["pk"]
         del resolved_route.kwargs["pk"]

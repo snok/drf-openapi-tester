@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.3 2020-02-25
+
+* Replace Python 3.8+ functools feature with builtin Django equivalent
+
 ## v1.3.2 2020-02-20
 
 * Hotfix regression due to pk resolution logic
