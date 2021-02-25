@@ -40,6 +40,7 @@ class SchemaToPythonConverter:
             any_of = schema.pop("anyOf")
             while not sample:
                 sample = random.sample(any_of, random.randint(1, len(any_of)))
+            sample = [self.convert_schema(item) for item in sample]
             return self.convert_schema({**schema, **combine_sub_schemas(sample)})
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
