@@ -11,7 +11,7 @@ def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str]
 
     def tester(key: str) -> None:
         stripped = key.strip()
-        if stripped and not handler(stripped) == stripped:
+        if stripped and handler(stripped) != stripped:
             raise CaseError(key=key, case=casing, expected=handler(key))
 
     return tester
