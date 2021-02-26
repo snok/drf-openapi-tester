@@ -44,6 +44,13 @@ ignore=
 
     # Missing type annotation for **kwargs
     ANN003
+
+    # f-string missing prefix (too many false positives)
+    FS003
+
+    # Handle error-cases first
+    SIM106
+
 exclude =
     .git,
     .idea,

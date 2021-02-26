@@ -1,4 +1,5 @@
 import json
+from contextlib import suppress
 from pathlib import Path
 from typing import Any, Callable, Generator, Optional, Tuple, Union
 
@@ -22,7 +23,7 @@ def load_schema(file_name: str) -> dict:
 def response_factory(schema: dict, url_fragment: str, method: str, status_code: Union[int, str] = 200) -> Response:
     converted_schema = SchemaToPythonConverter(schema).result
     response = Response(status=int(status_code), data=converted_schema)
-    response.request = dict(REQUEST_METHOD=method, PATH_INFO=url_fragment)
+    response.request = {"REQUEST_METHOD": method, "PATH_INFO": url_fragment}
     response.json = lambda: converted_schema  # type: ignore
     return response
 
@@ -36,13 +37,11 @@ def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Res
                         continue
                     schema_section = None
                     response = None
-                    try:
-                        if "content" in responses_object.keys():
+                    with suppress(KeyError):
+                        if "content" in responses_object:
                             schema_section = responses_object["content"]["application/json"]["schema"]
-                        elif "schema" in responses_object.keys():
+                        elif "schema" in responses_object:
                             schema_section = responses_object["schema"]
-                    except KeyError:
-                        pass
                     if schema_section:
                         response = response_factory(
                             schema=schema_section, url_fragment=url_fragment, method=method, status_code=status_code

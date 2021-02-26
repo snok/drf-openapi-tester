@@ -102,36 +102,36 @@ def test_min_and_max_length_validation():
 
 def test_min_and_max_items_validation():
     # Not adhering to minlength limitations should raise an error
+    schema = {"type": "array", "items": {"type": "string"}, "minItems": 2}
     with pytest.raises(
         DocumentationError, match=VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=r"\['string'\]", min_length=2)
     ):
-        schema = {"type": "array", "items": {"type": "string"}, "minItems": 2}
         tester.test_schema_section(schema, ["string"])
 
     # Not adhering to maxlength limitations should raise an error
+    schema = {"type": "array", "items": {"type": "string"}, "maxItems": 5}
     with pytest.raises(
         DocumentationError,
         match=VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(
             data=r"\['string', 'string', 'string', 'string', 'string', 'string'\]", max_length=5
         ),
     ):
-        schema = {"type": "array", "items": {"type": "string"}, "maxItems": 5}
         tester.test_schema_section(schema, ["string"] * 6)
 
 
 def test_min_and_max_number_of_properties_validation():
     # Not adhering to minlength limitations should raise an error
+    schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}, "minProperties": 2}
     with pytest.raises(DocumentationError, match=VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
-        schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}, "minProperties": 2}
         tester.test_schema_section(schema, {"oneKey": "test"})
 
     # Not adhering to minlength limitations should raise an error
+    schema = {
+        "type": "object",
+        "properties": {"oneKey": {"type": "string"}, "twoKey": {"type": "string"}},
+        "maxProperties": 1,
+    }
     with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
-        schema = {
-            "type": "object",
-            "properties": {"oneKey": {"type": "string"}, "twoKey": {"type": "string"}},
-            "maxProperties": 1,
-        }
         tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test"})
 
 
@@ -207,8 +207,8 @@ def test_multiple_of_validation():
 
 
 def test_unique_items_validation():
+    schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
     with pytest.raises(DocumentationError):
-        schema = {"type": "array", "items": {"type": "string"}, "uniqueItems": True}
         tester.test_schema_section(schema, ["identical value", "identical value", "non-identical value"])
 
 

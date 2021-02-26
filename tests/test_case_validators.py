@@ -24,17 +24,14 @@ def test_camel_cased_words():
 def test_camel_case_less_than_two_chars():
     """
     When the length of an input is less than 2, our regex logic breaks down,
-    :return:
     """
+    is_camel_case("")
+    is_camel_case("s")
+    is_camel_case(" ")
+    is_camel_case("_")
+    is_camel_case("%")
     with pytest.raises(CaseError):
-        is_camel_case("")
-        is_camel_case(" ")
         is_camel_case("-")
-        is_camel_case("_")
-        is_camel_case(None)
-        is_camel_case("%")
-        is_camel_case("R")
-        is_camel_case("s")
 
 
 kebab_case_test_data = [
@@ -62,12 +59,11 @@ def test_kebab_case_less_than_two_chars():
     """
     is_kebab_case("")
     is_kebab_case("s")
+    is_kebab_case("")
+    is_kebab_case(" ")
+    is_kebab_case("-")
+    is_kebab_case("%")
     with pytest.raises(CaseError):
-        is_kebab_case(" ")
-        is_kebab_case("-")
-        is_kebab_case("_")
-        is_kebab_case(None)
-        is_kebab_case("%")
         is_kebab_case("R")
 
 
@@ -97,12 +93,12 @@ def test_pascal_case_less_than_two_chars():
     """
     is_pascal_case("")
     is_pascal_case("S")
+    is_pascal_case(" ")
+    is_pascal_case("_")
+    is_pascal_case("%")
     with pytest.raises(CaseError):
-        is_pascal_case(" ")
         is_pascal_case("-")
-        is_pascal_case("_")
-        is_pascal_case(None)
-        is_pascal_case("%")
+    with pytest.raises(CaseError):
         is_pascal_case("s")
 
 
@@ -131,10 +127,10 @@ def test_snake_case_less_than_two_chars():
     """
     is_snake_case("")
     is_snake_case("s")
+    is_snake_case(" ")
+    is_snake_case("_")
+    is_snake_case("%")
     with pytest.raises(CaseError):
-        is_snake_case(" ")
         is_snake_case("-")
-        is_snake_case("_")
-        is_snake_case(None)
-        is_snake_case("%")
+    with pytest.raises(CaseError):
         is_snake_case("R")

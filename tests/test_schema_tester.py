@@ -361,9 +361,9 @@ def test_one_of_validation():
 
 
 def test_missing_keys_validation():
+    # If a required key is missing, we should raise an error
+    required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
     with pytest.raises(DocumentationError, match=VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key="value")):
-        # If a required key is missing, we should raise an error
-        required_key = {"type": "object", "properties": {"value": {"type": "integer"}}, "required": ["value"]}
         tester.test_schema_section(required_key, {})
 
     # If not required, it should pass
@@ -372,11 +372,11 @@ def test_missing_keys_validation():
 
 
 def test_excess_keys_validation():
+    schema = {"type": "object", "properties": {}}
     with pytest.raises(
         DocumentationError,
         match=VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key="value"),
     ):
-        schema = {"type": "object", "properties": {}}
         tester.test_schema_section(schema, example_object)
 
 
@@ -386,7 +386,7 @@ def test_custom_validators():
         if schema_format == "uuid4":
             try:
                 result = UUID(data, version=4)
-                if not str(result) == str(data):
+                if str(result) != str(data):
                     return f"Expected uuid4, but received {data}"
             except ValueError:
                 return f"Expected uuid4, but received {data}"
@@ -397,7 +397,7 @@ def test_custom_validators():
         if schema_format == "uuid1":
             try:
                 result = UUID(data, version=1)
-                if not str(result) == str(data):
+                if str(result) != str(data):
                     return f"Expected uuid1, but received {data}"
             except ValueError:
                 return f"Expected uuid1, but received {data}"
