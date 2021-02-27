@@ -15,7 +15,7 @@ def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
                 continue
             current_value = output[key]
             if isinstance(current_value, list) and isinstance(value, list):
-                output[key] = list({*output[key], *value})
+                output[key] = [*output[key], *value]
             if isinstance(current_value, dict) and isinstance(value, dict):
                 output[key] = merge_objects([current_value, value])
     return output

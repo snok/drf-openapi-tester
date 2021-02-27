@@ -179,7 +179,7 @@ class SchemaTester:
         any_of: List[Dict[str, Any]] = [
             self.normalize_schema_section(entry) for entry in schema_section.get("anyOf", [])
         ]
-        for i in range(2, len(any_of)):
+        for i in range(2, len(any_of) + 1):
             any_of.extend([merge_objects(combination) for combination in combinations(any_of, i)])
         for schema in any_of:
             try:
