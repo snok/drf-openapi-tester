@@ -17,8 +17,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -33,8 +33,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -44,8 +44,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '204':
           description: No response body
@@ -56,8 +56,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -73,8 +73,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -84,8 +84,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -95,8 +95,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '204':
           description: No response body
@@ -107,8 +107,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -124,8 +124,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -135,8 +135,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -146,8 +146,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '204':
           description: No response body
@@ -158,8 +158,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -170,11 +170,52 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
+  /api/v1/router_generated/names/:
+    get:
+      operationId: api_v1_router_generated_names_list
+      description: ''
+      tags:
+        - api
+      security:
+        - cookieAuth: []
+        - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Names'
+          description: ''
+  /api/v1/router_generated/names/{custom_id_field}/:
+    get:
+      operationId: api_v1_router_generated_names_retrieve
+      description: ''
+      parameters:
+        - in: path
+          name: custom_id_field
+          schema:
+            type: integer
+          description: A unique value identifying this names.
+          required: true
+      tags:
+        - api
+      security:
+        - cookieAuth: []
+        - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Names'
+          description: ''
   /api/v1/snake-case/:
     get:
       operationId: api_v1_snake_case_list
@@ -182,8 +223,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -200,8 +241,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -217,8 +258,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -228,8 +269,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -239,8 +280,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '204':
           description: No response body
@@ -251,8 +292,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           content:
@@ -268,8 +309,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -279,8 +320,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -290,8 +331,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '204':
           description: No response body
@@ -302,8 +343,8 @@ paths:
       tags:
         - api
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
@@ -314,13 +355,16 @@ paths:
       tags:
         - en
       security:
-        - cookieAuth: [ ]
-        - { }
+        - cookieAuth: []
+        - {}
       responses:
         '200':
           description: No response body
 components:
   schemas:
+    BlankEnum:
+      enum:
+        - ''
     Car:
       type: object
       properties:
@@ -345,13 +389,28 @@ components:
         - length
         - name
         - width
+    NameEnum:
+      enum:
+        - mo
+        - moi
+        - mu
+      type: string
     Names:
       type: object
       properties:
         custom_id_field:
           type: integer
+        name:
+          nullable: true
+          oneOf:
+            - $ref: '#/components/schemas/NameEnum'
+            - $ref: '#/components/schemas/BlankEnum'
+            - $ref: '#/components/schemas/NullEnum'
       required:
         - custom_id_field
+    NullEnum:
+      enum:
+        - null
     SnakeCase:
       type: object
       properties:

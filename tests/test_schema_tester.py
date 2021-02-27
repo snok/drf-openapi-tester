@@ -127,9 +127,8 @@ def test_example_schemas(filename):
     """
     schema_tester = SchemaTester(schema_file_path=filename)
     schema = schema_tester.loader.load_schema()
-    de_referenced_schema = schema_tester.loader.de_reference_schema(schema)
-    schema_tester.loader.schema = de_referenced_schema
-    for schema_section, response, url_fragment in iterate_schema(de_referenced_schema):
+    schema_tester.loader.schema = schema_tester.loader.de_reference_schema(schema)
+    for schema_section, response, url_fragment in iterate_schema(schema_tester.loader.schema):
         if schema_section and response:
             with patch.object(
                 StaticSchemaLoader, "resolve_path", side_effect=lambda *args, **kwargs: (url_fragment, None)

@@ -38,4 +38,4 @@ def combine_sub_schemas(schemas: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
         }
     if object_schemas:
         return combine_object_schemas(object_schemas)
-    return merge_objects([schema for schema in schemas if schema.get("type") not in ["object", "array", None]])
+    return merge_objects([schema for schema in schemas if schema.get("type") not in ["object", "array"]])
