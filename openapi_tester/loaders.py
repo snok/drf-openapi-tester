@@ -6,7 +6,6 @@ from json import dumps, loads
 from typing import Callable, Dict, List, Optional, Tuple, cast
 from urllib.parse import ParseResult, urlparse
 
-import type_declarations as td
 import yaml
 from django.urls import Resolver404, ResolverMatch, resolve
 from django.utils.functional import cached_property
@@ -18,6 +17,8 @@ from prance.util.resolver import RefResolver
 # noinspection PyProtectedMember
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
+
+import openapi_tester.type_declarations as td
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
