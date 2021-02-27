@@ -1,5 +1,5 @@
 """ Utils Module - this file contains utility functions used in multiple places """
-from typing import Any, Dict, Iterable, List, Sequence
+from typing import Any, Dict, Sequence
 
 
 def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
@@ -21,21 +21,19 @@ def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     return output
 
 
-def combine_object_schemas(schemas: List[dict]) -> Dict[str, Any]:
-    properties = merge_objects([schema.get("properties", {}) for schema in schemas])
-    required_list = [schema.get("required", []) for schema in schemas]
-    required = list({key for required in required_list for key in required})
-    return {"type": "object", "required": required, "properties": properties}
-
-
-def combine_sub_schemas(schemas: Iterable[Dict[str, Any]]) -> Dict[str, Any]:
-    array_schemas = [schema for schema in schemas if schema.get("type") == "array"]
-    object_schemas = [schema for schema in schemas if schema.get("type") == "object" or not schema.get("type")]
-    if array_schemas:
-        return {
-            "type": "array",
-            "items": combine_sub_schemas([schema.get("items", {}) for schema in array_schemas]),
-        }
-    if object_schemas:
-        return combine_object_schemas(object_schemas)
-    return merge_objects([schema for schema in schemas if schema.get("type") not in ["object", "array"]])
+def normalize_schema_section(schema_section: dict) -> dict:
+    """ helper method to remove allOf and handle edge uses of oneOf"""
+    output: Dict[str, Any] = {**schema_section}
+    if "allOf" in schema_section:
+        all_of = schema_section.pop("allOf")
+        schema_section = {**schema_section, **merge_objects(all_of)}
+    if schema_section.get("oneOf") and all(item.get("enum") for item in schema_section["oneOf"]):
+        # handle the way drf-spectacular is doing enums
+        one_of = schema_section.pop("oneOf")
+        schema_section = {**schema_section, **merge_objects(one_of)}
+    for key, value in output.items():
+        if isinstance(value, dict):
+            output[key] = normalize_schema_section(value)
+        elif isinstance(value, list):
+            output[key] = [normalize_schema_section(entry) if isinstance(entry, dict) else entry for entry in value]
+    return schema_section

@@ -19,7 +19,7 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from openapi_tester.utils import merge_objects
+from openapi_tester.utils import merge_objects, normalize_schema_section
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -106,18 +106,6 @@ class SchemaTester:
             return "object"
         return None
 
-    @staticmethod
-    def normalize_schema_section(schema_section: dict) -> dict:
-        """ helper method to remove allOf and handle edge uses of oneOf"""
-        if "allOf" in schema_section:
-            all_of = schema_section.pop("allOf")
-            schema_section = {**schema_section, **merge_objects(all_of)}
-        if schema_section.get("oneOf") and all(item.get("enum") for item in schema_section["oneOf"]):
-            # handle the way drf-spectacular is doing enums
-            one_of = schema_section.pop("oneOf")
-            schema_section = {**schema_section, **merge_objects(one_of)}
-        return schema_section
-
     def get_response_schema_section(self, response: td.Response) -> Dict[str, Any]:
         """
         Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
@@ -166,7 +154,7 @@ class SchemaTester:
 
     def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         matches = 0
-        for option in [self.normalize_schema_section(entry) for entry in schema_section["oneOf"]]:
+        for option in [normalize_schema_section(entry) for entry in schema_section["oneOf"]]:
             try:
                 self.test_schema_section(schema_section=option, data=data, reference=f"{reference}.oneOf", **kwargs)
                 matches += 1
@@ -176,9 +164,7 @@ class SchemaTester:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
-        any_of: List[Dict[str, Any]] = [
-            self.normalize_schema_section(entry) for entry in schema_section.get("anyOf", [])
-        ]
+        any_of: List[Dict[str, Any]] = [normalize_schema_section(entry) for entry in schema_section.get("anyOf", [])]
         for i in range(2, len(any_of) + 1):
             any_of.extend([merge_objects(combination) for combination in combinations(any_of, i)])
         for schema in any_of:
@@ -238,7 +224,7 @@ class SchemaTester:
                 f"Reference: {reference}\n\n"
                 f"Hint: Return a valid type, or document the value as nullable"
             )
-        schema_section = self.normalize_schema_section(schema_section)
+        schema_section = normalize_schema_section(schema_section)
         if "oneOf" in schema_section:
             self.handle_one_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
             return

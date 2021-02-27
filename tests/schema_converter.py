@@ -1,12 +1,13 @@
 """ Schema to Python converter """
 import base64
 import random
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from faker import Faker
 
-from openapi_tester.utils import combine_sub_schemas, merge_objects
+from openapi_tester.utils import merge_objects, normalize_schema_section
 
 
 class SchemaToPythonConverter:
@@ -20,19 +21,14 @@ class SchemaToPythonConverter:
     def __init__(self, schema: dict):
         Faker.seed(0)
         self.faker = Faker()
-        self.result = self.convert_schema(schema)
+        self.result = self.convert_schema(deepcopy(schema))
 
     def convert_schema(self, schema: Dict[str, Any]) -> Any:
         schema_type = schema.get("type", "object")
         sample: List[Dict[str, Any]] = []
-        if "allOf" in schema:
-            all_of = schema.pop("allOf")
-            return self.convert_schema({**schema, **combine_sub_schemas(all_of)})
+        schema = normalize_schema_section(schema)
         if "oneOf" in schema:
             one_of = schema.pop("oneOf")
-            if all(item.get("enum") for item in one_of):
-                # this is meant to handle the way drf-spectacular does enums
-                return self.convert_schema({**schema, **merge_objects(one_of)})
             while not sample:
                 sample = random.sample(one_of, 1)
             return self.convert_schema({**schema, **sample[0]})
@@ -40,7 +36,7 @@ class SchemaToPythonConverter:
             any_of = schema.pop("anyOf")
             while not sample:
                 sample = random.sample(any_of, random.randint(1, len(any_of)))
-            sample = [self.convert_schema(item) for item in sample]
+            sample = [normalize_schema_section(item) for item in sample]
             return self.convert_schema({**schema, **merge_objects(sample)})
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
