@@ -253,8 +253,7 @@ class SchemaTester:
             return
 
         schema_section_type = self.get_schema_type(schema_section)
-        enum = schema_section.get("enum")
-        if not schema_section_type and not enum:
+        if not schema_section_type:
             return
         combined_validators = cast(
             List[Callable],
