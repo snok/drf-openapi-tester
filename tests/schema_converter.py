@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Union
 
 from faker import Faker
 
-from openapi_tester.utils import combine_sub_schemas
+from openapi_tester.utils import combine_sub_schemas, merge_objects
 
 
 class SchemaToPythonConverter:
@@ -26,15 +26,21 @@ class SchemaToPythonConverter:
         schema_type = schema.get("type", "object")
         sample: List[Dict[str, Any]] = []
         if "allOf" in schema:
-            return self.convert_schema(combine_sub_schemas(schema["allOf"]))
+            all_of = schema.pop("allOf")
+            return self.convert_schema({**schema, **combine_sub_schemas(all_of)})
         if "oneOf" in schema:
+            one_of = schema.pop("oneOf")
+            if all(item.get("enum") for item in one_of):
+                # this is meant to handle the way drf-spectacular does enums
+                return self.convert_schema({**schema, **merge_objects(one_of)})
             while not sample:
-                sample = random.sample(schema["oneOf"], 1)
-            return self.convert_schema(sample[0])
+                sample = random.sample(one_of, 1)
+            return self.convert_schema({**schema, **sample[0]})
         if "anyOf" in schema:
+            any_of = schema.pop("anyOf")
             while not sample:
-                sample = random.sample(schema["anyOf"], random.randint(1, len(schema["anyOf"])))
-            return self.convert_schema(combine_sub_schemas(sample))
+                sample = random.sample(any_of, random.randint(1, len(any_of)))
+            return self.convert_schema({**schema, **combine_sub_schemas(sample)})
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
         if schema_type == "object":
@@ -71,7 +77,7 @@ class SchemaToPythonConverter:
         maximum: Optional[Union[int, float]] = schema_object.get("maximum")
         enum: Optional[list] = schema_object.get("enum")
         if enum:
-            return enum[0]
+            return random.sample(enum, 1)[0]
         if schema_type in ["integer", "number"] and (minimum is not None or maximum is not None):
             if minimum is not None:
                 minimum += 1 if schema_object.get("excludeMinimum") else 0
@@ -98,9 +104,9 @@ class SchemaToPythonConverter:
 
     def convert_schema_array_to_list(self, schema_array: Any) -> List[Any]:
         parsed_items: List[Any] = []
-        raw_items = schema_array.get("items", {})
+        items = self.convert_schema(schema_array.get("items", {}))
         min_items = schema_array.get("minItems", 1)
         max_items = schema_array.get("maxItems", 1)
         while len(parsed_items) < min_items or len(parsed_items) < max_items:
-            parsed_items.append(self.convert_schema(raw_items))
+            parsed_items.append(items)
         return parsed_items

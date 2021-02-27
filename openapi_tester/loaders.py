@@ -3,7 +3,7 @@ import difflib
 import json
 import pathlib
 from json import dumps, loads
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, cast
 from urllib.parse import ParseResult, urlparse
 
 import yaml
@@ -17,6 +17,8 @@ from prance.util.resolver import RefResolver
 # noinspection PyProtectedMember
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
+
+import openapi_tester.type_declarations as td
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -46,6 +48,7 @@ class BaseSchemaLoader:
 
     base_path = "/"
     field_key_map: Dict[str, str]
+    schema: Optional[dict] = None
 
     def __init__(self, field_key_map: Optional[Dict[str, str]] = None):
         super().__init__()
@@ -62,9 +65,10 @@ class BaseSchemaLoader:
         """
         Returns OpenAPI schema.
         """
-        if self.schema is None:
-            self.set_schema(self.load_schema())
-        return self.schema  # type: ignore
+        if self.schema:
+            return self.schema
+        self.set_schema(self.load_schema())
+        return self.get_schema()
 
     def de_reference_schema(self, schema: dict) -> dict:
         url = schema["basePath"] if "basePath" in schema else self.base_path
@@ -130,7 +134,7 @@ class BaseSchemaLoader:
             else:
                 for key, value in resolved_route.kwargs.items():
                     index = path.rfind(str(value))
-                    path = f"{path[:index]}{{{key}}}{path[index + len(str(value)) :]}"
+                    path = f"{path[:index]}{{{key}}}{path[index + len(str(value)):]}"
                 if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
                     path, resolved_route = self.handle_pk_parameter(
                         resolved_route=resolved_route, path=path, method=method
@@ -142,10 +146,14 @@ class BaseSchemaLoader:
             message += "\n\nDid you mean one of these?" + "\n- ".join(close_matches)
         raise ValueError(message)
 
-    def handle_pk_parameter(  # pylint: disable=no-self-use
-        self, resolved_route: ResolverMatch, path: str, method: str
-    ) -> Tuple[str, ResolverMatch]:
-        coerced_path = BaseSchemaGenerator().coerce_path(path=path, method=method, view=resolved_route.func)  # type: ignore
+    @staticmethod
+    def handle_pk_parameter(resolved_route: ResolverMatch, path: str, method: str) -> Tuple[str, ResolverMatch]:
+        """
+        Handle the DRF conversion of params called {pk} into a named parameter based on Model field
+        """
+        coerced_path = BaseSchemaGenerator().coerce_path(
+            path=path, method=method, view=cast(td.APIView, resolved_route.func)
+        )
         pk_field_name = "".join(
             entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry
         )

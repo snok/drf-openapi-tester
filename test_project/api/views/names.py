@@ -1,11 +1,11 @@
+from rest_framework import serializers
 from rest_framework.generics import RetrieveAPIView
-from rest_framework.serializers import ModelSerializer
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from test_project.models import Names
 
 
-class NamesSerializer(ModelSerializer):
+class NamesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Names
         fields = "__all__"

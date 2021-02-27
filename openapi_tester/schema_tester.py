@@ -19,7 +19,7 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from openapi_tester.utils import combine_sub_schemas
+from openapi_tester.utils import combine_sub_schemas, merge_objects
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -238,8 +238,13 @@ class SchemaTester:
             )
 
         if "oneOf" in schema_section:
-            self.handle_one_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
-            return
+            if schema_section["oneOf"] and all(item.get("enum") for item in schema_section["oneOf"]):
+                # handle the way drf-spectacular is doing enums
+                one_of = schema_section.pop("oneOf")
+                schema_section = {**schema_section, **merge_objects(one_of)}
+            else:
+                self.handle_one_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
+                return
         if "allOf" in schema_section:
             self.handle_all_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
             return

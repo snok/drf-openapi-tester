@@ -45,4 +45,7 @@ else:
     from rest_framework.test import APITestCase
 
     # noinspection PyUnresolvedReferences
+    from rest_framework.views import APIView
+
+    # noinspection PyUnresolvedReferences
     from openapi_tester.loaders import BaseSchemaLoader, StaticSchemaLoader
