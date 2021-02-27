@@ -1,8 +1,12 @@
 # Changelog
 
+## v1.3.4 2020-02-27
+
+* Resolve issue with drf-spectacular's use of "oneOf" to handle null enums.
+
 ## v1.3.3 2020-02-25
 
-* Replace Python 3.8+ functools feature with builtin Django equivalent
+* Replace Python 3.8+ functools.cache_property with the Django builtin version to ensure Python 3.6 comp.
 
 ## v1.3.2 2020-02-20
 
