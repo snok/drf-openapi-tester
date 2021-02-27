@@ -41,7 +41,7 @@ class SchemaToPythonConverter:
             while not sample:
                 sample = random.sample(any_of, random.randint(1, len(any_of)))
             sample = [self.convert_schema(item) for item in sample]
-            return self.convert_schema({**schema, **combine_sub_schemas(sample)})
+            return self.convert_schema({**schema, **merge_objects(sample)})
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
         if schema_type == "object":

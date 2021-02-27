@@ -1,8 +1,8 @@
 """ Utils Module - this file contains utility functions used in multiple places """
-from typing import Any, Dict, Iterable, List
+from typing import Any, Dict, Iterable, List, Sequence
 
 
-def merge_objects(dictionaries: List[Dict[str, Any]]) -> Dict[str, Any]:
+def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
     """ helper function to deep merge objects """
     output: Dict[str, Any] = {}
     for dictionary in dictionaries:
