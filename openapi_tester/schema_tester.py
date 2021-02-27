@@ -1,5 +1,5 @@
 """ Schema Tester """
-from itertools import combinations
+from itertools import chain
 from typing import Any, Callable, Dict, List, Optional, Union, cast
 
 from django.conf import settings
@@ -19,7 +19,7 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from openapi_tester.utils import merge_objects, normalize_schema_section
+from openapi_tester.utils import lazy_combinations, normalize_schema_section
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -154,7 +154,7 @@ class SchemaTester:
 
     def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         matches = 0
-        for option in [normalize_schema_section(entry) for entry in schema_section["oneOf"]]:
+        for option in schema_section["oneOf"]:
             try:
                 self.test_schema_section(schema_section=option, data=data, reference=f"{reference}.oneOf", **kwargs)
                 matches += 1
@@ -164,10 +164,8 @@ class SchemaTester:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
-        any_of: List[Dict[str, Any]] = [normalize_schema_section(entry) for entry in schema_section.get("anyOf", [])]
-        for i in range(2, len(any_of) + 1):
-            any_of.extend([merge_objects(combination) for combination in combinations(any_of, i)])
-        for schema in any_of:
+        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+        for schema in chain(any_of, lazy_combinations(any_of)):
             try:
                 self.test_schema_section(schema_section=schema, data=data, reference=f"{reference}.anyOf", **kwargs)
                 return

@@ -23,11 +23,10 @@ def test_merge_objects():
     test_schemas = [
         object_1,
         object_2,
-        {"type": "object", "properties": {"key3": {"allOf": [object_1, object_2]}}},
     ]
     expected = {
         "type": "object",
         "required": ["key1", "key2"],
-        "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}, "key3": merged_object},
+        "properties": {"key1": {"type": "string"}, "key2": {"type": "string"}},
     }
     assert sort_object(merge_objects(test_schemas)) == sort_object(expected)

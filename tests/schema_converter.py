@@ -25,19 +25,15 @@ class SchemaToPythonConverter:
 
     def convert_schema(self, schema: Dict[str, Any]) -> Any:
         schema_type = schema.get("type", "object")
-        sample: List[Dict[str, Any]] = []
         schema = normalize_schema_section(schema)
         if "oneOf" in schema:
             one_of = schema.pop("oneOf")
-            while not sample:
-                sample = random.sample(one_of, 1)
-            return self.convert_schema({**schema, **sample[0]})
+            return self.convert_schema({**schema, **random.sample(one_of, 1)[0]})
         if "anyOf" in schema:
             any_of = schema.pop("anyOf")
-            while not sample:
-                sample = random.sample(any_of, random.randint(1, len(any_of)))
-            sample = [normalize_schema_section(item) for item in sample]
-            return self.convert_schema({**schema, **merge_objects(sample)})
+            return self.convert_schema(
+                {**schema, **merge_objects(random.sample(any_of, random.randint(1, len(any_of))))}
+            )
         if schema_type == "array":
             return self.convert_schema_array_to_list(schema)
         if schema_type == "object":
@@ -77,9 +73,9 @@ class SchemaToPythonConverter:
             return random.sample(enum, 1)[0]
         if schema_type in ["integer", "number"] and (minimum is not None or maximum is not None):
             if minimum is not None:
-                minimum += 1 if schema_object.get("excludeMinimum") else 0
+                minimum += 1 if schema_object.get("exclusiveMinimum") else 0
             if maximum is not None:
-                maximum -= 1 if schema_object.get("excludeMaximum") else 0
+                maximum -= 1 if schema_object.get("exclusiveMaximum") else 0
             if minimum is not None or maximum is not None:
                 minimum = minimum or 0
                 maximum = maximum or minimum * 2
