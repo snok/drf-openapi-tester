@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.5 2020-02-28
+
+* Rework schema reference logic, to improve handling of nested structures.
+
 ## v1.3.4 2020-02-27
 
 * Resolve issue with drf-spectacular's use of "oneOf" to handle null enums.
