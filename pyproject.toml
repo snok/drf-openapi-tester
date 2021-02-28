@@ -97,7 +97,7 @@ max-branches = 20
 max-locals = 20
 
 [tool.pylint.BASIC]
-good-names = "_,e"
+good-names = "_,e,i"
 
 [tool.coverage.run]
 source = ["openapi_tester/*"]

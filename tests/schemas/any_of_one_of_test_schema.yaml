@@ -104,10 +104,9 @@ components:
           type: string
           format: byte
         price:
-          minimum: 0.1
-          maximum: 1.0
-          type: number
-          format: float
+          minimum: 0
+          maximum: 10
+          type: integer
 
     Alien:
       type: object
