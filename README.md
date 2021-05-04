@@ -149,7 +149,7 @@ The library currently has 4 built-in case testers:
 - `is_pascal_case`
 - `is_snake_case`
 - `is_camel_case`
-- `is_kebab-case`
+- `is_kebab_case`
 
 You can of course pass your own custom case tester.
 
