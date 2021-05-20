@@ -210,7 +210,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
 
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
         return (
-            de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX) :],
+            de_parameterized_path[len(spectacular_settings.SCHEMA_PATH_PREFIX or "") :],
             resolved_path,
         )
 
