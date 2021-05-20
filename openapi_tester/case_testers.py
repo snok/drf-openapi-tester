@@ -7,7 +7,7 @@ from openapi_tester.exceptions import CaseError
 
 
 def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str], None]:
-    """ factory function for creating testers """
+    """factory function for creating testers"""
 
     def tester(key: str) -> None:
         stripped = key.strip()

@@ -136,7 +136,7 @@ def test_min_and_max_number_of_properties_validation():
 
 
 def test_pattern_validation():
-    """ The a regex pattern can be passed to describe how a string should look """
+    """The a regex pattern can be passed to describe how a string should look"""
     schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
 
     # Should pass
@@ -153,7 +153,7 @@ def test_pattern_validation():
 
 
 def test_exclusives_validation():
-    """ The minimum is included, unless specified """
+    """The minimum is included, unless specified"""
 
     # Pass when set to minimum
     schema = {"type": "integer", "minimum": 3, "exclusiveMinimum": False, "maximum": 5}

@@ -5,7 +5,7 @@ from typing import Any, Dict, Iterator, Sequence
 
 
 def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
-    """ helper function to deep merge objects """
+    """helper function to deep merge objects"""
     output: Dict[str, Any] = {}
     for dictionary in dictionaries:
         for key, value in dictionary.items():
@@ -23,7 +23,7 @@ def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 def normalize_schema_section(schema_section: dict) -> dict:
-    """ helper method to remove allOf and handle edge uses of oneOf"""
+    """helper method to remove allOf and handle edge uses of oneOf"""
     output: Dict[str, Any] = deepcopy(schema_section)
     if output.get("allOf"):
         all_of = output.pop("allOf")
@@ -41,7 +41,7 @@ def normalize_schema_section(schema_section: dict) -> dict:
 
 
 def lazy_combinations(options_list: Sequence[Dict[str, Any]]) -> Iterator[dict]:
-    """ helper to lazy evaluate possible permutations of possible combinations  """
+    """helper to lazy evaluate possible permutations of possible combinations"""
     for i in range(2, len(options_list) + 1):
         for combination in combinations(options_list, i):
             yield merge_objects(combination)
