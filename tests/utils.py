@@ -58,7 +58,7 @@ def mock_schema(schema) -> Callable:
 
 
 def sort_object(data_object: Any) -> Any:
-    """ helper function to sort objects """
+    """helper function to sort objects"""
     if isinstance(data_object, dict):
         for key, value in data_object.items():
             if isinstance(value, (dict, list)):

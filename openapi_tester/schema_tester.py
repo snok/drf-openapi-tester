@@ -39,7 +39,7 @@ from openapi_tester.validators import (
 
 
 class SchemaTester:
-    """ Schema Tester: this is the base class of the library. """
+    """Schema Tester: this is the base class of the library."""
 
     loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
     validators: List[Callable[[dict, Any], Optional[str]]]

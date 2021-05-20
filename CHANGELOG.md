@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.6 2021-05-20
+
+* Update dependencies
+
 ## v1.3.5 2020-02-28
 
 * Rework schema reference logic, to improve handling of nested structures.
