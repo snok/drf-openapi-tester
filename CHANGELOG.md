@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.3.7 2021-05-20
+
+* Update dependencies
+
 ## v1.3.6 2021-05-20
 
 * Update dependencies
