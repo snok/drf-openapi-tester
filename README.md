@@ -114,7 +114,6 @@ schema_test_with_case_validation = SchemaTester(
     case_tester=is_camel_case,
     ignore_case=["IP"],
     validators=[my_uuid_4_validator]
-
 )
 
 ```
