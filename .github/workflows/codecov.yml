@@ -8,31 +8,10 @@ on:
 
 jobs:
   codecov:
-    # ---------------------------------------------------
-    #    Documentation and examples can be found at
-    #      https://github.com/snok/install-poetry
-    # ---------------------------------------------------
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.9
-    - name: Install poetry
-      uses: snok/install-poetry@v1.1.1
-      with:
-        virtualenvs-create: true
-        virtualenvs-in-project: true
-    - uses: actions/cache@v2
-      id: cache-venv
-      with:
-        path: .venv
-        key: ${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-3
-    - run: poetry install --no-interaction --no-root
-      if: steps.cache-venv.outputs.cache-hit != 'true'
-    - run: poetry install --no-interaction
-    - run: poetry run pytest --cov=openapi_tester --cov-report=xml
-    - uses: codecov/codecov-action@v1
-      with:
-        file: ./coverage.xml
-        fail_ci_if_error: true
+      - uses: snok/.github/workflows/codecov@main
+        with:
+          source-dir: openapi_tester
+          pip-cache-key: pip-0
+          poetry-cache-key: poetry-0
