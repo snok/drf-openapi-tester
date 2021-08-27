@@ -19,7 +19,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
             ${{ runner.os }}-
-      - run: python -m pip install pre-commit pylint
+      - run: python -m pip install pre-commit pylint tomli setuptools pip -U
       - run: pre-commit run --all-files
   test:
     # ---------------------------------------------------
