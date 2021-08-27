@@ -231,6 +231,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
         :return: Schema contents as a dict
         :raises: ImproperlyConfigured
         """
-        with open(self.path) as file:
+        with open(self.path, encoding="utf-8") as file:
             content = file.read()
             return json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
