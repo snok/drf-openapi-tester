@@ -6,7 +6,29 @@ jobs:
   linting:
     runs-on: ubuntu-latest
     steps:
-      - uses: snok/.github/workflows/linting@main
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+      - uses: actions/cache@v2
+        id: cache-venv
+        with:
+          path: .venv
+          key: venv-0  # increment to reset
+      - run: |
+          pip install virtualenv
+          virtualenv .venv
+          source .venv/bin/activate
+          pip install pre-commit
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+      - uses: actions/cache@v2
+        id: pre-commit-cache
+        with:
+          path: ~/.cache/pre-commit
+          key: key-0
+      - run: |
+          source .venv/bin/activate
+          pre-commit run --all-files
 
   get-python-versions:
     runs-on: ubuntu-latest
@@ -17,7 +39,7 @@ jobs:
       id: get-python-versions-action
       with:
         min-version: 3.6
-        include-prereleases: true
+        include-prereleases: false
 
   test:
     needs: [linting, get-python-versions]
