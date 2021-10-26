@@ -73,7 +73,6 @@ jobs:
         with:
           path: .venv
           key: ${{ hashFiles('**/poetry.lock') }}-0
-
       - run: |
           pip install virtualenv
           virtualenv .venv
@@ -87,6 +86,8 @@ jobs:
       - name: Install DRF 3.11 on Django 2.2
         if: matrix.django-version == '2.2'
         run: pip install "djangorestframework==3.11.1"
+      - run: pip install coverage
+        if: matrix.python-version == '3.10'
       - name: Run tests
         run: |
           source .venv/bin/activate
