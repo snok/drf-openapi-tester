@@ -137,7 +137,7 @@ class SchemaTester:
             f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented status codes: {list(responses_object.keys())}. ",
         )
 
-        if "openapi" not in schema:
+        if "openapi" not in schema:  # pylint: disable=E1135
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self.get_key_value(status_code_object, "schema")
         content_object = self.get_key_value(
