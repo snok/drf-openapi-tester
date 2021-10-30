@@ -5,6 +5,37 @@
     "version": "1.0.0"
   },
   "paths": {
+    "/api/v1/categories/{category_pk}/subcategories/{subcategory_pk}": {
+      "get": {
+        "operationId": "getProducts",
+        "description": "",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "category_pk",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "A unique value identifying this category.",
+            "required": true
+          },
+          {
+            "in": "path",
+            "name": "subcategory_pk",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "A unique value identifying this subcategory.",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/v1/{pk}/names": {
       "get": {
         "operationId": "api_v1_names_retrieve",

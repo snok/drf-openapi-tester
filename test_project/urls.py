@@ -14,6 +14,7 @@ from test_project.api.views.names import NamesRetrieveView, NameViewSet
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
+from test_project.api.views.products import Products
 
 router = routers.SimpleRouter()
 router.register(r"names", NameViewSet)
@@ -28,6 +29,7 @@ api_urlpatterns = [
     path("api/<str:version>/items", Items.as_view()),
     path("api/<str:version>/exempt-endpoint", Exempt.as_view()),
     path("api/<str:version>/<str:pk>/names", NamesRetrieveView.as_view()),
+    path("api/<str:version>/categories/<int:category_pk>/subcategories/<int:subcategory_pk>/", Products.as_view()),
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
     path("api/<str:version>/router_generated/", include(router.urls)),
