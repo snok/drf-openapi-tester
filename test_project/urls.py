@@ -11,10 +11,10 @@ from test_project.api.views.exempt_endpoint import Exempt
 from test_project.api.views.i18n import Languages
 from test_project.api.views.items import Items
 from test_project.api.views.names import NamesRetrieveView, NameViewSet
+from test_project.api.views.products import Products
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
-from test_project.api.views.products import Products
 
 router = routers.SimpleRouter()
 router.register(r"names", NameViewSet)

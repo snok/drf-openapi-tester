@@ -48,4 +48,7 @@ def test_loader_resolve_path(loader):
 
 @pytest.mark.parametrize("loader", static_schema_loaders)
 def test_static_loader_resolve_nested_route(loader):
-    assert loader.resolve_path("/api/v1/categories/1/subcategories/1/", "get")[0] == "/api/{version}/categories/{category_pk}/subcategories/{subcategory_pk}/"
+    assert (
+        loader.resolve_path("/api/v1/categories/1/subcategories/1/", "get")[0]
+        == "/api/{version}/categories/{category_pk}/subcategories/{subcategory_pk}/"
+    )
