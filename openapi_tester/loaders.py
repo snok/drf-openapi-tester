@@ -132,7 +132,7 @@ class BaseSchemaLoader:
             except Resolver404:
                 continue
             else:
-                for key, value in resolved_route.kwargs.items():
+                for key, value in reversed(list(resolved_route.kwargs.items())):
                     index = path.rfind(str(value))
                     path = f"{path[:index]}{{{key}}}{path[index + len(str(value)):]}"
                 if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
