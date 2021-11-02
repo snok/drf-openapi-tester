@@ -140,17 +140,28 @@ class SchemaTester:
         if "openapi" not in schema:  # pylint: disable=E1135
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self.get_key_value(status_code_object, "schema")
-        content_object = self.get_key_value(
-            status_code_object,
-            "content",
-            f"\n\nNo content documented for method: {response_method}, path: {parameterized_path}",
-        )
-        json_object = self.get_key_value(
-            content_object,
-            "application/json",
-            f"\n\nNo `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
-        )
-        return self.get_key_value(json_object, "schema")
+
+        if status_code_object.get("content"):
+            content_object = self.get_key_value(
+                status_code_object,
+                "content",
+                f"\n\nNo content documented for method: {response_method}, path: {parameterized_path}",
+            )
+            json_object = self.get_key_value(
+                content_object,
+                "application/json",
+                f"\n\nNo `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
+            )
+            return self.get_key_value(json_object, "schema")
+
+        if response.json():
+            raise UndocumentedSchemaSectionError(
+                UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
+                    key="content",
+                    error_addon=f"\n\nNo `content` defined for this response: {response_method}, path: {parameterized_path}",
+                )
+            )
+        return {}
 
     def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         matches = 0
