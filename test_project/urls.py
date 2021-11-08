@@ -11,6 +11,7 @@ from test_project.api.views.exempt_endpoint import Exempt
 from test_project.api.views.i18n import Languages
 from test_project.api.views.items import Items
 from test_project.api.views.names import NamesRetrieveView, NameViewSet
+from test_project.api.views.products import Products
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
@@ -28,6 +29,7 @@ api_urlpatterns = [
     path("api/<str:version>/items", Items.as_view()),
     path("api/<str:version>/exempt-endpoint", Exempt.as_view()),
     path("api/<str:version>/<str:pk>/names", NamesRetrieveView.as_view()),
+    path("api/<str:version>/categories/<int:category_pk>/subcategories/<int:subcategory_pk>/", Products.as_view()),
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
     path("api/<str:version>/router_generated/", include(router.urls)),

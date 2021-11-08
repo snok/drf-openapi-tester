@@ -191,10 +191,30 @@ def test_validate_response_failure_scenario_undocumented_status_code(monkeypatch
         tester.validate_response(response)
 
 
+def test_validate_response_failure_scenario_undocumented_content(client, monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    del schema["paths"][parameterized_path][method]["responses"][status]["content"]
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
+    response = client.get(de_parameterized_path)
+    with pytest.raises(
+        UndocumentedSchemaSectionError,
+        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `content`. \n\nNo `content` defined for this response: {method}, path: {parameterized_path}",
+    ):
+        tester.validate_response(response)
+
+
 def test_validate_response_global_case_tester(client):
     response = client.get(de_parameterized_path)
     with pytest.raises(CaseError, match="is not properly PascalCased"):
         SchemaTester(case_tester=is_pascal_case).validate_response(response=response)
+
+
+def test_validate_response_empty_content(client, monkeypatch):
+    schema = deepcopy(tester.loader.get_schema())
+    del schema["paths"][parameterized_path][method]["responses"][status]["content"]
+    monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
+    response = response_factory({}, de_parameterized_path, method, status)
+    tester.validate_response(response)
 
 
 def test_validate_response_global_ignored_case(client):

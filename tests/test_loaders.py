@@ -11,6 +11,10 @@ loaders = [
     DrfYasgSchemaLoader(field_key_map={"language": "en"}),
     DrfSpectacularSchemaLoader(field_key_map={"language": "en"}),
 ]
+static_schema_loaders = [
+    StaticSchemaLoader(yaml_schema_path, field_key_map={"language": "en"}),
+    StaticSchemaLoader(json_schema_path, field_key_map={"language": "en"}),
+]
 
 
 @pytest.mark.parametrize("loader", loaders)
@@ -40,3 +44,11 @@ def test_loader_resolve_path(loader):
         ValueError, match="Could not resolve path `/api/v1/blars/correct`.\n\nDid you mean one of these?"
     ):
         loader.resolve_path("/api/v1/blars/correct", "get")
+
+
+@pytest.mark.parametrize("loader", static_schema_loaders)
+def test_static_loader_resolve_nested_route(loader):
+    assert (
+        loader.resolve_path("/api/v1/categories/1/subcategories/1/", "get")[0]
+        == "/api/{version}/categories/{category_pk}/subcategories/{subcategory_pk}/"
+    )
