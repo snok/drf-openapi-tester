@@ -135,6 +135,12 @@ def test_min_and_max_number_of_properties_validation():
         tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test"})
 
 
+def test_additional_properties_allowed():
+    # Not adhering to minlength limitations should raise an error
+    schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}}
+    tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
+
+
 def test_pattern_validation():
     """The a regex pattern can be passed to describe how a string should look"""
     schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
