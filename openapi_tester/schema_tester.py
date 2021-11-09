@@ -321,6 +321,9 @@ class SchemaTester:
                     f'"WriteOnly" restriction'
                 )
         for key, value in data.items():
+            if key not in properties and additional_properties_allowed:
+                # Avoid KeyError below
+                continue
             self.test_schema_section(
                 schema_section=properties[key],
                 data=value,

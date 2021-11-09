@@ -6,6 +6,7 @@ from faker import Faker
 
 from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError, SchemaTester
 from openapi_tester.constants import (
+    VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
@@ -133,6 +134,17 @@ def test_min_and_max_number_of_properties_validation():
     }
     with pytest.raises(DocumentationError, match=VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR[:10]):
         tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test"})
+
+
+def test_additional_properties_allowed():
+    schema = {"type": "object", "additionalProperties": True, "properties": {"oneKey": {"type": "string"}}}
+    tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
+
+
+def test_additional_properties_not_allowed_by_default():
+    schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}}
+    with pytest.raises(DocumentationError, match=VALIDATE_EXCESS_RESPONSE_KEY_ERROR[:90]):
+        tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
 
 
 def test_pattern_validation():
