@@ -294,7 +294,7 @@ class SchemaTester:
         write_only_properties = [key for key in properties.keys() if properties[key].get("writeOnly")]
         required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
         response_keys = data.keys()
-        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties", True)
+        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
         if not properties and isinstance(additional_properties, dict):
             properties = additional_properties
         for key in properties.keys():
