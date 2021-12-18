@@ -75,7 +75,6 @@ LANGUAGES = [
 LANGUAGE_CODE = "en"
 TIME_ZONE = "UTC"
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 STATIC_URL = "/test_project/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
