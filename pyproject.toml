@@ -42,7 +42,7 @@ packages = [
 
 [tool.poetry.dependencies]
 djangorestframework = "*"
-django = "^2.2 || ^3.0"
+django = "^2.2 || ^3.0 || ^4.0"
 inflection = "*"
 openapi-spec-validator = "*"
 prance = "*"
