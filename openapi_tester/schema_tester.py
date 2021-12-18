@@ -6,7 +6,6 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
-from openapi_tester import OpenAPISchemaError
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
@@ -18,7 +17,7 @@ from openapi_tester.constants import (
     VALIDATE_ONE_OF_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
-from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
 from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
 from openapi_tester.utils import lazy_combinations, normalize_schema_section
 from openapi_tester.validators import (

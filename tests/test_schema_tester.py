@@ -9,24 +9,22 @@ import pytest
 from django.core.exceptions import ImproperlyConfigured
 
 from openapi_tester import (
-    OPENAPI_PYTHON_MAPPING,
-    CaseError,
-    DocumentationError,
     DrfSpectacularSchemaLoader,
     DrfYasgSchemaLoader,
     SchemaTester,
     StaticSchemaLoader,
-    UndocumentedSchemaSectionError,
     is_pascal_case,
 )
 from openapi_tester.constants import (
     INIT_ERROR,
+    OPENAPI_PYTHON_MAPPING,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
     VALIDATE_MISSING_RESPONSE_KEY_ERROR,
     VALIDATE_NONE_ERROR,
     VALIDATE_ONE_OF_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
+from openapi_tester.exceptions import CaseError, DocumentationError, UndocumentedSchemaSectionError
 from test_project.models import Names
 from tests import example_object, example_schema_types
 from tests.utils import TEST_ROOT, iterate_schema, mock_schema, response_factory

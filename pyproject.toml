@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "drf-openapi-tester"
-version = "1.3.10"
+version = "1.3.11"
 description = "Test utility for validating OpenAPI response documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 maintainers = ["Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
@@ -41,12 +41,12 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
+python = ">=3.6.1,<4.0.0"
 djangorestframework = "*"
 django = "^2.2 || ^3.0"
 inflection = "*"
 openapi-spec-validator = "*"
 prance = "*"
-python = ">=3.6.1,<4.0.0"
 pyYAML = "*"
 
 [tool.poetry.dev-dependencies]
@@ -55,10 +55,10 @@ drf-yasg = "*"
 Faker = "*"
 pre-commit = "*"
 pytest = "*"
-pytest-cov = "*"
 pytest-django = "*"
 pylint = "*"
-coverage = {extras = ["toml"], version = "^6.0.2"}
+coverage = { extras = ["toml"], version = "^6"}
+pytest-cov = "^2"
 
 [tool.black]
 line-length = 120
