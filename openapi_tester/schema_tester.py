@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
+from openapi_tester import OpenAPISchemaError
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
@@ -296,6 +297,8 @@ class SchemaTester:
         response_keys = data.keys()
         additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
         additional_properties_allowed = additional_properties is not None
+        if additional_properties_allowed and not isinstance(additional_properties, (bool, dict)):
+            raise OpenAPISchemaError("Invalid additionalProperties type")
         for key in properties.keys():
             self.test_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:

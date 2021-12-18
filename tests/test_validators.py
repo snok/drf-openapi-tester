@@ -198,6 +198,12 @@ def test_additional_properties_schema_not_validated_in_main_properties():
         tester.test_schema_section(schema, {"key_1": "value_1", "key_2": "value_2", "key_3": 123})
 
 
+def test_invalid_additional_properties_raises_schema_error():
+    schema = {"type": "object", "properties": {"key_1": {"type": "string"}}, "additionalProperties": 123}
+    with pytest.raises(OpenAPISchemaError, match="Invalid additionalProperties type"):
+        tester.test_schema_section(schema, {"key_1": "value_1", "key_2": "value_2"})
+
+
 def test_pattern_validation():
     """The a regex pattern can be passed to describe how a string should look"""
     schema = {"type": "string", "pattern": r"^\d{3}-\d{2}-\d{4}$"}
