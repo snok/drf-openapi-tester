@@ -4,8 +4,9 @@ from typing import Any, Dict, Tuple
 import pytest
 from faker import Faker
 
-from openapi_tester import OPENAPI_PYTHON_MAPPING, DocumentationError, OpenAPISchemaError, SchemaTester
+from openapi_tester import SchemaTester
 from openapi_tester.constants import (
+    OPENAPI_PYTHON_MAPPING,
     VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
@@ -18,6 +19,7 @@ from openapi_tester.constants import (
     VALIDATE_MULTIPLE_OF_ERROR,
     VALIDATE_TYPE_ERROR,
 )
+from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError
 from openapi_tester.validators import VALIDATOR_MAP
 from tests import (
     example_response_types,
