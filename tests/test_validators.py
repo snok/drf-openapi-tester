@@ -16,6 +16,7 @@ from openapi_tester.constants import (
     VALIDATE_MINIMUM_ERROR,
     VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR,
     VALIDATE_MULTIPLE_OF_ERROR,
+    VALIDATE_TYPE_ERROR,
 )
 from openapi_tester.validators import VALIDATOR_MAP
 from tests import (
@@ -141,10 +142,66 @@ def test_additional_properties_allowed():
     tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
 
 
+def test_additional_properties_specified_as_empty_object_allowed():
+    schema = {"type": "object", "additionalProperties": {}, "properties": {"oneKey": {"type": "string"}}}
+    tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
+
+
 def test_additional_properties_not_allowed_by_default():
     schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}}
     with pytest.raises(DocumentationError, match=VALIDATE_EXCESS_RESPONSE_KEY_ERROR[:90]):
         tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
+
+
+def test_string_dictionary_specified_as_additional_properties_allowed():
+    schema = {"type": "object", "additionalProperties": {"type": "string"}, "properties": {"key_1": {"type": "string"}}}
+    tester.test_schema_section(schema, {"key_1": "value_1", "key_2": "value_2", "key_3": "value_3"})
+
+
+def test_string_dictionary_with_non_string_value_fails_validation():
+    schema = {"type": "object", "additionalProperties": {"type": "string"}, "properties": {"key_1": {"type": "string"}}}
+    expected_error_message = VALIDATE_TYPE_ERROR.format(article="a", type="string", received=123)
+    with pytest.raises(DocumentationError, match=expected_error_message):
+        tester.test_schema_section(schema, {"key_1": "value_1", "key_2": 123, "key_3": "value_3"})
+
+
+def test_object_dictionary_specified_as_additional_properties_allowed():
+    schema = {
+        "type": "object",
+        "properties": {"key_1": {"type": "string"}},
+        "additionalProperties": {
+            "type": "object",
+            "properties": {"key_2": {"type": "string"}, "key_3": {"type": "number"}},
+        },
+    }
+    tester.test_schema_section(
+        schema,
+        {
+            "key_1": "value_1",
+            "some_extra_key": {"key_2": "value_2", "key_3": 123},
+            "another_extra_key": {"key_2": "value_4", "key_3": 246},
+        },
+    )
+
+
+def test_additional_properties_schema_not_validated_in_main_properties():
+    schema = {
+        "type": "object",
+        "properties": {"key_1": {"type": "string"}},
+        "additionalProperties": {
+            "type": "object",
+            "properties": {"key_2": {"type": "string"}, "key_3": {"type": "number"}},
+        },
+    }
+    expected_error_message = VALIDATE_TYPE_ERROR.format(article="an", type="object", received='"value_2"')
+    with pytest.raises(DocumentationError, match=expected_error_message):
+        tester.test_schema_section(schema, {"key_1": "value_1", "key_2": "value_2", "key_3": 123})
+
+
+def test_invalid_additional_properties_raises_schema_error():
+    schema = {"type": "object", "properties": {"key_1": {"type": "string"}}, "additionalProperties": 123}
+    with pytest.raises(OpenAPISchemaError, match="Invalid additionalProperties type"):
+        tester.test_schema_section(schema, {"key_1": "value_1", "key_2": "value_2"})
 
 
 def test_pattern_validation():

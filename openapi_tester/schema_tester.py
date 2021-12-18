@@ -6,6 +6,7 @@ from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from rest_framework.response import Response
 
+from openapi_tester import OpenAPISchemaError
 from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
@@ -295,8 +296,9 @@ class SchemaTester:
         required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
         response_keys = data.keys()
         additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
-        if not properties and isinstance(additional_properties, dict):
-            properties = additional_properties
+        additional_properties_allowed = additional_properties is not None
+        if additional_properties_allowed and not isinstance(additional_properties, (bool, dict)):
+            raise OpenAPISchemaError("Invalid additionalProperties type")
         for key in properties.keys():
             self.test_key_casing(key, case_tester, ignore_case)
             if key in required_keys and key not in response_keys:
@@ -307,9 +309,7 @@ class SchemaTester:
                 )
         for key in response_keys:
             self.test_key_casing(key, case_tester, ignore_case)
-            key_in_additional_properties = isinstance(additional_properties, dict) and key in additional_properties
-            additional_properties_allowed = additional_properties is True
-            if key not in properties and not key_in_additional_properties and not additional_properties_allowed:
+            if key not in properties and not additional_properties_allowed:
                 raise DocumentationError(
                     f"{VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key)}\n\nReference: {reference}.object:key:"
                     f"{key}\n\nHint: Remove the key from your API response, or include it in your OpenAPI docs"
@@ -321,16 +321,22 @@ class SchemaTester:
                     f'"WriteOnly" restriction'
                 )
         for key, value in data.items():
-            if key not in properties and additional_properties_allowed:
-                # Avoid KeyError below
-                continue
-            self.test_schema_section(
-                schema_section=properties[key],
-                data=value,
-                reference=f"{reference}.object:key:{key}",
-                case_tester=case_tester,
-                ignore_case=ignore_case,
-            )
+            if key in properties:
+                self.test_schema_section(
+                    schema_section=properties[key],
+                    data=value,
+                    reference=f"{reference}.object:key:{key}",
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
+            elif isinstance(additional_properties, dict):
+                self.test_schema_section(
+                    schema_section=additional_properties,
+                    data=value,
+                    reference=f"{reference}.object:key:{key}",
+                    case_tester=case_tester,
+                    ignore_case=ignore_case,
+                )
 
     def test_openapi_array(self, schema_section: dict, data: dict, reference: str, **kwargs: Any) -> None:
         for datum in data:
