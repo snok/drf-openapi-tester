@@ -1,12 +1,12 @@
 """ Schema Tester """
+from __future__ import annotations
+
 from itertools import chain
-from typing import Any, Callable, Dict, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Callable, List, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from rest_framework.response import Response
 
-from openapi_tester import type_declarations as td
 from openapi_tester.constants import (
     INIT_ERROR,
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
@@ -37,20 +37,25 @@ from openapi_tester.validators import (
     validate_unique_items,
 )
 
+if TYPE_CHECKING:
+    from typing import Any
+
+    from rest_framework.response import Response
+
 
 class SchemaTester:
     """Schema Tester: this is the base class of the library."""
 
-    loader: Union[StaticSchemaLoader, DrfSpectacularSchemaLoader, DrfYasgSchemaLoader]
-    validators: List[Callable[[dict, Any], Optional[str]]]
+    loader: StaticSchemaLoader | DrfSpectacularSchemaLoader | DrfYasgSchemaLoader
+    validators: list[Callable[[dict, Any], str | None]]
 
     def __init__(
         self,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-        schema_file_path: Optional[str] = None,
-        validators: Optional[List[Callable[[dict, Any], Optional[str]]]] = None,
-        field_key_map: Optional[Dict[str, str]] = None,
+        case_tester: Callable[[str], None] | None = None,
+        ignore_case: list[str] | None = None,
+        schema_file_path: str | None = None,
+        validators: list[Callable[[dict, Any], str | None]] | None = None,
+        field_key_map: dict[str, str] | None = None,
     ) -> None:
         """
         Iterates through an OpenAPI schema object and API response to check that they match at every level.
@@ -86,7 +91,7 @@ class SchemaTester:
             ) from e
 
     @staticmethod
-    def get_status_code(schema: dict, status_code: Union[str, int], error_addon: str = "") -> dict:
+    def get_status_code(schema: dict, status_code: str | int, error_addon: str = "") -> dict:
         """
         Returns the status code section of a schema, handles both str and int status codes
         """
@@ -99,14 +104,14 @@ class SchemaTester:
         )
 
     @staticmethod
-    def get_schema_type(schema: dict) -> Optional[str]:
+    def get_schema_type(schema: dict) -> str | None:
         if "type" in schema:
             return schema["type"]
         if "properties" in schema or "additionalProperties" in schema:
             return "object"
         return None
 
-    def get_response_schema_section(self, response: td.Response) -> Dict[str, Any]:
+    def get_response_schema_section(self, response: Response) -> dict[str, Any]:
         """
         Fetches the response section of a schema, wrt. the route, method, status code, and schema version.
 
@@ -175,7 +180,7 @@ class SchemaTester:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
-        any_of: List[Dict[str, Any]] = schema_section.get("anyOf", [])
+        any_of: list[dict[str, Any]] = schema_section.get("anyOf", [])
         for schema in chain(any_of, lazy_combinations(any_of)):
             try:
                 self.test_schema_section(schema_section=schema, data=data, reference=f"{reference}.anyOf", **kwargs)
@@ -205,8 +210,8 @@ class SchemaTester:
     def test_key_casing(
         self,
         key: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        case_tester: Callable[[str], None] | None = None,
+        ignore_case: list[str] | None = None,
     ) -> None:
         tester = case_tester or getattr(self, "case_tester", None)
         ignore_case = [*self.ignore_case, *(ignore_case or [])]
@@ -218,7 +223,7 @@ class SchemaTester:
         schema_section: dict,
         data: Any,
         reference: str = "init",
-        validators: Optional[List[Callable[[dict, dict], Optional[str]]]] = None,
+        validators: list[Callable[[dict, dict], str | None]] | None = None,
         **kwargs: Any,
     ) -> None:
         """
@@ -280,8 +285,8 @@ class SchemaTester:
         schema_section: dict,
         data: dict,
         reference: str,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
+        case_tester: Callable[[str], None] | None = None,
+        ignore_case: list[str] | None = None,
     ) -> None:
         """
         1. Validate that casing is correct for both response and schema
@@ -294,7 +299,7 @@ class SchemaTester:
         write_only_properties = [key for key in properties.keys() if properties[key].get("writeOnly")]
         required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
         response_keys = data.keys()
-        additional_properties: Optional[Union[bool, dict]] = schema_section.get("additionalProperties")
+        additional_properties: bool | dict | None = schema_section.get("additionalProperties")
         additional_properties_allowed = additional_properties is not None
         if additional_properties_allowed and not isinstance(additional_properties, (bool, dict)):
             raise OpenAPISchemaError("Invalid additionalProperties type")
@@ -350,9 +355,9 @@ class SchemaTester:
     def validate_response(
         self,
         response: Response,
-        case_tester: Optional[Callable[[str], None]] = None,
-        ignore_case: Optional[List[str]] = None,
-        validators: Optional[List[Callable[[dict, Any], Optional[str]]]] = None,
+        case_tester: Callable[[str], None] | None = None,
+        ignore_case: list[str] | None = None,
+        validators: list[Callable[[dict, Any], str | None]] | None = None,
     ):
         """
         Verifies that an OpenAPI schema definition matches an API response.

@@ -1,9 +1,14 @@
 """ Case testers - this module includes helper functions to test key casing """
-from typing import Any, Callable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from inflection import camelize, dasherize, underscore
 
 from openapi_tester.exceptions import CaseError
+
+if TYPE_CHECKING:
+    from typing import Any, Callable
 
 
 def _create_tester(casing: str, handler: Callable[[Any], str]) -> Callable[[str], None]:

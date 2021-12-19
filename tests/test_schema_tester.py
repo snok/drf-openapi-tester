@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import glob
 import os
 from copy import deepcopy
-from typing import Any, Dict, Optional
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 from uuid import UUID, uuid1, uuid4
 
@@ -28,6 +30,9 @@ from openapi_tester.exceptions import CaseError, DocumentationError, Undocumente
 from test_project.models import Names
 from tests import example_object, example_schema_types
 from tests.utils import TEST_ROOT, iterate_schema, mock_schema, response_factory
+
+if TYPE_CHECKING:
+    from typing import Any
 
 tester = SchemaTester()
 name_id = 1234567890
@@ -256,7 +261,7 @@ def test_nullable_validation():
 
 
 def test_write_only_validation():
-    test_schema_section: Dict[str, Any] = {
+    test_schema_section: dict[str, Any] = {
         "type": "object",
         "properties": {
             "test": {
@@ -398,7 +403,7 @@ def test_excess_keys_validation():
 
 
 def test_custom_validators():
-    def uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
+    def uuid_4_validator(schema_section: dict, data: Any) -> str | None:
         schema_format = schema_section.get("format")
         if schema_format == "uuid4":
             result = UUID(data, version=4)
@@ -406,7 +411,7 @@ def test_custom_validators():
                 return f"Expected uuid4, but received {data}"
         return None
 
-    def uuid_1_validator(schema_section: dict, data: Any) -> Optional[str]:  # pragma: no cover
+    def uuid_1_validator(schema_section: dict, data: Any) -> str | None:  # pragma: no cover
         schema_format = schema_section.get("format")
         if schema_format == "uuid1":  #
             try:

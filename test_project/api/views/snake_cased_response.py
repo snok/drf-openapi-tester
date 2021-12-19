@@ -1,11 +1,17 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
 from rest_framework.renderers import JSONRenderer
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..swagger.auto_schemas import get_snake_cased_response
+from test_project.api.swagger.auto_schemas import get_snake_cased_response
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class SnakeCasedResponse(APIView):

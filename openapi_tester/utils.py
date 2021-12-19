@@ -1,12 +1,17 @@
 """ Utils Module - this file contains utility functions used in multiple places """
+from __future__ import annotations
+
 from copy import deepcopy
 from itertools import chain, combinations
-from typing import Any, Dict, Iterator, Sequence
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any, Iterator, Sequence
 
 
-def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
+def merge_objects(dictionaries: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """helper function to deep merge objects"""
-    output: Dict[str, Any] = {}
+    output: dict[str, Any] = {}
     for dictionary in dictionaries:
         for key, value in dictionary.items():
             if key not in output:
@@ -24,7 +29,7 @@ def merge_objects(dictionaries: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
 
 def normalize_schema_section(schema_section: dict) -> dict:
     """helper method to remove allOf and handle edge uses of oneOf"""
-    output: Dict[str, Any] = deepcopy(schema_section)
+    output: dict[str, Any] = deepcopy(schema_section)
     if output.get("allOf"):
         all_of = output.pop("allOf")
         output = {**output, **merge_objects(all_of)}
@@ -40,7 +45,7 @@ def normalize_schema_section(schema_section: dict) -> dict:
     return output
 
 
-def lazy_combinations(options_list: Sequence[Dict[str, Any]]) -> Iterator[dict]:
+def lazy_combinations(options_list: Sequence[dict[str, Any]]) -> Iterator[dict]:
     """helper to lazy evaluate possible permutations of possible combinations"""
     for i in range(2, len(options_list) + 1):
         for combination in combinations(options_list, i):
