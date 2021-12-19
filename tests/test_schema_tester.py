@@ -401,17 +401,14 @@ def test_custom_validators():
     def uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
         schema_format = schema_section.get("format")
         if schema_format == "uuid4":
-            try:
-                result = UUID(data, version=4)
-                if str(result) != str(data):
-                    return f"Expected uuid4, but received {data}"
-            except ValueError:
+            result = UUID(data, version=4)
+            if str(result) != str(data):
                 return f"Expected uuid4, but received {data}"
         return None
 
-    def uuid_1_validator(schema_section: dict, data: Any) -> Optional[str]:
+    def uuid_1_validator(schema_section: dict, data: Any) -> Optional[str]:  # pragma: no cover
         schema_format = schema_section.get("format")
-        if schema_format == "uuid1":
+        if schema_format == "uuid1":  #
             try:
                 result = UUID(data, version=1)
                 if str(result) != str(data):

@@ -1,24 +1,13 @@
-import json
 from contextlib import suppress
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Generator, Optional, Tuple, Union
 
-import yaml
 from rest_framework.response import Response
 
 from tests.schema_converter import SchemaToPythonConverter
 
 TEST_ROOT = Path(__file__).resolve(strict=True).parent
-
-
-def load_schema(file_name: str) -> dict:
-    with open(str(TEST_ROOT) + f"/schemas/{file_name}") as f:
-        content = f.read()
-        if "json" in file_name:
-            return json.loads(content)
-        else:
-            return yaml.load(content, Loader=yaml.FullLoader)
 
 
 def response_factory(schema: dict, url_fragment: str, method: str, status_code: Union[int, str] = 200) -> Response:
@@ -67,7 +56,7 @@ def sort_object(data_object: Any) -> Any:
     if isinstance(data_object, list) and data_object:
         if not all(isinstance(entry, type(data_object[0])) for entry in data_object):
             return data_object
-        if isinstance(data_object[0], (dict, list)):
+        if isinstance(data_object[0], (dict, list)):  # pragma: no cover
             return [sort_object(entry) for entry in data_object]
         return sorted(data_object)
     return data_object
