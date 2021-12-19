@@ -1,18 +1,11 @@
-<a href="https://pypi.org/project/drf-openapi-tester/">
-    <img src="https://img.shields.io/pypi/v/drf-openapi-tester.svg" alt="Package version">
-</a>
-<a href="https://codecov.io/gh/snok/drf-openapi-tester">
-    <img src="https://codecov.io/gh/snok/drf-openapi-tester/branch/master/graph/badge.svg" alt="Code coverage">
-</a>
-<a href="https://pypi.org/project/drf-openapi-tester/">
-    <img src="https://img.shields.io/badge/python-3.6%2B-blue" alt="Supported Python versions">
-</a>
-<a href="https://pypi.python.org/pypi/drf-openapi-tester">
-    <img src="https://img.shields.io/badge/django%20versions-2.2%2B-blue" alt="Supported Django versions">
-</a>
-<a href="http://mypy-lang.org/">
-    <img src="http://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
-</a>
+[![PyPI](https://img.shields.io/pypi/v/drf-openapi-tester.svg)](https://pypi.org/project/drf-openapi-tester/)
+[![Coverage](https://codecov.io/gh/snok/drf-openapi-tester/branch/master/graph/badge.svg)](https://codecov.io/gh/snok/drf-openapi-tester)
+[![Python versions](https://img.shields.io/badge/Python-3.7%2B-blue)](https://pypi.org/project/drf-openapi-tester/)
+[![Django versions](https://img.shields.io/badge/Django-3.0%2B-blue)](https://pypi.org/project/drf-openapi-tester/)
+
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=Goldziher_pydantic-factories&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=Goldziher_pydantic-factories)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=Goldziher_pydantic-factories&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=Goldziher_pydantic-factories)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=Goldziher_pydantic-factories&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Goldziher_pydantic-factories)
 
 # DRF OpenAPI Tester
 
