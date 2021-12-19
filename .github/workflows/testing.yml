@@ -81,11 +81,32 @@ jobs:
       - name: Run tests
         run: |
           source .venv/bin/activate
-          poetry run pytest --cov=openapi_tester --verbose --assert=plain --cov-report=xml
+          poetry run pytest --cov=. --cov-report=xml
           poetry run coverage report
+      - name: Archive coverage
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage-xml
+          path: coverage.xml
+        if: matrix.python-version == '3.10' && matrix.django-version == '3.2'
+  coverage:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get coverage
+        uses: actions/download-artifact@v2
+        with:
+          name: coverage-xml
       - uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
-        if: matrix.python-version == '3.10'
+      - name: Fix coverage file for sonarcloud
+        run: |
+          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\//<source>/g" coverage.xml
+      - uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
