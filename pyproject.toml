@@ -58,7 +58,7 @@ pytest = "*"
 pytest-django = "*"
 pylint = "*"
 coverage = { extras = ["toml"], version = "^6"}
-pytest-cov = "^2"
+pytest-cov = "*"
 
 [tool.black]
 line-length = 120
