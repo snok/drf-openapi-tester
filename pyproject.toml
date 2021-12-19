@@ -58,7 +58,7 @@ pytest = "*"
 pytest-django = "*"
 pylint = "*"
 coverage = { extras = ["toml"], version = "^6"}
-pytest-cov = "^2"
+pytest-cov = "*"
 
 [tool.black]
 line-length = 120
@@ -101,13 +101,20 @@ good-names = "_,e,i"
 
 [tool.coverage.run]
 source = ["openapi_tester/*"]
-omit = ["openapi_tester/type_declarations.py"]
+omit = [
+    "openapi_tester/type_declarations.py",
+    "manage.py",
+    "test_project/*",
+]
 branch = true
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-exclude_lines = ["raise NotImplementedError"]
+exclude_lines = [
+    "raise NotImplementedError",
+    "pragma: no cover",
+]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "test_project.settings"

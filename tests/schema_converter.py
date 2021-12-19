@@ -76,7 +76,7 @@ class SchemaToPythonConverter:
                 minimum += 1 if schema_object.get("exclusiveMinimum") else 0
             if maximum is not None:
                 maximum -= 1 if schema_object.get("exclusiveMaximum") else 0
-            if minimum is not None or maximum is not None:
+            if minimum is not None or maximum is not None:  # pragma: no cover
                 minimum = minimum or 0
                 maximum = maximum or minimum * 2
                 if schema_type == "integer":
