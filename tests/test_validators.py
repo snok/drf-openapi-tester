@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 import base64
-from typing import Any, Dict, Tuple
+from typing import TYPE_CHECKING
 
 import pytest
 from faker import Faker
@@ -30,10 +32,13 @@ from tests import (
     example_schema_types,
 )
 
+if TYPE_CHECKING:
+    from typing import Any
+
 tester = SchemaTester()
 faker = Faker()
 
-TEST_DATA_MAP: Dict[str, Tuple[Any, Any]] = {
+TEST_DATA_MAP: dict[str, tuple[Any, Any]] = {
     # by type
     "string": (faker.pystr(), faker.pyint()),
     "file": (faker.pystr(), faker.pyint()),

@@ -1,9 +1,14 @@
 """ Schema to Python converter """
+from __future__ import annotations
+
 import base64
 import random
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Any
 
 from faker import Faker
 
@@ -23,7 +28,7 @@ class SchemaToPythonConverter:
         self.faker = Faker()
         self.result = self.convert_schema(deepcopy(schema))
 
-    def convert_schema(self, schema: Dict[str, Any]) -> Any:
+    def convert_schema(self, schema: dict[str, Any]) -> Any:
         schema_type = schema.get("type", "object")
         schema = normalize_schema_section(schema)
         if "oneOf" in schema:
@@ -40,7 +45,7 @@ class SchemaToPythonConverter:
             return self.convert_schema_object_to_dict(schema)
         return self.schema_type_to_mock_value(schema)
 
-    def schema_type_to_mock_value(self, schema_object: Dict[str, Any]) -> Any:
+    def schema_type_to_mock_value(self, schema_object: dict[str, Any]) -> Any:
         faker_handler_map = {
             # by type
             "array": self.faker.pylist,
@@ -66,9 +71,9 @@ class SchemaToPythonConverter:
         }
         schema_format: str = schema_object.get("format", "")
         schema_type: str = schema_object.get("type", "")
-        minimum: Optional[Union[int, float]] = schema_object.get("minimum")
-        maximum: Optional[Union[int, float]] = schema_object.get("maximum")
-        enum: Optional[list] = schema_object.get("enum")
+        minimum: int | float | None = schema_object.get("minimum")
+        maximum: int | float | None = schema_object.get("maximum")
+        enum: list | None = schema_object.get("enum")
         if enum:
             return random.sample(enum, 1)[0]
         if schema_type in ["integer", "number"] and (minimum is not None or maximum is not None):
@@ -88,15 +93,15 @@ class SchemaToPythonConverter:
             else faker_handler_map[schema_type]()
         )
 
-    def convert_schema_object_to_dict(self, schema_object: dict) -> Dict[str, Any]:
+    def convert_schema_object_to_dict(self, schema_object: dict) -> dict[str, Any]:
         properties = schema_object.get("properties", {})
-        parsed_schema: Dict[str, Any] = {}
+        parsed_schema: dict[str, Any] = {}
         for key, value in properties.items():
             parsed_schema[key] = self.convert_schema(value)
         return parsed_schema
 
-    def convert_schema_array_to_list(self, schema_array: Any) -> List[Any]:
-        parsed_items: List[Any] = []
+    def convert_schema_array_to_list(self, schema_array: Any) -> list[Any]:
+        parsed_items: list[Any] = []
         items = self.convert_schema(schema_array.get("items", {}))
         min_items = schema_array.get("minItems", 1)
         max_items = schema_array.get("maxItems", 1)

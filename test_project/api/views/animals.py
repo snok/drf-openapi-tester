@@ -1,11 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_204_NO_CONTENT
 from rest_framework.views import APIView
 
 from test_project.api.swagger.auto_schemas import animals_auto_schema
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class Animals(APIView):

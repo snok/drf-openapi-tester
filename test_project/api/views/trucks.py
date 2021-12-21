@@ -1,10 +1,16 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from drf_spectacular.utils import extend_schema
-from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from ..serializers import CarSerializer
-from ..swagger.auto_schemas import get_other_trucks_auto_schema, get_trucks_auto_schema
+from test_project.api.serializers import CarSerializer
+from test_project.api.swagger.auto_schemas import get_other_trucks_auto_schema, get_trucks_auto_schema
+
+if TYPE_CHECKING:
+    from rest_framework.request import Request
 
 
 class GoodTrucks(APIView):

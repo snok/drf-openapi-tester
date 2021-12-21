@@ -1,7 +1,9 @@
 """ Schema Validators """
+from __future__ import annotations
+
 import base64
 import re
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING
 from uuid import UUID
 
 from django.core.exceptions import ValidationError
@@ -27,6 +29,9 @@ from openapi_tester.constants import (
 )
 from openapi_tester.exceptions import OpenAPISchemaError
 
+if TYPE_CHECKING:
+    from typing import Any, Callable
+
 
 def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable:
     def wrapped(value: Any):
@@ -44,7 +49,7 @@ number_format_validator = create_validator(
 
 base64_format_validator = create_validator(lambda x: base64.b64encode(base64.b64decode(x, validate=True)) == x)
 
-VALIDATOR_MAP: Dict[str, Callable] = {
+VALIDATOR_MAP: dict[str, Callable] = {
     # by type
     "string": create_validator(lambda x: isinstance(x, str), True),
     "file": create_validator(lambda x: isinstance(x, str), True),
@@ -70,7 +75,7 @@ VALIDATOR_MAP: Dict[str, Callable] = {
 }
 
 
-def validate_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_type(schema_section: dict[str, Any], data: Any) -> str | None:
     schema_type: str = schema_section.get("type", "object")
     if not VALIDATOR_MAP[schema_type](data):
         an_articles = ["integer", "object", "array"]
@@ -82,7 +87,7 @@ def validate_type(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     return None
 
 
-def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_format(schema_section: dict[str, Any], data: Any) -> str | None:
     schema_format: str = schema_section.get("format", "")
     if schema_format in VALIDATOR_MAP and not VALIDATOR_MAP[schema_format](data):
         return VALIDATE_FORMAT_ERROR.format(
@@ -93,14 +98,14 @@ def validate_format(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
     return None
 
 
-def validate_enum(schema_section: Dict[str, Any], data: Any) -> Optional[str]:
+def validate_enum(schema_section: dict[str, Any], data: Any) -> str | None:
     enum = schema_section.get("enum")
     if enum and data not in enum:
         return VALIDATE_ENUM_ERROR.format(enum=schema_section["enum"], received=f'"{data}"')
     return None
 
 
-def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]:
+def validate_pattern(schema_section: dict[str, Any], data: str) -> str | None:
     pattern = schema_section.get("pattern")
     if not pattern:
         return None
@@ -113,14 +118,14 @@ def validate_pattern(schema_section: Dict[str, Any], data: str) -> Optional[str]
     return None
 
 
-def validate_multiple_of(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
+def validate_multiple_of(schema_section: dict[str, Any], data: int | float) -> str | None:
     multiple = schema_section.get("multipleOf")
     if multiple and data % multiple != 0:
         return VALIDATE_MULTIPLE_OF_ERROR.format(data=data, multiple=multiple)
     return None
 
 
-def validate_maximum(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
+def validate_maximum(schema_section: dict[str, Any], data: int | float) -> str | None:
     maximum = schema_section.get("maximum")
     exclusive_maximum = schema_section.get("exclusiveMaximum")
     if maximum and exclusive_maximum and data >= maximum:
@@ -130,7 +135,7 @@ def validate_maximum(schema_section: Dict[str, Any], data: Union[int, float]) ->
     return None
 
 
-def validate_minimum(schema_section: Dict[str, Any], data: Union[int, float]) -> Optional[str]:
+def validate_minimum(schema_section: dict[str, Any], data: int | float) -> str | None:
     minimum = schema_section.get("minimum")
     exclusive_minimum = schema_section.get("exclusiveMinimum")
     if minimum and exclusive_minimum and data <= minimum:
@@ -140,7 +145,7 @@ def validate_minimum(schema_section: Dict[str, Any], data: Union[int, float]) ->
     return None
 
 
-def validate_unique_items(schema_section: Dict[str, Any], data: List[Any]) -> Optional[str]:
+def validate_unique_items(schema_section: dict[str, Any], data: list[Any]) -> str | None:
     unique_items = schema_section.get("uniqueItems")
     if unique_items and len(set(data)) != len(data):
         return VALIDATE_UNIQUE_ITEMS_ERROR.format(data=data)
@@ -148,43 +153,43 @@ def validate_unique_items(schema_section: Dict[str, Any], data: List[Any]) -> Op
     return None
 
 
-def validate_min_length(schema_section: Dict[str, Any], data: str) -> Optional[str]:
-    min_length: Optional[int] = schema_section.get("minLength")
+def validate_min_length(schema_section: dict[str, Any], data: str) -> str | None:
+    min_length: int | None = schema_section.get("minLength")
     if min_length and len(data) < min_length:
         return VALIDATE_MIN_LENGTH_ERROR.format(data=data, min_length=min_length)
     return None
 
 
-def validate_max_length(schema_section: Dict[str, Any], data: str) -> Optional[str]:
-    max_length: Optional[int] = schema_section.get("maxLength")
+def validate_max_length(schema_section: dict[str, Any], data: str) -> str | None:
+    max_length: int | None = schema_section.get("maxLength")
     if max_length and len(data) > max_length:
         return VALIDATE_MAX_LENGTH_ERROR.format(data=data, max_length=max_length)
     return None
 
 
-def validate_min_items(schema_section: Dict[str, Any], data: list) -> Optional[str]:
-    min_length: Optional[int] = schema_section.get("minItems")
+def validate_min_items(schema_section: dict[str, Any], data: list) -> str | None:
+    min_length: int | None = schema_section.get("minItems")
     if min_length and len(data) < min_length:
         return VALIDATE_MIN_ARRAY_LENGTH_ERROR.format(data=data, min_length=min_length)
     return None
 
 
-def validate_max_items(schema_section: Dict[str, Any], data: list) -> Optional[str]:
-    max_length: Optional[int] = schema_section.get("maxItems")
+def validate_max_items(schema_section: dict[str, Any], data: list) -> str | None:
+    max_length: int | None = schema_section.get("maxItems")
     if max_length and len(data) > max_length:
         return VALIDATE_MAX_ARRAY_LENGTH_ERROR.format(data=data, max_length=max_length)
     return None
 
 
-def validate_min_properties(schema_section: Dict[str, Any], data: dict) -> Optional[str]:
-    min_properties: Optional[int] = schema_section.get("minProperties")
+def validate_min_properties(schema_section: dict[str, Any], data: dict) -> str | None:
+    min_properties: int | None = schema_section.get("minProperties")
     if min_properties and len(data.keys()) < int(min_properties):
         return VALIDATE_MINIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, min_length=min_properties)
     return None
 
 
-def validate_max_properties(schema_section: Dict[str, Any], data: dict) -> Optional[str]:
-    max_properties: Optional[int] = schema_section.get("maxProperties")
+def validate_max_properties(schema_section: dict[str, Any], data: dict) -> str | None:
+    max_properties: int | None = schema_section.get("maxProperties")
     if max_properties and len(data.keys()) > int(max_properties):
         return VALIDATE_MAXIMUM_NUMBER_OF_PROPERTIES_ERROR.format(data=data, max_length=max_properties)
     return None

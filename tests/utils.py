@@ -1,16 +1,21 @@
+from __future__ import annotations
+
 from contextlib import suppress
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Generator, Optional, Tuple, Union
+from typing import TYPE_CHECKING
 
 from rest_framework.response import Response
 
 from tests.schema_converter import SchemaToPythonConverter
 
+if TYPE_CHECKING:
+    from typing import Any, Callable, Generator
+
 TEST_ROOT = Path(__file__).resolve(strict=True).parent
 
 
-def response_factory(schema: dict, url_fragment: str, method: str, status_code: Union[int, str] = 200) -> Response:
+def response_factory(schema: dict, url_fragment: str, method: str, status_code: int | str = 200) -> Response:
     converted_schema = SchemaToPythonConverter(deepcopy(schema)).result
     response = Response(status=int(status_code), data=converted_schema)
     response.request = {"REQUEST_METHOD": method, "PATH_INFO": url_fragment}
@@ -18,7 +23,7 @@ def response_factory(schema: dict, url_fragment: str, method: str, status_code: 
     return response
 
 
-def iterate_schema(schema: dict) -> Generator[Tuple[Optional[dict], Optional[Response], str], None, None]:
+def iterate_schema(schema: dict) -> Generator[tuple[dict | None, Response | None, str], None, None]:
     for url_fragment, path_object in schema["paths"].items():
         for method, method_object in path_object.items():
             if method.lower() != "parameters":

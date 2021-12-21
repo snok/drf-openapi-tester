@@ -113,6 +113,7 @@ skip_covered = true
 exclude_lines = [
     "raise NotImplementedError",
     "pragma: no cover",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.pytest.ini_options]
