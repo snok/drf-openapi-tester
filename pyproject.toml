@@ -27,6 +27,7 @@ classifiers = [
     'Framework :: Django :: 3.0',
     'Framework :: Django :: 3.1',
     'Framework :: Django :: 3.2',
+    'Framework :: Django :: 4.0',
     "Topic :: Software Development",
     "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Application Frameworks",
@@ -43,9 +44,12 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.6.1,<4.0.0"
+python = "^3.7"
+django = [
+    { version = '^3', python = '<=3.7' },
+    { version = '^3 || ^4', python = '>=3.8' },
+]
 djangorestframework = "*"
-django = "^2.2 || ^3.0"
 inflection = "*"
 openapi-spec-validator = "*"
 prance = "*"

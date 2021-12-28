@@ -183,7 +183,7 @@ class SchemaTester:
             # date formats successfully, so a oneOf: date // datetime section
             # will succeed twice where it used to succeed once.
             return
-        elif matches != 1:
+        if matches != 1:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
     def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
