@@ -18,7 +18,7 @@ from rest_framework.settings import api_settings
 from rest_framework.views import APIView
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Any, Callable
     from urllib.parse import ParseResult
 
     from django.urls import ResolverMatch
@@ -74,7 +74,7 @@ class BaseSchemaLoader:
         return self.get_schema()
 
     def de_reference_schema(self, schema: dict) -> dict:
-        url = schema["basePath"] if "basePath" in schema else self.base_path
+        url = schema.get("basePath", self.base_path)
         recursion_handler = handle_recursion_limit(schema)
         resolver = RefResolver(
             schema,
@@ -138,7 +138,7 @@ class BaseSchemaLoader:
                 for key, value in reversed(list(resolved_route.kwargs.items())):
                     index = path.rfind(str(value))
                     path = f"{path[:index]}{{{key}}}{path[index + len(str(value)):]}"
-                if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:
+                if "{pk}" in path and api_settings.SCHEMA_COERCE_PATH_PK:  # noqa: FS003
                     path, resolved_route = self.handle_pk_parameter(
                         resolved_route=resolved_route, path=path, method=method
                     )
@@ -182,7 +182,7 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         Loads generated schema from drf-yasg and returns it as a dict.
         """
         odict_schema = self.schema_generator.get_schema(None, True)
-        return loads(dumps(odict_schema.as_odict()))
+        return cast(dict, loads(dumps(odict_schema.as_odict())))
 
     def resolve_path(self, endpoint_path: str, method: str) -> tuple[str, ResolverMatch]:
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
@@ -206,7 +206,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         """
         Loads generated schema from drf_spectacular and returns it as a dict.
         """
-        return loads(dumps(self.schema_generator.get_schema(public=True)))
+        return cast(dict, loads(dumps(self.schema_generator.get_schema(public=True))))
 
     def resolve_path(self, endpoint_path: str, method: str) -> tuple[str, ResolverMatch]:
         from drf_spectacular.settings import spectacular_settings
@@ -227,7 +227,7 @@ class StaticSchemaLoader(BaseSchemaLoader):
         super().__init__(field_key_map=field_key_map)
         self.path = path if not isinstance(path, pathlib.PosixPath) else str(path)
 
-    def load_schema(self) -> dict:
+    def load_schema(self) -> dict[str, Any]:
         """
         Loads a static OpenAPI schema from file, and parses it to a python dict.
 
@@ -236,4 +236,6 @@ class StaticSchemaLoader(BaseSchemaLoader):
         """
         with open(self.path, encoding="utf-8") as file:
             content = file.read()
-            return json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
+            return cast(
+                dict, json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
+            )
