@@ -1,4 +1,6 @@
-""" Utils Module - this file contains utility functions used in multiple places """
+"""
+Utils Module - this file contains utility functions used in multiple places.
+"""
 from __future__ import annotations
 
 from copy import deepcopy
@@ -10,7 +12,9 @@ if TYPE_CHECKING:
 
 
 def merge_objects(dictionaries: Sequence[dict[str, Any]]) -> dict[str, Any]:
-    """helper function to deep merge objects"""
+    """
+    Deeply merge objects.
+    """
     output: dict[str, Any] = {}
     for dictionary in dictionaries:
         for key, value in dictionary.items():
@@ -27,8 +31,10 @@ def merge_objects(dictionaries: Sequence[dict[str, Any]]) -> dict[str, Any]:
     return output
 
 
-def normalize_schema_section(schema_section: dict) -> dict:
-    """helper method to remove allOf and handle edge uses of oneOf"""
+def normalize_schema_section(schema_section: dict[str, Any]) -> dict[str, Any]:
+    """
+    Remove allOf and handle edge uses of oneOf.
+    """
     output: dict[str, Any] = deepcopy(schema_section)
     if output.get("allOf"):
         all_of = output.pop("allOf")
@@ -46,7 +52,9 @@ def normalize_schema_section(schema_section: dict) -> dict:
 
 
 def lazy_combinations(options_list: Sequence[dict[str, Any]]) -> Iterator[dict]:
-    """helper to lazy evaluate possible permutations of possible combinations"""
+    """
+    Lazily evaluate possible combinations.
+    """
     for i in range(2, len(options_list) + 1):
         for combination in combinations(options_list, i):
             yield merge_objects(combination)
