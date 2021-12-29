@@ -64,7 +64,6 @@ Faker = "*"
 pre-commit = "*"
 pylint = "*"
 pytest = "*"
-pytest-cov = "*"
 pytest-django = "*"
 
 [build-system]

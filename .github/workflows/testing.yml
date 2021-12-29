@@ -73,7 +73,9 @@ jobs:
           pip install "Django==${{ matrix.django-version }}"
       - run: |
           source .venv/bin/activate
-          pytest --cov=. --cov-report xml --cov-report term-missing
+          coverage run -m pytest
+          coverage xml
+          coverage report
       - uses: actions/upload-artifact@v2
         with:
           name: coverage-xml
