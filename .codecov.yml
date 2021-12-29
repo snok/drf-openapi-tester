@@ -1,7 +1,7 @@
 # Docs: https://docs.codecov.io/docs/codecovyml-reference
 
 codecov:
-  require_ci_to_pass: yes
+  require_ci_to_pass: true
 
 coverage:
   precision: 1
@@ -10,9 +10,9 @@ coverage:
     project:
       default:
         target: auto
-    patch: no
-    changes: no
+    patch: false
+    changes: false
 
 comment:
   layout: "diff,files"
-  require_changes: yes
+  require_changes: true
