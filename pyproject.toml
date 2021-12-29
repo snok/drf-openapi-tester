@@ -102,7 +102,10 @@ max-locals = 20
 good-names = "_,e,i"
 
 [tool.coverage.run]
-source = ["openapi_tester"]
+source = [
+    "openapi_tester",
+    "tests",
+]
 omit = [
     "manage.py",
     "test_project/*",
