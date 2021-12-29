@@ -20,8 +20,7 @@ jobs:
           path: .venv
           key: venv-0  # increment to reset
       - run: |
-          pip install virtualenv
-          virtualenv .venv
+          python -m venv .venv --upgrade-deps
           source .venv/bin/activate
           pip install pre-commit
         if: steps.cache-venv.outputs.cache-hit != 'true'
@@ -29,7 +28,7 @@ jobs:
         id: pre-commit-cache
         with:
           path: ~/.cache/pre-commit
-          key: key-0
+          key: key-0  # increment to reset
       - run: |
           source .venv/bin/activate
           pre-commit run --all-files
@@ -55,8 +54,7 @@ jobs:
         with:
           path: ~/.local
           key: key-3
-      - name: Install poetry
-        uses: snok/install-poetry@v1
+      - uses: snok/install-poetry@v1
         with:
           virtualenvs-create: false
       - uses: actions/cache@v2
@@ -65,33 +63,31 @@ jobs:
           path: .venv
           key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-2
       - run: |
-          pip install virtualenv
-          virtualenv .venv
+          python -m venv .venv
           source .venv/bin/activate
-          pip install pip setuptools wheel -U
+          pip install wheel setuptools pip -U
           poetry install --no-interaction --no-root
         if: steps.cache-venv.outputs.cache-hit != 'true'
-      - name: Install django version
-        run: |
+      - run: |
           source .venv/bin/activate
           pip install "Django==${{ matrix.django-version }}"
-      - name: Run tests
-        run: |
+      - run: |
           source .venv/bin/activate
-          pytest --cov=. --cov-report xml --cov-report term-missing
-      - name: Archive coverage
-        uses: actions/upload-artifact@v2
+          coverage run -m pytest
+          coverage xml
+          coverage report
+      - uses: actions/upload-artifact@v2
         with:
           name: coverage-xml
           path: coverage.xml
         if: matrix.python-version == '3.10' && matrix.django-version == '4.0'
+
   coverage:
     needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Get coverage
-        uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v2
         with:
           name: coverage-xml
       - uses: codecov/codecov-action@v2
@@ -101,7 +97,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Fix coverage file for sonarcloud
         run: |
-          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\//<source>/g" coverage.xml
+          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\/drf-openapi-tester\//<source>/g" coverage.xml
+          cat coverage.xml
       - uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
