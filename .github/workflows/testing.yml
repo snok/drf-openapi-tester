@@ -97,7 +97,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
       - name: Fix coverage file for sonarcloud
         run: |
-          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\//<source>/g" coverage.xml
+          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\/drf-openapi-tester\//<source>/g" coverage.xml
+          cat coverage.xml
       - uses: sonarsource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

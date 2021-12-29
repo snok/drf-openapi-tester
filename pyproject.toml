@@ -104,7 +104,6 @@ good-names = "_,e,i"
 [tool.coverage.run]
 source = [
     "openapi_tester",
-    "tests",
 ]
 omit = [
     "manage.py",
