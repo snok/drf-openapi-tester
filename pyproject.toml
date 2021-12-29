@@ -63,7 +63,7 @@ pre-commit = "*"
 pytest = "*"
 pytest-django = "*"
 pylint = "*"
-coverage = { extras = ["toml"], version = "^6"}
+coverage = { extras = ["toml"], version = "6.1"}
 pytest-cov = "*"
 
 [tool.black]
