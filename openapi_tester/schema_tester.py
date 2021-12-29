@@ -170,12 +170,19 @@ class SchemaTester:
 
     def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
         matches = 0
+        passed_schema_section_formats = set()
         for option in schema_section["oneOf"]:
             try:
                 self.test_schema_section(schema_section=option, data=data, reference=f"{reference}.oneOf", **kwargs)
                 matches += 1
+                passed_schema_section_formats.add(option.get("format"))
             except DocumentationError:
                 continue
+        if matches == 2 and passed_schema_section_formats == {"date", "date-time"}:
+            # With Django v4, the datetime validator now parses normal
+            # date formats successfully, so a oneOf: date // datetime section
+            # will succeed twice where it used to succeed once.
+            return
         if matches != 1:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 

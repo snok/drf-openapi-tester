@@ -40,7 +40,11 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.8" , "3.9", "3.10" ]
-        django-version: [ "2.2", "3.0", "3.1", "3.2" ]
+        django-version: [ "3.0", "3.1", "3.2", "4.0" ]
+        exclude:
+          # Django v4 drops Python 3.6, and 3.7 support
+          - django-version: 4.0
+            python-version: 3.7
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
@@ -50,17 +54,16 @@ jobs:
         id: poetry-cache
         with:
           path: ~/.local
-          key: key-1
+          key: key-3
       - name: Install poetry
         uses: snok/install-poetry@v1
         with:
-          version: 1.2.0a2
           virtualenvs-create: false
       - uses: actions/cache@v2
         id: cache-venv
         with:
           path: .venv
-          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-1
+          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-2
       - run: |
           pip install virtualenv
           virtualenv .venv
@@ -72,23 +75,16 @@ jobs:
         run: |
           source .venv/bin/activate
           pip install "Django==${{ matrix.django-version }}"
-      - run: |
-          source .venv/bin/activate
-          pip install coverage[toml]
-      - name: Install DRF 3.11 on Django 2.2
-        if: matrix.django-version == '2.2'
-        run: pip install "djangorestframework==3.11.1"
       - name: Run tests
         run: |
           source .venv/bin/activate
-          poetry run pytest --cov=. --cov-report=xml
-          poetry run coverage report
+          pytest --cov=. --cov-report xml --cov-report term-missing
       - name: Archive coverage
         uses: actions/upload-artifact@v2
         with:
           name: coverage-xml
           path: coverage.xml
-        if: matrix.python-version == '3.10' && matrix.django-version == '3.2'
+        if: matrix.python-version == '3.10' && matrix.django-version == '4.0'
   coverage:
     needs: test
     runs-on: ubuntu-latest
