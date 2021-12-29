@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from itertools import chain
-from typing import TYPE_CHECKING, Callable, List, cast
+from typing import TYPE_CHECKING, Any, Callable, List, Optional, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -38,7 +38,6 @@ from openapi_tester.validators import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any
 
     from rest_framework.response import Response
 
@@ -79,7 +78,7 @@ class SchemaTester:
             raise ImproperlyConfigured(INIT_ERROR)
 
     @staticmethod
-    def get_key_value(schema: dict, key: str, error_addon: str = "") -> dict:
+    def get_key_value(schema: dict[str, dict], key: str, error_addon: str = "") -> dict:
         """
         Returns the value of a given key
         """
@@ -91,7 +90,7 @@ class SchemaTester:
             ) from e
 
     @staticmethod
-    def get_status_code(schema: dict, status_code: str | int, error_addon: str = "") -> dict:
+    def get_status_code(schema: dict[str | int, dict], status_code: str | int, error_addon: str = "") -> dict:
         """
         Returns the status code section of a schema, handles both str and int status codes
         """
@@ -104,7 +103,7 @@ class SchemaTester:
         )
 
     @staticmethod
-    def get_schema_type(schema: dict) -> str | None:
+    def get_schema_type(schema: dict[str, str]) -> str | None:
         if "type" in schema:
             return schema["type"]
         if "properties" in schema or "additionalProperties" in schema:
@@ -132,14 +131,16 @@ class SchemaTester:
         method_object = self.get_key_value(
             route_object,
             response_method,
-            f"\n\nUndocumented method: {response_method}.\n\nDocumented methods: {[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}.",
+            f"\n\nUndocumented method: {response_method}.\n\nDocumented methods: "
+            f"{[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}.",
         )
 
         responses_object = self.get_key_value(method_object, "responses")
         status_code_object = self.get_status_code(
             responses_object,
             response.status_code,
-            f"\n\nUndocumented status code: {response.status_code}.\n\nDocumented status codes: {list(responses_object.keys())}. ",
+            f"\n\nUndocumented status code: {response.status_code}.\n\n"
+            f"Documented status codes: {list(responses_object.keys())}. ",
         )
 
         if "openapi" not in schema:  # pylint: disable=E1135
@@ -155,7 +156,8 @@ class SchemaTester:
             json_object = self.get_key_value(
                 content_object,
                 "application/json",
-                f"\n\nNo `application/json` responses documented for method: {response_method}, path: {parameterized_path}",
+                f"\n\nNo `application/json` responses documented for method: "
+                f"{response_method}, path: {parameterized_path}",
             )
             return self.get_key_value(json_object, "schema")
 
@@ -163,12 +165,13 @@ class SchemaTester:
             raise UndocumentedSchemaSectionError(
                 UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
                     key="content",
-                    error_addon=f"\n\nNo `content` defined for this response: {response_method}, path: {parameterized_path}",
+                    error_addon=f"\n\nNo `content` defined for this response: "
+                    f"{response_method}, path: {parameterized_path}",
                 )
             )
         return {}
 
-    def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
+    def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any) -> None:
         matches = 0
         passed_schema_section_formats = set()
         for option in schema_section["oneOf"]:
@@ -186,7 +189,7 @@ class SchemaTester:
         if matches != 1:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
-    def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any):
+    def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any) -> None:
         any_of: list[dict[str, Any]] = schema_section.get("anyOf", [])
         for schema in chain(any_of, lazy_combinations(any_of)):
             try:
@@ -257,7 +260,7 @@ class SchemaTester:
         if not schema_section_type:
             return
         combined_validators = cast(
-            List[Callable],
+            List[Callable[[dict, Any], Optional[str]]],
             [
                 validate_type,
                 validate_format,
@@ -349,7 +352,7 @@ class SchemaTester:
                     ignore_case=ignore_case,
                 )
 
-    def test_openapi_array(self, schema_section: dict, data: dict, reference: str, **kwargs: Any) -> None:
+    def test_openapi_array(self, schema_section: dict[str, Any], data: dict, reference: str, **kwargs: Any) -> None:
         for datum in data:
             self.test_schema_section(
                 # the items keyword is required in arrays
@@ -364,8 +367,8 @@ class SchemaTester:
         response: Response,
         case_tester: Callable[[str], None] | None = None,
         ignore_case: list[str] | None = None,
-        validators: list[Callable[[dict, Any], str | None]] | None = None,
-    ):
+        validators: list[Callable[[dict[str, Any], Any], str | None]] | None = None,
+    ) -> None:
         """
         Verifies that an OpenAPI schema definition matches an API response.
 

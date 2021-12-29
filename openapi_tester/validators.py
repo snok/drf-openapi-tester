@@ -33,8 +33,8 @@ if TYPE_CHECKING:
     from typing import Any, Callable
 
 
-def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable:
-    def wrapped(value: Any):
+def create_validator(validation_fn: Callable, wrap_as_validator: bool = False) -> Callable[[Any], bool]:
+    def wrapped(value: Any) -> bool:
         try:
             return bool(validation_fn(value)) or not wrap_as_validator
         except (ValueError, ValidationError):

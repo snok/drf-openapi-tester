@@ -201,7 +201,8 @@ def test_validate_response_failure_scenario_undocumented_content(client, monkeyp
     response = client.get(de_parameterized_path)
     with pytest.raises(
         UndocumentedSchemaSectionError,
-        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `content`. \n\nNo `content` defined for this response: {method}, path: {parameterized_path}",
+        match=f"Error: Unsuccessfully tried to index the OpenAPI schema by `content`. \n\n"
+        f"No `content` defined for this response: {method}, path: {parameterized_path}",
     ):
         tester.validate_response(response)
 
