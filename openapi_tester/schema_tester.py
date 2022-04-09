@@ -156,7 +156,7 @@ class SchemaTester:
             json_object = self.get_key_value(
                 content_object,
                 "application/json",
-                f"\n\nNo `application/json` responses documented for method: "
+                "\n\nNo `application/json` responses documented for method: "
                 f"{response_method}, path: {parameterized_path}",
             )
             return self.get_key_value(json_object, "schema")
@@ -165,8 +165,9 @@ class SchemaTester:
             raise UndocumentedSchemaSectionError(
                 UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
                     key="content",
-                    error_addon=f"\n\nNo `content` defined for this response: "
-                    f"{response_method}, path: {parameterized_path}",
+                    error_addon=(
+                        f"\n\nNo `content` defined for this response: {response_method}, path: {parameterized_path}"
+                    ),
                 )
             )
         return {}
@@ -246,7 +247,7 @@ class SchemaTester:
             raise DocumentationError(
                 f"{VALIDATE_NONE_ERROR}\n\n"
                 f"Reference: {reference}\n\n"
-                f"Hint: Return a valid type, or document the value as nullable"
+                "Hint: Return a valid type, or document the value as nullable"
             )
         schema_section = normalize_schema_section(schema_section)
         if "oneOf" in schema_section:
@@ -319,7 +320,7 @@ class SchemaTester:
                 raise DocumentationError(
                     f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}."
                     f"object:key:{key}\n\nHint: Remove the key from your"
-                    f" OpenAPI docs, or include it in your API response"
+                    " OpenAPI docs, or include it in your API response"
                 )
         for key in response_keys:
             self.test_key_casing(key, case_tester, ignore_case)
@@ -332,7 +333,7 @@ class SchemaTester:
                 raise DocumentationError(
                     f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}"
                     f".object:key:{key}\n\nHint: Remove the key from your API response, or remove the "
-                    f'"WriteOnly" restriction'
+                    '"WriteOnly" restriction'
                 )
         for key, value in data.items():
             if key in properties:

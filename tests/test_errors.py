@@ -36,7 +36,8 @@ class TestValidatorErrors:
     def test_validate_max_properties_error(self):
         message = validate_max_properties({"maxProperties": 1}, {"one": 1, "two": 2})
         assert (
-            message == "The number of properties in {'one': 1, 'two': 2} exceeds the"
+            message
+            == "The number of properties in {'one': 1, 'two': 2} exceeds the"
             " specified maximum number of properties of 1"
         )
 
@@ -111,7 +112,7 @@ class TestValidatorErrors:
             ({"format": "uri"}, "not uri"),
             ({"format": "url"}, "not url"),
         ]
-        for (schema, data) in d:
+        for schema, data in d:
             message = validate_format(schema, data)
             assert message == f'''Expected: a "{schema['format']}" formatted value\n\nReceived: "{data}"'''
 
@@ -212,7 +213,7 @@ def test_any_of_error():
 
 def test_one_of_error():
     expected_error_message = (
-        "Expected data to match one and only one of the oneOf schema types; found 0 matches\n\n" "Reference: init.oneOf"
+        "Expected data to match one and only one of the oneOf schema types; found 0 matches\n\nReference: init.oneOf"
     )
     tester = SchemaTester()
     with pytest.raises(DocumentationError, match=expected_error_message):
