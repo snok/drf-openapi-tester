@@ -35,7 +35,7 @@ def iterate_schema(schema: dict) -> Generator[tuple[dict | None, Response | None
                     with suppress(KeyError):
                         if "content" in responses_object:
                             schema_section = responses_object["content"]["application/json"]["schema"]
-                        elif "schema" in responses_object:
+                        elif "schema" in responses_object:  # noqa: SIM908
                             schema_section = responses_object["schema"]
                     if schema_section:
                         response = response_factory(
