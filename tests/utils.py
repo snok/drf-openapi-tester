@@ -15,11 +15,14 @@ if TYPE_CHECKING:
 TEST_ROOT = Path(__file__).resolve(strict=True).parent
 
 
-def response_factory(schema: dict, url_fragment: str, method: str, status_code: int | str = 200) -> Response:
-    converted_schema = SchemaToPythonConverter(deepcopy(schema)).result
+def response_factory(schema: dict | None, url_fragment: str, method: str, status_code: int | str = 200) -> Response:
+    converted_schema = None
+    if schema:
+        converted_schema = SchemaToPythonConverter(deepcopy(schema)).result
     response = Response(status=int(status_code), data=converted_schema)
     response.request = {"REQUEST_METHOD": method, "PATH_INFO": url_fragment}
-    response.json = lambda: converted_schema  # type: ignore
+    if schema:
+        response.json = lambda: converted_schema  # type: ignore
     return response
 
 

@@ -161,7 +161,7 @@ class SchemaTester:
             )
             return self.get_key_value(json_object, "schema")
 
-        if response.json():
+        if response.data and response.json():
             raise UndocumentedSchemaSectionError(
                 UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
                     key="content",
@@ -383,7 +383,7 @@ class SchemaTester:
         response_schema = self.get_response_schema_section(response)
         self.test_schema_section(
             schema_section=response_schema,
-            data=response.json(),
+            data=response.json() if response.data else {},
             case_tester=case_tester or self.case_tester,
             ignore_case=ignore_case,
             validators=validators,

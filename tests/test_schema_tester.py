@@ -215,11 +215,12 @@ def test_validate_response_global_case_tester(client):
         SchemaTester(case_tester=is_pascal_case).validate_response(response=response)
 
 
-def test_validate_response_empty_content(client, monkeypatch):
+@pytest.mark.parametrize("empty_schema", [None, {}])
+def test_validate_response_empty_content(empty_schema, client, monkeypatch):
     schema = deepcopy(tester.loader.get_schema())
     del schema["paths"][parameterized_path][method]["responses"][status]["content"]
     monkeypatch.setattr(tester.loader, "get_schema", mock_schema(schema))
-    response = response_factory({}, de_parameterized_path, method, status)
+    response = response_factory(empty_schema, de_parameterized_path, method, status)
     tester.validate_response(response)
 
 
