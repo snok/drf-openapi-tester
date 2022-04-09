@@ -95,11 +95,3 @@ jobs:
           file: ./coverage.xml
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
-      - name: Fix coverage file for sonarcloud
-        run: |
-          sed -i "s/<source>\/home\/runner\/work\/drf-openapi-tester\/drf-openapi-tester\//<source>/g" coverage.xml
-          cat coverage.xml
-      - uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
