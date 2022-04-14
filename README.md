@@ -200,4 +200,4 @@ error.
 
 ## Contributing
 
-Contributions are welcome. Please see the [contributing guide](CONTRIBUTING.md)
+Contributions are welcome. Please see the [contributing guide](https://github.com/snok/.github/blob/main/CONTRIBUTING.md)
