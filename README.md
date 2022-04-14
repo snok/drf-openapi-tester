@@ -192,6 +192,29 @@ When the SchemaTester loads a schema, it runs it through
 specification compliance issues. In case of issues with the schema itself, the validator will raise the appropriate
 error.
 
+## Django testing client
+
+`OpenAPIClient` extends Django REST framework
+[`APIClient` class](https://www.django-rest-framework.org/api-guide/testing/#apiclient).
+If you wish to validate each response against OpenAPI schema when writing
+unit tests - `OpenAPIClient` is what you need!
+
+To use `OpenAPIClient` simply pass `SchemaTester` instance that should be used
+to validate responses and then use it like regular Django testing client
+(TIP: add custom fixture if you are using `pytest` to avoid code boilerplate):
+
+```python
+schema_tester = SchemaTester()
+client = OpenAPIClient(schema_tester=schema_tester)
+response = client.get('/api/v1/tests/123/')
+```
+
+To enforce all developers working on the project to use `OpenAPIClient` simply
+override the `client` fixture (when using `pytest-django`) or provide custom
+test cases implementation (when using standard Django `unitest`-based approach)
+and then you will be sure all newly implemented views will be validated against
+the OpenAPI schema.
+
 ## Known Issues
 
 * We are using [prance](https://github.com/jfinkhaeuser/prance) as a schema resolver, and it has some issues with the
