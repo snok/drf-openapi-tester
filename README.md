@@ -194,7 +194,7 @@ error.
 
 ## Django testing client
 
-`OpenAPIClient` extends Django REST framework
+The library includes an `OpenAPIClient`, which extends Django REST framework's
 [`APIClient` class](https://www.django-rest-framework.org/api-guide/testing/#apiclient).
 If you wish to validate each response against OpenAPI schema when writing
 unit tests - `OpenAPIClient` is what you need!
@@ -209,7 +209,7 @@ client = OpenAPIClient(schema_tester=schema_tester)
 response = client.get('/api/v1/tests/123/')
 ```
 
-To enforce all developers working on the project to use `OpenAPIClient` simply
+To force all developers working on the project to use `OpenAPIClient` simply
 override the `client` fixture (when using `pytest-django`) or provide custom
 test cases implementation (when using standard Django `unitest`-based approach)
 and then you will be sure all newly implemented views will be validated against
