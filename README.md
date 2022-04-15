@@ -66,9 +66,10 @@ def test_response_documentation(client):
 If you are using the Django testing framework, you can create a base APITestCase that incorporates schema validation:
 
 ```python
-from openapi_tester.schema_tester import SchemaTester
-from rest_framework.test import APITestCase
 from rest_framework.response import Response
+from rest_framework.test import APITestCase
+
+from openapi_tester.schema_tester import SchemaTester
 
 schema_tester = SchemaTester()
 
@@ -200,8 +201,7 @@ If you wish to validate each response against OpenAPI schema when writing
 unit tests - `OpenAPIClient` is what you need!
 
 To use `OpenAPIClient` simply pass `SchemaTester` instance that should be used
-to validate responses and then use it like regular Django testing client
-(TIP: add custom fixture if you are using `pytest` to avoid code boilerplate):
+to validate responses and then use it like regular Django testing client:
 
 ```python
 schema_tester = SchemaTester()
@@ -210,9 +210,46 @@ response = client.get('/api/v1/tests/123/')
 ```
 
 To force all developers working on the project to use `OpenAPIClient` simply
-override the `client` fixture (when using `pytest-django`) or provide custom
-test cases implementation (when using standard Django `unitest`-based approach)
-and then you will be sure all newly implemented views will be validated against
+override the `client` fixture (when using `pytest` with `pytest-django`):
+
+```python
+from pytest_django.lazy_django import skip_if_no_django
+
+from openapi_tester.schema_tester import SchemaTester
+
+
+@pytest.fixture
+def schema_tester():
+    return SchemaTester()
+
+
+@pytest.fixture
+def client(schema_tester):
+    skip_if_no_django()
+
+    from openapi_tester.clients import OpenAPIClient
+
+    return OpenAPIClient(schema_tester=schema_tester)
+```
+
+If you are using plain Django test framework, we suggest to create custom
+test case implementation:
+
+```python
+import functools
+
+from django.test.testcases import SimpleTestCase
+from openapi_tester.clients import OpenAPIClient
+from openapi_tester.schema_tester import SchemaTester
+
+schema_tester = SchemaTester()
+
+
+class MyTestCase(SimpleTestCase):
+    client_class = functools.partial(OpenAPIClient, schema_tester=schema_tester)
+```
+
+This will ensure you all newly implemented views will be validated against
 the OpenAPI schema.
 
 ## Known Issues

@@ -1,6 +1,8 @@
+import functools
 import json
 
 import pytest
+from django.test.testcases import SimpleTestCase
 from rest_framework import status
 
 from openapi_tester.clients import OpenAPIClient
@@ -73,3 +75,20 @@ def test_request_invalid_response(
     """Ensure ``SchemaTester`` raises an exception when response is invalid."""
     with pytest.raises(**raises_kwargs):  # noqa: PT010
         openapi_client.generic(**generic_kwargs)
+
+
+def test_django_testcase_client_class():
+    """Ensure example from README.md about Django test case works fine."""
+
+    class DummyTestCase(SimpleTestCase):
+        """Django ``TestCase`` with ``OpenAPIClient`` client."""
+
+        client_class = functools.partial(
+            OpenAPIClient,
+            schema_tester=SchemaTester(),
+        )
+
+    test_case = DummyTestCase()
+    test_case._pre_setup()
+
+    assert isinstance(test_case.client, OpenAPIClient)
