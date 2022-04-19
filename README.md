@@ -233,7 +233,7 @@ def client(schema_tester):
 ```
 
 If you are using plain Django test framework, we suggest to create custom
-test case implementation:
+test case implementation and use it instead of original Django one:
 
 ```python
 import functools
@@ -245,7 +245,7 @@ from openapi_tester.schema_tester import SchemaTester
 schema_tester = SchemaTester()
 
 
-class MyTestCase(SimpleTestCase):
+class MySimpleTestCase(SimpleTestCase):
     client_class = functools.partial(OpenAPIClient, schema_tester=schema_tester)
 ```
 
