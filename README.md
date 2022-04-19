@@ -246,7 +246,10 @@ schema_tester = SchemaTester()
 
 
 class MySimpleTestCase(SimpleTestCase):
-    client_class = functools.partial(OpenAPIClient, schema_tester=schema_tester)
+    client_class = OpenAPIClient
+    # or use `functools.partial` when you want to provide custom
+    # ``SchemaTester`` instance:
+    # client_class = functools.partial(OpenAPIClient, schema_tester=schema_tester)
 ```
 
 This will ensure you all newly implemented views will be validated against

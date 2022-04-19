@@ -15,7 +15,16 @@ def openapi_client(settings) -> OpenAPIClient:
     """Sample ``OpenAPIClient`` instance to use in tests."""
     # use `drf-yasg` schema loader in tests
     settings.INSTALLED_APPS = [app for app in settings.INSTALLED_APPS if app != "drf_spectacular"]
-    return OpenAPIClient(schema_tester=SchemaTester())
+    return OpenAPIClient()
+
+
+def test_init_schema_tester_passed():
+    """Ensure passed ``SchemaTester`` instance is used."""
+    schema_tester = SchemaTester()
+
+    client = OpenAPIClient(schema_tester=schema_tester)
+
+    assert client.schema_tester is schema_tester
 
 
 @pytest.mark.parametrize(
@@ -77,16 +86,20 @@ def test_request_invalid_response(
         openapi_client.generic(**generic_kwargs)
 
 
-def test_django_testcase_client_class():
+@pytest.mark.parametrize(
+    "openapi_client_class",
+    [
+        OpenAPIClient,
+        functools.partial(OpenAPIClient, schema_tester=SchemaTester()),
+    ],
+)
+def test_django_testcase_client_class(openapi_client_class):
     """Ensure example from README.md about Django test case works fine."""
 
     class DummyTestCase(SimpleTestCase):
         """Django ``TestCase`` with ``OpenAPIClient`` client."""
 
-        client_class = functools.partial(
-            OpenAPIClient,
-            schema_tester=SchemaTester(),
-        )
+        client_class = openapi_client_class
 
     test_case = DummyTestCase()
     test_case._pre_setup()
