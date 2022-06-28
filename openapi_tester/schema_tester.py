@@ -143,7 +143,7 @@ class SchemaTester:
             f"Documented status codes: {list(responses_object.keys())}. ",
         )
 
-        if "openapi" not in schema:  # pylint: disable=E1135
+        if "openapi" not in schema:
             # openapi 2.0, i.e. "swagger" has a different structure than openapi 3.0 status sub-schemas
             return self.get_key_value(status_code_object, "schema")
 
@@ -383,7 +383,7 @@ class SchemaTester:
         response_schema = self.get_response_schema_section(response)
         self.test_schema_section(
             schema_section=response_schema,
-            data=response.json() if response.data else {},
+            data=response.json() if response.data is not None else {},
             case_tester=case_tester or self.case_tester,
             ignore_case=ignore_case,
             validators=validators,

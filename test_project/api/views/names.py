@@ -23,3 +23,8 @@ class NamesRetrieveView(RetrieveAPIView):
 class NameViewSet(ReadOnlyModelViewSet):
     serializer_class = NamesSerializer
     queryset = Names.objects.all()
+
+
+class EmptyNameViewSet(ReadOnlyModelViewSet):
+    serializer_class = NamesSerializer
+    queryset = Names.objects.all().none()

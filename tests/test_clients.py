@@ -52,6 +52,16 @@ def test_request(openapi_client, generic_kwargs, expected_status_code):
     assert response.status_code == expected_status_code
 
 
+def test_request_on_empty_list(openapi_client):
+    """Ensure ``SchemaTester`` doesn't raise exception when response is empty list."""
+    response = openapi_client.generic(
+        method="GET",
+        path="/api/v1/empty-names",
+        content_type="application/json",
+    )
+    assert response.status_code == status.HTTP_200_OK, response.data
+
+
 @pytest.mark.parametrize(
     ("generic_kwargs", "raises_kwargs"),
     [
