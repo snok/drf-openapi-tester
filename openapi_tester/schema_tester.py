@@ -38,7 +38,6 @@ from openapi_tester.validators import (
 )
 
 if TYPE_CHECKING:
-
     from rest_framework.response import Response
 
 

@@ -26,7 +26,6 @@ def test_case_error_message():
 
 
 class TestValidatorErrors:
-
     # Message only-format exceptions
 
     def test_validate_min_properties_error(self):

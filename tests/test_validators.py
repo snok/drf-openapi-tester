@@ -86,7 +86,6 @@ def test_type_validation():
 
     for schema in example_schema_types:
         for response in example_response_types:
-
             response_python_type = type(response).__name__
             schema_python_type = OPENAPI_PYTHON_MAPPING[schema["type"]]
 
