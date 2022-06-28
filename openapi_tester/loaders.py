@@ -112,7 +112,7 @@ class BaseSchemaLoader:
         self.schema = self.normalize_schema_paths(de_referenced_schema)
 
     @cached_property
-    def endpoints(self) -> list[str]:
+    def endpoints(self) -> list[str]:  # pylint: disable=no-self-use
         """
         Returns a list of endpoint paths.
         """

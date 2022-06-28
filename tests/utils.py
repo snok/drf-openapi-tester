@@ -20,7 +20,7 @@ def response_factory(schema: dict | None, url_fragment: str, method: str, status
     if schema:
         converted_schema = SchemaToPythonConverter(deepcopy(schema)).result
     response = Response(status=int(status_code), data=converted_schema)
-    response.request = {"REQUEST_METHOD": method, "PATH_INFO": url_fragment}
+    response.request = {"REQUEST_METHOD": method, "PATH_INFO": url_fragment}  # type: ignore
     if schema:
         response.json = lambda: converted_schema  # type: ignore
     return response

@@ -117,8 +117,10 @@ class SchemaTester:
         :return dict
         """
         schema = self.loader.get_schema()
-        response_method = response.request["REQUEST_METHOD"].lower()
-        parameterized_path, _ = self.loader.resolve_path(response.request["PATH_INFO"], method=response_method)
+        response_method = response.request["REQUEST_METHOD"].lower()  # type: ignore
+        parameterized_path, _ = self.loader.resolve_path(
+            response.request["PATH_INFO"], method=response_method  # type: ignore
+        )
         paths_object = self.get_key_value(schema, "paths")
 
         route_object = self.get_key_value(
@@ -160,7 +162,7 @@ class SchemaTester:
             )
             return self.get_key_value(json_object, "schema")
 
-        if response.data and response.json():
+        if response.data and response.json():  # type: ignore
             raise UndocumentedSchemaSectionError(
                 UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
                     key="content",
@@ -382,7 +384,7 @@ class SchemaTester:
         response_schema = self.get_response_schema_section(response)
         self.test_schema_section(
             schema_section=response_schema,
-            data=response.json() if response.data is not None else {},
+            data=response.json() if response.data is not None else {},  # type: ignore
             case_tester=case_tester or self.case_tester,
             ignore_case=ignore_case,
             validators=validators,
