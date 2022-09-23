@@ -4,6 +4,7 @@ from __future__ import annotations
 import difflib
 import json
 import pathlib
+import re
 from json import dumps, loads
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlparse
@@ -11,7 +12,7 @@ from urllib.parse import urlparse
 import yaml
 from django.urls import Resolver404, resolve
 from django.utils.functional import cached_property
-from openapi_spec_validator import openapi_v2_spec_validator, openapi_v3_spec_validator
+from openapi_spec_validator import openapi_v2_spec_validator, openapi_v30_spec_validator, openapi_v31_spec_validator
 from prance.util.resolver import RefResolver
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
@@ -98,7 +99,14 @@ class BaseSchemaLoader:
     @staticmethod
     def validate_schema(schema: dict):
         if "openapi" in schema:
-            validator = openapi_v3_spec_validator
+            openapi_version_pattern = re.compile(r"^(\d)\.(\d+)")
+            result = openapi_version_pattern.findall(schema["openapi"])
+            if result:
+                major, minor = result[0]
+                if (major, minor) == ("3", "0"):
+                    validator = openapi_v30_spec_validator
+                elif (major, minor) == ("3", "1"):
+                    validator = openapi_v31_spec_validator
         else:
             validator = openapi_v2_spec_validator
         validator.validate(schema)
