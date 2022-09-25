@@ -18,7 +18,7 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: venv-1  # increment to reset
+          key: venv-2  # increment to reset
       - run: |
           python -m venv .venv --upgrade-deps
           source .venv/bin/activate
@@ -28,7 +28,7 @@ jobs:
         id: pre-commit-cache
         with:
           path: ~/.cache/pre-commit
-          key: key-1  # increment to reset
+          key: key-2  # increment to reset
       - run: |
           source .venv/bin/activate
           pre-commit run --all-files
@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7.14", "3.8.14" , "3.9.14", "3.10.7", "3.11.0-rc.2" ]
+        python-version: [ "3.7.14", "3.8.14" , "3.9.14", "3.10.7" ]
         django-version: [ "3.2", "4.0", "4.1" ]
         exclude:
           # Django v4 dropped 3.7 support
@@ -55,7 +55,7 @@ jobs:
         id: poetry-cache
         with:
           path: ~/.local
-          key: key-4
+          key: key-5
       - uses: snok/install-poetry@v1
         with:
           virtualenvs-create: false
@@ -64,7 +64,7 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-3
+          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-4
       - run: |
           python -m venv .venv
           source .venv/bin/activate
