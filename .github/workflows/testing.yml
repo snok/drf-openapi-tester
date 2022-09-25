@@ -64,7 +64,7 @@ jobs:
         id: cache-venv
         with:
           path: .venv
-          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-4
+          key: ${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}-6
       - run: |
           python -m venv .venv
           source .venv/bin/activate

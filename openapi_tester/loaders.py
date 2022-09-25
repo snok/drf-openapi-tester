@@ -17,6 +17,9 @@ from prance.util.resolver import RefResolver
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
 
+from openapi_tester.constants import UNDOCUMENTED_SCHEMA_SECTION_ERROR
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
+
 if TYPE_CHECKING:
     from typing import Any, Callable
     from urllib.parse import ParseResult
@@ -107,6 +110,8 @@ class BaseSchemaLoader:
                     validator = openapi_v30_spec_validator
                 elif (major, minor) == ("3", "1"):
                     validator = openapi_v31_spec_validator
+            else:
+                raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=schema["openapi"]))
         else:
             validator = openapi_v2_spec_validator
         validator.validate(schema)
