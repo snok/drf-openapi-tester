@@ -106,10 +106,11 @@ def test_loader_inference(settings):
         SchemaTester()
 
 
+@pytest.mark.usefixtures("db")
 @pytest.mark.parametrize(
     "url", [f"/api/v1/{name_id}/names", "/api/v1/router_generated/names/", f"/api/v1/router_generated/names/{name_id}/"]
 )
-def test_drf_coerced_model_primary_key(db, client, url):
+def test_drf_coerced_model_primary_key(client, url):
     Names.objects.create(custom_id_field=name_id)
     schema_tester = SchemaTester()
     response = client.get(url)
@@ -134,7 +135,7 @@ def test_example_schemas(filename):
     for schema_section, response, url_fragment in iterate_schema(schema_tester.loader.schema):
         if schema_section and response:
             with patch.object(
-                StaticSchemaLoader, "resolve_path", side_effect=lambda *args, **kwargs: (url_fragment, None)
+                StaticSchemaLoader, "resolve_path", side_effect=lambda *args, **kwargs: (url_fragment, None)  # noqa
             ):
                 schema_tester.validate_response(response)
                 assert sorted(schema_tester.get_response_schema_section(response)) == sorted(schema_section)

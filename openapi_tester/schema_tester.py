@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Callable, cast
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -38,6 +38,8 @@ from openapi_tester.validators import (
 )
 
 if TYPE_CHECKING:
+    from typing import Optional
+
     from rest_framework.response import Response
 
 
@@ -262,7 +264,7 @@ class SchemaTester:
         if not schema_section_type:
             return
         combined_validators = cast(
-            List[Callable[[dict, Any], Optional[str]]],
+            "list[Callable[[dict, Any], Optional[str]]]",
             [
                 validate_type,
                 validate_format,

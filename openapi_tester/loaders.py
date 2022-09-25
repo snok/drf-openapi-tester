@@ -16,13 +16,16 @@ from openapi_spec_validator import openapi_v2_spec_validator, openapi_v30_spec_v
 from prance.util.resolver import RefResolver
 from rest_framework.schemas.generators import BaseSchemaGenerator, EndpointEnumerator
 from rest_framework.settings import api_settings
-from rest_framework.views import APIView
+
+from openapi_tester.constants import UNDOCUMENTED_SCHEMA_SECTION_ERROR
+from openapi_tester.exceptions import UndocumentedSchemaSectionError
 
 if TYPE_CHECKING:
     from typing import Any, Callable
     from urllib.parse import ParseResult
 
     from django.urls import ResolverMatch
+    from rest_framework.views import APIView
 
 
 def handle_recursion_limit(schema: dict) -> Callable:
@@ -107,6 +110,14 @@ class BaseSchemaLoader:
                     validator = openapi_v30_spec_validator
                 elif (major, minor) == ("3", "1"):
                     validator = openapi_v31_spec_validator
+                else:
+                    raise UndocumentedSchemaSectionError(
+                        UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
+                            key=schema["openapi"], error_addon="Support might need to be added."
+                        )
+                    )
+            else:
+                raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=schema["openapi"]))
         else:
             validator = openapi_v2_spec_validator
         validator.validate(schema)
@@ -120,7 +131,7 @@ class BaseSchemaLoader:
         self.schema = self.normalize_schema_paths(de_referenced_schema)
 
     @cached_property
-    def endpoints(self) -> list[str]:  # pylint: disable=no-self-use
+    def endpoints(self) -> list[str]:
         """
         Returns a list of endpoint paths.
         """
@@ -163,7 +174,7 @@ class BaseSchemaLoader:
         Handle the DRF conversion of params called {pk} into a named parameter based on Model field
         """
         coerced_path = BaseSchemaGenerator().coerce_path(
-            path=path, method=method, view=cast(APIView, resolved_route.func)
+            path=path, method=method, view=cast("APIView", resolved_route.func)
         )
         pk_field_name = "".join(
             entry.replace("+ ", "") for entry in difflib.Differ().compare(path, coerced_path) if "+ " in entry
@@ -190,7 +201,7 @@ class DrfYasgSchemaLoader(BaseSchemaLoader):
         Loads generated schema from drf-yasg and returns it as a dict.
         """
         odict_schema = self.schema_generator.get_schema(None, True)
-        return cast(dict, loads(dumps(odict_schema.as_odict())))
+        return cast("dict", loads(dumps(odict_schema.as_odict())))
 
     def resolve_path(self, endpoint_path: str, method: str) -> tuple[str, ResolverMatch]:
         de_parameterized_path, resolved_path = super().resolve_path(endpoint_path=endpoint_path, method=method)
@@ -214,7 +225,7 @@ class DrfSpectacularSchemaLoader(BaseSchemaLoader):
         """
         Loads generated schema from drf_spectacular and returns it as a dict.
         """
-        return cast(dict, loads(dumps(self.schema_generator.get_schema(public=True))))
+        return cast("dict", loads(dumps(self.schema_generator.get_schema(public=True))))
 
     def resolve_path(self, endpoint_path: str, method: str) -> tuple[str, ResolverMatch]:
         from drf_spectacular.settings import spectacular_settings
@@ -245,5 +256,5 @@ class StaticSchemaLoader(BaseSchemaLoader):
         with open(self.path, encoding="utf-8") as file:
             content = file.read()
             return cast(
-                dict, json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
+                "dict", json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
             )
