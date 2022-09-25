@@ -83,7 +83,7 @@ jobs:
         with:
           name: coverage-xml
           path: coverage.xml
-        if: matrix.python-version == '3.10' && matrix.django-version == '4.0'
+        if: matrix.python-version == '3.10.7' && matrix.django-version == '4.1'
 
   coverage:
     needs: test

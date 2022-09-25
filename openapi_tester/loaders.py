@@ -110,6 +110,12 @@ class BaseSchemaLoader:
                     validator = openapi_v30_spec_validator
                 elif (major, minor) == ("3", "1"):
                     validator = openapi_v31_spec_validator
+                else:
+                    raise UndocumentedSchemaSectionError(
+                        UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(
+                            key=schema["openapi"], error_addon="Support might need to be added."
+                        )
+                    )
             else:
                 raise UndocumentedSchemaSectionError(UNDOCUMENTED_SCHEMA_SECTION_ERROR.format(key=schema["openapi"]))
         else:
