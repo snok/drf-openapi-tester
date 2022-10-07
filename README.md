@@ -20,37 +20,32 @@ pip install drf-openapi-tester
 
 ## Usage
 
-First instantiate one or more instances of SchemaTester:
+Instantiate one or more instances of `SchemaTester`:
 
 ```python
 from openapi_tester import SchemaTester
 
 schema_tester = SchemaTester()
-
-
 ```
 
 If you are using either [drf-yasg](https://github.com/axnsan12/drf-yasg)
 or [drf-spectacular](https://github.com/tfranzel/drf-spectacular) this will be auto-detected, and the schema will be
-loaded by the SchemaTester automatically. If you are using schema files though, you will need to pass the file path to
-the tester:
+loaded by the `SchemaTester` automatically.
+
+If you are using schema files, you will need to pass the file path:
 
 ```python
 from openapi_tester import SchemaTester
 
 # path should be a string
 schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
-
-
 ```
 
-Once you instantiate a tester, you can use it to test responses:
+Once you've instantiated a tester, you can use it to test responses:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
 
-# you need to create at least one instance of SchemaTester.
-# you can pass kwargs to it
 schema_tester = SchemaTester()
 
 
@@ -60,7 +55,7 @@ def test_response_documentation(client):
     schema_tester.validate_response(response=response)
 ```
 
-If you are using the Django testing framework, you can create a base APITestCase that incorporates schema validation:
+If you are using the Django testing framework, you can create a base `APITestCase` that incorporates schema validation:
 
 ```python
 from rest_framework.response import Response
@@ -131,7 +126,7 @@ def my_test(client):
 
 ### case_tester
 
-The case tester argument takes a callable that is used to validate the key casings of both schemas and responses. If
+The case tester argument takes a callable that is used to validate the key case of both schemas and responses. If
 nothing is passed, case validation is skipped.
 
 The library currently has 4 built-in case testers:
@@ -141,11 +136,11 @@ The library currently has 4 built-in case testers:
 - `is_camel_case`
 - `is_kebab_case`
 
-You can of course pass your own custom case tester.
+You can use one of these, or your own.
 
 ### ignore_case
 
-List of keys to ignore when testing key casing. This setting only applies when case_tester is not `None`.
+List of keys to ignore when testing key case. This setting only applies when case_tester is not `None`.
 
 ### validators
 
@@ -171,7 +166,7 @@ def my_uuid_4_validator(schema_section: dict, data: Any) -> Optional[str]:
 
 ### field_key_map
 
-You can pass an optional dictionary that maps custom url parameter names into values, for cases where this cannot be
+You can pass an optional dictionary that maps custom url parameter names into values, for situations where this cannot be
 inferred by the DRF `EndpointEnumerator`. A concrete use case for this option is when
 the [django i18n locale prefixes](https://docs.djangoproject.com/en/3.1/topics/i18n/translation/#language-prefix-in-url-patterns).
 
@@ -185,10 +180,9 @@ schema_tester = SchemaTester(field_key_map={
 
 ## Schema Validation
 
-When the SchemaTester loads a schema, it runs it through
-[OpenAPI Spec validator](https://github.com/p1c2u/openapi-spec-validator) which validates that the schema passes without
-specification compliance issues. In case of issues with the schema itself, the validator will raise the appropriate
-error.
+When the SchemaTester loads a schema, it parses it using an
+[OpenAPI spec validator](https://github.com/p1c2u/openapi-spec-validator). This validates the schema.
+In case of issues with the schema itself, the validator will raise the appropriate error.
 
 ## Django testing client
 
