@@ -64,7 +64,7 @@ jobs:
           python -m venv .venv
           source .venv/bin/activate
           pip install wheel setuptools pip -U
-          poetry install --no-interaction --no-root
+          poetry install --no-interaction --no-root --extras drf-spectacular --extras drf-yasg
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - run: |
           source .venv/bin/activate

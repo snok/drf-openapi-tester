@@ -55,11 +55,15 @@ inflection = "*"
 openapi-spec-validator = ">=0.4"
 prance = "*"
 pyYAML = "*"
+drf-spectacular = { version = "*", optional = true }
+drf-yasg = { version = "*", optional = true }
+
+[tool.poetry.extras]
+drf-yasg = ["drf-yasg"]
+drf-spectacular = ["drf-spectacular"]
 
 [tool.poetry.dev-dependencies]
-coverage = { extras = ["toml"], version = "^6"}
-drf-spectacular = "*"
-drf-yasg = "*"
+coverage = { extras = ["toml"], version = "^6" }
 Faker = "*"
 pre-commit = "*"
 pylint = "*"
