@@ -9,6 +9,7 @@ from json import dumps, loads
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlparse
 
+import httpx
 import yaml
 from django.urls import Resolver404, resolve
 from django.utils.functional import cached_property
@@ -258,3 +259,28 @@ class StaticSchemaLoader(BaseSchemaLoader):
             return cast(
                 "dict", json.loads(content) if ".json" in self.path else yaml.load(content, Loader=yaml.FullLoader)
             )
+
+
+class UrlStaticSchemaLoader(BaseSchemaLoader):
+    """
+    Loads OpenAPI schema from an url static file.
+    """
+
+    def __init__(self, url: str, field_key_map: dict[str, str] | None = None):
+        super().__init__(field_key_map=field_key_map)
+        self.url = url
+
+    def load_schema(self) -> dict[str, Any]:
+        """
+        Loads a static OpenAPI schema from url, and parses it to a python dict.
+
+        :return: Schema contents as a dict
+        :raises: ImproperlyConfigured
+        """
+        response = httpx.get(self.url)
+        return cast(
+            "dict",
+            json.loads(response.content)
+            if ".json" in self.url
+            else yaml.load(response.content, Loader=yaml.FullLoader),
+        )

@@ -18,8 +18,13 @@ from openapi_tester.constants import (
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError, UndocumentedSchemaSectionError
-from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from openapi_tester.utils import lazy_combinations, normalize_schema_section
+from openapi_tester.loaders import (
+    DrfSpectacularSchemaLoader,
+    DrfYasgSchemaLoader,
+    StaticSchemaLoader,
+    UrlStaticSchemaLoader,
+)
+from openapi_tester.utils import is_path_an_url, lazy_combinations, normalize_schema_section
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -46,7 +51,7 @@ if TYPE_CHECKING:
 class SchemaTester:
     """Schema Tester: this is the base class of the library."""
 
-    loader: StaticSchemaLoader | DrfSpectacularSchemaLoader | DrfYasgSchemaLoader
+    loader: StaticSchemaLoader | DrfSpectacularSchemaLoader | DrfYasgSchemaLoader | UrlStaticSchemaLoader
     validators: list[Callable[[dict, Any], str | None]]
 
     def __init__(
@@ -70,7 +75,11 @@ class SchemaTester:
         self.validators = validators or []
 
         if schema_file_path is not None:
-            self.loader = StaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
+            self.loader = (
+                UrlStaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
+                if is_path_an_url(schema_file_path)
+                else StaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
+            )
         elif "drf_spectacular" in settings.INSTALLED_APPS:
             self.loader = DrfSpectacularSchemaLoader(field_key_map=field_key_map)
         elif "drf_yasg" in settings.INSTALLED_APPS:

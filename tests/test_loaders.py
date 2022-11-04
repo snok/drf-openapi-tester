@@ -1,10 +1,23 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 import pytest
 
-from openapi_tester.loaders import DrfSpectacularSchemaLoader, DrfYasgSchemaLoader, StaticSchemaLoader
-from tests.utils import TEST_ROOT
+from openapi_tester.loaders import (
+    DrfSpectacularSchemaLoader,
+    DrfYasgSchemaLoader,
+    StaticSchemaLoader,
+    UrlStaticSchemaLoader,
+)
+from tests.utils import TEST_ROOT, get_schema_content
+
+if TYPE_CHECKING:
+    from pytest_httpx import HTTPXMock
 
 yaml_schema_path = str(TEST_ROOT) + "/schemas/manual_reference_schema.yaml"
 json_schema_path = str(TEST_ROOT) + "/schemas/manual_reference_schema.json"
+
 loaders = [
     StaticSchemaLoader(yaml_schema_path, field_key_map={"language": "en"}),
     StaticSchemaLoader(json_schema_path, field_key_map={"language": "en"}),
@@ -20,6 +33,25 @@ static_schema_loaders = [
 @pytest.mark.parametrize("loader", loaders)
 def test_loader_get_schema(loader):
     loader.get_schema()  # runs internal validation
+
+
+def test_url_schema_loader(httpx_mock: HTTPXMock):
+    test_schema_url = "http://schemas:8080/test/schema.yaml"
+    schema_loader = UrlStaticSchemaLoader(test_schema_url)
+    schema_content = get_schema_content(TEST_ROOT / "schemas" / "any_of_one_of_test_schema.yaml")
+
+    httpx_mock.add_response(
+        method="GET",
+        url="http://schemas:8080/test/schema.yaml",
+        content=schema_content,
+        status_code=200,
+    )
+
+    loaded_schema = schema_loader.load_schema()
+
+    assert type(loaded_schema) == dict
+    assert loaded_schema["openapi"] == "3.0.0"
+    assert loaded_schema["info"]["title"] == "Swagger Petstore"
 
 
 @pytest.mark.parametrize("loader", loaders)

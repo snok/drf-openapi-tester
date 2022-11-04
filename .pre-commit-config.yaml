@@ -74,3 +74,4 @@ repos:
           - drf-spectacular
           - pylint
           - faker
+          - httpx
