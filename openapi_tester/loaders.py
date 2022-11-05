@@ -9,7 +9,7 @@ from json import dumps, loads
 from typing import TYPE_CHECKING, cast
 from urllib.parse import urlparse
 
-import httpx
+import requests
 import yaml
 from django.urls import Resolver404, resolve
 from django.utils.functional import cached_property
@@ -277,7 +277,7 @@ class UrlStaticSchemaLoader(BaseSchemaLoader):
         :return: Schema contents as a dict
         :raises: ImproperlyConfigured
         """
-        response = httpx.get(self.url)
+        response = requests.get(self.url, timeout=20)
         return cast(
             "dict",
             json.loads(response.content)

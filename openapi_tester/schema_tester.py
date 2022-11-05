@@ -5,7 +5,8 @@ from itertools import chain
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 from django.conf import settings
-from django.core.exceptions import ImproperlyConfigured
+from django.core.exceptions import ImproperlyConfigured, ValidationError
+from django.core.validators import URLValidator
 
 from openapi_tester.constants import (
     INIT_ERROR,
@@ -24,7 +25,7 @@ from openapi_tester.loaders import (
     StaticSchemaLoader,
     UrlStaticSchemaLoader,
 )
-from openapi_tester.utils import is_path_an_url, lazy_combinations, normalize_schema_section
+from openapi_tester.utils import lazy_combinations, normalize_schema_section
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -75,11 +76,11 @@ class SchemaTester:
         self.validators = validators or []
 
         if schema_file_path is not None:
-            self.loader = (
-                UrlStaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
-                if is_path_an_url(schema_file_path)
-                else StaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
-            )
+            try:
+                URLValidator()(schema_file_path)
+                self.loader = UrlStaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
+            except ValidationError:
+                self.loader = StaticSchemaLoader(schema_file_path, field_key_map=field_key_map)
         elif "drf_spectacular" in settings.INSTALLED_APPS:
             self.loader = DrfSpectacularSchemaLoader(field_key_map=field_key_map)
         elif "drf_yasg" in settings.INSTALLED_APPS:

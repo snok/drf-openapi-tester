@@ -3,7 +3,6 @@ Utils Module - this file contains utility functions used in multiple places.
 """
 from __future__ import annotations
 
-import re
 from copy import deepcopy
 from itertools import chain, combinations
 from typing import TYPE_CHECKING
@@ -59,17 +58,3 @@ def lazy_combinations(options_list: Sequence[dict[str, Any]]) -> Iterator[dict]:
     for i in range(2, len(options_list) + 1):
         for combination in combinations(options_list, i):
             yield merge_objects(combination)
-
-
-def is_path_an_url(path: str) -> bool:
-    regex = re.compile(
-        r"^(?:http|ftp)s?://"  # http:// or https://
-        r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|"  # domain
-        r"(?:[A-Za-z._-]+)|"  # any hostname
-        r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # or ip
-        r"(?::\d+)?"  # optional port
-        r"(?:/?|[/?]\S+)$",
-        re.IGNORECASE,
-    )
-
-    return re.match(regex, path) is not None
