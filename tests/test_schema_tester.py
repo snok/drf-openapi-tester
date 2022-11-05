@@ -27,6 +27,7 @@ from openapi_tester.constants import (
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
 )
 from openapi_tester.exceptions import CaseError, DocumentationError, UndocumentedSchemaSectionError
+from openapi_tester.loaders import UrlStaticSchemaLoader
 from test_project.models import Names
 from tests import example_object, example_schema_types
 from tests.utils import TEST_ROOT, iterate_schema, mock_schema, response_factory
@@ -99,6 +100,9 @@ def test_loader_inference(settings):
 
     # Test static loader
     assert isinstance(SchemaTester(schema_file_path="test").loader, StaticSchemaLoader)
+
+    # Test url static loader
+    assert isinstance(SchemaTester(schema_file_path="http://test.url:8080/schema.yaml").loader, UrlStaticSchemaLoader)
 
     # Test no loader
     settings.INSTALLED_APPS = []
