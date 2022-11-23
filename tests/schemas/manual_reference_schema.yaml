@@ -263,3 +263,17 @@ paths:
       responses:
         '200':
           description: ''
+  /api/v1/teams/{pk}/relationships/members:
+    post:
+      operationId: addTeamMembers
+      description: ''
+      parameters:
+        - in: path
+          name: pk
+          schema:
+            type: integer
+          description: A unique value identifying this team.
+          required: true
+      responses:
+        '200':
+          description: ''

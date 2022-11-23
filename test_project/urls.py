@@ -1,5 +1,5 @@
 from django.conf.urls.i18n import i18n_patterns
-from django.urls import include, path
+from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions, routers
@@ -13,6 +13,7 @@ from test_project.api.views.items import Items
 from test_project.api.views.names import EmptyNameViewSet, NamesRetrieveView, NameViewSet
 from test_project.api.views.products import Products
 from test_project.api.views.snake_cased_response import SnakeCasedResponse
+from test_project.api.views.teams import TeamMembersRelationshipView
 from test_project.api.views.trucks import BadTrucks, GoodTrucks
 from test_project.api.views.vehicles import Vehicles
 
@@ -34,6 +35,11 @@ api_urlpatterns = [
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
     path("api/<str:version>/router_generated/", include(router.urls)),
+    re_path(
+        r"api/(?P<version>v\d+)/team/(?P<pk>\d+)/relationships/(?P<related_field>[-\w]+)",
+        TeamMembersRelationshipView.as_view(),
+        name="team-members-relation",
+    ),
 ]
 
 internationalised_urlpatterns = i18n_patterns(
