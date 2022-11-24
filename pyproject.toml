@@ -57,10 +57,12 @@ prance = "*"
 pyYAML = "*"
 drf-spectacular = { version = "*", optional = true }
 drf-yasg = { version = "*", optional = true }
+djangorestframework-jsonapi = { version = "*", optional = true }
 
 [tool.poetry.extras]
 drf-yasg = ["drf-yasg"]
 drf-spectacular = ["drf-spectacular"]
+djangorestframework-jsonapi = ["djangorestframework-jsonapi"]
 
 [tool.poetry.dev-dependencies]
 coverage = { extras = ["toml"], version = "^6" }

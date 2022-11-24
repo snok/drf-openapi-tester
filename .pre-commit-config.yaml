@@ -52,7 +52,7 @@ repos:
           - types-PyYAML
           - drf-yasg
           - drf-spectacular
-
+          - djangorestframework-jsonapi
   - repo: local
     hooks:
       - id: pylint
