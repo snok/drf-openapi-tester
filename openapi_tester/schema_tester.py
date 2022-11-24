@@ -1,7 +1,6 @@
 """ Schema Tester """
 from __future__ import annotations
 
-import re
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Callable, cast
 
@@ -90,16 +89,11 @@ class SchemaTester:
             raise ImproperlyConfigured(INIT_ERROR)
 
     @staticmethod
-    def get_key_value(schema: dict[str, dict], key: str, error_addon: str = "", use_regex=False) -> dict:
+    def get_key_value(schema: dict[str, dict], key: str, error_addon: str = "") -> dict:
         """
         Returns the value of a given key
         """
         try:
-            if use_regex:
-                compiled_pattern = re.compile(key)
-                for key_ in schema.keys():
-                    if compiled_pattern.match(key_):
-                        return schema[key_]
             return schema[key]
         except KeyError as e:
             raise UndocumentedSchemaSectionError(
@@ -174,10 +168,9 @@ class SchemaTester:
             )
             json_object = self.get_key_value(
                 content_object,
-                r"^application\/.*json$",
+                "application/json",
                 "\n\nNo `application/json` responses documented for method: "
                 f"{response_method}, path: {parameterized_path}",
-                use_regex=True,
             )
             return self.get_key_value(json_object, "schema")
 
