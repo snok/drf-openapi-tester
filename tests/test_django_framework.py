@@ -17,8 +17,8 @@ class BaseAPITestCase(APITestCase):
         schema_tester.validate_response(response=response, **kwargs)
 
 
-class TeamsAPITests(BaseAPITestCase):
-    def test_schema_using_assert_response(self):
+class PetsAPITests(BaseAPITestCase):
+    def test_get_pet_by_id(self):
         response = self.client.get(
             reverse(
                 "get-pet",
