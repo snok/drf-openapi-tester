@@ -38,7 +38,7 @@ tags:
   - name: user
     description: Operations about user
 paths:
-  /api/pet/:
+  /api/pet:
     put:
       tags:
         - pet
@@ -48,7 +48,7 @@ paths:
       requestBody:
         description: Update an existent pet in the store
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               $ref: '#/components/schemas/Pet'
           application/xml:
@@ -62,7 +62,7 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
             application/xml:
@@ -87,7 +87,7 @@ paths:
       requestBody:
         description: Create a new pet in the store
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               $ref: '#/components/schemas/Pet'
           application/xml:
@@ -101,7 +101,7 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
             application/xml:
@@ -113,7 +113,7 @@ paths:
         - petstore_auth:
             - write:pets
             - read:pets
-  /api/pet/findByStatus/:
+  /api/pet/findByStatus:
     get:
       tags:
         - pet
@@ -137,7 +137,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -153,7 +153,7 @@ paths:
         - petstore_auth:
             - write:pets
             - read:pets
-  /api/pet/findByTags/:
+  /api/pet/findByTags:
     get:
       tags:
         - pet
@@ -174,7 +174,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 type: array
                 items:
@@ -190,7 +190,7 @@ paths:
         - petstore_auth:
             - write:pets
             - read:pets
-  /api/pet/{petId}/:
+  /api/pet/{petId}:
     get:
       tags:
         - pet
@@ -209,7 +209,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
             application/xml:
@@ -282,7 +282,7 @@ paths:
         - petstore_auth:
             - write:pets
             - read:pets
-  /api/pet/{petId}/uploadImage/:
+  /api/pet/{petId}/uploadImage:
     post:
       tags:
         - pet
@@ -313,14 +313,14 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
       security:
         - petstore_auth:
             - write:pets
             - read:pets
-  /api/store/inventory/:
+  /api/store/inventory:
     get:
       tags:
         - store
@@ -331,7 +331,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 type: object
                 additionalProperties:
@@ -339,7 +339,7 @@ paths:
                   format: int32
       security:
         - api_key: []
-  /api/store/order/:
+  /api/store/order:
     post:
       tags:
         - store
@@ -348,7 +348,7 @@ paths:
       operationId: placeOrder
       requestBody:
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               $ref: '#/components/schemas/Order'
           application/xml:
@@ -361,12 +361,12 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Order'
         '405':
           description: Invalid input
-  /api/store/order/{orderId}/:
+  /api/store/order/{orderId}:
     get:
       tags:
         - store
@@ -385,7 +385,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Order'
             application/xml:
@@ -414,7 +414,7 @@ paths:
           description: Invalid ID supplied
         '404':
           description: Order not found
-  /api/user/:
+  /api/user:
     post:
       tags:
         - user
@@ -424,7 +424,7 @@ paths:
       requestBody:
         description: Created user object
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               $ref: '#/components/schemas/User'
           application/xml:
@@ -437,13 +437,13 @@ paths:
         default:
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/User'
             application/xml:
               schema:
                 $ref: '#/components/schemas/User'
-  /api/user/createWithList/:
+  /api/user/createWithList:
     post:
       tags:
         - user
@@ -452,7 +452,7 @@ paths:
       operationId: createUsersWithListInput
       requestBody:
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               type: array
               items:
@@ -461,7 +461,7 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/User'
             application/xml:
@@ -469,7 +469,7 @@ paths:
                 $ref: '#/components/schemas/User'
         default:
           description: successful operation
-  /api/user/login/:
+  /api/user/login:
     get:
       tags:
         - user
@@ -507,12 +507,12 @@ paths:
             application/xml:
               schema:
                 type: string
-            application/vnd.api+json:
+            application/json:
               schema:
                 type: string
         '400':
           description: Invalid username/password supplied
-  /api/user/logout/:
+  /api/user/logout:
     get:
       tags:
         - user
@@ -523,7 +523,7 @@ paths:
       responses:
         default:
           description: successful operation
-  /api/user/{username}/:
+  /api/user/{username}:
     get:
       tags:
         - user
@@ -541,7 +541,7 @@ paths:
         '200':
           description: successful operation
           content:
-            application/vnd.api+json:
+            application/json:
               schema:
                 $ref: '#/components/schemas/User'
             application/xml:
@@ -567,7 +567,7 @@ paths:
       requestBody:
         description: Update an existent user in the store
         content:
-          application/vnd.api+json:
+          application/json:
             schema:
               $ref: '#/components/schemas/User'
           application/xml:
@@ -773,7 +773,7 @@ components:
     Pet:
       description: Pet object that needs to be added to the store
       content:
-        application/vnd.api+json:
+        application/json:
           schema:
             $ref: '#/components/schemas/Pet'
         application/xml:
@@ -782,7 +782,7 @@ components:
     UserArray:
       description: List of user object
       content:
-        application/vnd.api+json:
+        application/json:
           schema:
             type: array
             items:
