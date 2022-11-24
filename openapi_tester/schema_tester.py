@@ -177,7 +177,7 @@ class SchemaTester:
                 r"^application\/.*json$",
                 "\n\nNo `application/json` responses documented for method: "
                 f"{response_method}, path: {parameterized_path}",
-                use_regex=True
+                use_regex=True,
             )
             return self.get_key_value(json_object, "schema")
 
