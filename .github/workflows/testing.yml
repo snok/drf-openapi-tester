@@ -38,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7.14", "3.8.14" , "3.9.14", "3.10.7" ]
+        python-version: [ "3.7.14", "3.8.14" , "3.9.14", "3.10.7", "3.11.0" ]
         django-version: [ "3.2", "4.0", "4.1" ]
         exclude:
           # Django v4 dropped 3.7 support
