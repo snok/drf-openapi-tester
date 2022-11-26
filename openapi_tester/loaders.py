@@ -143,7 +143,7 @@ class BaseSchemaLoader:
         Resolves a Django path.
         """
         url_object = urlparse(endpoint_path)
-        parsed_path = url_object.path if url_object.path.endswith("/") else url_object.path + "/"
+        parsed_path = url_object.path
         if not parsed_path.startswith("/"):
             parsed_path = "/" + parsed_path
         for key, value in self.field_key_map.items():
