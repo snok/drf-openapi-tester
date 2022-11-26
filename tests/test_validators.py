@@ -302,7 +302,7 @@ def test_datetime_validation():
 
     # This is invalid
     with pytest.raises(DocumentationError):
-        tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 0800")
+        tester.test_schema_section({"type": "string", "format": "date-time"}, "2040-01-01 9800")
 
 
 def test_byte_validation():
