@@ -166,7 +166,7 @@ class BaseSchemaLoader:
         message = f"Could not resolve path `{endpoint_path}`."
         close_matches = difflib.get_close_matches(endpoint_path, self.endpoints)
         if close_matches:
-            message += "\n\nDid you mean one of these?" + "\n- ".join(close_matches)
+            message += "\n\nDid you mean one of these?\n\n- " + "\n- ".join(close_matches)
         raise ValueError(message)
 
     @staticmethod
