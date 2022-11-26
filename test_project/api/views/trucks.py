@@ -27,15 +27,15 @@ class GoodTrucks(APIView):
 
     @staticmethod
     def put(request: Request) -> Response:
-        pass
+        return Response(status=204)
 
     @staticmethod
     def post(request: Request) -> Response:
-        pass
+        return Response(status=204)
 
     @staticmethod
     def delete(request: Request) -> Response:
-        pass
+        return Response(status=204)
 
 
 class BadTrucks(APIView):
@@ -56,12 +56,12 @@ class BadTrucks(APIView):
 
     @staticmethod
     def put(request: Request, version: int) -> Response:
-        pass
+        return Response(status=204)
 
     @staticmethod
     def post(request: Request, version: int) -> Response:
-        pass
+        return Response(status=204)
 
     @staticmethod
     def delete(request: Request, version: int) -> Response:
-        pass
+        return Response(status=204)
