@@ -27,7 +27,7 @@ repos:
             'flake8-use-fstring',
             'flake8-simplify',
             'flake8-pytest-style',
-            'flake8-type-checking',
+            'flake8-type-checking==2.3.0',
         ]
 
   - repo: https://github.com/asottile/pyupgrade
