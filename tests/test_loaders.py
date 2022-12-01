@@ -49,13 +49,10 @@ def test_url_schema_loader():
 @pytest.mark.parametrize("loader", loaders)
 def test_loader_get_route(loader):
     assert loader.resolve_path("/api/v1/items/", "get")[0] == "/api/{version}/items"
-    assert loader.resolve_path("/api/v1/items", "get")[0] == "/api/{version}/items"
     assert loader.resolve_path("api/v1/items/", "get")[0] == "/api/{version}/items"
     assert loader.resolve_path("api/v1/items", "get")[0] == "/api/{version}/items"
     assert loader.resolve_path("/api/v1/snake-case/", "get")[0] == "/api/{version}/snake-case/"
-    assert loader.resolve_path("/api/v1/snake-case", "get")[0] == "/api/{version}/snake-case/"
     assert loader.resolve_path("api/v1/snake-case/", "get")[0] == "/api/{version}/snake-case/"
-    assert loader.resolve_path("api/v1/snake-case", "get")[0] == "/api/{version}/snake-case/"
     with pytest.raises(ValueError, match="Could not resolve path `test`"):
         assert loader.resolve_path("test", "get")
 
