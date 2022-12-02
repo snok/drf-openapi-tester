@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "drf-openapi-tester"
-version = "2.3.0"
+version = "2.3.1"
 description = "Test utility for validating OpenAPI response documentation"
 authors = ["Sondre Lillebø Gundersen <sondrelg@live.no>", "Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
 maintainers = ["Na'aman Hirschfeld <nhirschfeld@gmail.com>"]
