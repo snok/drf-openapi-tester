@@ -15,20 +15,17 @@ jobs:
         with:
           python-version: "3.11.2"
       - uses: actions/cache@v3
-        id: cache-venv
+        id: cache
         with:
-          path: .venv
-          key: venv-2  # increment to reset
+          path: |
+            .venv
+             ~/.cache/pre-commit
+          key: venv-3  # increment to reset
       - run: |
           python -m venv .venv --upgrade-deps
           source .venv/bin/activate
           pip install pre-commit
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-      - uses: actions/cache@v3
-        id: pre-commit-cache
-        with:
-          path: ~/.cache/pre-commit
-          key: key-2  # increment to reset
+        if: steps.cache.outputs.cache-hit != 'true'
       - run: |
           source .venv/bin/activate
           pre-commit run --all-files
