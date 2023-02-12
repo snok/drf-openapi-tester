@@ -150,16 +150,20 @@ class SchemaTester:
         method_object = self.get_key_value(
             route_object,
             response_method,
-            f"\n\nUndocumented method: {response_method}.\n\nDocumented methods: "
-            f"{[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}.",
+            (
+                f"\n\nUndocumented method: {response_method}.\n\nDocumented methods: "
+                f"{[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}."
+            ),
         )
 
         responses_object = self.get_key_value(method_object, "responses")
         status_code_object = self.get_status_code(
             responses_object,
             response.status_code,
-            f"\n\nUndocumented status code: {response.status_code}.\n\n"
-            f"Documented status codes: {list(responses_object.keys())}. ",
+            (
+                f"\n\nUndocumented status code: {response.status_code}.\n\n"
+                f"Documented status codes: {list(responses_object.keys())}. "
+            ),
         )
 
         if "openapi" not in schema:
@@ -175,8 +179,10 @@ class SchemaTester:
             json_object = self.get_key_value(
                 content_object,
                 r"^application\/.*json$",
-                "\n\nNo `application/json` responses documented for method: "
-                f"{response_method}, path: {parameterized_path}",
+                (
+                    "\n\nNo `application/json` responses documented for method: "
+                    f"{response_method}, path: {parameterized_path}"
+                ),
                 use_regex=True,
             )
             return self.get_key_value(json_object, "schema")

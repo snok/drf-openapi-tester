@@ -69,7 +69,7 @@ def test_request_on_empty_list(openapi_client):
             {
                 "method": "POST",
                 "path": "/api/v1/vehicles",
-                "data": json.dumps({"vehicle_type": ("1" * 50)}),
+                "data": json.dumps({"vehicle_type": "1" * 50}),
                 "content_type": "application/json",
             },
             {

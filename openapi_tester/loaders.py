@@ -280,7 +280,9 @@ class UrlStaticSchemaLoader(BaseSchemaLoader):
         response = requests.get(self.url, timeout=20)
         return cast(
             "dict",
-            json.loads(response.content)
-            if ".json" in self.url
-            else yaml.load(response.content, Loader=yaml.FullLoader),
+            (
+                json.loads(response.content)
+                if ".json" in self.url
+                else yaml.load(response.content, Loader=yaml.FullLoader)
+            ),
         )
