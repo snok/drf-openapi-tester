@@ -239,6 +239,20 @@ class SchemaTester:
         """
         openapi_schema_3_nullable = "nullable"
         swagger_2_nullable = "x-nullable"
+        if "oneOf" in schema_item:
+            one_of: list[dict[str, Any]] = schema_item.get("oneOf", [])
+            return any(
+                nullable_key in schema and schema[nullable_key]
+                for schema in one_of
+                for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
+            )
+        if "anyOf" in schema_item:
+            any_of: list[dict[str, Any]] = schema_item.get("anyOf", [])
+            return any(
+                nullable_key in schema and schema[nullable_key]
+                for schema in any_of
+                for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
+            )
         return any(
             nullable_key in schema_item and schema_item[nullable_key]
             for nullable_key in [openapi_schema_3_nullable, swagger_2_nullable]
