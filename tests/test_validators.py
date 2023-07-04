@@ -310,3 +310,17 @@ def test_byte_validation():
 
     with pytest.raises(DocumentationError):
         tester.test_schema_section({"type": "string", "format": "byte"}, "test123")
+
+
+def test_is_nullable_anyof():
+    tester.test_schema_section({"anyOf": [{"type": "object", "nullable": True}, {"type": "string"}]}, None)
+
+    with pytest.raises(DocumentationError):
+        tester.test_schema_section({"anyOf": [{"type": "object"}, {"type": "string"}]}, None)
+
+
+def test_is_nullable_oneof():
+    tester.test_schema_section({"oneOf": [{"type": "object", "nullable": True}, {"type": "string"}]}, None)
+
+    with pytest.raises(DocumentationError):
+        tester.test_schema_section({"oneOf": [{"type": "object"}, {"type": "string"}]}, None)
