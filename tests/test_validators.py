@@ -22,7 +22,7 @@ from openapi_tester.constants import (
     VALIDATE_TYPE_ERROR,
 )
 from openapi_tester.exceptions import DocumentationError, OpenAPISchemaError
-from openapi_tester.validators import VALIDATOR_MAP
+from openapi_tester.validators import VALIDATOR_MAP, validate_unique_items
 from tests import (
     example_response_types,
     example_schema_array,
@@ -324,3 +324,23 @@ def test_is_nullable_oneof():
 
     with pytest.raises(DocumentationError):
         tester.test_schema_section({"oneOf": [{"type": "object"}, {"type": "string"}]}, None)
+
+
+def test_validate_unique_items_dict():
+    # Only unique objects.
+    result = validate_unique_items(
+        {"uniqueItems": True},
+        [{"id": 123, "type": "Potato"}, {"id": 234, "type": "Potato"}, {"type": "Tomato", "id": 123}],
+    )
+    assert result is None
+
+    # Repeated object (in reverse key order).
+    result = validate_unique_items(
+        {"uniqueItems": True},
+        [{"id": 123, "type": "Potato"}, {"id": 234, "type": "Potato"}, {"type": "Potato", "id": 123}],
+    )
+    assert (
+        result
+        == "The array [{'id': 123, 'type': 'Potato'}, {'id': 234, 'type': 'Potato'}, "
+        "{'type': 'Potato', 'id': 123}] must contain unique items only"
+    )
