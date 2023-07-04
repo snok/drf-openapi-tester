@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import re
 from typing import TYPE_CHECKING
 from uuid import UUID
@@ -147,9 +148,10 @@ def validate_minimum(schema_section: dict[str, Any], data: int | float) -> str |
 
 def validate_unique_items(schema_section: dict[str, Any], data: list[Any]) -> str | None:
     unique_items = schema_section.get("uniqueItems")
-    if unique_items and len(set(data)) != len(data):
-        return VALIDATE_UNIQUE_ITEMS_ERROR.format(data=data)
-    # TODO: handle deep dictionary comparison - for lists of dicts
+    if unique_items:
+        comparison_data = (json.dumps(item, sort_keys=True) if isinstance(item, dict) else item for item in data)
+        if len(set(comparison_data)) != len(data):
+            return VALIDATE_UNIQUE_ITEMS_ERROR.format(data=data)
     return None
 
 
