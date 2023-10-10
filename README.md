@@ -41,7 +41,7 @@ from openapi_tester import SchemaTester
 schema_tester = SchemaTester(schema_file_path="./schemas/publishedSpecs.yaml")
 ```
 
-Once you've instantiated a tester, you can use it to test responses:
+Once you've instantiated a tester, you can use it to test responses and request bodies:
 
 ```python
 from openapi_tester.schema_tester import SchemaTester
@@ -53,6 +53,12 @@ def test_response_documentation(client):
     response = client.get('api/v1/test/1')
     assert response.status_code == 200
     schema_tester.validate_response(response=response)
+
+
+def test_request_documentation(client):
+    response = client.get('api/v1/test/1')
+    assert response.status_code == 200
+    schema_tester.validate_request(response=response)
 ```
 
 If you are using the Django testing framework, you can create a base `APITestCase` that incorporates schema validation:
@@ -188,11 +194,11 @@ In case of issues with the schema itself, the validator will raise the appropria
 
 The library includes an `OpenAPIClient`, which extends Django REST framework's
 [`APIClient` class](https://www.django-rest-framework.org/api-guide/testing/#apiclient).
-If you wish to validate each response against OpenAPI schema when writing
+If you wish to validate each request and response against OpenAPI schema when writing
 unit tests - `OpenAPIClient` is what you need!
 
 To use `OpenAPIClient` simply pass `SchemaTester` instance that should be used
-to validate responses and then use it like regular Django testing client:
+to validate requests and responses and then use it like regular Django testing client:
 
 ```python
 schema_tester = SchemaTester()

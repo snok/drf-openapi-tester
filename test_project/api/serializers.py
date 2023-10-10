@@ -8,6 +8,11 @@ class VehicleSerializer(serializers.Serializer):
     vehicle_type = serializers.CharField(max_length=10)
 
 
+class PetsSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=254)
+    tag = serializers.CharField(max_length=254, required=False)
+
+
 class ItemSerializer(serializers.Serializer):
     item_type = serializers.CharField(max_length=10)
 

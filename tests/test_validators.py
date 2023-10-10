@@ -9,7 +9,7 @@ from faker import Faker
 from openapi_tester import SchemaTester
 from openapi_tester.constants import (
     OPENAPI_PYTHON_MAPPING,
-    VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
+    VALIDATE_EXCESS_KEY_ERROR,
     VALIDATE_MAX_ARRAY_LENGTH_ERROR,
     VALIDATE_MAX_LENGTH_ERROR,
     VALIDATE_MAXIMUM_ERROR,
@@ -155,7 +155,9 @@ def test_additional_properties_specified_as_empty_object_allowed():
 
 def test_additional_properties_not_allowed_by_default():
     schema = {"type": "object", "properties": {"oneKey": {"type": "string"}}}
-    with pytest.raises(DocumentationError, match=VALIDATE_EXCESS_RESPONSE_KEY_ERROR[:90]):
+    with pytest.raises(
+        DocumentationError, match=VALIDATE_EXCESS_KEY_ERROR.format(http_message="response", excess_key="twoKey")
+    ):
         tester.test_schema_section(schema, {"oneKey": "test", "twoKey": "test2"})
 
 

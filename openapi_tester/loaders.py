@@ -129,6 +129,7 @@ class BaseSchemaLoader:
         """
         de_referenced_schema = self.de_reference_schema(schema)
         self.validate_schema(de_referenced_schema)
+
         self.schema = self.normalize_schema_paths(de_referenced_schema)
 
     @cached_property
@@ -245,6 +246,7 @@ class StaticSchemaLoader(BaseSchemaLoader):
 
     def __init__(self, path: str, field_key_map: dict[str, str] | None = None):
         super().__init__(field_key_map=field_key_map)
+
         self.path = path if not isinstance(path, pathlib.PosixPath) else str(path)
 
     def load_schema(self) -> dict[str, Any]:

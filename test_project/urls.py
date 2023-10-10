@@ -35,6 +35,7 @@ api_urlpatterns = [
     path("api/<str:version>/snake-case/", SnakeCasedResponse.as_view()),
     # ^trailing slash is here on purpose
     path("api/<str:version>/router_generated/", include(router.urls)),
+    path("api/pets", Pet.as_view(), name="get-pets"),
     re_path(r"api/pet/(?P<petId>\d+)", Pet.as_view(), name="get-pet"),
 ]
 

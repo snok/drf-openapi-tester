@@ -1,13 +1,17 @@
 import functools
 import json
+from typing import TYPE_CHECKING
 
 import pytest
 from django.test.testcases import SimpleTestCase
 from rest_framework import status
 
 from openapi_tester.clients import OpenAPIClient
-from openapi_tester.exceptions import UndocumentedSchemaSectionError
+from openapi_tester.exceptions import DocumentationError, UndocumentedSchemaSectionError
 from openapi_tester.schema_tester import SchemaTester
+
+if TYPE_CHECKING:
+    from pathlib import Path
 
 
 @pytest.fixture()
@@ -50,6 +54,55 @@ def test_request(openapi_client, generic_kwargs, expected_status_code):
     response = openapi_client.generic(**generic_kwargs)
 
     assert response.status_code == expected_status_code
+
+
+@pytest.mark.parametrize(
+    ("generic_kwargs", "expected_status_code"),
+    [
+        (
+            {
+                "method": "POST",
+                "path": "/api/pets",
+                "data": json.dumps({"name": "doggie"}),
+                "content_type": "application/json",
+            },
+            status.HTTP_201_CREATED,
+        ),
+        (
+            {
+                "method": "POST",
+                "path": "/api/pets",
+                "data": json.dumps({"tag": "doggie"}),
+                "content_type": "application/json",
+            },
+            status.HTTP_400_BAD_REQUEST,
+        ),
+    ],
+)
+def test_request_body(generic_kwargs, expected_status_code, pets_api_schema: "Path"):
+    """Ensure ``SchemaTester`` doesn't raise exception when request valid.
+    Additionally, request validation should be performed only in successful responses."""
+    schema_tester = SchemaTester(schema_file_path=str(pets_api_schema))
+    openapi_client = OpenAPIClient(schema_tester=schema_tester)
+    response = openapi_client.generic(**generic_kwargs)
+
+    assert response.status_code == expected_status_code
+
+
+def test_request_body_extra_non_documented_field(pets_api_schema: "Path"):
+    """Ensure ``SchemaTester`` raises exception when request is successfull but an
+    extra field non-documented was sent."""
+    schema_tester = SchemaTester(schema_file_path=str(pets_api_schema))
+    openapi_client = OpenAPIClient(schema_tester=schema_tester)
+    kwargs = {
+        "method": "POST",
+        "path": "/api/pets",
+        "data": json.dumps({"name": "doggie", "age": 1}),
+        "content_type": "application/json",
+    }
+
+    with pytest.raises(DocumentationError):
+        openapi_client.generic(**kwargs)  # type: ignore
 
 
 def test_request_on_empty_list(openapi_client):
