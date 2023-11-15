@@ -12,9 +12,9 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: http://petstore.swagger.io/api
+  - url: http://petstore.swagger.io
 paths:
-  /pets:
+  /api/pets:
     get:
       description: |
         Returns all pets from the system that the user has access to
@@ -65,19 +65,31 @@ paths:
             schema:
               $ref: '#/components/schemas/NewPet'
       responses:
-        '200':
+        '201':
           description: pet response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  message:
+                    type: string
+                additionalProperties: true
         default:
           description: unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /pets/{id}:
+  /api/pets/{id}:
     get:
       description: Returns a user based on a single ID, if the user does not have access to the pet
       operationId: find pet by id

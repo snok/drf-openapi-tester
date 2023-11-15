@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Callable, cast
 
@@ -13,8 +14,8 @@ from openapi_tester.constants import (
     INIT_ERROR,
     UNDOCUMENTED_SCHEMA_SECTION_ERROR,
     VALIDATE_ANY_OF_ERROR,
-    VALIDATE_EXCESS_RESPONSE_KEY_ERROR,
-    VALIDATE_MISSING_RESPONSE_KEY_ERROR,
+    VALIDATE_EXCESS_KEY_ERROR,
+    VALIDATE_MISSING_KEY_ERROR,
     VALIDATE_NONE_ERROR,
     VALIDATE_ONE_OF_ERROR,
     VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR,
@@ -48,6 +49,17 @@ if TYPE_CHECKING:
     from typing import Optional
 
     from rest_framework.response import Response
+
+
+@dataclass
+class OpenAPITestConfig:
+    """Configuration dataclass for schema section test."""
+
+    case_tester: Callable[[str], None] | None = None
+    ignore_case: list[str] | None = None
+    validators: list[Callable[[dict[str, Any], Any], str | None]] | None = None
+    reference: str = "init"
+    http_message: str = "response"
 
 
 class SchemaTester:
@@ -135,6 +147,7 @@ class SchemaTester:
         :return dict
         """
         schema = self.loader.get_schema()
+
         response_method = response.request["REQUEST_METHOD"].lower()  # type: ignore
         parameterized_path, _ = self.loader.resolve_path(
             response.request["PATH_INFO"], method=response_method  # type: ignore
@@ -198,12 +211,72 @@ class SchemaTester:
             )
         return {}
 
-    def handle_one_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any) -> None:
+    def get_request_body_schema_section(self, request: dict[str, Any]) -> dict[str, Any]:
+        """
+        Fetches the request section of a schema.
+
+        :param response: DRF Request Instance
+        :return dict
+        """
+        schema = self.loader.get_schema()
+        request_method = request["REQUEST_METHOD"].lower()
+
+        parameterized_path, _ = self.loader.resolve_path(request["PATH_INFO"], method=request_method)
+        paths_object = self.get_key_value(schema, "paths")
+
+        route_object = self.get_key_value(
+            paths_object,
+            parameterized_path,
+            f"\n\nUndocumented route {parameterized_path}.\n\nDocumented routes: " + "\n\t• ".join(paths_object.keys()),
+        )
+
+        method_object = self.get_key_value(
+            route_object,
+            request_method,
+            (
+                f"\n\nUndocumented method: {request_method}.\n\nDocumented methods: "
+                f"{[method.lower() for method in route_object.keys() if method.lower() != 'parameters']}."
+            ),
+        )
+
+        if all(key in request for key in ["CONTENT_LENGTH", "CONTENT_TYPE", "wsgi.input"]):
+            if request["CONTENT_TYPE"] != "application/json":
+                return {}
+
+            request_body_object = self.get_key_value(
+                method_object,
+                "requestBody",
+                f"\n\nNo request body documented for method: {request_method}, path: {parameterized_path}",
+            )
+            content_object = self.get_key_value(
+                request_body_object,
+                "content",
+                f"\n\nNo content documented for method: {request_method}, path: {parameterized_path}",
+            )
+            json_object = self.get_key_value(
+                content_object,
+                r"^application\/.*json$",
+                (
+                    "\n\nNo `application/json` requests documented for method: "
+                    f"{request_method}, path: {parameterized_path}"
+                ),
+                use_regex=True,
+            )
+            return self.get_key_value(json_object, "schema")
+
+        return {}
+
+    def handle_one_of(self, schema_section: dict, data: Any, reference: str, test_config: OpenAPITestConfig) -> None:
         matches = 0
         passed_schema_section_formats = set()
         for option in schema_section["oneOf"]:
             try:
-                self.test_schema_section(schema_section=option, data=data, reference=f"{reference}.oneOf", **kwargs)
+                test_config.reference = f"{test_config.reference}.oneOf"
+                self.test_schema_section(
+                    schema_section=option,
+                    data=data,
+                    test_config=test_config,
+                )
                 matches += 1
                 passed_schema_section_formats.add(option.get("format"))
             except DocumentationError:
@@ -216,15 +289,23 @@ class SchemaTester:
         if matches != 1:
             raise DocumentationError(f"{VALIDATE_ONE_OF_ERROR.format(matches=matches)}\n\nReference: {reference}.oneOf")
 
-    def handle_any_of(self, schema_section: dict, data: Any, reference: str, **kwargs: Any) -> None:
+    def handle_any_of(self, schema_section: dict, data: Any, reference: str, test_config: OpenAPITestConfig) -> None:
         any_of: list[dict[str, Any]] = schema_section.get("anyOf", [])
         for schema in chain(any_of, lazy_combinations(any_of)):
+            test_config.reference = f"{test_config.reference}.anyOf"
             try:
-                self.test_schema_section(schema_section=schema, data=data, reference=f"{reference}.anyOf", **kwargs)
+                self.test_schema_section(
+                    schema_section=schema,
+                    data=data,
+                    test_config=test_config,
+                )
                 return
             except DocumentationError:
                 continue
         raise DocumentationError(f"{VALIDATE_ANY_OF_ERROR}\n\nReference: {reference}.anyOf")
+
+    def is_openapi_schema(self) -> bool:
+        return self.loader.get_schema().get("openapi") is not None
 
     @staticmethod
     def test_is_nullable(schema_item: dict) -> bool:
@@ -273,28 +354,31 @@ class SchemaTester:
         self,
         schema_section: dict,
         data: Any,
-        reference: str = "init",
-        validators: list[Callable[[dict, dict], str | None]] | None = None,
-        **kwargs: Any,
+        test_config: OpenAPITestConfig | None = None,
     ) -> None:
         """
         This method orchestrates the testing of a schema section
         """
+        test_config = test_config or OpenAPITestConfig()
         if data is None:
             if self.test_is_nullable(schema_section):
                 # If data is None and nullable, we return early
                 return
             raise DocumentationError(
                 f"{VALIDATE_NONE_ERROR}\n\n"
-                f"Reference: {reference}\n\n"
+                f"Reference: {test_config.reference}\n\n"
                 "Hint: Return a valid type, or document the value as nullable"
             )
         schema_section = normalize_schema_section(schema_section)
         if "oneOf" in schema_section:
-            self.handle_one_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
+            self.handle_one_of(
+                schema_section=schema_section, data=data, reference=test_config.reference, test_config=test_config
+            )
             return
         if "anyOf" in schema_section:
-            self.handle_any_of(schema_section=schema_section, data=data, reference=reference, **kwargs)
+            self.handle_any_of(
+                schema_section=schema_section, data=data, reference=test_config.reference, test_config=test_config
+            )
             return
 
         schema_section_type = self.get_schema_type(schema_section)
@@ -318,97 +402,124 @@ class SchemaTester:
                 validate_min_properties,
                 validate_enum,
                 *self.validators,
-                *(validators or []),
+                *(test_config.validators or []),
             ],
         )
         for validator in combined_validators:
             error = validator(schema_section, data)
             if error:
-                raise DocumentationError(f"\n\n{error}\n\nReference: {reference}")
+                raise DocumentationError(f"\n\n{error}\n\nReference: {test_config.reference}")
 
         if schema_section_type == "object":
-            self.test_openapi_object(schema_section=schema_section, data=data, reference=reference, **kwargs)
+            self.test_openapi_object(schema_section=schema_section, data=data, test_config=test_config)
         elif schema_section_type == "array":
-            self.test_openapi_array(schema_section=schema_section, data=data, reference=reference, **kwargs)
+            self.test_openapi_array(schema_section=schema_section, data=data, test_config=test_config)
 
     def test_openapi_object(
         self,
         schema_section: dict,
         data: dict,
-        reference: str,
-        case_tester: Callable[[str], None] | None = None,
-        ignore_case: list[str] | None = None,
+        test_config: OpenAPITestConfig,
     ) -> None:
         """
-        1. Validate that casing is correct for both response and schema
-        2. Check if any required key is missing from the response
-        3. Check if any response key is not in the schema
+        1. Validate that casing is correct for both request/response and schema
+        2. Check if any required key is missing from the request/response
+        3. Check if any request/response key is not in the schema
         4. Validate sub-schema/nested data
         """
-
         properties = schema_section.get("properties", {})
         write_only_properties = [key for key in properties.keys() if properties[key].get("writeOnly")]
         required_keys = [key for key in schema_section.get("required", []) if key not in write_only_properties]
-        response_keys = data.keys()
+        request_response_keys = data.keys()
         additional_properties: bool | dict | None = schema_section.get("additionalProperties")
         additional_properties_allowed = additional_properties is not None
         if additional_properties_allowed and not isinstance(additional_properties, (bool, dict)):
             raise OpenAPISchemaError("Invalid additionalProperties type")
         for key in properties.keys():
-            self.test_key_casing(key, case_tester, ignore_case)
-            if key in required_keys and key not in response_keys:
+            self.test_key_casing(key, test_config.case_tester, test_config.ignore_case)
+            if key in required_keys and key not in request_response_keys:
                 raise DocumentationError(
-                    f"{VALIDATE_MISSING_RESPONSE_KEY_ERROR.format(missing_key=key)}\n\nReference: {reference}."
-                    f"object:key:{key}\n\nHint: Remove the key from your"
-                    " OpenAPI docs, or include it in your API response"
+                    f"{VALIDATE_MISSING_KEY_ERROR.format(missing_key=key, http_message=test_config.http_message)}"
+                    "\n\nReference:"
+                    f" {test_config.reference}.object:key:{key}\n\nHint: Remove the key from your OpenAPI docs, or"
+                    f" include it in your API {test_config.http_message}"
                 )
-        for key in response_keys:
-            self.test_key_casing(key, case_tester, ignore_case)
+        for key in request_response_keys:
+            self.test_key_casing(key, test_config.case_tester, test_config.ignore_case)
             if key not in properties and not additional_properties_allowed:
                 raise DocumentationError(
-                    f"{VALIDATE_EXCESS_RESPONSE_KEY_ERROR.format(excess_key=key)}\n\nReference: {reference}.object:key:"
-                    f"{key}\n\nHint: Remove the key from your API response, or include it in your OpenAPI docs"
+                    f"{VALIDATE_EXCESS_KEY_ERROR.format(excess_key=key, http_message=test_config.http_message)}"
+                    "\n\nReference:"
+                    f" {test_config.reference}.object:key:{key}\n\nHint: Remove the key from your API"
+                    f" {test_config.http_message}, or include it in your OpenAPI docs"
                 )
             if key in write_only_properties:
                 raise DocumentationError(
-                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference: {reference}"
-                    f".object:key:{key}\n\nHint: Remove the key from your API response, or remove the "
-                    '"WriteOnly" restriction'
+                    f"{VALIDATE_WRITE_ONLY_RESPONSE_KEY_ERROR.format(write_only_key=key)}\n\nReference:"
+                    f" {test_config.reference}.object:key:{key}\n\nHint:"
+                    f" Remove the key from your API {test_config.http_message}, or"
+                    ' remove the "WriteOnly" restriction'
                 )
         for key, value in data.items():
             if key in properties:
+                test_config.reference = f"{test_config.reference}.object:key:{key}"
                 self.test_schema_section(
                     schema_section=properties[key],
                     data=value,
-                    reference=f"{reference}.object:key:{key}",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
+                    test_config=test_config,
                 )
             elif isinstance(additional_properties, dict):
+                test_config.reference = f"{test_config.reference}.object:key:{key}"
                 self.test_schema_section(
                     schema_section=additional_properties,
                     data=value,
-                    reference=f"{reference}.object:key:{key}",
-                    case_tester=case_tester,
-                    ignore_case=ignore_case,
+                    test_config=test_config,
                 )
 
-    def test_openapi_array(self, schema_section: dict[str, Any], data: dict, reference: str, **kwargs: Any) -> None:
+    def test_openapi_array(self, schema_section: dict[str, Any], data: dict, test_config: OpenAPITestConfig) -> None:
         for datum in data:
+            test_config.reference = f"{test_config.reference}.array.item"
             self.test_schema_section(
                 # the items keyword is required in arrays
                 schema_section=schema_section["items"],
                 data=datum,
-                reference=f"{reference}.array.item",
-                **kwargs,
+                test_config=test_config,
             )
+
+    def validate_request(
+        self,
+        response: Response,
+        test_config: OpenAPITestConfig | None = None,
+    ) -> None:
+        """
+        Verifies that an OpenAPI schema definition matches an API request body.
+
+        :param request: The HTTP request
+        :param case_tester: Optional Callable that checks a string's casing
+        :param ignore_case: Optional list of keys to ignore in case testing
+        :param validators: Optional list of validator functions
+        :param **kwargs: Request keyword arguments
+        :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
+                 ``openapi_tester.exceptions.CaseError`` for case errors.
+        """
+        if self.is_openapi_schema():
+            # TODO: Implement for other schema types
+            if test_config:
+                test_config.http_message = "request"
+            else:
+                test_config = OpenAPITestConfig(http_message="request")
+            request_body_schema = self.get_request_body_schema_section(response.request)  # type: ignore
+            if request_body_schema:
+                self.test_schema_section(
+                    schema_section=request_body_schema,
+                    data=response.renderer_context["request"].data,  # type: ignore
+                    test_config=test_config,
+                )
 
     def validate_response(
         self,
         response: Response,
-        case_tester: Callable[[str], None] | None = None,
-        ignore_case: list[str] | None = None,
-        validators: list[Callable[[dict[str, Any], Any], str | None]] | None = None,
+        test_config: OpenAPITestConfig | None = None,
     ) -> None:
         """
         Verifies that an OpenAPI schema definition matches an API response.
@@ -420,11 +531,13 @@ class SchemaTester:
         :raises: ``openapi_tester.exceptions.DocumentationError`` for inconsistencies in the API response and schema.
                  ``openapi_tester.exceptions.CaseError`` for case errors.
         """
+        if test_config:
+            test_config.http_message = "response"
+        else:
+            test_config = OpenAPITestConfig(http_message="response")
         response_schema = self.get_response_schema_section(response)
         self.test_schema_section(
             schema_section=response_schema,
             data=response.json() if response.data is not None else {},  # type: ignore
-            case_tester=case_tester or self.case_tester,
-            ignore_case=ignore_case,
-            validators=validators,
+            test_config=test_config,
         )
