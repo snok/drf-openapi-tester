@@ -12,6 +12,8 @@ This is a test utility to validate DRF Test Responses against OpenAPI 2 and 3 sc
 - OpenAPI 2 schemas created with [drf-yasg](https://github.com/axnsan12/drf-yasg).
 - OpenAPI 3 schemas created with [drf-spectacular](https://github.com/tfranzel/drf-spectacular).
 
+> This project is no longer maintained. If you want to use it, consider taking a look at [this fork](https://github.com/maticardenas/drf-openapi-tester/) which might still be.
+
 ## Installation
 
 ```shell script
