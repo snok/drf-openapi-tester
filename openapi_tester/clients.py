@@ -27,8 +27,14 @@ class OpenAPIClient(APIClient):
     def request(self, **kwargs) -> Response:  # type: ignore[override]
         """Validate fetched response against given OpenAPI schema."""
         response = super().request(**kwargs)
+        if self._is_successful_response(response):
+            self.schema_tester.validate_request(response)
         self.schema_tester.validate_response(response)
         return response
+
+    @staticmethod
+    def _is_successful_response(response: Response) -> bool:
+        return response.status_code < 400
 
     @staticmethod
     def _schema_tester_factory() -> SchemaTester:

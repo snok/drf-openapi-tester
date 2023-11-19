@@ -2,6 +2,7 @@ import pytest
 
 from openapi_tester import SchemaTester
 from openapi_tester.exceptions import CaseError, DocumentationError
+from openapi_tester.schema_tester import OpenAPITestConfig
 from openapi_tester.validators import (
     validate_enum,
     validate_format,
@@ -62,29 +63,29 @@ class TestValidatorErrors:
 
     def test_validate_minimum_error(self):
         message = validate_minimum({"minimum": 2}, 0)
-        assert message == "The response value 0 is lower than the specified minimum of 2"
+        assert message == "The value 0 is lower than the specified minimum of 2"
 
     def test_validate_exclusive_minimum_error(self):
         message = validate_minimum({"minimum": 2, "exclusiveMinimum": True}, 2)
-        assert message == "The response value 2 is lower than the specified minimum of 3"
+        assert message == "The value 2 is lower than the specified minimum of 3"
 
         message = validate_minimum({"minimum": 2, "exclusiveMinimum": False}, 2)
         assert message is None
 
     def test_validate_maximum_error(self):
         message = validate_maximum({"maximum": 2}, 3)
-        assert message == "The response value 3 exceeds the maximum allowed value of 2"
+        assert message == "The value 3 exceeds the maximum allowed value of 2"
 
     def test_validate_exclusive_maximum_error(self):
         message = validate_maximum({"maximum": 2, "exclusiveMaximum": True}, 2)
-        assert message == "The response value 2 exceeds the maximum allowed value of 1"
+        assert message == "The value 2 exceeds the maximum allowed value of 1"
 
         message = validate_maximum({"maximum": 2, "exclusiveMaximum": False}, 2)
         assert message is None
 
     def test_validate_multiple_of_error(self):
         message = validate_multiple_of({"multipleOf": 2}, 3)
-        assert message == "The response value 3 should be a multiple of 2"
+        assert message == "The value 3 should be a multiple of 2"
 
     def test_validate_pattern_error(self):
         message = validate_pattern({"pattern": "^[a-z]$"}, "3")
@@ -159,7 +160,9 @@ class TestTestOpenAPIObjectErrors:
         tester = SchemaTester()
         with pytest.raises(DocumentationError, match=expected_error_message):
             tester.test_openapi_object(
-                {"required": ["one"], "properties": {"one": {"type": "int"}}}, {"two": 2}, reference="init"
+                {"required": ["one"], "properties": {"one": {"type": "int"}}},
+                {"two": 2},
+                OpenAPITestConfig(reference="init"),
             )
 
     def test_missing_schema_key_error(self):
@@ -171,7 +174,9 @@ class TestTestOpenAPIObjectErrors:
         tester = SchemaTester()
         with pytest.raises(DocumentationError, match=expected_error_message):
             tester.test_openapi_object(
-                {"required": ["one"], "properties": {"one": {"type": "int"}}}, {"one": 1, "two": 2}, reference="init"
+                {"required": ["one"], "properties": {"one": {"type": "int"}}},
+                {"one": 1, "two": 2},
+                OpenAPITestConfig(reference="init"),
             )
 
     def test_key_in_write_only_properties_error(self):
@@ -185,7 +190,7 @@ class TestTestOpenAPIObjectErrors:
             tester.test_openapi_object(
                 {"properties": {"one": {"type": "int", "writeOnly": True}}},
                 {"one": 1},
-                reference="init",
+                OpenAPITestConfig(reference="init"),
             )
 
 
@@ -197,7 +202,7 @@ def test_null_error():
     )
     tester = SchemaTester()
     with pytest.raises(DocumentationError, match=expected_error_message):
-        tester.test_schema_section({"type": "object"}, None, reference="init")
+        tester.test_schema_section({"type": "object"}, None, OpenAPITestConfig(reference="init"))
 
 
 def test_any_of_error():
@@ -207,7 +212,7 @@ def test_any_of_error():
     )
     tester = SchemaTester()
     with pytest.raises(DocumentationError, match=expected_error_message):
-        tester.test_schema_section({"anyOf": []}, {}, reference="init")
+        tester.test_schema_section({"anyOf": []}, {}, OpenAPITestConfig(reference="init"))
 
 
 def test_one_of_error():
@@ -216,4 +221,4 @@ def test_one_of_error():
     )
     tester = SchemaTester()
     with pytest.raises(DocumentationError, match=expected_error_message):
-        tester.test_schema_section({"oneOf": []}, {}, reference="init")
+        tester.test_schema_section({"oneOf": []}, {}, OpenAPITestConfig(reference="init"))
